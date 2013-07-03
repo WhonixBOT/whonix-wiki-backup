@@ -44,21 +44,27 @@ On the host. If you were a user of TorBOX 0.2.1 or below and removed NTP, restor
 
 Virtual Box has a feature to spoof the initial virtual hardware clock offset by setting the clock X milliseconds in feature or past. Syntax.
 
-<pre>VBoxManage modifyvm &lt;name&gt; --biossystemtimeoffset -&lt;milliseconds&gt;
-VBoxManage modifyvm &lt;name&gt; --biossystemtimeoffset +&lt;milliseconds&gt;</pre>
+<pre>
+VBoxManage modifyvm <name> --biossystemtimeoffset -<milliseconds>
+VBoxManage modifyvm <name> --biossystemtimeoffset +<milliseconds>
+</pre>
 
 It's prudent to add a random delay within the following range.
 
-<pre>VBoxManage modifyvm &lt;name&gt; --biossystemtimeoffset -60000
-VBoxManage modifyvm &lt;name&gt; --biossystemtimeoffset +60000</pre>
+<pre>
+VBoxManage modifyvm <name> --biossystemtimeoffset -60000
+VBoxManage modifyvm <name> --biossystemtimeoffset +60000
+</pre>
 
 Pick one example per VM and use random values within the range. (On the host.)
 
-<pre>VBoxManage modifyvm "Whonix-Gateway" --biossystemtimeoffset -35017
+<pre>
+VBoxManage modifyvm "Whonix-Gateway" --biossystemtimeoffset -35017
 VBoxManage modifyvm "Whonix-Gateway" --biossystemtimeoffset +27931
 
 VBoxManage modifyvm "Whonix-Workstation" --biossystemtimeoffset -35017
-VBoxManage modifyvm "Whonix-Workstation" --biossystemtimeoffset +27931</pre>
+VBoxManage modifyvm "Whonix-Workstation" --biossystemtimeoffset +27931
+</pre>
 
 Clock skew apart this small biossystemtimeoffset <sup>5</sup> is always bad for privacy <sup>1</sup>.
 
@@ -198,11 +204,13 @@ On Whonix-Gateway.
 
 Add.
 
-<pre>ReachableDirAddresses *:80
+<pre>
+ReachableDirAddresses *:80
 ReachableORAddresses *:443
 FascistFirewall 1
 ## maybe: FirewallPorts PORTS
-## See Tor manual: https://www.torproject.org/docs/tor-manual.html.en</pre>
+## See Tor manual: https://www.torproject.org/docs/tor-manual.html.en
+</pre>
 
 Reload Tor.
 
@@ -351,22 +359,26 @@ Alternatively, less secure than Multiple Whonix-Workstations, you could start mu
 
 Instead of
 
-<pre>#!/bin/bash
+<pre>
+#!/bin/bash
 ## Whonix Tor Browser start script
 
 ~/tor-browser_en-US/App/Firefox/firefox --profile ~/tor-browser_en-US/Data/profile
 
-## End of Whonix Tor Browser start script</pre>
+## End of Whonix Tor Browser start script
+</pre>
 
 Use
 
-<pre>#!/bin/bash
+<pre>
+#!/bin/bash
 ## Whonix Tor Browser start script
 
 ## Adjust the path!
 ~/tor-browser_2/App/Firefox/firefox --profile ~/tor-browser_2/Data/profile -no-remote
 
-## End of Whonix Tor Browser start script</pre>
+## End of Whonix Tor Browser start script
+</pre>
 
 Only ''-no-remote'' was added to the start script. Otherwise Tor Browser would connect the the already running Tor Browser and this isn't what you want. And don't forget to adjust the path to the other Tor Browser.
 
@@ -406,42 +418,52 @@ All Whonix-Workstation traffic is by default forced through Whonix-Gateway. Alte
 
 Post-Tor-VPN.
 
-<pre>## chain:
+<pre>
+## chain:
 Whonix-Workstation -> VPN-Gateway    -> Whonix-Gateway -> clearnet
 ## connection scheme:
-user               -> Tor            -> VPN            -> destination server</pre>
+user               -> Tor            -> VPN            -> destination server
+</pre>
 
 Post-Tor-VPN.
 
-<pre>## chain:
+<pre>
+## chain:
 Whonix-Workstation -> Whonix-Gateway -> VPN-Gateway    -> clearnet
 ## connection scheme:
-user               -> VPN            -> Tor            -> destination server</pre>
+user               -> VPN            -> Tor            -> destination server
+</pre>
 
 Pre- and Post-Tor-VPN.
 
-<pre>## chain:
+<pre>
+## chain:
 Whonix-Workstation -> VPN-Gateway    -> Whonix-Gateway -> VPN-Gateway -> destination server
 ## connection scheme:
-user               -> VPN            -> Tor            -> VPN         -> destination server</pre>
+user               -> VPN            -> Tor            -> VPN         -> destination server
+</pre>
 
 It's not limited to VPN-Gateways. You could also replace the VPN with a Proxy-Gateway.
 
 Post-Tor-Proxy.
 
-<pre>## chain:
+<pre>
+## chain:
 Whonix-Workstation -> Proxy-Gateway  -> Whonix-Gateway -> clearnet
 ## connection scheme:
-user               -> Tor            -> Proxy          -> destination server</pre>
+user               -> Tor            -> Proxy          -> destination server
+</pre>
 
 Or with a Post-Tor-Proxy, or with a Pre/Post-Tor-SSH. Or replace the proxy with JonDo or perhaps i2p. Virtually any combinations are possible.
 
 It's important to understand, that the connection will be created in reverse order. This is best explained using and example.
 
-<pre>## chain:
+<pre>
+## chain:
 Whonix-Workstation -> Proxy-Gateway  -> Whonix-Gateway -> VPN-Gateway -> clearnet
 ## connection scheme:
-user               -> VPN            -> Tor            -> Proxy       -> destination server</pre>
+user               -> VPN            -> Tor            -> Proxy       -> destination server
+</pre>
 
 If you think about, it becomes clear why the connection happens in reverse order. Whonix-Workstation has no way, but to go through the Proxy-Gateway. The Proxy-Gateway has no way, but to go through Whonix-Gateway. The last one in the chain, in this case, the VPN-Gateway, must obviously connect through clearnet. Thus, the VPN-Gateway uses clearnet, the Whonix-Gateway uses the VPN-Gateway to connect, the Proxy-Gateway uses Whonix-Gateway to connect and Whonix-Workstation uses the Proxy-Gateway to connect. Since the Proxy-Gateway has no way, but to go through Whonix-Gateway followed by VPN-Gateway, it's clear why it will be the last hop in front of the the destination server.
 
