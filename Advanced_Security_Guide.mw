@@ -66,13 +66,13 @@ VBoxManage modifyvm "Whonix-Workstation" --biossystemtimeoffset -35017
 VBoxManage modifyvm "Whonix-Workstation" --biossystemtimeoffset +27931
 </pre>
 
-Clock skew apart this small biossystemtimeoffset <sup>5</sup> is always bad for privacy <sup>1</sup>.
+Clock skew apart this small biossystemtimeoffset <ref>biossystemtimeoffset is being used, to unlink the initial clock synchronization of the VM by the Virtualizer from the host clock.</ref> <ref>Powering on a VM will initially synchronize the clock with the host clock until Whonix Timesync adjusts it.</ref> is always bad for privacy <ref>Can lead to linkability, thus would be [[DoNot/#do-not-confuse-anonymity-with-pseudonymity pseudonymous rather than anonymous]].</ref>.
 
-When you suspend/safe the state of a VM, clock will stop and continue after resume, thus lag behind. You shouldn't suspend/safe the state of Whonix-Gateway. Rather power the Gateway off, if you no longer need it. <sup>2</sup> You can suspend/safe the state of Whonix-Workstation, but then the clock will lag behind. To fix it run inside Whonix-Workstation Start Menu -> Applications -> System -> Whonix Timesync.
+When you suspend/safe the state of a VM, clock will stop and continue after resume, thus lag behind. You shouldn't suspend/safe the state of Whonix-Gateway. Rather power the Gateway off, if you no longer need it. <ref>Otherwise Tor can get confused if time is more than 1 hour in past or more than 3 hour in future and will only reconnect to the Tor network, if clock is manually fixed or powered off and powered on again.</ref> You can suspend/safe the state of Whonix-Workstation, but then the clock will lag behind. To fix it run inside Whonix-Workstation Start Menu -> Applications -> System -> Whonix Timesync.
 
-The host system clock synchronization mechanism still uses unauthenticated NTP from a single source. This is not optimal, but there is no real solution to this problem. <sup>4</sup> The ISP and/or the time server could either non-intentionally or intentionally (as an attack) introduce a clock skew or the host clock could simply malfunction.
+The host system clock synchronization mechanism still uses unauthenticated NTP from a single source. This is not optimal, but there is no real solution to this problem. <ref>See Design: [[TimeSync]].</ref> The ISP and/or the time server could either non-intentionally or intentionally (as an attack) introduce a clock skew or the host clock could simply malfunction.
 
-If the host clock is too much off, more than one hour in past or more than 3 hour in future, Tor can't connect to the Tor network. <sup>6</sup> The easiest fix in this situation is to manually fix the clock on the host, to power off Whonix-Gateway and to power on Whonix-Gateway again.
+If the host clock is too much off, more than one hour in past or more than 3 hour in future, Tor can't connect to the Tor network. <ref>Because Tor can't verify the Tor consensus.</ref> The easiest fix in this situation is to manually fix the clock on the host, to power off Whonix-Gateway and to power on Whonix-Gateway again.
 
 Another side effect of the host clock being too much off is, that downloading operating system updates on the host and cryptographic verification, such as verifying SSL certificates on the host browser may no longer be possible, until you manually fix the clock.
 
@@ -80,7 +80,7 @@ Before you think, your ISP is tampering with NTP, ensure first, that not simply 
 
 If you should really ever catch your ISP tampering with NTP, you should probable disable it and manually update the host clock out of band, i.e. using a watch or atomic clock. In case it isn't a large scale attack, but a targeted attack, you most likely have already bigger problems to worry about than NTP. (See Warning page chapter [[Warning/#confirmation-attacks|Confirmation attacks]].)
 
-You have also another option. You could disable NTP on your host and always manually adjust the clock out of band, i.e. using a watch or atomic clock. This might make your clearnet traffic more fingerprintable <sup>7</sup>, since it introduces a device issuing clearnet traffic (at least operating system updates, I hope), but not using NTP. I don't know how many people deactivated/broken/uninstalled/never installed NTP. Neither I know, how many people are using alternative time synchronization methods such as authenticated NTP, tails_htp, tlsdate or similar. Search engine research however suggests, that very few people care and do so.
+You have also another option. You could disable NTP on your host and always manually adjust the clock out of band, i.e. using a watch or atomic clock. This might make your clearnet traffic more fingerprintable <ref>See [[Fingerprint]] page to find out what fingerprinting means in this case.</ref>, since it introduces a device issuing clearnet traffic (at least operating system updates, I hope), but not using NTP. I don't know how many people deactivated/broken/uninstalled/never installed NTP. Neither I know, how many people are using alternative time synchronization methods such as authenticated NTP, tails_htp, tlsdate or similar. Search engine research however suggests, that very few people care and do so.
 
 Summary:
 
@@ -93,19 +93,7 @@ Even though it's a difficult topic, you are advised to read Technical Design cha
 
 Footnotes. Additional information, reasoning, design for interested users, developers and auditors.
 
-<sup>1</sup> Can lead to linkability, thus would be [[DoNot/#do-not-confuse-anonymity-with-pseudonymity pseudonymous rather than anonymous]].
-
-<sup>2</sup> Otherwise Tor can get confused if time is more than 1 hour in past or more than 3 hour in future and will only reconnect to the Tor network, if clock is manually fixed or powered off and powered on again.
-
-<sup>3</sup> <sup>3</sup> Powering on a VM will initially synchronize the clock with the host clock until Whonix Timesync adjusts it.
-
-<sup>4</sup> See Design: [[TimeSync]].
-
-<sup>5</sup> biossystemtimeoffset is being used, to unlink the initial clock synchronization of the VM by the Virtualizer from the host clock.
-
-<sup>6</sup> Because Tor can't verify the Tor consensus.
-
-<sup>7</sup> See [[Fingerprint]] page to find out what fingerprinting means in this case. 
+<references />
 
 = Host Security =
 
@@ -304,7 +292,7 @@ Whonix currently doesn't do that by default and it's an open question for resear
 
 Linux kernel is not a secure OS, Linus himself made it pretty clear that he doesn't think highly of the "security community". His threat model and a Tor User threat model don't have much in common. Good that Linux is open source and if we disagree with a policy or politics we can just patch or fork it... Grsecurity/PaX is the most comprehensive kernel patch providing much needed security hardening both for the kernel itself and for making userland protections more effective.
 
-Sadly no distribution of binary grsec kernel exists. <sup>1</sup> That means either a packager/maintainer of Whonix needs to compile them EVERY TIME there is a security update to the kernel (which is pretty frequently) or the Whonix users themselves need to compile and update their kernels. This is undesirable because kernel compilation is not set and forget, you need a bit of knowledge, it takes a while, especially in a resource restricted VM and you need to keep updated about new releases via mailing lists or similar because your software updater doesn't automatically handle custom kernels (even emerge in hardened gentoo doesn't). All this would most likely only result in users running old, outdated kernel versions.
+Sadly no distribution of binary grsec kernel exists. <ref>There's Alpine Linux but they don't package Tor yet: [http://bugs.alpinelinux.org/issues/1067 Package Request: Tor].</ref> That means either a packager/maintainer of Whonix needs to compile them EVERY TIME there is a security update to the kernel (which is pretty frequently) or the Whonix users themselves need to compile and update their kernels. This is undesirable because kernel compilation is not set and forget, you need a bit of knowledge, it takes a while, especially in a resource restricted VM and you need to keep updated about new releases via mailing lists or similar because your software updater doesn't automatically handle custom kernels (even emerge in hardened gentoo doesn't). All this would most likely only result in users running old, outdated kernel versions.
 
 Further for Whonix-Gateway and the Identity/Location TCB grsecurity only addresses a subset of security risks: It can mitigate ''some'' kernel vulnerabilities (and we only really care about the networking stack which is pretty secure judging from its track record). '''Maybe''' '''''some''''' (memory corruption) vulnerabilities in apt-get and Tor that aren't already mitigated by the existing userland hardening done by Ubuntu. It can't protect against backdoors or security issues related to design, policy or yet unknown classes of exploits. We feel that these relatively small advantages outweigh the issues introduced by using a custom compiled kernel. We hope a binary distro will step forward and start using grsecurity. In that case we'll most likely switch Whonix-Gateway to that distro as soon as possible.
 
@@ -314,7 +302,7 @@ If you disagree with this assessment or have any suggestions how to improve the 
 
 Experts only: There is also Hardened Gentoo based Whonix-Gateway. Outdated, needs maintainer. See [[Hardened Gentoo TG]].
 
-<sup>1</sup> There's Alpine Linux but they don't package Tor yet: [http://bugs.alpinelinux.org/issues/1067 Package Request: Tor]. 
+<references/>
 
 = Virtualization Platform =
 
