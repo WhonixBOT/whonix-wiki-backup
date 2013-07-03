@@ -40,25 +40,29 @@ Don't wonder... To prevent against time zone leaks, the system clock inside Whon
 
 On the host. If you were a user of TorBOX 0.2.1 or below and removed NTP, restore it now.
 
-<pre>    sudo apt-get install ntpd</pre>
+<pre>sudo apt-get install ntpd</pre>
+
 Virtual Box has a feature to spoof the initial virtual hardware clock offset by setting the clock X milliseconds in feature or past. Syntax.
 
 <pre>VBoxManage modifyvm &lt;name&gt; --biossystemtimeoffset -&lt;milliseconds&gt;
 VBoxManage modifyvm &lt;name&gt; --biossystemtimeoffset +&lt;milliseconds&gt;</pre>
+
 It's prudent to add a random delay within the following range.
 
 <pre>VBoxManage modifyvm &lt;name&gt; --biossystemtimeoffset -60000
 VBoxManage modifyvm &lt;name&gt; --biossystemtimeoffset +60000</pre>
+
 Pick one example per VM and use random values within the range. (On the host.)
 
-<pre>VBoxManage modifyvm &quot;Whonix-Gateway&quot; --biossystemtimeoffset -35017
-VBoxManage modifyvm &quot;Whonix-Gateway&quot; --biossystemtimeoffset +27931
+<pre>VBoxManage modifyvm "Whonix-Gateway" --biossystemtimeoffset -35017
+VBoxManage modifyvm "Whonix-Gateway" --biossystemtimeoffset +27931
 
-VBoxManage modifyvm &quot;Whonix-Workstation&quot; --biossystemtimeoffset -35017
-VBoxManage modifyvm &quot;Whonix-Workstation&quot; --biossystemtimeoffset +27931</pre>
+VBoxManage modifyvm "Whonix-Workstation" --biossystemtimeoffset -35017
+VBoxManage modifyvm "Whonix-Workstation" --biossystemtimeoffset +27931</pre>
+
 Clock skew apart this small biossystemtimeoffset <sup>5</sup> is always bad for privacy <sup>1</sup>.
 
-When you suspend/safe the state of a VM, clock will stop and continue after resume, thus lag behind. You shouldn't suspend/safe the state of Whonix-Gateway. Rather power the Gateway off, if you no longer need it. <sup>2</sup> You can suspend/safe the state of Whonix-Workstation, but then the clock will lag behind. To fix it run inside Whonix-Workstation Start Menu -&gt; Applications -&gt; System -&gt; Whonix Timesync.
+When you suspend/safe the state of a VM, clock will stop and continue after resume, thus lag behind. You shouldn't suspend/safe the state of Whonix-Gateway. Rather power the Gateway off, if you no longer need it. <sup>2</sup> You can suspend/safe the state of Whonix-Workstation, but then the clock will lag behind. To fix it run inside Whonix-Workstation Start Menu -> Applications -> System -> Whonix Timesync.
 
 The host system clock synchronization mechanism still uses unauthenticated NTP from a single source. This is not optimal, but there is no real solution to this problem. <sup>4</sup> The ISP and/or the time server could either non-intentionally or intentionally (as an attack) introduce a clock skew or the host clock could simply malfunction.
 
@@ -68,7 +72,7 @@ Another side effect of the host clock being too much off is, that downloading op
 
 Before you think, your ISP is tampering with NTP, ensure first, that not simply the host clock is defect due to an empty battery.
 
-If you should really ever catch your ISP tampering with NTP, you should probable disable it and manually update the host clock out of band, i.e. using a watch or atomic clock. In case it isn't a large scale attack, but a targeted attack, you most likely have already bigger problems to worry about than NTP. (See Warning page chapter [https://sourceforge.net/p/whonix/wiki/Warning/#confirmation-attacks Confirmation attacks].)
+If you should really ever catch your ISP tampering with NTP, you should probable disable it and manually update the host clock out of band, i.e. using a watch or atomic clock. In case it isn't a large scale attack, but a targeted attack, you most likely have already bigger problems to worry about than NTP. (See Warning page chapter [[Warning/#confirmation-attacks|Confirmation attacks]].)
 
 You have also another option. You could disable NTP on your host and always manually adjust the clock out of band, i.e. using a watch or atomic clock. This might make your clearnet traffic more fingerprintable <sup>7</sup>, since it introduces a device issuing clearnet traffic (at least operating system updates, I hope), but not using NTP. I don't know how many people deactivated/broken/uninstalled/never installed NTP. Neither I know, how many people are using alternative time synchronization methods such as authenticated NTP, tails_htp, tlsdate or similar. Search engine research however suggests, that very few people care and do so.
 
@@ -79,9 +83,9 @@ Summary:
 * Tor can't connect if the host clock is too much off. In this case manually fix the host clock, power off Whonix-Gateway and power on Whonix-Gateway again.
 * Keep an eye on the host clock, ensure that it's always somewhat accurate.
 
- Even though it's a difficult topic, you are advised to read Technical Design chapter [https://sourceforge.net/p/whonix/wiki/TimeSync/ Whonix's Secure And Distributed Time Synchronization Mechanism]. 
+ Even though it's a difficult topic, you are advised to read Technical Design chapter [[TimeSync]]. 
 
- ,, Footnotes. Additional information, reasoning, design for interested users, developers and auditors. <sup>1</sup> Can lead to linkability, thus would be [https://sourceforge.net/p/whonix/wiki/DoNot/#do-not-confuse-anonymity-with-pseudonymity pseudonymous rather than anonymous]. <sup>4</sup> <sup>2</sup> Otherwise Tor can get confused if time is more than 1 hour in past or more than 3 hour in future and will only reconnect to the Tor network, if clock is manually fixed or powered off and powered on again. <sup>3</sup> <sup>3</sup> Powering on a VM will initially synchronize the clock with the host clock until Whonix Timesync adjusts it. <sup>4</sup> See Design: [https://sourceforge.net/p/whonix/wiki/TimeSync/ Whonix's Secure And Distributed Time Synchronization Mechanism]. <sup>5</sup> biossystemtimeoffset is being used, to unlink the initial clock synchronization of the VM by the Virtualizer from the host clock. <sup>6</sup> Because Tor can't verify the Tor consensus. <sup>7</sup> See [Fingerprint] page to find out what fingerprinting means in this case. 
+ ,, Footnotes. Additional information, reasoning, design for interested users, developers and auditors. <sup>1</sup> Can lead to linkability, thus would be [[DoNot/#do-not-confuse-anonymity-with-pseudonymity pseudonymous rather than anonymous]]. <sup>4</sup> <sup>2</sup> Otherwise Tor can get confused if time is more than 1 hour in past or more than 3 hour in future and will only reconnect to the Tor network, if clock is manually fixed or powered off and powered on again. <sup>3</sup> <sup>3</sup> Powering on a VM will initially synchronize the clock with the host clock until Whonix Timesync adjusts it. <sup>4</sup> See Design: [[TimeSync]]. <sup>5</sup> biossystemtimeoffset is being used, to unlink the initial clock synchronization of the VM by the Virtualizer from the host clock. <sup>6</sup> Because Tor can't verify the Tor consensus. <sup>7</sup> See [[Fingerprint]] page to find out what fingerprinting means in this case. 
 
 = Host Security =
 
@@ -119,7 +123,7 @@ These are only pointers for you to search the web about these topics and these a
 
 '''One VM is deprecated.''' It was tested and developed for 0.1.3. The concept worked. It's deprecated now, because it has no maintainer.
 
-Alternatively, you could also use one VM instead of two, where Tor runs on the host. It has some security and other kinds of advantages/disadvantages listed in the article. See [OneVM].
+Alternatively, you could also use one VM instead of two, where Tor runs on the host. It has some security and other kinds of advantages/disadvantages listed in the article. See [[OneVM]].
 
 == Separate user account for Virtual Box ==
 
@@ -166,7 +170,7 @@ From time to time someone asks, which ports incoming/outgoing Whonix-Gateway req
 
 ==== Incoming ====
 
-Whonix-Gateway itself does not open any ports. Closing ports on the host is still advised. That was already covered in the [https://sourceforge.net/p/whonix/wiki/Pre%20Install%20Advice/#portscan-firewall Pre Install Advice].
+Whonix-Gateway itself does not open any ports. Closing ports on the host is still advised. That was already covered in the [[Pre Install Advice/#portscan-firewall|Pre Install Advice]].
 
 ==== Outgoing ====
 
@@ -177,6 +181,7 @@ Filtering outgoing ports is difficult, since Tor entry guards (or bridges) liste
 On Whonix-Gateway.
 
 <pre>sudo nano /etc/tor/torrc</pre>
+
 Add.
 
 <pre>ReachableDirAddresses *:80
@@ -184,14 +189,16 @@ ReachableORAddresses *:443
 FascistFirewall 1
 ## maybe: FirewallPorts PORTS
 ## See Tor manual: https://www.torproject.org/docs/tor-manual.html.en</pre>
+
 Reload Tor.
 
 <pre>sudo service Tor reload</pre>
+
 This has also been discussed [https://sourceforge.net/p/whonix/discussion/general/thread/3a0b673a/ in the forum].
 
 = Hardware Security =
 
-It's recommend to use &quot;clean&quot; computers made of parts manufactured by reputable companies and to pay in cash so as to not have hardware IDs leak our identity.
+It's recommend to use "clean" computers made of parts manufactured by reputable companies and to pay in cash so as to not have hardware IDs leak our identity.
 
 Whonix doesn't do anything against hardware backdoors.
 
@@ -233,7 +240,7 @@ In both cases the RAM contents can be analyzed in a computer forensics laborator
 
 As far as the authors know, cold boot attacks are not standard procedure within law enforcements and similar organizations anywhere in the world yet, but it might still be good to be prepared and stay on the safe side.
 
-Wipe RAM on shutdown (e.g. using a kexec script) - or do not leave the computer unattended immediately after shutdown. Unfortunately there is not yet an upstream script, to implement wiping the RAM on shutdown. We can not provide a solution for this attack, this is solved nowhere but [https://tails.boum.org/bugs/sdmem_does_not_clear_all_memory/ partially] in Tails and Liberte Linux (not checked), waiting for upstream solution, see [Dev] Wipe RAM panic script. It's up to you to implement a panic button which will wipe the RAM, please [http://sourceforge.net/p/whonix/wiki/Contribute/ Contribute]. The least you can do is [http://sourceforge.net/p/whonix/wiki/Contribute/#vote-ideas Vote] at upstream for the feature.
+Wipe RAM on shutdown (e.g. using a kexec script) - or do not leave the computer unattended immediately after shutdown. Unfortunately there is not yet an upstream script, to implement wiping the RAM on shutdown. We can not provide a solution for this attack, this is solved nowhere but [https://tails.boum.org/bugs/sdmem_does_not_clear_all_memory/ partially] in Tails and Liberte Linux (not checked), waiting for upstream solution, see [Dev] Wipe RAM panic script. It's up to you to implement a panic button which will wipe the RAM, please [[Contribute]]. The least you can do is [[Contribute/#vote-ideas|Vote]] at upstream for the feature.
 
 '''Hypothetical...''' So, what should you do when you hear an attacker knocking at your door? You could just press the hypothetical panic button on the host. It would start to wipe the contents of the RAM by filling it out with random junk, thus erasing everything that was stored there before, including the encryption key of the encrypted storage devices you might use and the traces of your session. Then you would wait, possibly trying to buy valuable time by barricading your door.
 
@@ -273,7 +280,7 @@ Whonix currently doesn't do that by default and it's an open question for resear
 
 == About grsecurity ==
 
-Linux kernel is not a secure OS, Linus himself made it pretty clear that he doesn't think highly of the &quot;security community&quot;. His threat model and a Tor User threat model don't have much in common. Good that Linux is open source and if we disagree with a policy or politics we can just patch or fork it... Grsecurity/PaX is the most comprehensive kernel patch providing much needed security hardening both for the kernel itself and for making userland protections more effective.
+Linux kernel is not a secure OS, Linus himself made it pretty clear that he doesn't think highly of the "security community". His threat model and a Tor User threat model don't have much in common. Good that Linux is open source and if we disagree with a policy or politics we can just patch or fork it... Grsecurity/PaX is the most comprehensive kernel patch providing much needed security hardening both for the kernel itself and for making userland protections more effective.
 
 Sadly no distribution of binary grsec kernel exists. <sup>1</sup> That means either a packager/maintainer of Whonix needs to compile them EVERY TIME there is a security update to the kernel (which is pretty frequently) or the Whonix users themselves need to compile and update their kernels. This is undesirable because kernel compilation is not set and forget, you need a bit of knowledge, it takes a while, especially in a resource restricted VM and you need to keep updated about new releases via mailing lists or similar because your software updater doesn't automatically handle custom kernels (even emerge in hardened gentoo doesn't). All this would most likely only result in users running old, outdated kernel versions.
 
@@ -281,19 +288,19 @@ Further for Whonix-Gateway and the Identity/Location TCB grsecurity only address
 
 For Whonix-Workstation the benefits are even more doubtful. To be effective grsecurity needs to lock down some functions that are needed by Xorg, JIT compilers... but we need those to be working. To solve this we'd have to write a restrictive RBAC policy which is far from trivial. We think accepting that Whonix-Workstation will be exploitable and acting accordingly (using snapshots and rolling back to clean state) is the right approach for a desktop system.
 
-If you disagree with this assessment or have any suggestions how to improve the current situation please let us know on [Dev]!
+If you disagree with this assessment or have any suggestions how to improve the current situation please let us know.
 
-Experts only: There is also Hardened Gentoo based Whonix-Gateway. Outdated, needs maintainer. See [HardenedGentooTG]
+Experts only: There is also Hardened Gentoo based Whonix-Gateway. Outdated, needs maintainer. See [[Hardened Gentoo TG]].
 
- ,, <sup>1</sup> There's Alpine Linux but they don't package Tor yet: [http://bugs.alpinelinux.org/issues/1067 Package Request: Tor]. 
+<sup>1</sup> There's Alpine Linux but they don't package Tor yet: [http://bugs.alpinelinux.org/issues/1067 Package Request: Tor]. 
 
 = Virtualization Platform =
 
 == About VirtualBox ==
 
-VirtualBox is developed by Oracle, a company not exactly know for being very &quot;open&quot;. That includes how they announce security issues in their products as well as how they are perceived by the security community and how they will communicate with each other.
+VirtualBox is developed by Oracle, a company not exactly know for being very "open". That includes how they announce security issues in their products as well as how they are perceived by the security community and how they will communicate with each other.
 
-VirtualBox is primarily a simple, &quot;user friendly&quot;, desktop solution and most certainly not designed with our threat model in mind. I haven't heard of anyone seriously auditing the code and I'd like to recommend a different VM solution at least as an alternative. There's KVM and Xen, open source but not cross-platform. It seems they are still lacking in terms of a reliable &quot;internal networking&quot; feature which Whonix heavily depends on. (If you know more, please edit this paragraph).
+VirtualBox is primarily a simple, "user friendly", desktop solution and most certainly not designed with our threat model in mind. I haven't heard of anyone seriously auditing the code and I'd like to recommend a different VM solution at least as an alternative. There's KVM and Xen, open source but not cross-platform. It seems they are still lacking in terms of a reliable "internal networking" feature which Whonix heavily depends on. (If you know more, please edit this paragraph).
 
 Anyone looking into Whonix solely because of security should really consider using Whonix with [PhysicalIsolation].
 
@@ -310,7 +317,7 @@ It shouldn't be very hard to get Whonix to run on top of Qubes OS, which would b
 
 [http://www.virtualbox.org/manual/ch09.html#idp12297856 Secure labeling with VBoxSDL] has not yet been added to Whonix. I couldn't get it to work. If you know more, please share your knowledge.
 
-We must not end up with non-standard desktop resolution, as per [[Whonix's Protocol-Leak-Protection and Fingerprinting-Protection]].
+We must not end up with non-standard desktop resolution, as per [[Protocol-Leak-Protection and Fingerprinting-Protection]].
 
 = Whonix-Workstation Security =
 
@@ -324,7 +331,7 @@ Use [https://en.wikipedia.org/wiki/AppArmor AppArmor] ([http://wiki.debian.org/A
 
 == More than one Tor Browser in Whonix ==
 
-As the [Warning] page stated, [[Warning#Whonix_doesn.27t_magically_separate_your_different_contextual_identities | Whonix doesn't magically separate your different contextual identities]] and since Tor Browser and Tor Button do not yet solve this, for further separation of identities you could use [[Multiple Whonix-Workstations]], which would be more secure.
+As the [[Warning]] page stated, [[Warning#Whonix_doesn.27t_magically_separate_your_different_contextual_identities | Whonix doesn't magically separate your different contextual identities]] and since Tor Browser and Tor Button do not yet solve this, for further separation of identities you could use [[Multiple Whonix-Workstations]], which would be more secure.
 
 Alternatively, less secure than Multiple Whonix-Workstations, you could start multiple instances of Tor Browser and run them through different SocksPorts. The instructions in the [[ManualTBupdate]] article need minimal changes.
 
@@ -336,6 +343,7 @@ Instead of
 ~/tor-browser_en-US/App/Firefox/firefox --profile ~/tor-browser_en-US/Data/profile
 
 ## End of Whonix Tor Browser start script</pre>
+
 Use
 
 <pre>#!/bin/bash
@@ -345,15 +353,18 @@ Use
 ~/tor-browser_2/App/Firefox/firefox --profile ~/tor-browser_2/Data/profile -no-remote
 
 ## End of Whonix Tor Browser start script</pre>
+
 Only ''-no-remote'' was added to the start script. Otherwise Tor Browser would connect the the already running Tor Browser and this isn't what you want. And don't forget to adjust the path to the other Tor Browser.
 
-You also have to use a different SocksPort in ''user.js''. (See [https://sourceforge.net/p/whonix/wiki/TorBrowser/#whonix-proxy-settings-userjs Whonix Proxy Settings / user.js] explanation.) Change
+You also have to use a different SocksPort in ''user.js''. (See [[TorBrowser/#whonix-proxy-settings-userjs Whonix Proxy Settings / user.js]] explanation.) Change
 
-<pre>user_pref(&quot;extensions.torbutton.socks_port&quot;, 9100);</pre>
+<pre>user_pref("extensions.torbutton.socks_port", 9100);</pre>
+
 For example to
 
-<pre>user_pref(&quot;extensions.torbutton.socks_port&quot;, 9159);</pre>
-(See [Stream Isolation] page for explanation why you should use different SocksPorts.)
+<pre>user_pref("extensions.torbutton.socks_port", 9159);</pre>
+
+(See [[Stream Isolation]] page for explanation why you should use different SocksPorts.)
 
 == Using multiple Whonix-Workstations ==
 
@@ -382,37 +393,42 @@ All Whonix-Workstation traffic is by default forced through Whonix-Gateway. Alte
 Post-Tor-VPN.
 
 <pre>## chain:
-Whonix-Workstation -&gt; VPN-Gateway    -&gt; Whonix-Gateway -&gt; clearnet
+Whonix-Workstation -> VPN-Gateway    -> Whonix-Gateway -> clearnet
 ## connection scheme:
-user               -&gt; Tor            -&gt; VPN            -&gt; destination server</pre>
+user               -> Tor            -> VPN            -> destination server</pre>
+
 Post-Tor-VPN.
 
 <pre>## chain:
-Whonix-Workstation -&gt; Whonix-Gateway -&gt; VPN-Gateway    -&gt; clearnet
+Whonix-Workstation -> Whonix-Gateway -> VPN-Gateway    -> clearnet
 ## connection scheme:
-user               -&gt; VPN            -&gt; Tor            -&gt; destination server</pre>
+user               -> VPN            -> Tor            -> destination server</pre>
+
 Pre- and Post-Tor-VPN.
 
 <pre>## chain:
-Whonix-Workstation -&gt; VPN-Gateway    -&gt; Whonix-Gateway -&gt; VPN-Gateway -&gt; destination server
+Whonix-Workstation -> VPN-Gateway    -> Whonix-Gateway -> VPN-Gateway -> destination server
 ## connection scheme:
-user               -&gt; VPN            -&gt; Tor            -&gt; VPN         -&gt; destination server</pre>
+user               -> VPN            -> Tor            -> VPN         -> destination server</pre>
+
 It's not limited to VPN-Gateways. You could also replace the VPN with a Proxy-Gateway.
 
 Post-Tor-Proxy.
 
 <pre>## chain:
-Whonix-Workstation -&gt; Proxy-Gateway  -&gt; Whonix-Gateway -&gt; clearnet
+Whonix-Workstation -> Proxy-Gateway  -> Whonix-Gateway -> clearnet
 ## connection scheme:
-user               -&gt; Tor            -&gt; Proxy          -&gt; destination server</pre>
+user               -> Tor            -> Proxy          -> destination server</pre>
+
 Or with a Post-Tor-Proxy, or with a Pre/Post-Tor-SSH. Or replace the proxy with JonDo or perhaps i2p. Virtually any combinations are possible.
 
 It's important to understand, that the connection will be created in reverse order. This is best explained using and example.
 
 <pre>## chain:
-Whonix-Workstation -&gt; Proxy-Gateway  -&gt; Whonix-Gateway -&gt; VPN-Gateway -&gt; clearnet
+Whonix-Workstation -> Proxy-Gateway  -> Whonix-Gateway -> VPN-Gateway -> clearnet
 ## connection scheme:
-user               -&gt; VPN            -&gt; Tor            -&gt; Proxy       -&gt; destination server</pre>
+user               -> VPN            -> Tor            -> Proxy       -> destination server</pre>
+
 If you think about, it becomes clear why the connection happens in reverse order. Whonix-Workstation has no way, but to go through the Proxy-Gateway. The Proxy-Gateway has no way, but to go through Whonix-Gateway. The last one in the chain, in this case, the VPN-Gateway, must obviously connect through clearnet. Thus, the VPN-Gateway uses clearnet, the Whonix-Gateway uses the VPN-Gateway to connect, the Proxy-Gateway uses Whonix-Gateway to connect and Whonix-Workstation uses the Proxy-Gateway to connect. Since the Proxy-Gateway has no way, but to go through Whonix-Gateway followed by VPN-Gateway, it's clear why it will be the last hop in front of the the destination server.
 
 Whether such combinations make sense or not is controversially discussed and depends on your personal threat model, see [https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN Tor plus VPN or Proxy].
@@ -423,8 +439,8 @@ Legend:
 
 Recommend basic knowledge:
 
-* [Tunnel_Proxy_or_SSH_or_VPN_through_Tor]
-* [Tunnel_Tor_through_proxy_or_VPN_or_SSH]
+* [[Tunnel_Proxy_or_SSH_or_VPN_through_Tor]]
+* [[Tunnel_Tor_through_proxy_or_VPN_or_SSH]]
 * [[Stream Isolation]]
 
 Maybe useful as well: [[Inspiration]].
@@ -439,7 +455,7 @@ This is still a topic for research.
 
 Deactivate NTP on the host. Bonus points for requesting NTP as everyone, but discarding it (for a more natural network fingerprint).
 
-Check host clock out of band (use a watch or atomic clock), see [TimeSync] for more information. (Fingerprinting issues?)
+Check host clock out of band (use a watch or atomic clock), see [[TimeSync]] for more information. (Fingerprinting issues?)
 
 = Useful External Links =
 
@@ -458,10 +474,10 @@ Last, but definitely not least.
 * Read [[Stream Isolation]].
 * Read [[Connections between Whonix-Gateway and Whonix-Workstation]].
 * Read [[Entropy]].
-* Restrict TransPort: Explained under [https://sourceforge.net/p/whonix/wiki/Install%20Software/#whonix-workstation-is-firewalled Whonix-Workstation is firewalled].
-* MAC Address: If you are interested in the discussion about anonymizing MAC addresses, you could read the development discussion and draw conclusions from it, see [MAC].
-* Of course you should read all [Documentation] pages. (Although some stuff will not be of concern for you. For example, if you are not interested in TorChat, Remailers or Mixmaster, you obviously don't have to thoroughly study these pages.
-* Design: Still reading? Great! Please check the Technical [Design], it contains further recommendations on what is less then ideal and how it could possibly be improved.
+* Restrict TransPort: Explained under [[Install Software/#whonix-workstation-is-firewalled Whonix-Workstation is firewalled]].
+* MAC Address: If you are interested in the discussion about anonymizing MAC addresses, you could read the development discussion and draw conclusions from it, see [[MAC]].
+* Of course you should read all [[Documentation]] pages. (Although some stuff will not be of concern for you. For example, if you are not interested in TorChat, Remailers or Mixmaster, you obviously don't have to thoroughly study these pages.
+* Design: Still reading? Great! Please check the Technical [[Design]], it contains further recommendations on what is less then ideal and how it could possibly be improved.
 
 = License =
 
