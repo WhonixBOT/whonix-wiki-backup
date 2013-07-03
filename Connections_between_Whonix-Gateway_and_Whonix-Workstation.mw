@@ -98,7 +98,7 @@ group nogroup
 daemon
 dev tun
 ifconfig 10.8.0.1 10.8.0.2
-secret /etc/openvpn/static.key" &gt; /etc/openvpn/server.conf
+secret /etc/openvpn/static.key" > /etc/openvpn/server.conf
 
 service openvpn restart
 
@@ -106,23 +106,18 @@ service openvpn restart
 # TODO: only selectively change listening addresses. TransPort and optionally other SocksPorts have to remain available,
 #       if unauthenticated workstations are to be used.
 # NOTE: we are using a hardcoded default IP here, if you are using non standard settings this will have to be edited.
-ed -s /etc/tor/torrc &lt;&lt;&lt; $',s/192.168.0.10/10.8.0.1/g
-</pre>
+ed -s /etc/tor/torrc <<< $',s/192.168.0.10/10.8.0.1/g\nw'
 
-w'
-
-<pre>
 # Edit /usr/local/bin/whonix_firewall
 # TODO: Put this automatically where it actually belongs
 echo '
 # Allow openvpn in on port 1194
-iptables -A INPUT -i $INT_IF -p udp --dport 1194 -j ACCEPT' &gt;&gt; /usr/local/bin/whonix_firewall
+iptables -A INPUT -i $INT_IF -p udp --dport 1194 -j ACCEPT' >> /usr/local/bin/whonix_firewall
 # TODO: replace hardcoded "eth1" with a wildcard
-ed -s /usr/local/bin/whonix_firewall&lt;&lt;&lt; $',s/INT_TIF=eth1/INT_TIF=tun0/g
-</pre>
-w'
+ed -s /usr/local/bin/whonix_firewall<<< $',s/INT_TIF=eth1/INT_TIF=tun0/g\nw'
 
-<pre>/usr/local/bin/whonix_firewall</pre>
+/usr/local/bin/whonix_firewall
+</pre>
 
 On the Workstation(s):
 
@@ -145,11 +140,11 @@ daemon
 remote 192.168.0.10
 dev tun
 ifconfig 10.8.0.2 10.8.0.1
-secret /etc/openvpn/static.key" &gt; /etc/openvpn/server.conf
+secret /etc/openvpn/static.key" > /etc/openvpn/server.conf
 
 # Edit resolv.conf
 chattr -i /etc/resolv.conf
-echo "nameserver 10.8.0.1" &gt; /etc/resolv.conf
+echo "nameserver 10.8.0.1" > /etc/resolv.conf
 chattr +i /etc/resolv.conf
 </pre>
 
