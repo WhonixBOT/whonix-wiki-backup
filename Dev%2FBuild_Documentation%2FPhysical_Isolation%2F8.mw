@@ -2,19 +2,17 @@
 
 '''WARNING''': Please don't forget reading the Warnings chapter.
 
-
-
 = Introduction =
 
 == Technical Introduction ==
 
-When setting up Whonix in the form of two Virtual Machines running on the same physical host, exploits targeting the VM implementation or the host can still break out of the torified Client VM and expose the IP of a user. Malware running on the host has full control over all VMs. To protect such attacks we need a different approach: In this context we called it Physical Isolation, because the gateway system is installed on separate hardware. This drastically reduces the [https://en.wikipedia.org/wiki/Trusted_computing_base TCB] by more than the half.
+When setting up Whonix in the form of two Virtual Machines running on the same physical host, exploits targeting the VM implementation or the host can still break out of the torified Client VM and expose the IP of a user. Malware running on the host has full control over all VMs. To protect such attacks we need a different approach: In this context we called it Physical Isolation, because the gateway system is installed on separate hardware. This drastically reduces the TCB<ref>https://en.wikipedia.org/wiki/Trusted_computing_base</ref> by more than the half.
 
 In total we'll be installing and configuring two computers and set up an isolated point to point network between them (you could also set up a an ordinary, completely isolated, LAN behind the Whonix-Gateway). One computer acts as the client or "Whonix-Workstation", the other as a proxy or "Whonix-Gateway" which will transparently route all of the Whonix-Workstation's traffic through Tor.
 
 The Whonix-Gateway on its own physical device can either run directly on hardware or inside a virtual machine. Both options have advantages and disadvantages. We recommend to use no additional Virtual Machine for the Whonix-Gateway.
 
-The Whonix-Workstation should always be installed in a Virtual Machine: A VM hides hardware serial numbers. See also [https://sourceforge.net/p/whonix/wiki/Security%20Guide/#recommendation-to-use-multiple-vm-snapshots Recommendation to use multiple VM Snapshots].
+The Whonix-Workstation should always be installed in a Virtual Machine: A VM hides hardware serial numbers. See also [[Security Guide/#recommendation-to-use-multiple-vm-snapshots|Recommendation to use multiple VM Snapshots]].
 
 The host operating system(s) should only be used for downloading operating system updating, hosting Whonix-Gateway or Whonix-Workstation and nothing else.
 
@@ -24,13 +22,12 @@ Bonus points if the physical systems are exclusively used for hosting Whonix, or
 
 '''WARNING''': Instructions for Whonix 0.5.6 with Physical Isolation are still under development. Advanced Linux users can already understand them. As recently [http://sourceforge.net/p/whonix/discussion/general/thread/24115e26/ reported] in the user help forum, they are working.
 
-'''WARNING''': [https://sourceforge.net/p/whonix/wiki/Build%20Anonymity/ Build Anonymity] has not been considered for this article.
+'''WARNING''': [[Build Anonymity]] has not been considered for this article.
 
 '''WARNING''': This article currently lacks information about Whonix-Gateway's and Whonix-Workstation's MAC address. See also
 
-* [https://sourceforge.net/p/whonix/wiki/Whonix%27s%20Protocol-Leak-Protection%20and%20Fingerprinting-Protection/ Whonix's Protocol-Leak-Protection and Fingerprinting-Protection]
-* [https://sourceforge.net/p/whonix/wiki/Pre%20Install%20Advice/#mac-address Whonix in public networks / MAC Address]
-* [Dev] Mac address in public networks.
+* [[Protocol-Leak-Protection and Fingerprinting-Protection]]
+* [[Pre Install Advice/#mac-address Whonix in public networks|MAC Address]]
 
 == Using spare hardware + Virtual Machine ==
 
@@ -73,10 +70,10 @@ We recommend that you use two dedicated computers for Whonix that are never used
 * Whonix-Gateway
 ** This really does not have to be a big desktop computer or ordinary server. There are alternatives.
 ** smartphone <ref name=one>Just some hints to get started. It is difficult and beyond the scope of Whonix, because you don't have an Ethernet interface. Some (after market) firmwares support USB-host. (You can plug USB devices into your phone, such as an USB ethernet card. For example some rooted android smartphones can [http://android.galoula.com/en/LinuxInstall/ install] Debian Linux.</ref>,
-** [https://en.wikipedia.org/wiki/Ultra-mobile_PC UMPC]
+** UMPC<ref>https://en.wikipedia.org/wiki/Ultra-mobile_PC</ref>
 ** pad, tablet,
 ** notebook, netbook,
-** [https://en.wikipedia.org/wiki/Raspberry_Pi Raspberry Pi] (Whonix User Help Forum: [https://sourceforge.net/p/whonix/discussion/general/thread/30381157/ Installing Whonix Gateway on Raspberry Pi]),
+** Raspberry Pi<ref>https://en.wikipedia.org/wiki/Raspberry_Pi</ref> (Whonix User Help Forum: [https://sourceforge.net/p/whonix/discussion/general/thread/30381157/ Installing Whonix Gateway on Raspberry Pi]),
 ** router <ref>something like OpenWRT</ref>,
 ** set top box,
 ** etc.
@@ -87,7 +84,7 @@ We recommend that you use two dedicated computers for Whonix that are never used
 
 = Prerequisites =
 
-* Whonix-Gateway: A device with at least two network adapters, at least one of them ethernet <ref>The other one may be either an [https://sourceforge.net/p/whonix/wiki/Security%20Guide/#anonymous-3g-modem Anonymous 3G modem]; [https://sourceforge.net/p/whonix/wiki/Security%20Guide/#anonymous-wifi-adapter Anonymous WiFi adapter], another ethernet or wifi connected to your modem/router.</ref>, capable of running Linux. It will run Debian. <ref>Theoretically you could use any OS that supports iptables or pf. If you don't want to use Debian you will have to edit the source code. This will be easy for Debian derivatives but much more difficult for *BSD for example. In any case, the choice of OS shouldn't really matter because this system isn't used for anything but running Tor. A cheap plug computer, something like Raspberry Pi or the hardware used by Torouter would be sufficient.</ref>
+* Whonix-Gateway: A device with at least two network adapters, at least one of them ethernet <ref>The other one may be either an [[Security Guide/#anonymous-3g-modem|Anonymous 3G modem]]; [[Security Guide/#anonymous-wifi-adapter|Anonymous WiFi adapter]], another ethernet or wifi connected to your modem/router.</ref>, capable of running Linux. It will run Debian. <ref>Theoretically you could use any OS that supports iptables or pf. If you don't want to use Debian you will have to edit the source code. This will be easy for Debian derivatives but much more difficult for *BSD for example. In any case, the choice of OS shouldn't really matter because this system isn't used for anything but running Tor. A cheap plug computer, something like Raspberry Pi or the hardware used by Torouter would be sufficient.</ref>
 * Whonix-Workstation: A device connected via ethernet to the Whonix-Gateway. It must only have this one NIC and no other network connectivity! Must be connected by wire.<ref>If you don't connect by wire, you significantly weaken isolation and security. One the Whonix-Workstation were infected, it could jump onto another network and start leaking.</ref> This will be the torified client system or Whonix-Workstation. It must be capable of running Debian.<ref>Any OS can be used. But this is not recommended! If you do anyway, read warning, especially for Windows: [https://trac.torproject.org/projects/tor/wiki/doc/TransparentProxyLeaks Transparent Proxy Leaks].</ref>
 * We recommend to use a VM as the client, the same Whonix-Workstation, that most non Physical Isolation users use. <ref>From the [[Download]] page or build it yourself from source code.</ref> <ref>A generic VM image can neither leak identifying hardware serial numbers nor unique software fingerprints. (e.g. trough [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Softwareupdaters software updates]).</ref> <ref>This ensures that you get the latest security features and most secure configurations. (Such as stream isolation that protects against Identity correlation through circuit sharing, XChat IRC hardening or Whonix's Protocol-Leak-Protection and Fingerprinting-Protection etc.)</ref>
 * Host build environment has a working internet connection to Debian mirrors.
@@ -100,7 +97,7 @@ From [[Build Documentation]] general advice about Build Security and Host prepar
 
 == How To Install Whonix-Gateway on hardware (RECOMMENDED) ==
 
-(0). Download a Debian Wheezy 32 bit installation iso. (You could also use a Debian Wheezy 64 bit installation iso, these instructions should also work, but it's less tested.) Detailed instructions doing so are unfortunately not part of this guide. However, the [https://sourceforge.net/p/whonix/wiki/Debian/ Verify Debian ISO with GPG] page contains some help.
+(0). Download a Debian Wheezy 32 bit installation iso. (You could also use a Debian Wheezy 64 bit installation iso, these instructions should also work, but it's less tested.) Detailed instructions doing so are unfortunately not part of this guide. However, the [[Debian|Verify Debian ISO with GPG]] page contains some help.
 
 (1). Install Debian Wheezy and chose following settings:
 
@@ -361,7 +358,7 @@ If you use bridged networking things will (or should, we haven't tested anything
 
 Since in the bridged network case, Whonix-Workstation can see the MAC address of whatever network adapter it is connected to, you should change the MAC address of the Workstation host and of the Whonix-Gateway.
 
-See [https://sourceforge.net/p/whonix/wiki/Pre%20Install%20Advice/#mac-address Whonix in public networks / MAC Address].
+See [[Pre Install Advice/#mac-address|Whonix in public networks]].
 
 == Install Whonix-Workstation on hardware (NOT RECOMMEND) ==
 
