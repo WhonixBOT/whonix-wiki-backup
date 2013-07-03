@@ -108,7 +108,8 @@ From [BuildDocumentation] general advice about Build Security and Host preparati
 
 (1). Install Debian Wheezy and chose following settings:
 
-<pre>In the boot menu press F4 and select "Install a minimal system"
+<pre>
+In the boot menu press F4 and select "Install a minimal system"
 Language: English
 Country: United States
 keyboard layout: English (US) (don't autodetect)
@@ -122,14 +123,17 @@ Timezone: UTC
 Partitioning: It's a good idea to set up cryptsetup based FDE at this point.
 No proxy
 No automatic updates 
-tasksel (Choose software to install): select nothing</pre>
+tasksel (Choose software to install): select nothing
+</pre>
+
 (2). The external interface (usually eth0) may need to be configured according to the requirements of your local network, e.g. static or simply left to use dhcp if the gateway is connected to a dhcp capable router. For wlan follow the upstream documentations: [http://wiki.debian.org/WiFi debian wiki], [https://help.ubuntu.com/community/WifiDocs/WiFiHowTo Ubuntu help].
 
 (3). Make sure the internet is working.
 
 (4). Install all security updates and reboot.
 
-<pre>## Become root.
+<pre>
+## Become root.
 su
 
 ## Refresh package lists.
@@ -139,15 +143,21 @@ apt-get update
 apt-get dist-upgrade
 
 ## Back to normal user.
-exit</pre>
+exit
+</pre>
+
 (5). Install build dependencies. <sup>1</sup>
 
-<pre>sudo apt-get install git sudo</pre>
+<pre>
+sudo apt-get install git sudo
+</pre>
+
  ,, <sup>1</sup> You need git to obtain the source code. Alternatively, you could also download a git tag as tar.gz archive using a (torified) browser: https://github.com/adrelanos/Whonix/tags 
 
 (6). You must build as user "user" and that user must be a member of the "sudo" group.
 
-<pre>## Become root.
+<pre>
+## Become root.
 su
 
 ## adduser "user"
@@ -157,62 +167,93 @@ adduser user
 addgroup user sudo
 
 ## Back to normal user.
-exit</pre>
+exit
+</pre>
+
 (7). On your Whonix-Gateway: It is assumed you created user account named "user".
 
-<pre>su user
-cd ~</pre>
+<pre>
+su user
+cd ~
+</pre>
+
 (8). Get latest source code. When 0.5.6 gets released there will be a signed release tag, if you wish a signed release tag of a snapshot in meanwhile please get in contact.
 
-<pre>git clone https://github.com/adrelanos/Whonix</pre>
+<pre>
+git clone https://github.com/adrelanos/Whonix
+</pre>
+
 (9). Get into Whonix source folder.
 
-<pre>cd Whonix</pre>
+<pre>
+cd Whonix
+</pre>
+
 (10). Verify the git tag you want to use.
 
-<pre>## 0.5.6 users
+<pre>
+## 0.5.6 users
 git tag -v 0.5.6
 
 ## 0.6.1 testers only!
-#git tag -v 0.6.1</pre>
+#git tag -v 0.6.1
+</pre>
+
 (11). Switch to the git tag you want to use.
 
-<pre>## 0.5.6 users
+<pre>
+## 0.5.6 users
 git checkout 0.5.6
 
 ## 0.6.1 testers only!
-#git checkout 0.6.1</pre>
+#git checkout 0.6.1
+</pre>
+
 (12). Make sure you have all packages installed which are listed in the file ''Whonix-Gateway_packages''.
 
-<pre>## If you are experimenting with 64 bit Whonix-Gateway,
+<pre>
+## If you are experimenting with 64 bit Whonix-Gateway,
 ## you will have to comment out the package linux-image-486
 ## in the file Whonix-Gateway_packages.
-apt-get install $(grep -vE "^\s*#" Whonix-Gateway_packages | tr "</pre>
-" " ")
+apt-get install $(grep -vE "^\s*#" Whonix-Gateway_packages | tr "\n" " ")
+</pre>
 
 (13). Before running the whonix_createvm <sup>2</sup> script make sure eth1 and eth0 refer to the correct interfaces.
 
-<pre>## May be helpful.
-dmesg | grep eth</pre>
+<pre>
+## May be helpful.
+dmesg | grep eth
+</pre>
+
 Otherwise you have to change the variables in the configuration files. To find the affected files, the following commands may be helpful. <sup>3</sup>
 
-<pre>grep -r eth0* *
-grep -r eth1* *</pre>
+<pre>
+grep -r eth0* *
+grep -r eth1* *
+</pre>
+
  ,, <sup>2</sup> Do not get concerned about the "vm" within whonix_createvm. The name is historically and the functionality for building an Whonix-Gateway featuring Physical Isolation has been added later. <sup>3</sup> Should be really only a very few files. We used variables for eth0 and eth1 wherever possible. 
 
 (14). Most configuration files work well inside Virtual Machines and on hardware. Only minor things such as deactivating powersaving, passwordless reboot, shutdown etc. are only recommend for Virtual Machines. You can easily comment them out by putting a hash # in front of them. They are marked, to find them, grep can be used.
 
-<pre>grep -r VMONLY* *</pre>
+<pre>
+grep -r VMONLY* *
+</pre>
+
 (15). Copy the files from the Whonix source folder to their correct place.
 
-<pre>## 0.5.6 users
+<pre>
+## 0.5.6 users
 sudo ./whonix_createvm -tg-bare-metal
 
 ## 0.6.1 testers only!
-#./build-steps/30_copy-into-img -tg-bare-metal</pre>
+#./build-steps/30_copy-into-img -tg-bare-metal
+</pre>
+
 (16). Start whonix_internal_install_script ("chroot" scripts).
 
-<pre>## 0.5.6 users
+<pre>
+## 0.5.6 users
 sudo /usr/local/share/whonix/whonix_internal_install_script -install
 
 ## 0.6.1 testers only!
@@ -220,10 +261,15 @@ sudo /usr/local/share/whonix/whonix_internal_install_script -install
 #sudo run-parts --verbose --exit-on-error "/usr/local/share/whonix/chroot-scripts"
 
 ## adretemp40 (0.6.1.1) testers only!
-#sudo ./build-steps/35_run-chroot-scripts-img -tg-bare-metal</pre>
+#sudo ./build-steps/35_run-chroot-scripts-img -tg-bare-metal
+</pre>
+
 (17). Reboot.
 
-<pre>sudo reboot</pre>
+<pre>
+sudo reboot
+</pre>
+
 (18). You will autologin as new user "user". (If you didn't install as user "user", your old user and home folder does of course still exist.)
 
 (19). Done.
@@ -254,7 +300,8 @@ Note sure what we wanted to say with this sentence: If the physical network (bet
 
 The host has to be configured to use the static IP configuration.
 
-<pre>## Whonix-Workstation
+<pre>
+## Whonix-Workstation
 ## /etc/network/interfaces for the host,
 ## when using Physical Isolation,
 ## with Whonix-Workstation in a VM.
@@ -280,7 +327,9 @@ iface eth0 inet static
 #auto eth0
 #iface eth0 inet dhcp
 
-## end of /etc/network/interfaces</pre>
+## end of /etc/network/interfaces
+</pre>
+
 If the physical network (between Whonix-Gateway and a router) uses 192.168.0.* you need to review and edit all ''/etc/network/interfaces''.
 
 === NAT vs Bridging ===
@@ -293,10 +342,14 @@ In the default Whonix Virtual Box image, the network adapter setting for Adapter
 
 If you use NAT you will have to edit the ''/etc/network/interfaces/'' in Whonix-Workstation to use DHCP (easier, shown in the example below) or a static IP for Virtual Box NAT.
 
-<pre>sudo nano /etc/network/interfaces/</pre>
+<pre>
+sudo nano /etc/network/interfaces/
+</pre>
+
 Replace it with.
 
-<pre>## Whonix-Workstation
+<pre>
+## Whonix-Workstation
 ## /etc/network/interfaces in a VM
 ## when using Physical Isolation.
 
@@ -306,7 +359,9 @@ iface lo inet loopback
 auto eth0
 iface eth0 inet dhcp
 
-## end of /etc/network/interfaces</pre>
+## end of /etc/network/interfaces
+</pre>
+
 ==== Bridged Network (UNTESTED / NOT RECOMMEND) ====
 
 If you use bridged networking things will (or should, we haven't tested anything yet) just work.
@@ -329,7 +384,8 @@ The instructions are very similar, if not the very same, to those in "How To Ins
 
 Some packages for bare metal may or may not be missing. Here is an probable incomplete list of packages, which may or may not be useful for better hardware support. Some suggestions.
 
-<pre>xorg
+<pre>
+xorg
 xserver-xorg-input-all
 xserver-xorg-input-wacom
 xserver-xorg-input-geode
@@ -353,10 +409,15 @@ mdetect
 
 apt-cache show task-desktop
 apt-cache show task-kde-desktop
-apt-cache show task-laptop</pre>
+apt-cache show task-laptop
+</pre>
+
 If you have EFI bios.
 
-<pre>grub-efi-amd64</pre>
+<pre>
+grub-efi-amd64
+</pre>
+
 To get a more complete list, install Debian (with KDE) on bare metal using the regular Debian installer medium.
 
 * diff "dpkg -l" with Whonix
