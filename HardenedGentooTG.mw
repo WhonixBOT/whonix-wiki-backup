@@ -29,8 +29,8 @@ Read Upstream Documentation: [http://www.gentoo.org/doc/en/handbook/ Gentoo Hand
 
 <pre># If you use a grsec kernel on the host:
 
-echo &quot;0&quot; &gt; /proc/sys/kernel/grsecurity/chroot_deny_chmod
-echo &quot;0&quot; &gt; /proc/sys/kernel/grsecurity/chroot_caps
+echo "0" &gt; /proc/sys/kernel/grsecurity/chroot_deny_chmod
+echo "0" &gt; /proc/sys/kernel/grsecurity/chroot_caps
 
 mkdir gentoodev
 cd gentoodev
@@ -53,22 +53,22 @@ tar xvjf portage-latest.tar.bz2 -C usr
 
 # edit makeopts according to your CPU count (cores+1); add a nearby mirror (when using a gentoo install disk use #mirrorselect -i -o &gt;&gt; etc/make.conf
 echo '
-MAKEOPTS=&quot;-j3&quot;
-USE=&quot;unicode minimal crypt ssl gpm ncurses fbcon -X -pam -cracklib -git -extensions     -glib -opengl \
+MAKEOPTS="-j3"
+USE="unicode minimal crypt ssl gpm ncurses fbcon -X -pam -cracklib -git -extensions     -glib -opengl \
 -icu -readline -xcb -fts3 -png -policykit -gtk -crashreporter -startup-notification \
 -dbus -introspection -libnotify -webm -gnome -qt4 -qt3support -kde -bluetooth -nls     -ipv6 \
--cups -zeroconf -encode -recode -acl -iconv -tcpd -berkdb -pcre -net -cramfs -sqlite -gdbm&quot;
-FEATURES=&quot;webrsync-gpg nodoc noinfo noman&quot;
-PORTAGE_GPG_DIR=&quot;/etc/portage/gpg&quot;
-SYNC=&quot;&quot;
-#GENTOO_MIRRORS=&quot;&quot;' &gt;&gt; etc/make.conf
+-cups -zeroconf -encode -recode -acl -iconv -tcpd -berkdb -pcre -net -cramfs -sqlite -gdbm"
+FEATURES="webrsync-gpg nodoc noinfo noman"
+PORTAGE_GPG_DIR="/etc/portage/gpg"
+SYNC=""
+#GENTOO_MIRRORS=""' &gt;&gt; etc/make.conf
 
 cp -L /etc/resolv.conf etc/
 mount -t proc none proc/
 chroot . /bin/bash
 env-update
 source /etc/profile
-export PS1=&quot;(build-chroot) $PS1&quot;
+export PS1="(build-chroot) $PS1"
 
 # set root passwd (just used in the development environment, probably not necessary?)
 passwd
@@ -77,14 +77,14 @@ eselect profile list
 # select hardened/linux/x86
 eselect profile set 8
 
-echo &quot;en_US ISO-8859-1&quot; &gt;&gt; /etc/locale.gen
+echo "en_US ISO-8859-1" &gt;&gt; /etc/locale.gen
 locale-gen
 cp /usr/share/zoneinfo/UTC /etc/localtime
 
 # get a hardened toolchain
 emerge --oneshot binutils gcc virtual/libc
 source /etc/profile
-export PS1=&quot;(build-chroot) $PS1&quot;
+export PS1="(build-chroot) $PS1"
 
 # Configure emerge-webrsync. Verify fingerprints!
 emerge gnupg
@@ -96,6 +96,7 @@ gpg --homedir /etc/portage/gpg --edit-key DCD05B71EAB94199527F44ACDB6B8C1F96D8BF
 
 # update portage with
 emerge-webrsync</pre>
+
 == Build a Kernel for Whonix-Gateway ==
 
 <pre>emerge hardened-sources
@@ -105,6 +106,7 @@ make
 # or, if you use loadable modules:
 # make &amp;&amp; make modules_install 
 cd </pre>
+
 Some hints:
 
 * when using modules make sure that stuff needed to mount root is built in:
@@ -136,10 +138,10 @@ bash nano tor torsocks localepurge grub dhcpcd \
 
 mkdir -p /torgateway/{sys,proc,dev,boot,root,home,var/run,var/log,var/lib/run/tor,var/log/tor}
 
-echo &quot;tor:x:101:246:added by portage for tor:/var/lib/tor:/sbin/nologin&quot; &gt;&gt; /torgateway/etc/passwd
-echo &quot;tor:x:246:&quot; &gt;&gt; /torgateway/etc/group
+echo "tor:x:101:246:added by portage for tor:/var/lib/tor:/sbin/nologin" &gt;&gt; /torgateway/etc/passwd
+echo "tor:x:246:" &gt;&gt; /torgateway/etc/group
 
-# Don't know if etc-update works in Whonix-Gateway? you need at least modify the script and remove any reference to &quot;portageq&quot;
+# Don't know if etc-update works in Whonix-Gateway? you need at least modify the script and remove any reference to "portageq"
 cp /usr/sbin/etc-update /torgateway/usr/sbin/etc-update
 cp /etc/etc-update.conf /torgateway/etc/etc-update.conf
 
@@ -151,7 +153,7 @@ mount -t proc none /torgateway/proc/
 # enter target chroot
 chroot /torgateway
 source /etc/profile
-export PS1=&quot;(target-chroot) $PS1&quot;
+export PS1="(target-chroot) $PS1"
 
 # set root password for Whonix-Gateway
 passwd
@@ -159,18 +161,18 @@ passwd
 chown tor:tor /var/lib/run/tor
 chown tor:tor /var/log/tor
 
-echo &quot;192.168.0.1&quot; &gt; /etc/resolv.conf
+echo "192.168.0.1" &gt; /etc/resolv.conf
 
-echo &quot;en_US ISO-8859-1&quot; &gt;&gt; /etc/locale.gen
+echo "en_US ISO-8859-1" &gt;&gt; /etc/locale.gen
 locale-gen
 cp /usr/share/zoneinfo/UTC /etc/localtime
 
 # untested
 mv /etc/conf.d/net /etc/conf.d/net.old
 echo '# see /usr/share/doc/openrc*/net.example*
-config_eth0=&quot;dhcp&quot;
-config_eth1=&quot;192.168.0.1  netmask 255.255.255.0 brd 192.168.0.255&quot;
-#routes_eth1=&quot;default via 192.168.0.1&quot;' &gt; /etc/conf.d/net
+config_eth0="dhcp"
+config_eth1="192.168.0.1  netmask 255.255.255.0 brd 192.168.0.255"
+#routes_eth1="default via 192.168.0.1"' &gt; /etc/conf.d/net
 
 cd /etc/init.d
 ln -s net.lo net.eth0
@@ -190,6 +192,7 @@ rc-update add tor default
 rc-update add iptables boot
 
 ed -s /etc/locale.nopurge  &lt;&lt;&lt; $',s/NEEDSCONFIGFIRST/#NEEDSCONFIGFIRST/g</pre>
+
 w' localepurge
 
 == Install Whonix-Gateway to a hard disk or sd card: ==
@@ -203,18 +206,18 @@ mount /dev/sdb1 /mnt/target
 
 # edit according to partition and disc layout! sda/sdb/hd are just examples!
 # The /dev/sd* name will probably be different on your build system and on your target     system.
-# in this example the host got two hard disks, you install to the second one, &quot;sdb&quot;
-# this drive is attached to the gateway system and if it's the only drive it becomes &quot;sda&quot;
+# in this example the host got two hard disks, you install to the second one, "sdb"
+# this drive is attached to the gateway system and if it's the only drive it becomes "sda"
 # same goes for grub: hd1 == sdb, hd0 == sda
 
-echo &quot;
+echo "
 title TorGateway
 root (hd0,0)
-kernel /boot/kernel root=/dev/sda1&quot; &gt;&gt; /boot/grub/grub.conf
+kernel /boot/kernel root=/dev/sda1" &gt;&gt; /boot/grub/grub.conf
 
 grep -v rootfs /proc/mounts &gt; /etc/mtab
 
-echo &quot;/dev/sda1               /               ext4            noatime         0 1&quot; &gt; /etc/fstab
+echo "/dev/sda1               /               ext4            noatime         0 1" &gt; /etc/fstab
 
 ## outside the chroot (open a new terminal on the host)
 cd gentoodev
