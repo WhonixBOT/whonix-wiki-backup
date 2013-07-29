@@ -335,12 +335,154 @@ We must not end up with non-standard desktop resolution, as per [[Protocol-Leak-
 = Whonix-Workstation Security =
 
 == Hardening ==
+=== Introduction ===
+Whonix isn't a perfectly hardened system. Additional hardening would be very welcome. At the same time, hardening by default is very difficult. That's why this is outside the scope of the Whonix Anonymous Operating System project, unless the project gets serious amounts of help with it. Hardening is left to the upstream operating system. See [[Dev/Operating System]] for details.
 
-Whonix isn't a perfectly hardened system. Additional hardening would be very welcome. At the same time, hardening by default is very difficult. That's why this is outside the scope of the Whonix Anonymous Operating System project, unless the project gets serious amounts of help with it. Hardening is left to the upstream operating system. See [[Operating System]] for details.
+'''Experimental.''' The worst thing that can happen is probably, that Pidgin won't work, but since you can always remove the profile, no big deal. If you value your application data profiles, backup them beforehand.
 
+=== Pidgin ===
+{{Testing}}
+
+Create a file /etc/apparmor.d/usr.bin.pidgin.
+
+<pre>
+kdesudo kwrite /etc/apparmor.d/usr.bin.pidgin
+</pre>
+
+Credit for this AppArmor profile goes to [http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=676849 intrigeri].
+
+<pre>
+# vim:syntax=apparmor
+
+#include <tunables/global>
+
+/usr/bin/pidgin {
+  #include <abstractions/audio>
+  #include <abstractions/aspell>
+  #include <abstractions/base>
+  #include <abstractions/bash>
+  #include <abstractions/consoles>
+  #include <abstractions/dbus>
+  #include <abstractions/dbus-session>
+  #include <abstractions/fonts>
+  #include <abstractions/freedesktop.org>
+  #include <abstractions/gnome>
+  #include <abstractions/launchpad-integration>
+  #include <abstractions/nameservice>
+  #include <abstractions/private-files-strict>
+  #include <abstractions/ubuntu-browsers>
+  #include <abstractions/ubuntu-console-browsers>
+  #include <abstractions/user-download>
+  #include <abstractions/user-tmp>
+  #include <abstractions/ibus>
+  #include <abstractions/X>
+
+  deny capability sys_ptrace,
+
+  deny @{HOME}/.bash* rw,
+  deny @{HOME}/.cshrc rw,
+  deny @{HOME}/.profile rw,
+  deny @{HOME}/.zshrc rw,
+
+  owner @{HOME}/.cache/dconf/user rw,
+  owner @{HOME}/.config/dconf/user r,
+  owner @{HOME}/.config/enchant/ rw,
+  owner @{HOME}/.config/enchant/* rwk,
+  owner @{HOME}/.local/share/icons/ r,
+  owner @{HOME}/.local/share/mime/* r,
+  owner @{HOME}/.gnome2/nautilus-sendto/** rw,
+  owner @{HOME}/.gstreamer*/ rw,
+  owner @{HOME}/.gstreamer*/** rw,
+  owner @{HOME}/.pulse/ rw,
+  owner @{HOME}/.pulse/** rw,
+  owner @{HOME}/.pulse-cookie rwk,
+  owner @{HOME}/.purple/ rw,
+  owner @{HOME}/.purple/** rwk,
+
+  /bin/dash rix,
+
+  /{dev,run}/shm/ r,
+  /{dev,run}/shm/* rw,
+
+  /etc/ r,
+  /etc/pulse/client.conf r,
+  /etc/ssl/certs/ r,
+  /etc/ssl/certs/** r,
+  /etc/ssl/certs/ssl-cert-snakeoil.pem r,
+
+  owner /tmp/orbit-*/* w,
+  owner /tmp/pulse-*/* w,
+
+  /usr/bin/gconftool-2 rix,
+  /usr/bin/gnome-default-applications-properties ix,
+  /usr/bin/gnome-network-preferences ix,
+  /usr/bin/gnome-open rmix,
+  /usr/bin/gsettings rix,
+  /usr/bin/pidgin r,
+  /usr/bin/xdg-open rmix,
+  /bin/which rix,
+  /usr/bin/gvfs-open rmix,
+
+  /usr/share/glib-2.0/schemas/gschemas.compiled r,
+
+  /usr/lib/ r,
+  /usr/lib/frei0r-1/*.so rm,
+  /usr/lib/libvisual-*/**.so rm,
+  /usr/lib/pidgin/*.so rm,
+  /usr/lib/purple*/*.so rm,
+
+  /usr/share/ca-certificates/*/** r,
+  /usr/share/enchant/enchant.ordering r,
+  /usr/share/locale-langpack/** rm,
+  /usr/share/purple/ca-certs/ r,
+  /usr/share/purple/ca-certs/** r,
+  /usr/share/myspell/dicts/ r,
+  /usr/share/myspell/dicts/** r,
+  /usr/share/tcltk/** r,
+
+  /usr/share/themes/ r,
+  /usr/share/themes/** r,
+
+  /usr/share/hunspell/ r,
+  /usr/share/hunspell/** r,
+
+  deny @{PROC}/** r,
+
+  # Site-specific additions and overrides. See local/README for details.
+  #include <local/usr.bin.pidgin>
+}
+</pre>
+
+Create a file /etc/apparmor.d/local/usr.bin/pidgin.
+
+<pre>
+kdesudo kate /etc/apparmor.d/local/usr.bin/pidgin
+</pre>
+
+<pre>
+/etc/resolv.conf.whonix r,
+/etc/hosts.whonix r,
+</pre>
+
+Run.
+
+<pre>
+sudo apparmor_parser -r -W -T /etc/apparmor.d/usr.bin.pidgin
+</pre>
+
+<pre>
+sudo aa-enforce /etc/apparmor.d/usr.bin.pidgin
+</pre>
+
+Run.
+
+That's it.
+
+=== Additional inspiration ===
 Use [https://en.wikipedia.org/wiki/AppArmor AppArmor] ([http://wiki.debian.org/AppArmor in Debian]):
 
 * [https://trac.torproject.org/projects/tor/wiki/doc/AppArmorForTBB AppArmor Profile for TBB]
+* [https://github.com/adrelanos/Inoffical-TBB-AppArmor Inoffical-TBB-AppArmor]
 
 == More than one Tor Browser in Whonix ==
 
