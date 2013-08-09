@@ -8,11 +8,11 @@
 
 The Post Install Advice is part of this design, therefore read [[Post Install Advice#Network Time Syncing|Network Time Syncing]] first please. Also please read the Advanced Security Guide chapter [[Advanced Security Guide#Network Time Synchronization|Network Time Synchronization]] as well.
 
-For understanding Whonix's Time Synchronization Mechanism, it is required to know Virtual Box's time synchronization features:
+For understanding Whonix's Time Synchronization Mechanism, it is required to know VirtualBox's time synchronization features:
 
-* Virtual Box uses the hosts time if it needs to correct the time for guests.
-* (Some of Virtual Box time synchronization features depend on guest additions.)
-* By default Virtual Box corrects Virtual Machine guests virtual hardware system clock,
+* VirtualBox uses the hosts time if it needs to correct the time for guests.
+* (Some of VirtualBox time synchronization features depend on guest additions.)
+* By default VirtualBox corrects Virtual Machine guests virtual hardware system clock,
 ** when they get powered on,
 ** when they resume from suspension and
 ** when their clock is more than X minutes off.
@@ -43,12 +43,12 @@ Attacks A correct system clock is crucial for many reasons:
 Whonix's Time Synchronization Mechanism:
 
 * Whonix leaves the host's system clock or time synchronization mechanism untouched.
-* Whonix-Gateway and Whonix-Workstation are based on Virtual Box and therefore have their own virtual hardware system clocks.
-* Most Virtual Box time synchronization features get disabled by Whonix.
-** Guest additions time synchronization gets disabled in ''/etc/init.d/htpdate'' at run time. See Virtual Box bug report [https://www.virtualbox.org/ticket/10828 VBoxService --disable-timesync broken]. They say it's actually not a bug. It's a missing feature, that running instances of VBoxService can not be modified in their settings. Whonix would need to edit ''/etc/init.d/vboxadd-service'' by adding ''--disable-timesync'' <ref>[https://www.virtualbox.org/ticket/2928 source]</ref>. Whonix developer adrelanos does not see a reliable way to do so. If the guest additions get automatically updated in future the option would get overwritten. That's why Whonix added a line in ''/etc/init.d/htpdate'' to turn it off completely. Guest additions time synchronization gets disabled, but the rest of the guest additions continues to work fine. Unless you have a better idea, it's an acceptable workaround.
+* Whonix-Gateway and Whonix-Workstation are based on VirtualBox and therefore have their own virtual hardware system clocks.
+* Most VirtualBox time synchronization features get disabled by Whonix.
+** Guest additions time synchronization gets disabled in ''/etc/init.d/htpdate'' at run time. See VirtualBox bug report [https://www.virtualbox.org/ticket/10828 VBoxService --disable-timesync broken]. They say it's actually not a bug. It's a missing feature, that running instances of VBoxService can not be modified in their settings. Whonix would need to edit ''/etc/init.d/vboxadd-service'' by adding ''--disable-timesync'' <ref>[https://www.virtualbox.org/ticket/2928 source]</ref>. Whonix developer adrelanos does not see a reliable way to do so. If the guest additions get automatically updated in future the option would get overwritten. That's why Whonix added a line in ''/etc/init.d/htpdate'' to turn it off completely. Guest additions time synchronization gets disabled, but the rest of the guest additions continues to work fine. Unless you have a better idea, it's an acceptable workaround.
 ** built in time synchronization features get disabled by ''VBoxManage setextradata &quot;$VMNAME&quot; &quot;VBoxInternal/Devices/VMMDev/0/Config/GetHostTimeDisabled&quot; &quot;1&quot;'' at build time.
 * Whonix-Gateway and Whonix-Workstation
-** When get powered on, they still get their time from the host. The user is advised to modify the biossystemtimeoffset in Advanced Security Guide, chapter [[Advanced Security Guide#Network Time Synchronization|Network Time Synchronization]]. <ref>Developer information: If we needed or wanted to render the hardware clock unusable, we could set Virtual Box ''--biossystemtimeoffset'' several decades in past or future.</ref>
+** When get powered on, they still get their time from the host. The user is advised to modify the biossystemtimeoffset in Advanced Security Guide, chapter [[Advanced Security Guide#Network Time Synchronization|Network Time Synchronization]]. <ref>Developer information: If we needed or wanted to render the hardware clock unusable, we could set VirtualBox ''--biossystemtimeoffset'' several decades in past or future.</ref>
 ** 0.6.2 and above: Time Sanity Check before tails_htp will be executed, this ensures, that the host clock is sane and not slow in 1980. User gets advised to fix its host clock in such cases.
 ** After they are connected to the Tor network, they use a modified [https://tails.boum.org/contribute/design/Time_syncing/ tails_htp] to set the system clock. <ref>Stream isolation has been added, for Whonix's tails_htp implementation i.e. people using Tor Browser prevent notifying their exit node, that they are tails_htp or Whonix users.</ref>
 ** 0.6.2 and above: Time Sanity Check after tails_htp was executed. This should catch eventual bigger bugs and attacks. User gets informed if it fails.
