@@ -66,29 +66,24 @@ Is a script, which simply runs all other build-steps. Actually it's "optional". 
 
 '''''Overview''''':
 
-(1.) 15_prepare-build-machine: installs build dependencies and applies a few other required settings for building from source.
-
-(2.) 20_create-debian-img: [http://grml.org/grml-debootstrap/ grml-debootstrap] creates virtual machine images in '''.img''' image format. It keeps care of creating the image, the partition table, grub boot manager, minimal system debootstrap and apt-get installing all Whonix packages. This step requires most time in the build process.
-
-(3.) 25_backup-img: A backup _copy of the .img gets created.
-
-(4.) 30_copy-into-img: Files get copied into image.
-
-(5.) 32_verify_copied_files: Verify that all files from Whonix source code have been copied into the image by using diff. This is just a sanity test.
-
-(6.) 35_run-chroot-scripts-img: Chroot Scripts are applied.
-
-(7.) 40_convert-img-to-vdi: The '''.img''' image gets converted to a '''.vdi''' image. Actually not converted, a new file will be created and the old '''.img''' remains available until cleanup is run or manually deleted or grml-debootstrap runs again.
-
-The '''.img''' format is more "generic". VirtualBox does not support raw ('''.img''') images, but '''.vdi''' and '''.vmdk''' (and others).
-
-(8.) 45_create-vbox-vm: A virtual machine (VirtualBox) will be created and the '''.vdi''' image will be attached.
-
-(9.) 50_export-vbox-vm: The virtual machines get exported to a '''.ova''' images. (Technically the '''.ova''' format seams to require '''.vmdk''' files. Therefore VirtualBox automatically creates it. So anyone using or extracting the '''.ova''' image will see that it includes a '''.vmdk''' image.)
+# prepare-build-machine: installs build dependencies and applies a few other required settings for building from source.
+# create-debian-packages
+# create-debian-img: [http://grml.org/grml-debootstrap/ grml-debootstrap] creates virtual machine images in '''.img''' image format. It keeps care of creating the image, the partition table, grub boot manager, minimal system debootstrap and apt-get installing all Whonix packages. This step requires most time in the build process.
+# backup-img-after-grml-debootstrap: A backup _copy of the '''.img''' gets created.
+# install-meta-packages: Installs meta .deb packages whonix-shared-packages-dependencies/recommended, desktop, desktop-kde, kde-accessibility and whonix-*-packages-dependencies/recommended and whonix-workstation-default-applications. Those only include dependencies and recommended packages which are pulled from Debian's apt repository.
+# backup-img-after-meta-package-install
+# run-chroot-scripts-pre-d: Pre Chroot Scripts are applied.
+# install-files-packages: Installs .deb packages whonix-shared-files whonix-gateway/workstation-files.
+# verify-files: Checks if configuration/script files from Whonix source code match those actually installed inside the .img.
+# install-postinst-d-packages: Postinstall scripts are applied.
+# run-chroot-scripts-post-d: Post Chroot Scripts are applied.
+# convert-img-to-vdi: The '''.img''' image gets converted to a '''.vdi''' image. Actually not converted, a new file will be created and the old '''.img''' remains available until cleanup is run or manually deleted or grml-debootstrap runs again. The '''.img''' format is more "generic". VirtualBox does not support raw ('''.img''') images, but '''.vdi''' and '''.vmdk''' (and others).
+# create-vbox-vm: A virtual machine (VirtualBox) will be created and the '''.vdi''' image will be attached.
+# export-vbox-vm: The virtual machines get exported to a '''.ova''' images. (Technically the '''.ova''' format seams to require '''.vmdk''' files. Therefore VirtualBox automatically creates it. So anyone using or extracting the '''.ova''' image will see that it includes a '''.vmdk''' image.)
 
 '''''Modularity:'''''
 
-Steps (2.), (6.), (7.), (8.) and (9.) could be easily replaced to add support for additional virtualizers, operating systems and so on. The numbers before the script names (20_..., 25_..., 30..., ...) are honored by whonix_build (using [http://manpages.ubuntu.com/manpages/raring/man8/run-parts.8.html run-parts]), which runs these steps in lexical order. Therefore you can easily add steps to the beginning or the end or even wretch steps in between.
+All steps could be easily replaced to add support for additional virtualizers, operating systems and so on. The numbers before the script names (20_..., 25_..., 30..., ...) are honored by whonix_build (using [http://manpages.ubuntu.com/manpages/raring/man8/run-parts.8.html run-parts]), which runs these steps in lexical order. Therefore you can easily add steps to the beginning or the end or even wretch steps in between.
 
 '''''Summary:'''''
 
