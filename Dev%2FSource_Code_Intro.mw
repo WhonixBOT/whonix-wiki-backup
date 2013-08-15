@@ -157,22 +157,29 @@ sudo ./whonix_build --tor-gateway --build --fast2
 ## or --tor-workstation
 </pre>
 
-=== Skipping Chroot Scripts ===
+=== Skipping Chroot and Postinst Scripts ===
 
-Some chroot-scripts, especially the 70_update_command_not_found and 70_torbrowser take very long, while they are non-critical. You can either run update-command-not-found and the Tor Browser Updater after Whonix has been build and booted, or if you don't wish to use them at all, just don't use it at all. Therefore you can conveniently disable them, to safe some time, which is useful for debug builds.
+Some chroot scripts, especially the 70_update_command_not_found and 70_torbrowser take very long, while they are non-critical. You can either run update-command-not-found and the Tor Browser Updater after Whonix has been build and booted, or if you don't wish to use them at all, just don't use it at all. Therefore you can conveniently disable them, to safe some time, which is useful for debug builds.
+
+Create your own build configuration, see {{Code|buildconfig.d}} folder. For see example {{Code|buildconfig.d/30_skip_torbrowser}}, which contains
 
 <pre>
-## NOTE: these variables must be set and exported as ROOT!
-##       (Because the build script runs as root.)
+#export WHONIX_BUILD_SKIP_SCRIPTS+=" 70_torbrowser "
+</pre>
 
-export skip_scripts="70_update_command_not_found 70_torbrowser"
+You could create a file {{Code|buildconfig.d/50_skip_torbrowser}} and add.
+
+<pre>
+export WHONIX_BUILD_SKIP_SCRIPTS+=" 70_torbrowser "
 </pre>
 
 This works for the following folders.
 
-* [https://github.com/adrelanos/Whonix/blob/master/whonix_gateway/usr/local/share/whonix/chroot-scripts/ /whonix_gateway/usr/local/share/whonix/chroot-scripts/]
-* [https://github.com/adrelanos/Whonix/blob/master/whonix_workstation/usr/local/share/whonix/chroot-scripts/ /whonix_workstation/usr/local/share/whonix/chroot-scripts/]
-* [https://github.com/adrelanos/Whonix/blob/master/whonix_shared/usr/local/share/whonix/chroot-scripts/ /whonix_shared/usr/local/share/whonix/chroot-scripts/]
+* whonix_*/usr/share/whonix/postinst.d
+* whonix_*/usr/share/whonix/chroot-scripts-pre.d
+* whonix_*/usr/share/whonix/chroot-scripts-post.d
+
+Look at the filenames and add them {{Code|export WHONIX_BUILD_SKIP_SCRIPTS+=" another_file_name "}}. Don't forget empty spaces after and before {{Code|"}}.
 
 === Target Architecture ===
 
