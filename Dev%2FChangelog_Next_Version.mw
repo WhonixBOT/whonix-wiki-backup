@@ -2,11 +2,98 @@
 
 {{Testing}}
 
+= 115adretemp =
+
+Whonix-Gateway and Whonix-Workstation
+
+* Better comment on the top for .d style configuration folders/files as contribiuted by @JasonJAyalaP
+RAM Adjusted Desktop Starter: now simpler to use other display managers. It simply starts whatever the default display manager is.
+* whonixcheck version check (Whonix News), now supports - checking Whonix Build Version and Whonix Deb Version separately - having multiple up to date versions (for example for stable, testers and developers) - having separate news per build or deb version
+* whonixcheck: Deactivated checking status of bootclockrandomization, timesanitycheck and timesync. Its already tested every time, timesync runs. Leaving it enabled in whonixcheck could make some users believe, that whonixcheck runs timesync, which it does not.
+* whonixcheck, timesync: To get ride of the confusingline "/usr/lib/whonix/whonixcheck/help_output: line 348:  9404 Killed [...]" at the end, added disown "$ZENITY_PROGRESS_PID".
+* whonixcheck: prefixed all messages with the name of each test.
+* whonixcheck: New WHONIXCHECK_DISABLE_TRANS_PORT_TEST configuration variable. When set to 1, skips whonixchecks test for Tor's TransPort. Useful in case you deactivated Tor's TransPort.; Separate help messages for Whonix-Gateway and Whonix-Workstation in case network connection (whonixcheck's SocksPort test) failed.; Better help messages for Whonix-Gateway and Whonix-Workstation in case network connection (whonixcheck's SocksPort test) failed.; New additional help text in case Tor is not detected "You could try to find out if this IP is/was a Tor exit node using a search engine or ExoneraTor: https://metrics.torproject.org/exonerator.html". Lets see if we keep that in the final.; Different help messages if Tor detection on Tor's SocksPort failed vs Tor detection on Tor's TransPort failed.
+* improved many messages in whonixcheck, timesync, whonixsetup
+* no longer hardcoding MAC addresses, no longer sharing MAC addresses among all Whonix versions, was very little gain, while it can confuse complex setups
+* whonixcheck: - added option to skip SocksPort test for #57 - no longer delete temporary folder, gets automatically deleted only makes debugging/auditing harder
+* converting Whonix News Blogs to plain text, so no external links to wordpress.com get loaded
+* added pandoc (required for whonixcheck as html2text converter)
+* whonix_shared/etc/apt/sources.list.whonix: changed from Debian stable (wheezy) to Debian testing (jessi) for #60 (installation of python-stem)
+* whonixcheck: now also checks Tor's bootstrap status using Tor's control port using Control Port Filter Proxy
+* added hint to read Pre Install Advice to virtual box license files #64
+* quick and dirty hack to make AppArmor play well with tor, obfsproxy and flashproxy for #67
+* added log viewer ksystemlog to whonix-shared-desktop-kde
+* moved whonixcheck zenity progress bar and result message to the top left, so it does not overlap with sdwdate's progress bar or result message
+* replaced tails_htp with sdwdate
+* AppArmor: added global /etc/hosts.whonix r, /etc/resolv.conf.whonix r, On Whonix-Workstation this file does not contain anything interesting (unless some special configuration) and Whonix-Gateway isn't supposed to have applications installed reading those files. This works around issue "config-package-dev clashes with AppArmor profiles". Closes #66
+* added apparmor-notify to whonix-shared-packages-recommended: Notification with 
+passive popups when AppArmor restricts something. There no profiles activated by 
+default (except Tor, which gets loaded by it's default init script), but still 
+useful to prevent confusion just in case.
+* No longer abort whonixcheck if Tor's SocksPort isn't reachable (#49). Now  
+directly checking Tor's bootstrap status through Tor's control port. (#57) - 
+Work on #57.
+* whonix_shared/usr/bin/uwt: Ignoring -t server_type and therefore defaulting to 
+4. 5 does not work well with the torsocks version from Debian testing. (Things 
+like dget and update-command-not-found are broken.) Reporting a bug against 
+torsocks is not worth it, since torsocks is currently being rewritten anyway.
+
+Whonix-Gateway
+
+* whonixsetup: Working around another bug in Tor. When starting Tor fails, it does not return a non-zero return code.
+* added apper to whonix-gateway-packages-recommend
+* Added RAM Adjusted Desktop Starter info message to Whonix-Gateway wallpaper.
+* Whonix-Gateway firewall: added settings for an optional Tor relay
+* whonix_gateway/usr/bin/whonix_firewall: Fix. When GATEWAY_ALLOW_INCOMING_FLASHPROXY is set to 1, iptables does not support -p all --dport. See http://serverfault.com/questions/279361/iptables-p-all-dport 
+Changed to -p tcp, which is sufficient, according to https://trac.torproject.org/projects/tor/wiki/FlashProxyHowto
+
+Whonix-Workstation
+
+* added pinentry-qt4 to whonix-workstation-default-applications, required to make KGpg symmetric encryption (and gnupg-agent) work out of the box
+* No longer add Tor Browser default icon to the Desktop (already existing icons won't be touched, so this will appear in the next build version), the Tor Browser Recommend icon is still on the desktop and the default one can still be created from the start menu, closes #58
+* Whonix's torbrowser update check and download script: has now a working progress bar.
+* Whonix's torbrowser update check and download script: fixed zenity cancel button, 
+cancel now effectively terminates still running curl instances and can therefore 
+prevent endless data attacks or bugs.
+
+Source Code
+
+* new bash pseudo GUI toolkit /usr/lib/whonix/doutput
+* whonix_shared/usr/share/whonix/postinst.d/70_create_swap_file: fixed support for re-running
+* radically shortened readme
+* added libfile-fcntllock-perl to build dependencies: - required to silence dpkg-gencontrol:   warning: File::FcntlLock not available; using floc
+* renamed whonix_workstation/etc/whonix.d/30_torbrowser to whonix_workstation/etc/whonix.d/30_torbrowser_default
+* new maintainer script: release/resign_repository, Refreshes repository. OpenPGP Resignes and updates valid-until field.
+* Got ride of time consuming "chown --recursive user:user /home/user/" while updating by running the required commands as user in the first place
+* debian/rules-helper.bsh: added --no-start to dh_installinit. Restarting the init scripts while updating isn't required. All init scripts are su
+* postinst.d scripts: better error message in case a postinst.d script ever fails
+* postinst.d scripts: hide "set -x" debug output, unless WHONIX_DEB_DEBUG=1
+* added whonix_shared/usr/share/whonix/postinst.d/pre.bsh, a script supposed to be sourced by all postinst.d scripts
+* uwtwrapper: renamed variable ip to uwtwrapper_gateway_ip to avoid conflicts
+* Fix: Skipping to source config.d files such as .dpkg-old and .dpkg-dist.
+* Whonix News v2: changed location to https://sourceforge.net/projects/whonixdevelopermetafiles/
+* whonix_shared/usr/bin/whonix_repository: moved repository to https://sourceforge.net/projects/whonixdevelopermetafiles/
+* whonix_shared/usr/lib/whonix/whonixcheck/50_check-whonix-news: added --fail to curl, so it returns non-zero when sourceforge replies 404 (in case the file has been forgotten to upload). Otherwise we would end up with the error html page and throw a OpenPGP verification failure message.
+* added debug-steps/locally-upgrade-whonix-debian-packages, a script to manually update from source code, closed #52
+* apply our apt preferences.d settings (apt pinning) while building Whonix from source code and while updating Whonix from source code
+* Added python-stem to whonix-shared-packages-dependencies.
+* explicitly define /etc/apt/sources.list for grml-debootstrap to ensure grml-debootstrap won't fetch non-free software
+* `displace`ed /etc/apparmor.d/local/system_tor
+* added dh-apparmor to build dependencies
+* Revised the way how the temporary local apt repository is created and removed. - 
+Fixed a bug when an own signing key was used to sign the local apt repository. 
+No longer copying the whole pubring.gpg to /etc/apt/trusted.gpg.d/, only copying 
+the specific signing key. - Fixed a failure bug when WHONIX_BUILD_APT_CODENAME 
+was not set to local (now also works for stable, testers and developers). - 
+Reduced code duplication.
+
 = 101adretemp (uploaded to Whonix developers apt repository) =
 
 Whonix-Gateway and Whonix-Workstation
 
 * whonixcheck, timesync: cleaner locking mechanism, no longer using pgrep, thus fixing a confusing message while booting
+* whonixsetup: starting whonixcheck after enabling Tor #56
+
 
 Whonix-Gateway
 
@@ -20,6 +107,8 @@ Whonix-Workstation
 * torbrowser: added --clearnet option. Uses torproject.org clearnet domain instead of torprojects Tor hidden service (hs). Useful in case the hs 
 * Tor Browser Update and Start script: Will no longer show a browser error when whonixcheck (rawdog) hasn't fetched Whonix News blog already. Wil
 * Whonix torbrowser Start and Update script now reads /etc/whonix.d/30_torbrowser_default which can contain the language setting
+* torbrowser: updated forum link to https://whonix.org/wiki/Special:AWCforum/
+
 
 Source Code
 
