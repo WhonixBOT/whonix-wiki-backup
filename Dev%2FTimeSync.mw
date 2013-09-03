@@ -5,6 +5,7 @@
 = Time Synchronization Mechanism =
 
 == Description ==
+{{Stable}}
 
 The Post Install Advice is part of this design, therefore read [[Post Install Advice#Network Time Syncing|Network Time Syncing]] first please. Also please read the Advanced Security Guide chapter [[Advanced Security Guide#Network Time Synchronization|Network Time Synchronization]] as well.
 
@@ -61,7 +62,8 @@ Whonix's Time Synchronization Mechanism:
 ** Doesn't use Boot Clock Randomization. If the assumption is correct, that the ISP can detect clock jumps by observing Tor's TLS client hello, clock jumps should be avoided to prevent fingerprinting Whonix users.
 ** Uses tails_htp after booting.
 ** Using it at all is better against Attack (1) when using a bridge.
-** '''TODO''': Open question, run tails_htp also every hour at a random time on Whonix-Gateway?
+** Running tails_htp also every hour at a random time on Whonix-Gateway is no good idea, because Tor does not like clock jumps. When testing this, there were cases where the clock jumped about 800 seconds, which caused Tor to expire circuits, which caused connection interrupts.
+** '''Open question''': How often should tails_htp run on Whonix-Gateway? Every hour is a bad idea, as we see above. Not running it again when some people may run Whonix-Gateway for days or weeks is not good either, since the clock can drift. Maybe it should run wait 24 hours and then wait a random amount of minutes within 24 hours?
 *** The entry guard or bridge can see the time through TCP timestamp. <ref name=tlsleakone>[https://trac.torproject.org/projects/tor/ticket/7277 torproject.org #7277: timestamp leaked in TLS client hello]</ref>; <ref name=tlsleaktwo>[https://trac.torproject.org/projects/tor/ticket/4852 torproject.org #4852: Clients send NETINFO with time]</ref>
 *** Continuous clock jumps could help the entry guard or bridge guessing, that a Whonix-Gateway is connected.
 *** '''TODO''': Open question... "''ntpd adjusts the clock in small steps so that the timescale is effectively continuous and without discontinuities''" - is that possible with an tails_htp like appraoch as well?
