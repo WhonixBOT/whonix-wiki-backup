@@ -173,6 +173,111 @@ If you are in luck, you never have to update the keys yourself and the Whonix ma
 === Build Configuration ===
 Usually you don't need to change the build configuration. There are options available to you, such as [[Dev/Source_Code_Intro#Target_Architecture|creating 64 bit builds]], if you are interested, see [[Dev/Source Code Intro#Build Configuration|Build Configuration]].
 
+=== Source Code Changes ===
+If you made changes to the source code or build configuration, which are recorded by git (virtually all folders and files, besides exceptions within the {{Code|buildconfig.d}} folder), those have to be git committed before building Whonix. Otherwise you'll get an error message. (Which looks like this: <ref>
+<pre>
++ true './build-steps.d/1200_create-debian-packages ERROR: Git reports uncommitted changes! '
++ true './build-steps.d/1200_create-debian-packages INFO: Running "git status" for your convenience. '
++ git status
+# On branch master
+# Changes not staged for commit:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#       modified:   whonix_build_both
+#
+no changes added to commit (use "git add" and/or "git commit -a")
++ true './build-steps.d/1200_create-debian-packages INFO: Running git "clean --dry-run -d --force --force" for your convenience. '
++ git clean --dry-run -d --force --force
++ true './build-steps.d/1200_create-debian-packages You most likely like to revert debian/control to run:
+    git checkout -- debian/control
+    make clean
+or if you know what you are doing:
+    git clean --dry-run -d --force --force
+    git reset --hard'
++ error 'Uncommitted changes! See above!'
+./build-steps.d/1200_create-debian-packages: line 109: error: command not found
+++ error_handler_general
+++ local return_code=127
+++ rm --force /etc/apt/sources.list.d/whonixtestingtemp.list
+++ rm --force /etc/apt/apt.conf.d/90whonix-build-confold
++++ caller
+++ echo '
+BASH_COMMAND: error "Uncommitted changes! See above!"
+return_code: 127
+ERROR ./build-steps.d/1200_create-debian-packages: | caller: 109 ./build-steps.d/1200_create-debian-packages
+'
+
+BASH_COMMAND: error "Uncommitted changes! See above!"
+return_code: 127
+ERROR ./build-steps.d/1200_create-debian-packages: | caller: 109 ./build-steps.d/1200_create-debian-packages
+
+++ exit 1
+</pre>
+</ref>)
+
+To git commit changes, some basic git knowledge would be of help. To give you an idea, the workflow could look like this.
+
+<pre>
+git status
+git add *
+git status
+#git add path-to-file
+## Preview.
+#git diff --cached
+git commit -a
+git status
+</pre>
+
+If you added a new file to {{Code|buildconfig.d}}, for example {{Code|buildconfig.d/50_target_arch}}, those have to be dpkg-source committed before building Whonix. Otherwise you'll get an error message. (Which looks like this:<ref name=dpkgcommit>
+<pre>
+ dpkg-source -b Whonix
+dpkg-source: info: using source format `3.0 (quilt)'
+dpkg-source: info: building whonix using existing ./whonix_138adretemp.4.gd3d4f5fa9e18fddafdf5b09b428ba04dfb2a6d1e.orig.tar.gz
+dpkg-source: info: local changes detected, the modified files are:
+ Whonix/buildconfig.d/50_target_arch
+dpkg-source: error: aborting due to unexpected upstream changes, see /tmp/whonix_138adretemp.4.gd3d4f5fa9e18fddafdf5b09b428ba04dfb2a6d1e-debpackage1.diff.fIiBKC
+dpkg-source: info: you can integrate the local changes with dpkg-source --commit
+dpkg-buildpackage: error: dpkg-source -b Whonix gave error exit status 2
+debuild: fatal error at line 1361:
+dpkg-buildpackage -rfakeroot -D -us -uc -sa failed
+++ error_handler_general
+++ local return_code=29
+++ rm --force /etc/apt/sources.list.d/whonixtestingtemp.list
+++ rm --force /etc/apt/apt.conf.d/90whonix-build-confold
++++ caller
+++ echo '
+BASH_COMMAND: sudo -E -u user debuild -p"gpg             --no-default-keyring             --homedir "$WHONIX_LOCAL_SIGNING_KEY_FOLDER"             --default-key "$DEBEMAIL"
+            " -sa
+return_code: 29
+ERROR ./build-steps.d/1200_create-debian-packages: | caller: 173 ./build-steps.d/1200_create-debian-packages
+'
+
+BASH_COMMAND: sudo -E -u user debuild -p"gpg             --no-default-keyring             --homedir "$WHONIX_LOCAL_SIGNING_KEY_FOLDER"             --default-key "$DEBEMAIL"
+            " -sa
+return_code: 29
+ERROR ./build-steps.d/1200_create-debian-packages: | caller: 173 ./build-steps.d/1200_create-debian-packages
+
+++ exit 1
+</pre>
+</ref>).
+
+To dpkg commit changes, run.
+
+<pre>
+./build-steps.d/1200_create-debian-packages
+</pre>
+
+<ref>An upstream tarball gets created by {{Code|./build-steps.d/1200_create-debian-packages}}</ref> You'll see an error, (this one: <ref name=dpkgcommit />) which will advise you to run {{Code|dpkg-source --commit}}. Do so.
+
+<pre>
+dpkg-source --commit
+</pre>
+
+When it asks "Enter the desired patch name:" just enter anything you wish, for example "buildconfig". In the following window, you don't have to fill out anything. Just save and close the editor. <ref>This will create a Debian quilt patch.</ref> You only have to do this once and won't be asked again to do this, unless you add another change which needs to be dpkg-source committed.
+
+If you want to get undo the dpkg-source committed change, check the contents of the {{Code|.pc}} and the {{Code|debian/patches}} folder and delete it.
+
 === VM Creation ===
 Open a shell and type:
 
