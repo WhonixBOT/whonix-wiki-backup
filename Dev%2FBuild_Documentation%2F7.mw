@@ -245,7 +245,22 @@ git commit -a
 git status
 </pre>
 
-'''TODO''': Create a git tag or deactivate [[Download#Whonix_Version_Check_and_Whonix_News|Whonix News]].
+Since the Whonix debian package version number is auto derived from {{Code|git describe}} and used for [[Download#Whonix_Version_Check_and_Whonix_News|Whonix News]] download, it is recommended to override it. <ref>Alternatively, you could deactivate over override [[Download#Whonix_Version_Check_and_Whonix_News|Whonix News]] in the whonixcheck script and manually stay on top of news.</ref> You could add a file to {{Code|buildconfig.d}}, for example {{Code|buildconfig.d/50_version}} and add for example.
+
+<pre>
+temp="$WHONIX_BUILD_CLOSEST_GIT_TAG"
+
+## Using `export`, so whonix_shared/usr/share/whonix/chroot-scripts-post.d/70_log_build_version can read it.
+export WHONIX_BUILD_WHONIX_VERSION_NEW="$(echo "$temp" | sed 's/-/./g')"
+
+echo "WHONIX_BUILD_WHONIX_VERSION_NEW: $WHONIX_BUILD_WHONIX_VERSION_NEW"
+
+WHONIX_BUILD_NEW_CHANGELOG_VERSION=""$WHONIX_BUILD_WHONIX_VERSION_NEW""-debpackage""$WHONIX_BUILD_NEW_DEB_REVISION_VERSION""
+
+echo "WHONIX_BUILD_NEW_CHANGELOG_VERSION: $WHONIX_BUILD_NEW_CHANGELOG_VERSION"
+</pre>
+
+While building, check if WHONIX_BUILD_NEW_CHANGELOG_VERSION looks sane.
 
 If you added a new file to {{Code|buildconfig.d}}, for example {{Code|buildconfig.d/50_target_arch}}, those have to be dpkg-source committed before building Whonix. Otherwise you'll get an error message. (Which looks like this:<ref name=dpkgcommit>
 <pre>
