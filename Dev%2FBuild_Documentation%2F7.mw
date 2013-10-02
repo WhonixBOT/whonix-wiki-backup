@@ -245,56 +245,6 @@ git commit -a
 git status
 </pre>
 
-Since the Whonix debian package version number is auto derived from {{Code|git describe}} and used for [[Download#Whonix_Version_Check_and_Whonix_News|Whonix News]] download, it is recommended to override it. <ref>Alternatively, you could deactivate or override [[Download#Whonix_Version_Check_and_Whonix_News|Whonix News]] in the whonixcheck script and manually stay on top of news.</ref> You could add a file to {{Code|buildconfig.d}}, for example {{Code|buildconfig.d/50_version}} and add for example.
-
-<pre>
-temp="$WHONIX_BUILD_CLOSEST_GIT_TAG"
-
-## Using `export`, so whonix_shared/usr/share/whonix/chroot-scripts-post.d/70_log_build_version can read it.
-export WHONIX_BUILD_WHONIX_VERSION_NEW="$(echo "$temp" | sed 's/-/./g')"
-
-echo "WHONIX_BUILD_WHONIX_VERSION_NEW: $WHONIX_BUILD_WHONIX_VERSION_NEW"
-
-WHONIX_BUILD_NEW_CHANGELOG_VERSION=""$WHONIX_BUILD_WHONIX_VERSION_NEW""-debpackage""$WHONIX_BUILD_NEW_DEB_REVISION_VERSION""
-
-echo "WHONIX_BUILD_NEW_CHANGELOG_VERSION: $WHONIX_BUILD_NEW_CHANGELOG_VERSION"
-</pre>
-
-While building, check if WHONIX_BUILD_NEW_CHANGELOG_VERSION looks sane. <ref>For example {{Code|WHONIX_BUILD_NEW_CHANGELOG_VERSION: 2:6.13.g4218c564e556cb68a3f18dc4040db5353690706c}} does not look sane, but {{Code|WHONIX_BUILD_NEW_CHANGELOG_VERSION: 2:6-debpackage1}} looks sane.</ref>
-
-If you added a new file to {{Code|buildconfig.d}}, for example {{Code|buildconfig.d/50_target_arch}}, those have to be dpkg-source committed before building Whonix. Otherwise you'll get an error message. (Which looks like this:<ref name=dpkgcommit>
-<pre>
- dpkg-source -b Whonix
-dpkg-source: info: using source format `3.0 (quilt)'
-dpkg-source: info: building whonix using existing ./whonix_138adretemp.4.gd3d4f5fa9e18fddafdf5b09b428ba04dfb2a6d1e.orig.tar.gz
-dpkg-source: info: local changes detected, the modified files are:
- Whonix/buildconfig.d/50_target_arch
-dpkg-source: error: aborting due to unexpected upstream changes, see /tmp/whonix_138adretemp.4.gd3d4f5fa9e18fddafdf5b09b428ba04dfb2a6d1e-debpackage1.diff.fIiBKC
-dpkg-source: info: you can integrate the local changes with dpkg-source --commit
-dpkg-buildpackage: error: dpkg-source -b Whonix gave error exit status 2
-debuild: fatal error at line 1361:
-dpkg-buildpackage -rfakeroot -D -us -uc -sa failed
-++ error_handler_general
-++ local return_code=29
-++ rm --force /etc/apt/sources.list.d/whonixtestingtemp.list
-++ rm --force /etc/apt/apt.conf.d/90whonix-build-confold
-+++ caller
-++ echo '
-BASH_COMMAND: sudo -E -u user debuild -p"gpg             --no-default-keyring             --homedir "$WHONIX_LOCAL_SIGNING_KEY_FOLDER"             --default-key "$DEBEMAIL"
-            " -sa
-return_code: 29
-ERROR ./build-steps.d/1200_create-debian-packages: | caller: 173 ./build-steps.d/1200_create-debian-packages
-'
-
-BASH_COMMAND: sudo -E -u user debuild -p"gpg             --no-default-keyring             --homedir "$WHONIX_LOCAL_SIGNING_KEY_FOLDER"             --default-key "$DEBEMAIL"
-            " -sa
-return_code: 29
-ERROR ./build-steps.d/1200_create-debian-packages: | caller: 173 ./build-steps.d/1200_create-debian-packages
-
-++ exit 1
-</pre>
-</ref>).
-
 === VM Creation ===
 If you want to build for the second time, made changes or want to build a newer version, you have to reset debian/changelog <ref>Otherwise the .deb packages would not get rebuild.</ref> and remove (or rename) any eventually already existing Whonix-Gateway and/or Whonix-Workstation in VirtualBox. Open a shell and type.
 
