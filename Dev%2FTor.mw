@@ -1,0 +1,48 @@
+{{Header}}
+{{forkme}}
+
+= Tor Config Files =
+== Current Implementation and Plan ==
+The plan is as it follows.
+
+* {{Code2|/etc/tor/torrc}} holds minimal content, so we don't have to update it ever again
+* Instructions in {{Code2|/etc/tor/torrc}} say ''copy and paste from {{Code2|/etc/tor/torrc.examples}}''.
+* We should never update {{Code2|/etc/tor/torrc}} because that would lead to an {{Code2|interactive dpkg conflict resolution dialog}}
+<ref name=dpkg-conflict-resolution-dialog>
+Configuration file `/etc/tor/torrc'
+ ==> Modified (by you or by a script) since installation.
+ ==> Package distributor has shipped an updated version.
+   What would you like to do about it ?  Your options are:
+    Y or I  : install the package maintainer's version
+    N or O  : keep your currently-installed version
+      D     : show the differences between the versions
+      Z     : background this process to examine the situation
+ The default action is to keep your current version.
+*** interfaces (Y/I/N/O/D/Z) [default=N] ? N
+</ref>. <ref>
+Because, /etc/tor/torrc comes with an out commented {{Code2|#DisableNetwork 0}} which gets commented in by {{Code2|whonixsetup}}, i.e. {{Code2|whonixsetup}} changes that line to {{Code2|DisableNetwork 0}}, which dpkg will consider as user modification.</ref>
+* {{Code2|/etc/tor/torrc.examples}} contains configuration examples.
+
+
+* Whonix's Tor settings go into {{Code2|/usr/share/tor/tor-service-defaults-torrc}}.
+* Users will ignore {{Code2|/usr/share/tor/tor-service-defaults-torrc}}, because this file is barely advertised and popular.
+* {{Code2|/usr/share/tor/tor-service-defaults-torrc}} can be updated without any conflicts with user modifications.
+
+== Rejected Alternatives ==
+=== Only Two Config Files ===
+* Using only {{Code2|/usr/share/tor/tor-service-defaults-torrc}} and {{Code2|/etc/tor/torrc}}, not using {{Code2|/etc/tor/torrc.examples}}.
+* And having configuration examples (instructions) in {{Code2|/usr/share/tor/tor-service-defaults-torrc}}. Using a minimal {{Code2|/etc/tor/torrc}} to tell them to look into {{Code2|/usr/share/tor/tor-service-defaults-torrc}} for configuration examples.
+* This is a bad idea, because users get tempted out comment things in {{Code2|/usr/share/tor/tor-service-defaults-torrc}}.
+* When they do this, they settings would get lost and overwritten without asking next time they update Whonix packages, because {{Code2|/usr/share/tor/tor-service-defaults-torrc}} is not a configuration file (since in {{Code2|/usr}}, not {{Code2|/etc}} folder).
+
+=== Only One Config File ===
+* Using only {{Code2|/etc/tor/torrc}}, leaving {{Code2|/usr/share/tor/tor-service-defaults-torrc}} with defaults (from Debian), not using {{Code2|/etc/tor/torrc.examples}}.
+* Using {{Code2|/etc/tor/torrc}} for user examples, user's own modifications and Whonxi's Tor settings.
+* This is bad, because when users have edited {{Code2|/etc/tor/torrc}} and Whonix Debian Packages get updated, it will throw an {{Code2|interactive dpkg conflict resolution dialog}}<ref name=dpkg-conflict-resolution-dialog />. Users might decide to keep their old config file and will miss (security) improvements.
+
+= Footnotes =
+<references />
+
+{{Footer}}
+
+[[Category:Development]]
