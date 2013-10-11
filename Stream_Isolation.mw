@@ -8,11 +8,11 @@ The following graphic illustrates, the difference of using Tor SocksPort's compa
 
 [[Image:stream_isolation.1.0.jpg|frame|none|alt=|Stream Isolation Graphic]]
 
-Whonix 0.2.1 and above implement protection against ''identity correlation through circuit sharing'', however, for better privacy, you are still advised to understand a bit of the technical background. Since Tor version 0.2.3, different Socks,- Dns-, or TransPorts go through different circuits, therefore preventing ''identity correlation''. Whonix configures most applications that come preinstalled with Whonix to use different SocksPort, thus no ''identity correlation'' is at risk. Whonix uses either socks proxy settings to direct various applications to different SocksPorts or uwt (more information below).
+Whonix 0.2.1 and above implement protection against {{Code|identity correlation through circuit sharing}}, however, for better privacy, you are still advised to understand a bit of the technical background. Since Tor version 0.2.3, different Socks,- Dns-, or TransPorts go through different circuits, therefore preventing {{Code2|identity correlation}}. Whonix configures most applications that come preinstalled with Whonix to use different SocksPort, thus no {{Code2|identity correlation}} is at risk. Whonix uses either socks proxy settings to direct various applications to different SocksPorts or uwt (more information below).
 
-Any other traffic (i.e. custom installed applications, misc applications, such as ''nslookup'', go through Tor's Dns-, and/or TransPort (can be optionally disabled, see below).
+Any other traffic (i.e. custom installed applications, misc applications, such as {{Code2|nslookup}}, go through Tor's Dns-, and/or TransPort (can be optionally disabled, see below).
 
-Applications in Whonix 0.2.1 and above configured to prevent ''identity correlation through circuit sharing'':
+Applications in Whonix 0.2.1 and above configured to prevent {{Code2|identity correlation through circuit sharing}}:
 
 {| class="wikitable" style="text-align: center; background-color: #fff"
 !style="height:27px"|application
@@ -146,7 +146,7 @@ Applications in Whonix 0.2.1 and above configured to prevent ''identity correlat
 |style="background-color:{{Red}}"|no
 |uwt wrapper
 | -
-|helper script with comments prepared, see ''/usr/local/bin/apt-cacher-ng_uwt''
+|helper script with comments prepared, see {{Code2|/usr/bin/apt-cacher-ng_uwt}}
 |-
 |style="background-color:#f9f9f9;height:27px"|TorChat
 |style="background-color:{{Red}}"|no
@@ -170,16 +170,16 @@ Applications in Whonix 0.2.1 and above configured to prevent ''identity correlat
 |[[Mixmaster]]
 |}
 
-Whonix {{Whonix6}} and above: KDE application wide proxy settings (no KDE applications with network activity pre-installed, pre-configured socks proxy settings, port 9122)
+Whonix 6 and above: KDE application wide proxy settings (no KDE applications with network activity pre-installed, pre-configured socks proxy settings, port 9122)
 
-Whonix {{Whonix6}} and above: GNOME application wide proxy settings (no GNOME applications with network activity pre-installed, [[Dev/GNOME|not pre-configured]], port prepared, port 9123)
+Whonix 6 and above: GNOME application wide proxy settings (no GNOME applications with network activity pre-installed, [[Dev/GNOME|not pre-configured]], port prepared, port 9123)
 
-The required socks proxy settings were setup by the Whonix build scripts. uwt wrappers and are located on Whonix-Gateway and on Whonix-Workstation under ''/usr/local/bin/''. [https://trac.torproject.org/projects/tor/wiki/doc/torsocks uwt] is a wrapper around torsocks, which is also already installed to /usr/local/bin/uwt.
+The required socks proxy settings were setup by the Whonix build scripts. uwt wrappers are set up on Whonix-Gateway and on Whonix-Workstation under {{Code|/usr/share/whonix/postinst.d/70_uwt}}. [https://trac.torproject.org/projects/tor/wiki/doc/torsocks uwt] is a wrapper around torsocks, which is also already installed to /usr/local/bin/uwt.
 
-* Example, each time you run a uwt wrapped application, i.e. simply type ''apt-get'' in console, the uwt wrapper /usr/local/bin/apt-get will run. It adds uwt before apt-get. For curiosity check ''nano /usr/local/bin/apt-get''. The uwt wrapper then runs ''/usr/local/bin/uwt /usr/bin/apt-get''. That is also the case for all other uwt wrapped applications.
-* If you ever want or must run a uwt wrapped application without uwt, do not run for example ''apt-get'' in console, do run ''/usr/bin/apt-get''. Use cases could be if you connect to localhost. If you know what you are doing, you should also be able to deactivate any uwt wrappers you dislike with ''chmod -x /usr/bin/apt-get''.
-* When running ''/usr/bin/apt-get'' directly it goes through Tor's DnsPort and through Tor's TransPort and not through its own SocksPort.
-* uwt looks if the command contains the words ''localhost'' or ''127.0.0.1'', if that is the case, uwt will not be used. The command will be run without uwt. Thus, if a localhost connection is falsely detected it will leak, but only through Tor's DnsPort and through Tor's TransPort, which should be ok.
+* Example, each time you run a uwt wrapped application, i.e. simply type {{Code2|apt-get}} in console, the uwt wrapper {{Code|/usr/bin/apt-get}} will run. It adds uwt before apt-get. For curiosity check {{Code|nano /usr/bin/apt-get}}. The uwt wrapper then runs {{Code|/usr/bin/uwt /usr/bin/apt-get.real}}. That is also the case for all other uwt wrapped applications.
+* If you ever want or must run a uwt wrapped application without uwt, do not run for example {{Code|apt-get}} in console, do run {{Code|apt-get.real}}. Use cases could be if you want to connect to localhost. If you know what you are doing, you should also be able to deactivate any uwt wrappers you dislike with {{Code|sudo dpkg-divert --rename --remove /usr/bin/apt-get}}. (TODO: This gets reverted when Whonix Debian Packages are updated. How to prevent that.)
+* When running {{Code2|/usr/bin/apt-get.real}} directly it goes through Tor's DnsPort and through Tor's TransPort and not through its own SocksPort.
+* uwt looks if the command contains the words {{Code2|localhost}} or {{Code2|127.0.0.1}}, if that is the case, uwt will not be used. The command will be run without uwt. Thus, if a localhost connection is falsely detected it will leak, but only through Tor's DnsPort and through Tor's TransPort, which should be ok.
 
 Isolate by destination address: Let's assume SSH goes over port 22 and you want to connect to different SSH servers and do not want an observer to be able to correlate that activity to the same pseudonym. If the SSH servers run on different IP's isolate by destination address might help.
 
@@ -198,7 +198,7 @@ Different tabs and websites in Tor Browser are not isolated until Tor upstream f
 
 === Custom Software ===
 
-If you install custom software on Whonix-Workstation, and want to prevent ''identity correlation through circuit sharing'' (which you should do), you have to manually configure them. This is not a Whonix specific problem. <ref>If you used to use only one SocksPort with the [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO common torification methods], the [https://lists.torproject.org/pipermail/tor-talk/2012-March/023535.html same thing happened].</ref> <ref>Also the current (March 2012) [https://www.torproject.org/projects/torbrowser.html.en Tor Browser Bundle] is affected, all Firefox Tabs can be correlated to the same identity until the circuit is automatically changed by Tor.</ref> <ref>[https://tails.boum.org/ Tails], which is officially listed on torproject.org was [https://lists.torproject.org/pipermail/tor-talk/2012-March/023535.html also affected]. Tails done [https://tails.boum.org/todo/separate_Tor_streams/ Todo] item.</ref>
+If you install custom software on Whonix-Workstation, and want to prevent {{Code2|identity correlation through circuit sharing}} (which you should do), you have to manually configure them. This is not a Whonix specific problem. <ref>If you used to use only one SocksPort with the [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO common torification methods], the [https://lists.torproject.org/pipermail/tor-talk/2012-March/023535.html same thing happened].</ref> <ref>Also the current (March 2012) [https://www.torproject.org/projects/torbrowser.html.en Tor Browser Bundle] is affected, all Firefox Tabs can be correlated to the same identity until the circuit is automatically changed by Tor.</ref> <ref>[https://tails.boum.org/ Tails], which is officially listed on torproject.org was [https://lists.torproject.org/pipermail/tor-talk/2012-March/023535.html also affected]. Tails done [https://tails.boum.org/todo/separate_Tor_streams/ Todo] item.</ref>
 
 Read also [[Install Software | Software installation on Whonix-Workstation]].
 
@@ -213,11 +213,11 @@ Hidden services are automatically separated from each other.<ref>https://lists.t
 
 === Basic Protection ===
 
-Most applications which come with Whonix 0.2.1 and above are already configured to prevent ''identity correlation through circuit sharing'', you really should read the introduction above.
+Most applications which come with Whonix 0.2.1 and above are already configured to prevent {{Code2|identity correlation through circuit sharing}}, you really should read the introduction above.
 
-The only traffic going through TransPort by default is [[whonixcheck]] when testing the TransPort. If that is of concern to you, it can be disabled in whonixcheck. Just comment out the "''check_tor "TransPort"''" in ''/usr/local/bin/whonixcheck'' in that case.
+The only traffic going through TransPort by default is [[whonixcheck]] when testing the TransPort. If that is of concern to you, it can be disabled in whonixcheck. Just comment out the "{{Code2|check_tor "TransPort"}}" in {{Code2|/usr/bin/whonixcheck}} in that case.
 
-All custom installed application's TCP traffic is routed through Tor's TransPort and all their DNS requests through Tor's DnsPort. This means different activities or "identities" in different applications (say browser, IRC, email) end up being routed through the same circuit, thus ''identity correlation'' is at risk.
+All custom installed application's TCP traffic is routed through Tor's TransPort and all their DNS requests through Tor's DnsPort. This means different activities or "identities" in different applications (say browser, IRC, email) end up being routed through the same circuit, thus {{Code2|identity correlation}} is at risk.
 
 To protect against this, you have to set up per-application SOCKS ports in Whonix-Gateway.
 
@@ -229,21 +229,21 @@ On Whonix-Gateway in {{Code2|/etc/tor/torrc}} ([https://github.com/Whonix/Whonix
 * With IsolateDestAddr and with IsolateDestPort: SocksPort: 192.168.0.10:9180 to 9189
 * If they those are not enough, you can add your own ones.
 
-You can point your applications, where you want to prevent ''identity correlation though circuit sharing'', to those SocksPorts. Each custom installed application has to be torified, for directions how to do that use the [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO Torify HOWTO].
+You can point your applications, where you want to prevent {{Code2|identity correlation though circuit sharing}}, to those SocksPorts. Each custom installed application has to be torified, for directions how to do that use the [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO Torify HOWTO].
 
 Additional comments regarding the Torify HOWTO:
 
 * Warnings about protocol related warnings you must honor. You are still better off with Whonix, as it offers best possible [[Protocol-Leak-Protection and Fingerprinting-Protection]].
 * Whonix's setup provides protection against IP leaks through [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Protocolleaks protocol leaks].
 * If you do not correctly torify, no connections will be possible.
-* If you redirect more than one application to the same SocksPort, ''identity correlation'' is at risk.
+* If you redirect more than one application to the same SocksPort, {{Code2|identity correlation}} is at risk.
 * DNS related [https://trac.torproject.org/projects/tor/wiki/doc/TorFAQ#IkeepseeingthesewarningsaboutSOCKSandDNSandinformationleaks.ShouldIworry warnings] still apply, though to a lesser extent - an attack could only make correlations but still couldn't figure out your IP. You can prevent that, be out commenting (# in front) DnsPort in {{Code2|/etc/tor/torrc}} on the Whonix-Gateway and by removing the DNS redirection firewall rule from /usr/local/bin/whonix_firewall. ([https://github.com/Whonix/Whonix/blob/stable/whonix_gateway/usr/local/bin/whonix_firewall on github])
 ** Do not use a [https://trac.torproject.org/projects/tor/wiki/doc/SupportPrograms#DNS local DNS resolver], as all DNS requests would be executed by the same circuit.
 * Other leaks, such as applications not honoring the proxy settings / wrapper, ICMP or UDP leaks do not apply to Whonix.
 
 === Better Protection ===
 
-For best protection against ''identity correlation'':
+For best protection against {{Code2|identity correlation}}:
 
 Read the advice above and on Whonix-Gateway:
 
@@ -253,15 +253,15 @@ Deactivate KDE / GNOME - application wide proxy settings...
 
 To deactivate TransPort and DnsPort...
 
-* Set ''WORKSTATION_TRANSPARENT_TCP=0'' in ''/usr/local/bin/whonix_firewall'' ([https://github.com/Whonix/Whonix/blob/stable/whonix_gateway/usr/local/bin/whonix_firewall on github])
-* Set ''WORKSTATION_TRANSPARENT_DNS=0'' in ''/usr/local/bin/whonix_firewall''
-* Reload whonix_firewall (''sudo /usr/local/bin/whonix_firewall'') or simply reboot.
+* See {{Code2|WORKSTATION_TRANSPARENT_TCP}} in {{Code2|/etc/whonix_firewall.d/30_default}}.
+* See {{Code2|WORKSTATION_TRANSPARENT_DNS}} in {{Code2|/etc/whonix_firewall.d/30_default}}.
+* Reload whonix_firewall ({{Code|sudo /usr/bin/whonix_firewall}}) or simply reboot.
 
 Although not strictly required, you could additionally, comment out:
 
-* TransPort in {{Code2|/etc/tor/torrc}}
-* DnsPort in {{Code2|/etc/tor/torrc}}
-* And restart Tor. (''sudo service tor restart'')
+* TransPort in '''TODO''': {{Code2|/usr/share/tor/tor-service-defaults-torrc}} (this file may get overwritten when Whonix gets updated) or {{Code2|/etc/tor/torrc}}
+* DnsPort in '''TODO''': {{Code2|/usr/share/tor/tor-service-defaults-torrc}} (this file may get overwritten when Whonix gets updated) or {{Code2|/etc/tor/torrc}}
+* And restart Tor. ({{Code2|sudo service tor restart}})
 
 This will disable transparent proxying. All applications not configured to use a SocksPort or forced to use a SocksPort (use uwt) will not be able to establish connections. This is the only way to ensure, that different SocksPorts are used and that also DNS is remotely resolved through that SocksPort.
 
