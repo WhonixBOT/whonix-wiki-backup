@@ -52,27 +52,27 @@ Whonix's Time Synchronization Mechanism:
 ** built in time synchronization features get disabled by ''VBoxManage setextradata "$VMNAME" "VBoxInternal/Devices/VMMDev/0/Config/GetHostTimeDisabled" "1"'' at build time.
 * Whonix-Gateway and Whonix-Workstation
 ** When get powered on, they still get their time from the host. The user is advised to modify the biossystemtimeoffset in Advanced Security Guide, chapter [[Advanced Security Guide#Network Time Synchronization|Network Time Synchronization]]. <ref>Developer information: If we needed or wanted to render the hardware clock unusable, we could set VirtualBox ''--biossystemtimeoffset'' several decades in past or future.</ref>
-** {{Whonix6}} and above: Time Sanity Check before tails_htp will be executed, this ensures, that the host clock is sane and not slow in 1980. User gets advised to fix its host clock in such cases.
-** After they are connected to the Tor network, they use a modified [https://tails.boum.org/contribute/design/Time_syncing/ tails_htp] to set the system clock. <ref>Stream isolation has been added, for Whonix's tails_htp implementation i.e. people using Tor Browser prevent notifying their exit relay, that they are tails_htp or Whonix users.</ref>
-** {{Whonix6}} and above: Time Sanity Check after tails_htp was executed. This should catch eventual bigger bugs and attacks. User gets informed if it fails.
+** {{Whonix6}} and above: Time Sanity Check before sdwdate will be executed, this ensures, that the host clock is sane and not slow in 1980. User gets advised to fix its host clock in such cases.
+** After they are connected to the Tor network, they use a modified [https://tails.boum.org/contribute/design/Time_syncing/ tails_htp] to set the system clock. <ref>Stream isolation has been added, for Whonix's sdwdate implementation i.e. people using Tor Browser prevent notifying their exit relay, that they are sdwdate or Whonix users.</ref>
+** {{Whonix6}} and above: Time Sanity Check after sdwdate was executed. This should catch eventual bigger bugs and attacks. User gets informed if it fails.
 * On Whonix-Workstation,
-** Using Boot Clock Randomization (Whonix {{Whonix6}} and above), i.e. after boot, the clock is set randomly between 5 and 180 seconds into the past or future. This is useful to enforce the design goal, that the host clock and Whonix-Workstation clock should always slightly differ. It's also useful to obfuscate the clock when tails_htp itself is running, because naturally at this time, tails_htp hasn't finished.
-** Every hour, at a random time, tails_htp will set the clock again. This is useful for machines running for long time periods without reboot.
-** An adversary could guess if someone is running a hidden service with constant clock adjustments, that it's hosted inside a Whonix-Workstation. It's unknown if the clock adjustments by tails_htp are big enough to enable an adversary to guess that.
-*** '''TODO''': Open question... "''ntpd adjusts the clock in small steps so that the timescale is effectively continuous and without discontinuities''" - is that possible with a tails_htp like appraoch as well?
+** Using Boot Clock Randomization (Whonix {{Whonix6}} and above), i.e. after boot, the clock is set randomly between 5 and 180 seconds into the past or future. This is useful to enforce the design goal, that the host clock and Whonix-Workstation clock should always slightly differ. It's also useful to obfuscate the clock when sdwdate itself is running, because naturally at this time, sdwdate hasn't finished.
+** Every hour, at a random time, sdwdate will set the clock again. This is useful for machines running for long time periods without reboot.
+** An adversary could guess if someone is running a hidden service with constant clock adjustments, that it's hosted inside a Whonix-Workstation. It's unknown if the clock adjustments by sdwdate are big enough to enable an adversary to guess that.
+*** '''TODO''': Open question... "''ntpd adjusts the clock in small steps so that the timescale is effectively continuous and without discontinuities''" - is that possible with a sdwdate like approach as well?
 * Whonix-Gateway
 ** Doesn't use Boot Clock Randomization. If the assumption is correct, that the ISP can detect clock jumps by observing Tor's TLS client hello, clock jumps should be avoided to prevent fingerprinting Whonix users.
-** Uses tails_htp after booting.
+** Uses sdwdate after booting.
 ** Using it at all is better against Attack (1) when using a bridge.
-** Running tails_htp also every hour at a random time on Whonix-Gateway is no good idea, because Tor does not like clock jumps. When testing this, there were cases where the clock jumped about 800 seconds, which caused Tor to expire circuits, which caused connection interrupts.
-** '''TODO''': Open question... How often should tails_htp run on Whonix-Gateway? Every hour is a bad idea, as we see above. Not running it again when some people may run Whonix-Gateway for days or weeks is not good either, since the clock can drift. Maybe it should run wait 24 hours and then wait a random amount of minutes within 24 hours?
+** Running sdwdate also every \[1440 minutes + random(0-1440)\]. Not running this every hour at a random time, because Tor does not like clock jumps. When testing this, there were cases where the clock jumped about 800 seconds, which caused Tor to expire circuits, which caused connection interrupts.
+** '''TODO''': Open question... How often should sdwdate run on Whonix-Gateway? Every hour is a bad idea, as we see above. Not running it again when some people may run Whonix-Gateway for days or weeks is not good either, since the clock can drift. Maybe it should run wait 24 hours and then wait a random amount of minutes within 24 hours?
 *** The entry guard or bridge can see the time through TCP timestamp. <ref name=tlsleakone>[https://trac.torproject.org/projects/tor/ticket/7277 torproject.org #7277: timestamp leaked in TLS client hello]</ref>; <ref name=tlsleaktwo>[https://trac.torproject.org/projects/tor/ticket/4852 torproject.org #4852: Clients send NETINFO with time]</ref>
 *** Continuous clock jumps could help the entry guard or bridge guessing, that a Whonix-Gateway is connected.
-*** '''TODO''': Open question... "''ntpd adjusts the clock in small steps so that the timescale is effectively continuous and without discontinuities''" - is that possible with a tails_htp like appraoch as well?
+*** '''TODO''': Open question... "''ntpd adjusts the clock in small steps so that the timescale is effectively continuous and without discontinuities''" - is that possible with a sdwdate like approach as well?
 * Hardware Clock:
 ** Whonix-Gateway: set to UTC. Tor leaks it <ref name=tlsleakone />; <ref name=tlsleaktwo />, but that is of no concern. Tor is running on Linux and Linux is expected to be run in UTC. Therefore there is no point to set it to the local time zone of the user.
 ** Whonix-Workstation: set to UTC
-* tails_htp runs at non predictable times to prevent the ISP or Tor guard/bridge node to guess, that the user is running Whonix.
+* sdwdate runs at non-predictable times to prevent the ISP or Tor guard/bridge node to guess, that the user is running Whonix.
 * Implementation details are in Design-Shared, chapter [[Dev/Design-Shared#timesync|TimeSync]]
 * That will reach the design goal, that all clocks, the host's, Whonix-Gateway's and Whonix-Workstation's slightly differ.
 
