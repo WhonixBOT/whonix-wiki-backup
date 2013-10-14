@@ -1,0 +1,333 @@
+{{Header}}
+{{forkme}}
+= About Whonix =
+[[Image:whonix.jpg|center|Whonix Concept|500px]]
+
+Whonix (called TorBOX in past) is an anonymous general purpose operating system based on VirtualBox, Debian GNU/Linux and Tor. By Whonix design, IP and
+DNS leaks are impossible. Not even malware with root privileges can find out the user's real IP/location.
+
+This is because Whonix consists of two (virtual) machines. One machine solely runs Tor and acts as a gateway, which we call Whonix-Gateway. The other machine, which we call Whonix-Workstation, is on a completely isolated network. Only connections through Tor are possible.
+
+Whonix is produced independently from the Tor (r) anonymity software and carries no guarantee from The Tor Project about quality, suitability or anything else.
+
+See LICENSE in root of Whonix source for copyright, license and authors.
+
+The Build Documentation is only interesting for developers and people who want to build Whonix from source code. If you're a user you may want to head over to the [[Download]] page.
+
+Looking for developers! Patches and new developers highly welcome!
+
+[[Image:Whonix-ad.png|Looking for developers!]]
+
+<html><a href="/cgi-bin/mailman/listinfo/whonix-devel">Whonix Developer Mailing List</a></html>
+
+= Build Documentation =
+== Introduction ==
+This page documents how to build Whonix VirtualBox images. If you have any questions or need help, get in Contact.
+
+It documents how to build the ''development version'' of Whonix. Rather, if you are interested in building the stable version of Whonix, click [[Dev/Build_Documentation|Build Documentation]].
+
+Knowledge assumed: basic principles of Virtualization; operation of your platform; Linux knowledge: how to install Debian and basic command line knowledge.
+
+Only one prerequisite: you need a working internet connection.
+
+For discussion related to the development and build process of Whonix images get
+in contact.
+
+How to use the resulting images, is documented in the [[Documentation]].
+
+== Warning ==
+{{Code|/dev/mapper/loop0p1}} (and {{Code|/dev/nbd0}}) (used for mounting the images) is hard coded inside Whonix build scripts. Beware if you are using such devices. It may conflict with TrueCrypt. (And possibly other tools relying on {{Code|/dev/mapper/loop0p1}} (and {{Code|/dev/nbd0}}).)
+
+To avoid damage to your host system, it may be wise to build Whonix inside a Virtual Machine.
+
+== Build Anonymity ==
+While downloading the required tools for building Whonix your internet service provider could if he want notice that you want to build Whonix. This is especially interesting, if you want to redistribute Whonix, but still want to stay anonymous. The full story can be read in the chapter [[Build Anonymity]].
+
+== Build Security ==
+Especially, but not exclusively, if you want to distribute Whonix images, you should improve the security of your build environment.
+
+* Build on a dedicated build system, install security updates... ([[Security Guide]])
+* All installation medium<ref>Such as DVD or USB.</ref> and all downloaded/used code must be verified (including all software on the host).
+* Hashes, fingerprints in the scripts and the wiki is not to be trusted. Verify everything.
+* Read [[Trust]].
+
+== Host preparation ==
+It is recommended to set your terminal (for example Konsole) to unlimited scrollback, so you can watch the full build log.
+
+You need to build on '''Debian Testing (Jessie)'''. (How to obtain Debian safely: <ref>[[Debian|Debian ISO OpenPGP verification]]</ref>)
+
+The build scripts could be adapted to run on other {{Code2|*NIX}} systems as well but currently they assume {{Code2|apt-get}} and {{Code2|grml-debootstrap}} to be available. You need about 15 GB of free space.
+
+((Build dependencies and configurations get automatically applied by {{Code2|[https://github.com/Whonix/Whonix/blob/master/build-steps.d/1100_prepare-build-machine build-steps.d/1100_prepare-build-machine]}}, so you don't have to worry about that.))
+
+== Introduction into Whonix Source Code ==
+This chapter is dedicated to give an introduction into the Whonix source code. '''If you prefer to read and understand the source code just by reading scripts you may skip this optional chapter.''' When you like to mess with the source code, it would probably help a lot if you at least know what {{Code|.img}}, {{Code|.vdi}}, {{Code|.vmdk}} and {{Code|.ova}} are being used for. See [[Dev/Source_Code_Intro|Source Code Introduction]].
+
+== Preparation Steps ==
+'''Only Required For Redistribution.''' See
+[[Dev/Redistribution#Pre_Building|Redistribution Pre Building]].
+
+== Get the Whonix Source Code ==
+As Gnome user, please disable the device auto mounter. Otherwise a file manager may got opened while building Whonix which could lead to issues. If you don't know if you are a Gnome user or not, just run this command, it won't hurt.
+
+<pre>
+gsettings set org.gnome.desktop.media-handling automount-open false
+</pre>
+
+Install git.
+
+<pre>
+sudo apt-get install git
+</pre>
+
+Get the Whonix source code. <ref>From https://github.com/adrelanos/Whonix and not from https://github.com/Whonix/Whonix, because only adrelanos/Whonix contains development version git tags (adretemp versions).</ref>
+
+<pre>git clone https://github.com/adrelanos/Whonix</pre>
+
+== Get Whonix Signing Key ==
+'''This chapter is recommended for better security, but not strictly required.''' (See [[Trust]])
+
+Get into Whonix source folder.
+
+<pre>
+cd Whonix
+</pre>
+
+Import the key.
+
+<pre>
+gpg --import adrelanos.asc
+</pre>
+
+Verify.
+
+<pre>
+gpg --fingerprint 9B157153925C303A42253AFB9C131AD3713AAEEF
+</pre>
+
+Should show.
+
+<pre>
+pub   4096R/713AAEEF 2012-03-02
+      Key fingerprint = 9B15 7153 925C 303A 4225  3AFB 9C13 1AD3 713A AEEF
+uid                  adrelanos <adrelanos at riseup dot net>
+sub   4096R/794279C4 2012-03-02
+</pre>
+
+For even better security, [[Whonix Signing Key|Learn about Whonix Signing Key]].
+
+== Verify the Whonix Source Code ==
+
+This chapter is recommended for better security, but not strictly required.<ref>See [[Trust]].</ref>
+
+Get a list of available git tags.
+
+<pre>git tag</pre>
+
+Verify the tag you want to build.
+
+<pre>
+## ... Replace with tag you want to build.
+git tag -v 7
+</pre>
+
+Output should look similar to this.
+
+<pre>
+object 13870efc29018065267788f9f23026e6ff489684
+type commit
+tag 7
+tagger adrelanos <adrelanos at riseup dot net> 1348681401 -0400
+
+7
+gpg: Signature made Wed Sep 26 17:43:26 2012 UTC using RSA key ID 713AAEEF
+gpg: Good signature from "adrelanos <adrelanos at riseup dot net"
+</pre>
+
+The warning.
+
+<pre>
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+</pre>
+
+Is explained on the [[Whonix Signing Key]] page and can be ignored.
+
+== Create the Images ==
+=== Preparations ===
+
+(1) Git checkout, which version or [[Dev/git|git branch]] you want to build. Examples.
+
+For stable including hotfixes. (If there is no git tag yet.)
+
+<pre>
+git checkout stable
+</pre>
+
+In case you want to use the development branch.
+
+<pre>
+git checkout master
+</pre>
+
+In case you want to build a specific tag.
+
+<pre>
+git checkout 7
+</pre>
+
+(2) Make sure there aren't any VMs in VirtualBox already called Whonix-Gateway or Whonix-Workstation!
+
+(3) Check if the [[Dev/SourceCodeIntro#OpenPGP Keys|OpenPGP public keys]] are still up to date.
+If you are in luck, you never have to update the keys yourself and the Whonix maintainer will keep them updated.
+
+=== Build Configuration ===
+'''Usually you don't need to change the build configuration.'''
+
+There are options available to you, such as [[Dev/Source_Code_Intro#Target_Architecture|creating 64 bit builds]] <ref>
+From {{Code|~/Whonix}} source folder.
+<pre>
+mkdir ../buildconfig.c
+echo 'export WHONIX_TARGET_ARCH="amd64"' > ../buildconfig.d/50_target_arch
+cat ../buildconfig.d/50_target_arch
+</pre>
+</ref>, if you are interested, see [[Dev/Source Code Intro#Build Configuration|Build Configuration]].
+
+=== Custom Build Tags ===
+'''Only if you are using your own git tags!'''
+
+Please look into {{Code|whonix_shared/etc/whonix.d/30_whonixcheck_default}}. Look for.
+
+<pre>
+## Override what version whonixcheck will show in its window title and which
+## Whonix News will be downloaded. Change only if you know what you are doing.
+#whonix_build_version="6"
+#whonix_deb_package_version="2:7-debpackage1"
+</pre>
+
+Create a file {{Code|whonix_shared/etc/whonix.d/30_whonixcheck_user}} and add for example. (You still have to replace "7" with the custom git tag you are using.
+
+<pre>
+whonix_build_version="7"
+whonix_deb_package_version="2:7-debpackage1"
+</pre>
+
+[https://github.com/Whonix/Whonix/issues/103 This won't be necessary anymore for further versions.]
+
+=== Source Code Changes ===
+'''Only in case you made changes to the Whonix source folder!''' <br />
+'''Not required if you only added using your own build configuration in [[Dev/Source_Code_Intro#Build_Configuration_Folder|{{Code|../buildconfig.d}}]] folder.'''
+
+If you made changes to the Whonix source code, those have to be git committed before building Whonix. Otherwise you'll get an error message. (Which looks like this: <ref>
+<pre>
++ true './build-steps.d/1200_create-debian-packages ERROR: Git reports uncommitted changes! '
++ true './build-steps.d/1200_create-debian-packages INFO: Running "git status" for your convenience. '
++ git status
+# On branch master
+# Changes not staged for commit:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#       modified:   whonix_build_both
+#
+no changes added to commit (use "git add" and/or "git commit -a")
++ true './build-steps.d/1200_create-debian-packages INFO: Running git "clean --dry-run -d --force --force" for your convenience. '
++ git clean --dry-run -d --force --force
++ true './build-steps.d/1200_create-debian-packages You most likely like to revert debian/control to run:
+    git checkout -- debian/control
+    make clean
+or if you know what you are doing:
+    git clean --dry-run -d --force --force
+    git reset --hard'
++ error 'Uncommitted changes! See above!'
+./build-steps.d/1200_create-debian-packages: line 109: error: command not found
+++ error_handler_general
+++ local return_code=127
+++ rm --force /etc/apt/sources.list.d/whonixtestingtemp.list
+++ rm --force /etc/apt/apt.conf.d/90whonix-build-confold
++++ caller
+++ echo '
+BASH_COMMAND: error "Uncommitted changes! See above!"
+return_code: 127
+ERROR ./build-steps.d/1200_create-debian-packages: | caller: 109 ./build-steps.d/1200_create-debian-packages
+'
+
+BASH_COMMAND: error "Uncommitted changes! See above!"
+return_code: 127
+ERROR ./build-steps.d/1200_create-debian-packages: | caller: 109 ./build-steps.d/1200_create-debian-packages
+
+++ exit 1
+</pre>
+</ref>)
+
+To git commit changes, some basic git knowledge would be of help. To give you an idea, the workflow could look like this.
+
+<pre>
+git status
+git add *
+git status
+#git add path-to-file
+## Preview.
+#git diff --cached
+git commit -a
+git status
+</pre>
+
+=== VM Creation ===
+If you want to build for the second time, made changes or want to build a newer version, you have to reset debian/changelog <ref>Otherwise the .deb packages would not get rebuild.</ref> and remove (or rename) any eventually already existing Whonix-Gateway and/or Whonix-Workstation in VirtualBox. Open a terminal (such as Konsole).
+
+Reset debian/changelog.
+
+<pre>
+git checkout -- debian/changelog
+</pre>
+
+Delete eventually already existing Whonix-Gateway virtual machine. '''Warning''': This will delete a virtual machine named Whonix-Gateway from Virtual Box!
+
+<pre>
+sudo ~/Whonix/whonix_build --clean --tor-gateway
+</pre>
+
+Delete eventually already existing Whonix-Workstation virtual machine. '''Warning''': This will delete a virtual machine named Whonix-Workstation from Virtual Box!
+
+<pre>
+sudo ~/Whonix/whonix_build --clean --tor-workstation
+</pre>
+
+Build both virtual machines images.
+
+<pre>
+sudo ~/Whonix/whonix_build_both
+</pre>
+
+The resulting {{Code2|.ova}} images can be found in {{Code|~/whonix_binary}} folder.
+
+Check if all went ok.
+
+Please report back any issues!
+
+== Debugging ==
+
+'''OPTIONAL''' (Only in case something goes wrong or if you want to audit or develop Whonix.)
+
+See [[Dev/Source_Code_Intro#Debugging|Debugging]].
+
+== Final Steps ==
+
+'''Only Required For Redistribution.''' See
+[[Dev/Redistribution#Post_Building|Redistribution Post Building]].
+
+= Source Code / Hacking / Development Tickets =
+See [[Dev/Developer_Portal|Developer Portal]].
+
+= Contact / About adrelanos =
+For general inquiries, see [[Contact]].
+
+To learn about adrelanos, the person who maintains Whonix, its OpenPGP key, see [https://github.com/Whonix/Whonix/blob/master/adrelanos.mediawiki adrelanos.mediawiki].
+
+= Footnotes =
+<references/>
+
+{{Footer}}
+
+[[Category:Development]]
