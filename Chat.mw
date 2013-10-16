@@ -71,14 +71,12 @@ TorChat ships it's own copy of Tor, sets up a hidden service and the messenger o
 
 === Installation ===
 {{Stable}}
-'''Currently broken! (Also using Tor over Tor.)'''
 
 '''EXPERIMENTAL''' Experimental as in it is difficult to install. Only use it in case you trust TorChat. There shouldn't be any anonymity leaks and it should be as safe as other hidden services in general and in Whonix.
 
 Learn about [[Hidden Services]] in Whonix first and learn how to set up the hidden webserver. This will ease following this guide.
 
-On Whonix-Gateway.
-
+==== On Whonix-Gateway ====
 Open your {{Code2|/etc/tor/torrc}}.
 
 <pre>
@@ -112,30 +110,76 @@ Get your onion address.
 <pre>
 ## You need root to do that
 sudo su
-
-## Find out your .onion hostname.
-nano /var/lib/tor/torchat/hostname
 </pre>
 
-Backup your key, if you want to ever restore it one another machine, a newer Whonix-Workstation or after hdd failure. If you don't care to get a new TorChat ID, you can skip this step.
+Find out your .onion hostname.
 
 <pre>
-/var/lib/tor/torchat/private_key
+cat /var/lib/tor/torchat/hostname
 </pre>
 
-On Whonix-Workstation. Update your package lists.
+Backup your key, if you want to ever restore it one another machine, a newer Whonix-Workstation or after hdd failure. If you don't care to get a new TorChat ID, you can skip this step. (Your have to manually do this! If you want to do this, the file you would have to backup is {{Code2|/var/lib/tor/torchat/private_key}}.
+
+==== On Whonix-Workstation ====
+(This step won't be necessary in Whonix 7+1 anymore.) 
 
 <pre>
 sudo apt-get update
 </pre>
 
-On Whonix-Workstation. Install TorChat.
+<pre>
+sudo apt-get realpath
+</pre>
+
+(This step won't be necessary in Whonix 7+1 anymore.) 
+
+<pre>
+dpkg-divert --add --rename --divert /usr/sbin/tor.real /usr/sbin/tor
+</pre>
+
+(This step won't be necessary in Whonix 7+1 anymore.) 
+
+<pre>
+dpkg-divert --add --rename --divert /usr/bin/tor.real /usr/bin/tor
+</pre>
+
+Create a file {{Code2|/usr/bin/tor}}. (Won't be necessary in Whonix 7+1 anymore.) 
+
+<pre>
+kdesudo kwrite /usr/bin/tor
+</pre>
+
+And add the following content. (Won't be necessary in Whonix 7+1 anymore.) 
+
+<pre>
+#!/bin/bash
+
+# This file is part of Whonix
+# Copyright (C) 2012 - 2013 adrelanos <adrelanos at riseup dot net>
+# See the file COPYING for copying conditions.
+
+## dummytor
+
+echo "INFO $(realpath $BASH_SOURCE): Dummy Tor."
+
+exit 0
+</pre>
+
+Safe.
+
+Update your package lists.
+
+<pre>
+sudo apt-get update
+</pre>
+
+Install TorChat.
 
 <pre>
 sudo apt-get install torchat
 </pre>
 
-Open the torchat.ini which is in the hidden folder /home/user/.torchat/torchat.ini.
+Open the {{Code2|torchat.ini}} which is in the hidden folder {{Code2|/home/user/.torchat/torchat.ini}}. The folder {{Code2|~/.torchat/Tor}} can be ignored.
 
 Look for the following line.
 
@@ -143,13 +187,23 @@ Look for the following line.
 own_hostname = <your onion hostname without the .onion ending>
 </pre>
 
-Replace it with your onion hostname. For example if your onion hostname is ''idnxcnkne4qt76tg.onion'' replace it enter ''idnxcnkne4qt76tg'', so it looks like this:
+Replace it with your onion hostname. For example if your onion hostname is {{Code2|idnxcnkne4qt76tg.onion}} replace it enter {{Code2|idnxcnkne4qt76tg}}, so it looks like this:
 
 <pre>
 own_hostname = idnxcnkne4qt76tg
 </pre>
 
 Save.
+
+Warning! If you later want to update Whonix you must undo the dpkg diversions. Do not run these commands right now. Run them when apt-get prompts you to install new Whonix packages.
+
+<pre>
+dpkg-divert --remove /usr/sbin/tor.real
+</pre>
+
+<pre>
+dpkg-divert --remove /usr/bin/tor.real
+</pre>
 
 === Starting ===
 
