@@ -1,0 +1,34 @@
+To get higher screen resolution without installing VirtualBox additions, create a file called, say /usr/share/X11/xorg.conf.d/00-virtualbox-monitor.conf , with the following contents:
+
+<pre>
+Section "Device"
+  Identifier "VirtualBox-Device"
+  Option "Monitor-default" "VirtualBox-Monitor"
+EndSection
+
+Section "Monitor"
+  Identifier "VirtualBox-Monitor"
+  VendorName "VirtualBox"
+  ModelName "VirtualBox"
+  HorizSync 1.0 - 1000.0
+  VertRefresh 1.0 - 1000.0
+  Option "MinClock" "1.0"
+  Option "MaxClock" "10000.0"
+  Option "Primary" "True"
+  Option "PreferredMode" "1600x1200"
+EndSection
+
+Section "Screen"
+  Identifier "MyScreen"
+  Device "VirtualBox-Device"
+  Monitor "VirtualBox-Monitor"
+EndSection
+</pre>
+
+This will make Whonix come up in 1600x1200 mode by default.
+
+You can change the default mode by changing the "PreferredMode" option in the "Monitor" section. You can dynamically switch modes from the command line with "xrandr --output default --mode [whatever]", and you can see a list of available modes with plain "xrandr".
+
+You can probably also change screen resolution using the KDE "Sytem Settings" GUI; I haven't tried it. I assume KDE will save those changes.
+
+The reason you can't just get higher resolutions using xrandr "--newmode" and "--addmode" without an xorg.conf file appears to be that VirtualBox isn't providing EDID information to the default VESA driver. The driver therefore makes the conservative assumption that it can't drive the "monitor" with the high clock rates needed for larger display sizes. The above config file tells the driver that it can use an effectively infinite range of clock rates.
