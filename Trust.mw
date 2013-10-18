@@ -179,60 +179,9 @@ Skilled developers could help to implement [https://github.com/Whonix/Whonix/iss
 
 = Whonix Automatic Updates =
 == Introduction ==
-At the moment, adrelanos is the only Whonix developer holding the Whonix APT repository OpenPGP signing key.
+Whonix provides an optional updater since Whonix 6.
 
-Since Whonix {{Whonix6}}, Whonix provides an auto updater. While building Whonix using the build script, a APT repository has been added to /etc/apt/sources.list.d/whonix.list and Whonix's (adrelanos's) APT repository OpenPGP signing key has been added to apt-key by the whonix_repository tool.
-
-When updated Whonix deb packages are uploaded to Whonix's APT repository, they will automatically get installed, next time you are upgrading your system using "sudo apt-get update && sudo apt-get dist-upgrade". If this is not what you want, this can be optionally disabled. Below is a security discussion about the advantages, disadvantages and differences and instructions on how to disable Whonix's APT repository.
-
-== When Building from Source Code ==
-{{Stable}}
-'''You need the fixed version of the whonix_repository tool, you can get it here: <br />'''
-https://github.com/Whonix/Whonix/blob/master/whonix_shared/usr/bin/whonix_repository <br />
-'''Copy it to /usr/bin/whonix_repository'''
-
-When it comes to trust, there is a big difference if you are building Whonix from source code. When you build Whonix using the build script and verified the source code to be non-malicious and reasonable bug free, Whonix developers have no way to access your system. With Whonix's APT repository enabled however, Whonix developers holding a Whonix repository signing key could always release a malicious update and gain full access on your machines.
-
-If you distrust Whonix developers, you can omit adding Whonix's APT repository signing key and omit the creation of {{Code|/etc/apt/sources.list.d/whonix.list}} to your build. Just create a file in {{Code|[[Dev/Source_Code_Intro#Build_Configuration|../buildconfig.d/50_user]]}} and add.
-
-<pre>export WHONIX_APT_REPOSITORY_DISTRUST_ENV=1</pre>
-
-To prevent Whonix's APT repository getting added if you later create an updated Whonix deb package, you should create {{Code|<whonix_source_folder>/whonix_shared/etc/environment}} (while building or {{Code|/etc/environment}} if you already build Whonix and forgot this step) and add.
-
-<pre>WHONIX_APT_REPOSITORY_DISTRUST_ENV=1</pre>
-
-(And/)Or<ref name=oneisenough>Adding the environment variable 
-
-<pre>
-WHONIX_APT_REPOSITORY_DISTRUST_ENV=1
-</pre>
-
-to
-
-<pre>
-/etc/environment
-</pre>
-
-OR using the configuration value
-
-<pre>
-WHONIX_APT_REPOSITORY_DISTRUST_CONFIG=1
-</pre>
-
-in the
-
-<pre>
-/etc/whonix.d/
-</pre>
-
-[[Whonix_Configuration_Files|configuration folder]] achieves the same result. Choosing one option is enough. Using both options will not do any harm either.</ref> create a file in {{Code|/etc/whonix.d}} [[Whonix_Configuration_Files|configuration folder]], for example {{Code|<whonix_source_folder>/whonix_shared/etc/whonix.d/50_aptrepository_user}} and add.
-
-<pre>
-WHONIX_APT_REPOSITORY_DISTRUST_CONFIG=1
-</pre>
-
-If you want to delete all related code, get into Whonix source code folder and delete the following two files.
-
+* When <u>building from source code</u>, since Whonix 7.3.3, Whonix's APT Repository is <u>disabled by default.</u> If you are extra paranoid want to delete all Whonix APT Repository related code, get into Whonix source code folder and delete the following two files, see footnotes. <ref>
 <pre>
 rm --verbose whonix_shared/usr/share/whonix/postinst.d/70_whonix_apt_key
 rm --verbose whonix_shared/usr/bin/whonix_repository
@@ -242,92 +191,19 @@ rm --verbose man/whonix_shared/whonix_repository.8.ronn
 rm --verbose whonix_shared/etc/whonix.d/30_aptrepository_default
 </pre>
 
-== When using the Whonix-Default-Download Version ==
-{{Stable}}
-'''You need the fixed version of the whonix_repository tool, you can get it here: <br />'''
-https://github.com/Whonix/Whonix/blob/master/whonix_shared/usr/bin/whonix_repository <br />
-'''Copy it to /usr/bin/whonix_repository'''
+You have to do this every time you are upgrading Whonix from source code.
+</ref>
+* For the <u>Default-[[Download]]-Version</u>, Whonix's APT Repository is <u>enabled by default.</u> While building Whonix using the build script, Whonix's APT repository has been added to {{Code2|/etc/apt/sources.list.d/whonix.list}} and Whonix's (adrelanos's) APT repository OpenPGP signing key has been added to apt-key by the {{Code2|whonix_repository}} tool.
 
-There is also a difference when using Whonix-Default-Download version. On one hand, when not using Whonix's APT repository, Whonix developers could sneak in a backdoor into the binary builds (download version) (the rest of the page above goes into this subject), which is worse enough. And on the other hand, while using Whonix's APT repository, Whonix developers could sneak in a backdoor at any time. Also notable, while the binary builds contain binary packages (which are downloaded from Debian repository while building), which makes it easier to sneak a backdoor in, the Whonix deb packages do not contain any compiled code yet (only configuration files, scripts, comments) (which might change with a malicious update). As long as there is no compiled code inside Whonix deb packages, it might be easier for auditors, to catch a backdoor in updated deb packages (unless its a targeted attack) compared to the binary builds (download version).
+When Whonix's APT Repository is enabled and updated Whonix debian packages are uploaded to Whonix's APT repository, next time you are upgrading your system using "sudo apt-get update && sudo apt-get dist-upgrade", those packages will automatically get installed. If this is not what you want, this can be [[Whonix-APT-Repository#Disable_Whonix_APT_Repository|disabled]]. Below is a security discussion about the implications.
 
-If Whonix is already installed, you can disable Whonix's APT repository using.
+At the moment, adrelanos is the only Whonix developer holding the Whonix APT repository OpenPGP signing key.
 
-<pre>whonix_repository --disable</pre>
+When it comes to trust, there is a big difference if you are building Whonix from source code or if you are using the Default-Download-Version. When you build Whonix using the build script and verified the source code to be non-malicious and reasonable bug free, Whonix developers have no way to access your system. With Whonix's APT repository enabled however, Whonix developers holding a Whonix repository signing key could always release a malicious update and gain full access on your machines.
 
-If you don't want to disable Whonix's APT repository after manually updating Whonix (manually downloading and installing updated Whonix deb packages), create a file /etc/environment.
+When using the Default-Download version, on one hand, when not using Whonix's APT repository, Whonix developers could sneak in a backdoor into the binary builds (download version) (the [[Trust]] page goes into this subject), which is worse enough. And on the other hand, while using Whonix's APT repository, Whonix developers could sneak in a backdoor at any time. Also notable, while the binary builds contain binary packages (which are downloaded from Debian repository while building), which makes it easier to sneak a backdoor in, the Whonix deb packages do not contain any compiled code yet (only configuration files, scripts, comments) (which might change with a malicious update). As long as there is no compiled code inside Whonix deb packages, it might be easier for auditors, to catch a backdoor in updated deb packages (unless its a targeted attack) compared to the binary builds (download version).
 
-<pre>sudo nano /etc/environment</pre>
-
-And add.
-
-<pre>export WHONIX_APT_REPOSITORY_DISTRUST_ENV=1</pre>
-
-(And/)Or<ref name=oneisenough /> create a file /etc/whonix.d/50_aptrepository_user.
-
-<pre>sudo nano /etc/whonix.d/50_aptrepository_user</pre>
-
-And add.
-
-<pre>
-WHONIX_APT_REPOSITORY_DISTRUST_CONFIG=1
-</pre>
-
-The whonix_repository tool has also a man page, which summarizes how to use it.
-
-<pre>man whonix_repository</pre>
-
-When Whonix's APT repository is disabled, there is no auto updater and the situation is the same as in Whonix 0.5.6 below.
-
-== Verify Disabled Whonix Apt Repository ==
-If you want to check, if disabling Whonix's apt repository was successful, you can run the following tests.
-
-Use {{Code2|apt-key}}.
-
-<pre>
-sudo apt-key finger
-</pre>
-
-It should not show any Whonix specific keys, it should not show adrelanos's OpenPGP key.
-
-Examine your {{Code2|/etc/apt/sources.list}}.
-
-<pre>
-cat /etc/apt/sources.list
-</pre>
-
-It should not include Whonix's apt repository.
-
-Examine your {{Code2|/etc/apt/sources.list.d/}} folder as well.
-
-<pre>
-cat /etc/apt/sources.list.d/*
-</pre>
-
-One of the following two tests must work as well.
-
-If you are using the {{Code2|WHONIX_APT_REPOSITORY_DISTRUST_ENV}} environment variable method.
-
-<pre>
-echo $WHONIX_APT_REPOSITORY_DISTRUST_ENV
-</pre>
-
-Should reply.
-
-<pre>
-1
-</pre>
-
-Or if you are using the {{Code2|WHONIX_APT_REPOSITORY_DISTRUST_CONFIG}} configuration variable in {{Code2|/etc/whonix.d/50_aptrepository_user}} method.
-
-<pre>
-grep WHONIX_APT_REPOSITORY_DISTRUST_CONFIG /etc/whonix.d/50_aptrepository_user
-</pre>
-
-Should reply.
-
-<pre>
-WHONIX_APT_REPOSITORY_DISTRUST_CONFIG=1
-</pre>
+When Whonix's APT repository is disabled, there is no updater and the situation is the same as in Whonix 0.5.6 below.
 
 == Security Conclusion ==
 Legend:
@@ -359,70 +235,7 @@ Legend:
 
 The least secure and most convenient way is to use Whonix is using Whonix-Default-Download and to leave Whonix's repository enabled.
 
-It's a bit safer to use Whonix-Default-Download version and to disable Whonix's APT repository. When updated Whonix deb packages are released, download them manually, verify them manually and install them manually. Big security bonus points for verifying the deb package contents before installing them. Most safe if you [[Dev/Build_Documentation|build Whonix from source code]] and also build update packages from source code. Big security bonus points for verifying the source code before building Whonix.
-
-== Updating Whonix Deb Packages from Source Code ==
-Might be a good idea to create a backup and/or snapshot before trying to update.
-
-Open a terminal. You need Whonix source code, please refer to [[Dev/Build Documentation]].
-
-If you haven't done already, remove Whonix's APT repository.
-
-<pre>
-sudo whonix_repository --disable
-</pre>
-
-To permanently remove Whonix's APT repository, please refer to [[Trust#Whonix_Automatic_Updates]].
-
-Get all build dependencies.
-
-<pre>
-sudo ./build-steps.d/1100_prepare-build-machine
-</pre>
-
-Create the packages.
-
-<pre>
-./build-steps.d/1200_create-debian-packages
-</pre>
-
-Upgrade Whonix Debian Packages without contacting a network mirror, using your own locally created apt package repository.
-
-For Whonix-Gateway.
-
-<pre>
-sudo ./debug-steps/locally-upgrade-whonix-debian-packages --bare-metal --tor-gateway
-</pre>
-
-For Whonix-Workstation.
-
-<pre>
-sudo ./debug-steps/locally-upgrade-whonix-debian-packages --bare-metal --tor-workstation
-</pre>
-
-There will be a lot debug output. <ref>Unless you log in as root and run "export WHONIX_DEB_DEBUG=0".</ref>
-
-If everything went well, you will see <ref>Or saying Whonix-Gateway respectively</ref> <ref>It won't, if you have "export WHONIX_DEB_DEBUG=0" set.</ref>
-
-<pre>
-########################################################################
-## INFO: Successfully configured (postinst script) Whonix-Workstation. #
-########################################################################
-</pre>
-
-Last message will be probably <ref>"probably" means, if we don't change some messages in meanwhile and forget to update this page.</ref>:
-
-<pre>
-+ true 'INFO: Skipping script, because BARE_METAL=1: /home/user/whonix_dot/Whonix/help-steps/unmount-img'
-</pre>
-
-In case an any error is caught, the script will loudly complain by echoing in a red colored error message:
-
-<pre>
-ERROR in ./debug-steps/locally-upgrade-whonix-debian-packages! Aborted.
-</pre>
-
-Lets hope it works well. Please get in [[Contact]] should there be any issues. Leave feedback if you are using this, if it worked for you, which issues you may have had, so these instructions can be updated.
+It's a bit safer to use Whonix-Default-Download version and to disable Whonix's APT repository. When updated Whonix deb packages are released, download them manually, verify them manually and install them manually. Big security bonus points for verifying the deb package contents before installing them. You'll get most security, if you [[Dev/Build_Documentation|build Whonix from source code]] and also build update packages from source code. Big security bonus points for verifying the source code before building Whonix.
 
 = Footnotes / References =
 <references/>
