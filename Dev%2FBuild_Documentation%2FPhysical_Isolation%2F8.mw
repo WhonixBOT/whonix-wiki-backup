@@ -109,15 +109,12 @@ When making changes here, please consider also making changes there.
 * Build dependencies and configurations get automatically applied, so you don't have to worry about that. <ref>By {{Code2|[https://github.com/Whonix/Whonix/blob/master/build-steps.d/1100_prepare-build-machine build-steps.d/1100_prepare-build-machine]}}.))</ref>
 * It is recommended to set your terminal (for example Konsole) to unlimited scrollback, so you can watch the full build log.
 
-= Installation =
+= How To Install Whonix-Gateway on Hardware (RECOMMENDED) =
+== Get Debian ==
+Download a Debian Testing/Jessie 32 bit installation iso. Detailed instructions doing so are unfortunately not part of this guide. However, the [[Debian]] page contains some help. (You could also use a Debian Testing/Jessie 64 bit installation iso, these instructions should also work, but it's less tested.)
 
-{{Build Configuration}}
-
-== How To Install Whonix-Gateway on hardware (RECOMMENDED) ==
-
-1. Download a Debian Testing/Jessie 32 bit installation iso. (You could also use a Debian Testing/Jessie 64 bit installation iso, these instructions should also work, but it's less tested.) Detailed instructions doing so are unfortunately not part of this guide. However, the [[Debian]] page contains some help.
-
-2. Install Debian Testing/Jessie and chose following settings:
+== Install Debian ==
+Install Debian Testing/Jessie and chose following settings:
 
 <pre>
 In the boot menu press F4 and select "Install a minimal system"
@@ -137,11 +134,13 @@ No automatic updates
 tasksel (Choose software to install): select nothing
 </pre>
 
-3. The external interface (usually eth0) may need to be configured according to the requirements of your local network, e.g. static or simply left to use dhcp if the gateway is connected to a dhcp capable router. For wlan follow the upstream documentations: [http://wiki.debian.org/WiFi debian wiki], [https://help.ubuntu.com/community/WifiDocs/WiFiHowTo Ubuntu help].
+== Network Configuration ==
+The external interface (usually eth0) may need to be configured according to the requirements of your local network, e.g. static or simply left to use dhcp if the gateway is connected to a dhcp capable router. For wlan follow the upstream documentations: [http://wiki.debian.org/WiFi debian wiki], [https://help.ubuntu.com/community/WifiDocs/WiFiHowTo Ubuntu help].
 
-4. Make sure the internet is working.
+Make sure the internet is working.
 
-5. Install all security updates and reboot.
+== Upgrade Debian ==
+Install all security updates and reboot.
 
 <pre>
 ## Become root.
@@ -157,13 +156,14 @@ apt-get dist-upgrade
 exit
 </pre>
 
-6. Install build dependencies. <ref>You need git to obtain the source code. Alternatively, you could also download a git tag as an archive using a (torified) browser: https://github.com/Whonix/Whonix/tags</ref>
+== Preparation ==
+Install sudo. <ref>You need git to obtain the source code. Alternatively, you could also download a git tag as an archive using a (torified) browser: https://github.com/Whonix/Whonix/tags</ref>
 
 <pre>
-sudo apt-get install git sudo
+sudo apt-get install sudo
 </pre>
 
-7. You must build as user "user" and that user must be a member of the "sudo" group.
+You must build as user "user" and that user must be a member of the "sudo" group.
 
 <pre>
 ## Become root.
@@ -172,51 +172,36 @@ su
 ## adduser "user"
 adduser user
 
-## add "user" to sudo group
+## add "user" to "sudo" group
 addgroup user sudo
 
 ## Back to normal user.
 exit
 </pre>
 
-8. On your Whonix-Gateway: It is assumed you created user account named "user".
+On your Whonix-Gateway: It is assumed you created user account named "user".
 
 <pre>
 su user
 cd ~
 </pre>
 
-9. Get the latest source code.
+'''Optional''': <br />
+You may want to take an image of your installation in case the build script fails in the middle.
 
-<pre>
-git clone https://github.com/Whonix/Whonix
-</pre>
+{{Build Documentation Get Source Code}}
 
-10. Get into Whonix source folder.
+{{Build Configuration}}
 
-<pre>
-cd Whonix
-</pre>
-
-11. Verify the git tag you want to use.
-
-<pre>
-git tag -v 7.3.3
-</pre>
-
-12. Switch to the git tag you want to use.
-
-<pre>
-git checkout 7.3.3
-</pre>
-
-13. Make sure you have all packages installed which are listed in the file {{Code2|grml_packages}}. You can do that using the following command.
+== Install Basic Packages ==
+Make sure you have all packages installed which are listed in the file {{Code2|grml_packages}}. You can do that using the following command.
 
 <pre>
 sudo apt-get install $(grep -vE "^\s*#" grml_packages | tr "\n" " ")
 </pre>
 
-14. Before running the {{Code2|whonix_build}} script make sure eth1 and eth0 refer to the correct interfaces.
+== Network Verification ==
+Before running the {{Code2|whonix_build}} script make sure eth1 and eth0 refer to the correct interfaces.
 
 <pre>
 ## May be helpful.
@@ -230,29 +215,30 @@ grep -r eth0* *
 grep -r eth1* *
 </pre>
 
-15. Most configuration files work well inside Virtual Machines and on hardware. Only minor things such as deactivating powersaving, passwordless reboot, shutdown etc. are only recommended for Virtual Machines. You can easily comment them out by putting a hash # in front of them. They are marked, to find them, grep can be used.
+== Minor Things ==
+<s>Most configuration files work well inside Virtual Machines and on hardware. Only minor things such as deactivating powersaving, passwordless reboot, shutdown etc. are only recommended for Virtual Machines. You can easily comment them out by putting a hash # in front of them. They are marked, to find them, grep can be used.</s> Skip this for now. You can change these files later after building Whonix. (Simpler.)
 
 <pre>
 grep -r VMONLY* *
 </pre>
 
-16. Run the build script.
-
+== Run Build Script ==
 <pre>
 sudo ./whonix_build --tor-gateway --bare-metal --build
 </pre>
 
-18. Reboot.
+== Final Steps ==
+Reboot.
 
 <pre>
 sudo reboot
 </pre>
 
-19. You will autologin as new user "user". (If you didn't install as user "user", your old user and home folder does of course still exist.)
+You will autologin as new user "user". (If you didn't install as user "user", your old user and home folder does of course still exist.)
 
-20. Done.
+Done.
 
-== How To Install Whonix-Gateway in a VM (UNTESTED / NOT RECOMMENDED) ==
+= How To Install Whonix-Gateway in a VM (UNTESTED / NOT RECOMMENDED) =
 
 It is advised to install a new OS just for hosting the Gateway VM, any OS that can run VirtualBox works but we recommend an Open Source system.
 
@@ -264,7 +250,7 @@ This configuration is entirely untested and not recommended unless you need to r
 
 When using NAT for a virtualized Gateway you need to set up port forwarding in VirtualBox. Using bridged network may be easier, but then the router may see the Whonix-Gateway MAC address which identifies as Whonix-Gateway. (Should not be of concern in home networks. Should be of concern in untrusted networks or when using a modem to connect.)
 
-== Install Whonix-Workstation in a VM (RECOMMENDED) ==
+= Install Whonix-Workstation in a VM (RECOMMENDED) =
 
 === First Steps ===
 
@@ -348,7 +334,7 @@ Since in the bridged network case, Whonix-Workstation can see the MAC address of
 
 See [[Pre_Install_Advice#MAC_Address|Whonix in public networks]].
 
-== Install Whonix-Workstation on hardware (NOT RECOMMENDED) ==
+= Install Whonix-Workstation on hardware (NOT RECOMMENDED) =
 
 Install Whonix-Workstation on hardware without using a VM is recommended against, because hardware serials would be visible to Whonix-Workstation.
 
