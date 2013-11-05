@@ -13,7 +13,8 @@ You should know how to boot other operating systems than your primary every day 
 
 Optionally, if your storage medium could get accessed to stolen by an adversary, it is also recommended to learn how to use disk encryption software.
 
-= Creating your initial keypair =
+= Creating your Master/Offline/Airgapped OpenPGP Key =
+== Creating your Initial Keypair ==
 Use the {{Code2|gpg ‐‐gen-key}} command to create a new GPG keypair.
 
 You may want your key to expire; it’s up to you. When prompted for a passphrase, make sure to pick a long and unique one. If your key gets stolen, this passphrase is the only thing protecting it!
@@ -69,7 +70,7 @@ uid                  Bilbo Baggins &lt;bilbo@shire.org&gt;
 sub   4096R/69B0EA85 2013-03-13
 </pre>
 
-= Strengthening hash preferences =
+== Strengthening Hash Preferences ==
 Now we set our key to prefer stronger hashes. Use the {{Code2|gpg ‐‐edit-key}} command. At the gpg> prompt, enter the command {{Code2|setpref SHA512 SHA384 SHA256 SHA224 AES256 AES192 AES CAST5 ZLIB BZIP2 ZIP Uncompressed}} (note that this will probably be cut off in the example below; highlight it with your mouse to see it), then save.
 
 <pre>
@@ -111,7 +112,7 @@ sub  4096R/69B0EA85  created: 2013-03-13  expires: never       usage: E
 gpg&gt; <strong>save</strong>
 </pre>
 
-= Adding a new signing subkey =
+== Adding a new Signing Subkey ==
 Now for the special sauce: let’s add our new signing subkey.
 
 Use the {{Code2|gpg ‐‐edit-key}} command. At the gpg> prompt, enter the command addkey. Select RSA (sign only) and 4096 for the keysize. Don’t forget to save at the last gpg> prompt:
@@ -171,7 +172,7 @@ sub  4096R/C24C2CDA  created: 2013-03-13  expires: never       usage: S
 gpg&gt; <strong>save</strong>
 </pre>
 
-= Creating a revocation certificate =
+== Creating a Revocation Certificate ==
 Now we generate a revocation certificate file. If your master keypair gets lost or stolen, this certificate file is the only way you’ll be able to tell people to ignore the stolen key. This is important, don’t skip this step!
 
 <pre>
@@ -180,7 +181,7 @@ gpg --output bilbo@shire.org.gpg-revocation-certificate --gen-revoke bilbo@shire
 
 Store the revocation certificate file in a different place than your master keypair (which we’ll export in a later step). You’ll use it to revoke your master keypair should you lose access to it. If you only lose access to your laptop keypair, then you’ll revoke those subkeys using the master keypair, not this revocation certificate.
 
-= Exporting the final product =
+== Exporting your Master Key =
 Now that your keypair has been created, let’s export it so that we can back it up:
 
 <pre>
