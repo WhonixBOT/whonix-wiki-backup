@@ -1,3 +1,6 @@
+'''UNFINISHED!'''
+
+
 The concept behind this technique is as follows:
 
 # Create a regular GPG keypair. By default GPG creates one signing subkey (your identity) and one encryption subkey (how you receive messages intended for you).
@@ -102,3 +105,82 @@ sub  4096R/69B0EA85  created: 2013-03-13  expires: never       usage: E
 
 gpg&gt; <strong>save</strong>
 </pre>
+
+= Adding a new signing subkey =
+Now for the special sauce: let’s add our new signing subkey.
+
+Use the {{Code2|gpg ‐‐edit-key}} command. At the gpg> prompt, enter the command addkey. Select RSA (sign only) and 4096 for the keysize. Don’t forget to save at the last gpg> prompt:
+
+<pre>
+gpg --edit-key bilbo@shire.org
+gpg (GnuPG) 1.4.11; Copyright (C) 2010 Free Software Foundation, Inc.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Secret key is available.
+
+gpg: checking the trustdb
+gpg: 3 marginal(s) needed, 1 complete(s) needed, PGP trust model
+gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
+pub  4096R/488BA441  created: 2013-03-13  expires: never       usage: SC  
+                     trust: ultimate      validity: ultimate
+sub  4096R/69B0EA85  created: 2013-03-13  expires: never       usage: E   
+[ultimate] (1). Bilbo Baggins &lt;bilbo@shire.org&gt;
+[ultimate] (2)  [jpeg image of size 5324]
+
+gpg&gt; <strong>addkey</strong>
+Key is protected.
+
+You need a passphrase to unlock the secret key for
+user: "Bilbo Baggins &lt;bilbo@shire.org&gt;"
+4096-bit RSA key, ID 488BA441, created 2013-03-13
+<strong>&lt;passphrase&gt;</strong>
+
+Please select what kind of key you want:
+    (3) DSA (sign only)
+    (4) RSA (sign only)
+    (5) Elgamal (encrypt only)
+    (6) RSA (encrypt only)
+Your selection? <strong>4</strong>
+RSA keys may be between 1024 and 4096 bits long.
+What keysize do you want? (2048) <strong>4096</strong>
+Requested keysize is 4096 bits
+Please specify how long the key should be valid.
+    0 = key does not expire
+    &lt;n&gt;  = key expires in n days
+    &lt;n&gt;w = key expires in n weeks
+    &lt;n&gt;m = key expires in n months
+    &lt;n&gt;y = key expires in n years
+Key is valid for? (0) <strong>0</strong>
+Key does not expire at all
+Is this correct? (y/N) <strong>y</strong>
+Really create? (y/N) <strong>y</strong>
+
+pub  4096R/488BA441  created: 2013-03-13  expires: never       usage: SC  
+                     trust: ultimate      validity: ultimate
+sub  4096R/69B0EA85  created: 2013-03-13  expires: never       usage: E   
+sub  4096R/C24C2CDA  created: 2013-03-13  expires: never       usage: S   
+[ultimate] (1). Bilbo Baggins &lt;bilbo@shire.org&gt;
+[ultimate] (2)  [jpeg image of size 5324]
+
+gpg&gt; <strong>save</strong>
+</pre>
+
+= Creating a revocation certificate =
+Now we generate a revocation certificate file. If your master keypair gets lost or stolen, this certificate file is the only way you’ll be able to tell people to ignore the stolen key. This is important, don’t skip this step!
+
+<pre>
+gpg --output bilbo@shire.org.gpg-revocation-certificate --gen-revoke bilbo@shire.org
+</pre>
+
+Store the revocation certificate file in a different place than your master keypair (which we’ll export in a later step). You’ll use it to revoke your master keypair should you lose access to it. If you only lose access to your laptop keypair, then you’ll revoke those subkeys using the master keypair, not this revocation certificate.
+
+= Exporting the final product =
+Now that your keypair has been created, let’s export it so that we can back it up:
+
+<pre>
+gpg --export-secret-keys --armor bilbo@shire.org > bilbo@shire.org.private.gpg-key
+gpg --export --armor bilbo@shire.org > bilbo@shire.org.public.gpg-key
+</pre>
+
+This will create two files: your public key and your private key. Protect these two files, along with the revocation certificate file, as best as you can—don’t keep them on your laptop, keep them in your house or in a safe-deposit box. These three files are your master keypair.
