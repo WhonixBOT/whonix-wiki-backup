@@ -191,5 +191,117 @@ gpg --export --armor bilbo@shire.org > bilbo@shire.org.public.gpg-key
 
 This will create two files: your public key and your private key. Protect these two files, along with the revocation certificate file, as best as you can—don’t keep them on your laptop, keep them in your house or in a safe-deposit box. These three files are your master keypair.
 
+= Creating your Slave Key =
+Now we have our master keypair in our keyring, along with three files representing the master keypair plus the keypair’s revocation certificate. To transform our master keypair into our slave keypair, we have to remove the original signing subkey from the master keypair in our keyring.
+
+Export all of the subkeys from our new keypair to a file:
+
+gpg --export-secret-subkeys bilbo@shire.org > subkeys
+
+Delete the original signing subkey from the keypair in our keyring:
+gpg --delete-secret-key bilbo@shire.org
+
+Re-import the keys we exported and clean up our temporary file:
+gpg --import subkeys rm subkeys
+
+That’s all! You can verify it worked by running:
+
+<pre>
+gpg -K
+/home/bilbo/.gnupg/secring.gpg
+-----------------------------
+<mark>sec#</mark>  4096R/488BA441 2013-03-13
+uid                  Bilbo Baggins &lt;bilbo@shire.org&gt;
+ssb   4096R/69B0EA85 2013-03-13
+ssb   4096R/C24C2CDA 2013-03-13
+</pre>
+
+See how the third line begins with “sec#”, not “sec”? The pound sign means the signing subkey is not in the keypair located in the keyring.
+
+= In Case of Emergency =
+Should the worst happen and your slave keypair gets lost, compromised or stolen, we need to revoke the subkeys on that keypair.
+
+Unlock your safe-deposit box and get your master keypair out.
+
+Boot a live USB of Debian or your distro of choice. Then, import your master keypair into the live USB’s keyring:
+
+<pre>
+gpg --import /path/to/\<bilbo@shire.org\>.public.gpg-key /path/to/\<bilbo@shire.org\>.private.gpg-key
+</pre>
+
+Now use {{Code2|gpg ‐‐edit-key}} to interactively revoke your subkeys:
+
+<pre>
+gpg --edit-key bilbo@shire.org
+gpg (GnuPG) 1.4.11; Copyright (C) 2010 Free Software Foundation, Inc.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Secret key is available.
+
+pub  4096R/488BA441  created: 2013-03-13  expires: never       usage: SC  
+                     trust: ultimate      validity: ultimate
+sub  4096R/69B0EA85  created: 2013-03-13  expires: never       usage: E   
+sub  4096R/C24C2CDA  created: 2013-03-13  expires: never       usage: S   
+[ultimate] (1). Bilbo Baggins &lt;bilbo@shire.org&gt;
+[ultimate] (2)  [jpeg image of size 5324]
+
+gpg&gt; <strong>key 1</strong>
+
+pub  4096R/488BA441  created: 2013-03-13  expires: never       usage: SC  
+                     trust: ultimate      validity: ultimate
+sub* 4096R/69B0EA85  created: 2013-03-13  expires: never       usage: E   
+sub  4096R/C24C2CDA  created: 2013-03-13  expires: never       usage: S   
+[ultimate] (1). Bilbo Baggins &lt;bilbo@shire.org&gt;
+[ultimate] (2)  [jpeg image of size 5324]
+
+gpg&gt; <strong>key 2</strong>
+
+pub  4096R/488BA441  created: 2013-03-13  expires: never       usage: SC  
+                     trust: ultimate      validity: ultimate
+sub* 4096R/69B0EA85  created: 2013-03-13  expires: never       usage: E   
+sub* 4096R/C24C2CDA  created: 2013-03-13  expires: never       usage: S   
+[ultimate] (1). Bilbo Baggins &lt;bilbo@shire.org&gt;
+[ultimate] (2)  [jpeg image of size 5324]
+
+gpg&gt; <strong>revkey</strong>
+
+Do you really want to revoke the selected subkeys? (y/N) <strong>y</strong>
+Please select the reason for the revocation:
+  0 = No reason specified
+  1 = Key has been compromised
+  2 = Key is superseded
+  3 = Key is no longer used
+  Q = Cancel
+Your decision? <strong>1</strong>
+Enter an optional description; end it with an empty line:
+&gt; 
+Reason for revocation: Key has been compromised
+(No description given)
+Is this okay? (y/N) <strong>y</strong>
+
+You need a passphrase to unlock the secret key for
+user: "Bilbo Baggins &lt;bilbo@shire.org&gt;"
+4096-bit RSA key, ID 488BA441, created 2013-03-13
+<strong>&lt;passphrase&gt;</strong>
+
+You need a passphrase to unlock the secret key for
+user: "Bilbo Baggins &lt;bilbo@shire.org&gt;"
+4096-bit RSA key, ID 488BA441, created 2013-03-13
+<strong>&lt;passphrase&gt;</strong>
+
+pub  4096R/488BA441  created: 2013-03-13  expires: never       usage: SC  
+                     trust: ultimate      validity: ultimate
+This key was revoked on 2013-03-13 by RSA key 488BA441 Bilbo Baggins <bilbo@shire.org>   
+sub  4096R/69B0EA85  created: 2013-03-13  expires: never       usage: E
+This key was revoked on 2013-03-13 by RSA key 488BA441 Bilbo Baggins <bilbo@shire.org>   
+sub  4096R/C24C2CDA  created: 2013-03-13  expires: never       usage: S   
+[ultimate] (1). Bilbo Baggins &lt;bilbo@shire.org&gt;
+[ultimate] (2)  [jpeg image of size 5324]
+
+gpg&gt; <strong>save</strong>
+</bilbo@shire.org>
+</pre>
+
 = License / Credits =
 Most of this text has been written by [https://alexcabal.com/creating-the-perfect-gpg-keypair/ Alex Cabal] [http://www.webcitation.org/6KtyMPYen (w)] [https://alexcabal.com/why-i-release-things-into-the-public-domain released] [http://www.webcitation.org/6KtyRvq2n (w)] under [https://creativecommons.org/publicdomain/zero/1.0/ CC0 1.0 Universal (CC0 1.0) Public Domain Dedication] [http://www.webcitation.org/6KtyP8886 (w)]. Modified under the same license by adrelanos.
