@@ -1,0 +1,104 @@
+The concept behind this technique is as follows:
+
+# Create a regular GPG keypair. By default GPG creates one signing subkey (your identity) and one encryption subkey (how you receive messages intended for you).
+# Use GPG to add an additional signing subkey to your keypair. This new subkey is linked to the first signing key. Now we have three subkeys.
+# This keypair is your master keypair. Store it in a protected place like your house or a safe-deposit box. Your master keypair is the one whose loss would be truly catastrophic.
+# Copy your master keypair to your laptop. Then use GPG to remove the original signing subkey, leaving only the new signing subkey and the encryption subkey. This transforms your master keypair into your laptop keypair.
+
+= Creating your initial keypair =
+Use the {{Code2|gpg ‐‐gen-key}} command to create a new GPG keypair.
+
+You may want your key to expire; it’s up to you. When prompted for a passphrase, make sure to pick a long and unique one. If your key gets stolen, this passphrase is the only thing protecting it!
+
+<pre>
+gpg --gen-key
+gpg (GnuPG) 1.4.11; Copyright (C) 2010 Free Software Foundation, Inc.
+This is free software: you are free to change and  redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Please select what kind of key you want:
+    (1) RSA and RSA (default)
+    (2) DSA and Elgamal
+    (3) DSA (sign only)
+    (4) RSA (sign only)
+Your selection? <strong>1</strong>
+RSA keys may be between 1024 and 4096 bits long.
+What keysize do you want? (2048) <strong>4096</strong>
+Requested keysize is 4096 bits
+Please specify how long the key should be valid.
+    0 = key does not expire
+    &lt;n&gt;  = key expires in n days
+    &lt;n&gt;w = key expires in n weeks
+    &lt;n&gt;m = key expires in n months
+    &lt;n&gt;y = key expires in n years
+Key is valid for? (0) <strong>0</strong>
+Key does not expire at all
+Is this correct? (y/N) <strong>y</strong>
+
+You need a user ID to identify your key; the software constructs the user ID
+from the Real Name, Comment and E-mail Address in this form:
+    "Heinrich Heine (Der Dichter) &lt;heinrichh@duesseldorf.de&gt;"
+
+Real name: <strong>Bilbo Baggins</strong>
+E-mail address: <strong>bilbo@shire.org</strong>
+Comment: 
+You selected this USER-ID:
+    "Bilbo Baggins &lt;bilbo@shire.org&gt;"
+
+Change (N)ame, (C)omment, (E)-mail or (O)kay/(Q)uit? <strong>o</strong>
+You need a Passphrase to protect your secret key.
+<strong>&lt;passphrase&gt;</strong>
+
+gpg: key 488BA441 marked as ultimately trusted
+public and secret key created and signed.
+
+gpg: checking the trustdb
+gpg: 3 marginal(s) needed, 1 complete(s) needed, PGP trust model
+gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
+pub   4096R/488BA441 2013-03-13
+      Key fingerprint = B878 1FB6 B187 B94C 3E52  2AFA EB1D B79A 488B A441
+uid                  Bilbo Baggins &lt;bilbo@shire.org&gt;
+sub   4096R/69B0EA85 2013-03-13
+</pre>
+
+= Strengthening hash preferences =
+Now we set our key to prefer stronger hashes. Use the {{Code2|gpg ‐‐edit-key}} command. At the gpg> prompt, enter the command {{Code2|setpref SHA512 SHA384 SHA256 SHA224 AES256 AES192 AES CAST5 ZLIB BZIP2 ZIP Uncompressed}} (note that this will probably be cut off in the example below; highlight it with your mouse to see it), then save.
+
+<pre>
+gpg --edit-key bilbo@shire.org
+gpg (GnuPG) 1.4.11; Copyright (C) 2010 Free Software Foundation, Inc.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Secret key is available.
+
+gpg: checking the trustdb
+gpg: 3 marginal(s) needed, 1 complete(s) needed, PGP trust model
+gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
+pub  4096R/488BA441  created: 2013-03-13  expires: never       usage: SC  
+                     trust: ultimate      validity: ultimate
+sub  4096R/69B0EA85  created: 2013-03-13  expires: never       usage: E   
+[ultimate] (1). Bilbo Baggins &lt;bilbo@shire.org&gt;
+[ultimate] (2)  [jpeg image of size 5324]
+
+gpg&gt; <strong>setpref SHA512 SHA384 SHA256 SHA224 AES256 AES192 AES CAST5 ZLIB BZIP2 ZIP Uncompressed</strong>
+Set preference list to:
+     Cypher: AES256, AES192, AES, CAST5, 3DES
+     Digest: SHA512, SHA384, SHA256, SHA224, SHA1
+     Compression: ZLIB, BZIP2, ZIP, Uncompressed
+     Features: MDC, Keyserver no-modify
+Really update the preferences? (y/N) <strong>y</strong>
+
+You need a passphrase to unlock the secret key for
+user: "Bilbo Baggins &lt;bilbo@shire.org&gt;"
+4096-bit RSA key, ID 488BA441, created 2013-03-13
+<strong>&lt;passphrase&gt;</strong>
+
+pub  4096R/488BA441  created: 2013-03-13  expires: never       usage: SC  
+                     trust: ultimate      validity: ultimate
+sub  4096R/69B0EA85  created: 2013-03-13  expires: never       usage: E   
+[ultimate] (1). Bilbo Baggins &lt;bilbo@shire.org&gt;
+[ultimate] (2)  [jpeg image of size 5324]
+
+gpg&gt; <strong>save</strong>
+</pre>
