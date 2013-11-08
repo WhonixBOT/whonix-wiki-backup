@@ -50,12 +50,11 @@ The server could still gather interesting information.
 ** If the recipient knows the sender and the recipient uses a non-anonymous account or was ever logged in without Tor, this can be used as a hint who the sender is.
 * Content of messages - Can be prevented using end-to-end encryption. This is covered in the OTR encryption chapter below.
 
-A server-based protocol designed with openness, security and privacy in mind is Jabber.
+Jabber/XMPP is a server-federation-based protocol designed with openness in mind. Its security depends on you making good use of OTR as you can never be sure if servers are properly encrypted between each other. Privacy with Jabber is limited, as it is visible to various kinds of attackers who your account is talking to. Tor only helps to pseudonymize your account and hide your current location, but your social graph may still expose your identity.
 
-Systems which do not require a server by design, i.e. serverless instant messengers are better from privacy point of view. Such systems are TorChat (below) and RetroShare (below).
+Systems which do not require a server by design, i.e. serverless instant messengers are likely better from a privacy point of view. Such systems are TorChat (below) and RetroShare (below).
 
 For IRC inside Whonix-Workstation, the [https://en.wikipedia.org/wiki/Ident Ident Protocol] is automatically blocked because Whonix-Workstation is firewalled.
-
 The [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO/IrcSilc TorifyHOWTO/IrcSilc] contains general IRC safety techniques and other tips.
 
 = TorChat =
@@ -287,7 +286,9 @@ Thanks to scarp for helping with the TorChat instructions!
 
 In fact [http://retroshare.sourceforge.net RetroShare] is not an [https://en.wikipedia.org/wiki/Anonymizer anonymizing network], it is a [https://en.wikipedia.org/wiki/Friend-to-friend friend-to-friend] (F2F) network, or optionally a [https://en.wikipedia.org/wiki/Darknet_(file_sharing) darknet]. RetroShare has a very different audience and threat model.
 
-RetroShare is serverless, messages are encrypted end-to-end and actively developed. That is what makes this messenger interesting.
+RetroShare is in active development. Users can operate servers for themselves, but the architecture doesn't depend on them. Communications are encrypted end-to-end and provide for messaging, mail, forums, pubsub, file exchange and even telephony. The problems with RetroShare are the confused user interface, the necessity to have it run most of the time and contribute to the distributed hashtable (DHT, causing continuous CPU usage) and three relevant privacy aspects: You expose your social graph to a global passive adversary because friends connect to friends directly. Your public IP is available in the DHT, allowing to track your physical locations. And your visible user name is exposed in the TLS certificate when somebody connects to your RetroShare node.
+
+Several of these problems can be solved by disabling the built-in DHT and hiding RetroShare behind a Tor hidden service. People who scan Tor hidden services will however still be able to connect the service and see the RetroShare user name in the self-signed certificate. This will hopefully be fixed someday by both RetroShare (the certs) and Tor (the discoverability of hidden services).
 
 Although google search results and many people may claim otherwise, it is possible to run RetroShare through Tor, due to transparent proxying. '''Still experimental. Feel free to experiment and please share your results. Can two people, using RetroShare inside Whonix-Workstation, who only added each other, connect to each other?'''
 
@@ -297,8 +298,12 @@ After adding tons of random "friends" from a public forum, I could connect to a 
 
 RetroShare reports Right click -> DHT Details: NET WARNING No DHT; Behind NAT UNKNOWN NAT STATE MANUAL FORWARD
 
+There still may be some privacy caveats left with RetroShare trying to communicate outside of Tor, but that doesn't matter if Whonix makes any non-Tor traffic impossible.
+
 = Pidgin =
-For instant messaging in Whonix you can install the Pidgin<ref>http://pidgin.im/</ref> Instant Messenger. It is a multi-protocol client, so you could run MSN, ICQ, IRC, AIM, Jabber and many other protocols at the same time, even with several instances of the same protocol.
+For instant messaging in Whonix you can install the Pidgin<ref>http://pidgin.im/</ref> Instant Messenger. It is a multi-protocol client, so you could run MSN, ICQ, IRC, AIM, XMPP/Jabber and many other protocols at the same time, even with several instances of the same protocol.
+
+All of these chat systems are unsafe if not used together with OTR. Even when used with OTR, expect to be exposing your social graph. Privacy hackers isolate parts of the social graph by running several accounts for groups of people on each popular server, thus avoiding the insecure XMPP federation (adding people on servers that isn't your own).
 
 For more detailed documentation refer to the [http://developer.pidgin.im/wiki/Using%20Pidgin official Pidgin user guide].
 
@@ -309,15 +314,17 @@ sudo apt-get update
 sudo apt-get install pidgin
 </pre>
 
-There is also a Torchat plugin available for pidgin [https://github.com/prof7bit/TorChat/downloads official libpurple-torchat pidgin plugin], which could be implemented to allow p2p encrypted end-to-end communications although there is no know documentation on getting this done specifically in Whonix. It works seamless on standard pidgin/linux distro's with tor, the code is over a year without any changes/updates, hopefully because it simply works without any need for changes.
+There is also a Torchat plugin available for pidgin [https://github.com/prof7bit/TorChat/downloads official libpurple-torchat pidgin plugin], which could be implemented to allow p2p encrypted end-to-end communications although there is no known documentation on getting this done specifically in Whonix. It works seamless on standard pidgin/linux distro's with tor, the code is over a year without any changes/updates, hopefully because it simply works without any need for changes.
 
 = OTR encryption =
 
 Of course the issue of end-to-end encryption arises again. As we mentioned earlier, we have Off-the-record messaging<ref>http://www.cypherpunks.ca/otr</ref> (commonly called OTR) for instant messaging, and Pidgin and many other instant messengers have support for that. There are several resources on how it works and how to use it on their web site. Basically all you need to do is choose "Start private conversation" in the OTR menu and a key will be generated automatically if you do not have one already. After that OTR will establish a private conversation if the other end's instant messenger supports it.
 
+If you didn't authenticate your partner with something like a shared secret there can be a man in the middle recording your chat, even if you are using the same server (the server or the TLS connection to the server may be corrupted).
+
 OTR and other Pidgin plugins are enabled in the "Tools menu -> Plug-ins" section. Simply check the appropriate box for enabling any plugin you want, and possibly you might also want to configure it by pressing the "Configure Plug-in" button. When this is done for the OTR plugin a window that can be used to manage your keys will open. The use of OTR is recommended as many instant messaging protocols normally sends your messages in plaintext. Force your friends to migrate to clients with support for OTR!
 
-'''NOTE''': <code>/me</code> is '''not''' encrypted when used in a OTR private conversation!
+'''NOTE''': <code>/me</code> is '''not''' encrypted when used in a OTR private conversation! Also <code>/msg</code> in XMPP chatrooms isn't – it goes through the chatroom server!
 
 Read also those [http://www.cypherpunks.ca/otr/index.php#docs various other resources about OTR].
 
