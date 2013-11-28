@@ -248,7 +248,20 @@ This will hopefully be ready for Whonix 8.
 * [https://github.com/Whonix/Whonix/issues/113 development ticket]
 * [https://github.com/adrelanos/Whonix/blob/master/help-steps/analyze_image script work in progress]
 
+{{mbox
+| type       = critical
+| image      = [[File:Ambox_warning_pn.svg.png|40px|alt=Question mark]]
+| text       = 
+Warning:
+
+For this feature adding security, it needs your help! Do not assume, that others are doing it for you.
+}}
+
 Whonix has a feature which allows the community to check that Whonix .ova<ref>https://en.wikipedia.org/wiki/Open_Virtualization_Format</ref> releases are verifiably created from project's own source code. We call this verifiable builds. This only proves, that the person and machine<ref>Due to build machine compromise.</ref> building Whonix has added nothing malicious, such as a backdoor<ref>https://en.wikipedia.org/wiki/Backdoor_(computing)</ref>. It doesn't prove, that there are no backdoors in Debian. This isn't possible, because neither Debian<ref>Whonix is based on Debian.</ref> nor any other operating system provides deterministic builds yet.<ref>Some Debian developres are working on it, see [https://wiki.debian.org/ReproducibleBuilds Reproducible Builds].</ref> Rather this feature is no attempt to proof, that there aren't any vulnerabilities<ref>https://en.wikipedia.org/wiki/Vulnerability_(computing)</ref> in Whonix's or Debian. An remotely exploitable<ref>https://en.wikipedia.org/wiki/Exploit_(computer_security)</ref> bug in Whonix or Debian, a flaw in Whonix's firewall leaking traffic or code {{Code2|phoning home}}<ref>https://en.wikipedia.org/wiki/Phoning_home</ref> the contents of your harddrive would still be fatal. A precondition so this feature can improve overall security is, that folks are checking Whonix's and Debian's source code in the first place. In summary, we believe this feature is useful and can improve security, but however isn't a magical answer to all computer security questions. The [[Comparison with Others#Verifiable Builds]] table makes it clear what this feature archives.
+
+You might be curious, why Whonix is verifiable while neither Debian nor any other operating system is? This is because [[About#Based_on_Debian|Whonix is very simple]], to oversimplify it: Whonix is just a collection of configuration files and scripts, i.e. Whonix's source code does not contain any compiled code etc. On the other hand, Debian is a full operating system. And of course, without the great work of the Debian project and all the upstream projects, Whonix wouldn't exist.
+
+This feature will hopefully be ready for Whonix 8. Only users who download a new image can profit from this feature. Auditing old versions is not possible.<ref>Because in order to implement the verifiable builds feature, we need to get rid of lots of non-deterministic auto-generated files at the end of the build process and to re-create them during first boot.</ref>
 
 == Short Overview - How it Works ==
 When building Whonix .ova's from source code, for example /home/user/whonix_binary/Whonix-Gateway-7.ova also report /home/user/whonix_binary/Whonix-Gateway-7.report file will be created.
@@ -257,8 +270,11 @@ After building the .ova, the last build-step will extract the .ova, which will r
 
 Anyone building Whonix.ova images will hopefully end up with the same report. We can then compare the reports using tools such as {{Code2|diff}} and/or {{Code2|meld}}. Those reports will hopefully be so similar. We can't end up with the very same reports, because again, there are no deterministically built operating systems yet. However, we can manually review the few remaining differences. That should make it reasonable to believe, that the original Whonix.ova images have been build from the source code that has been published for that Whonix version
 
+== Current Limitations ==
+Our {{Code2|[https://github.com/adrelanos/Whonix/blob/master/help-steps/analyze_image help-steps/analyze_image]}} script does not check the contents of the image outside the file system. We're not aware of any method getting a backdoor activated by writing malicious data into those places. We might get rid of this limitation in future, see chapter Possible Future Improvements.
+
 == Possible Future Improvements ==
-[https://github.com/sleuthkit/sleuthkit/ sleuthkit] could be an interesting addition or even replacement for our custom script. Then we could create a report using something like {{Code|fls -f ext4 ./Whonix-Gateway-7.img}}. The version in Debian even in [http://packages.debian.org/sid/sleuthkit sid] is outdated and does unfortunately not include support for ext4 and our images are using ext4. More recent upstream releases do support ext4, but there are no signed git tags yet ([https://github.com/sleuthkit/sleuthkit/issues/264 reported an issue]), so getting sleuthkit is a bit difficult. (If we want to defeat sophisticated backdoors, we shouldn't encourage auditors to blindly trust github's SSL alone for sleuthkit's integrity.) We could think about bending our images, using ext3.
+[https://github.com/sleuthkit/sleuthkit/ sleuthkit] could be an interesting addition or even replacement for our custom script. Then we could create a report using something like {{Code|fls -f ext4 ./Whonix-Gateway-7.img}}. The version in Debian even in [http://packages.debian.org/sid/sleuthkit sid] is outdated and does unfortunately not include support for ext4 and our images are using ext4. More recent sleuthkit upstream releases do support ext4, but there are no signed git tags yet ([https://github.com/sleuthkit/sleuthkit/issues/264 reported an issue]), so getting sleuthkit is a bit difficult. (If we want to defeat sophisticated backdoors, we shouldn't encourage auditors to blindly trust github's SSL alone for sleuthkit's integrity.) We could think about bending our images, downgrading from ext4 to ext3.
 
 = Footnotes / References =
 <references/>
