@@ -240,23 +240,24 @@ The least secure and most convenient way is to use Whonix is using Whonix-Defaul
 It's a bit safer to use Whonix-Default-Download version and to disable Whonix's APT repository. When updated Whonix deb packages are released, download them manually, verify them manually and install them manually. Big security bonus points for verifying the deb package contents before installing them. You'll get most security, if you [[Dev/Build_Documentation|build Whonix from source code]] and also build update packages from source code. Big security bonus points for verifying the source code before building Whonix.
 
 = Verifiable Builds =
+== Introduction - What this Archives ==
 '''UNFINISHED!'''
 
 This will hopefully be ready for Whonix 8.
 
 * [https://github.com/Whonix/Whonix/issues/113 development ticket]
-* [https://github.com/adrelanos/Whonix/blob/master/release/analyze_image script work in progress]
+* [https://github.com/adrelanos/Whonix/blob/master/help-steps/analyze_image script work in progress]
 
-Planned usage example.
+Whonix has a feature which allows the community to check that Whonix .ova<ref>https://en.wikipedia.org/wiki/Open_Virtualization_Format</ref> releases are verifiably created from project's own source code. We call this verifiable builds. This only proves, that the person and machine<ref>Due to build machine compromise.</ref> building Whonix has added nothing malicious, such as a backdoor<ref>https://en.wikipedia.org/wiki/Backdoor_(computing)</ref>. It doesn't prove, that there are no backdoors in Debian. This isn't possible, because neither Debian<ref>Whonix is based on Debian.</ref> nor any other operating system provides deterministic builds yet.<ref>Some Debian developres are working on it, see [https://wiki.debian.org/ReproducibleBuilds Reproducible Builds].</ref> Rather this feature is no attempt to proof, that there aren't any vulnerabilities<ref>https://en.wikipedia.org/wiki/Vulnerability_(computing)</ref> in Whonix's or Debian. A precondition so this feature can improve overall security is, that folks are checking Whonix's and Debian's source code in the first place. In summary, we believe this feature is useful and can improve security, but however isn't a magical answer to all computer security questions. The [[Comparison with Others#Verifiable Builds]] table makes it clear what this feature archives.
 
-{{Code|sudo ./release/analyze_image --ova /home/user/whonix_binary/Whonix-Gateway-7.ova --report /home/user/report}}
+== Short Overview - How it Works ==
+When building Whonix .ova's from source code, for example /home/user/whonix_binary/Whonix-Gateway-7.ova also report /home/user/whonix_binary/Whonix-Gateway-7.report file will be created.
 
-This should analyze /home/user/whonix_binary/Whonix-Gateway-7.ova and write a report to /home/user/report.
+After building the .ova, the last build-step will extract the .ova, which will result getting three files, i.e. Whonix-Gateway-7.ovf, Whonix-Gateway-7.mf and Whonix-Gateway-7-disk1.vmdk. The vmdk<ref>https://en.wikipedia.org/wiki/VMDK</ref> image then will be converted to vdi<ref>https://en.wikipedia.org/wiki/VDI_(file_format)</ref>, then converted to raw<ref>https://en.wikipedia.org/wiki/Raw_image_format</ref>. (Converting as in creating a copy, not actually converting.) The filesystem layout, the MBR<ref>https://en.wikipedia.org/wiki/Master_boot_record</ref> and the VBR<ref>https://en.wikipedia.org/wiki/Volume_boot_record</ref> (?) are written in a separate files. The raw image will then be mounted. A sha512 checksum of every file will be created and stored in the report.
 
-It will extract the ova, which will result getting three files, i.e. Whonix-Gateway-7.ovf, Whonix-Gateway-7.mf and Whonix-Gateway-7-disk1.vmdk. The vmdk image will be converted to vdi, then converted to raw. (Converting as in creating a copy, not actually converting.) The filesystem layout, the MBR and the VBR (not yet implemented) are written in separate files. The vdi will be mounted. A sha512 checksum of every file will be created and stored in the report.
+Anyone building Whonix.ova images will hopefully end up with the same report. We can then compare the reports using tools such as {{Code2|diff}} and/or {{Code2|meld}}. Those reports will hopefully be so similar. We can't end up with the very same reports, because again, there are no deterministically built operating systems yet. However, we can manually review the few remaining differences. That should make it reasonable to believe, that the original Whonix.ova images have been build from the source code that has been published for that Whonix version
 
-Anyone running the {{Code2|analyze_image}} script on the same Whonix.ova will hopefully get the same report. Someone building Whonix-own.ova will hopefully create an image very similar to Whonix.ova. We can then {{Code2|diff}} the reports. Those reports will be hopefully so similar, that it is reasonable to believe, that the original Whonix.ova has been build from the source code that has been published for that Whonix version. This would only prove, that on the machine building Whonix nothing malicious has been added, it wouldn't prove, that there aren't any vulnerabilities or that there are no backdoors in Debian (this isn't possible, because neither Debian nor any other operating system provides deterministic builds yet). The [[Comparison with Others#Verifiable Builds]] table makes it clear what this archives.
-
+== Possible Future Improvements ==
 [https://github.com/sleuthkit/sleuthkit/ sleuthkit] could be an interesting addition or even replacement for our custom script. Then we could create a report using something like {{Code|fls -f ext4 ./Whonix-Gateway-7.img}}. The version in Debian even in [http://packages.debian.org/sid/sleuthkit sid] is outdated and does unfortunately not include support for ext4 and our images are using ext4. More recent upstream releases do support ext4, but there are no signed git tags yet ([https://github.com/sleuthkit/sleuthkit/issues/264 reported an issue]), so getting sleuthkit is a bit difficult. (If we want to defeat sophisticated backdoors, we shouldn't encourage auditors to blindly trust github's SSL alone for sleuthkit's integrity.) We could think about bending our images, using ext3.
 
 = Footnotes / References =
