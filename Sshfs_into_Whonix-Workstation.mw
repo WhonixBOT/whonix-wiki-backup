@@ -1,0 +1,70 @@
+{{Header}}
+
+= Do Once =
+On the host.
+<pre>
+Import Whonix-Gateway 7
+Import Whonix-Workstation 7
+</pre>
+
+On the host.
+<pre>
+## Caution if you did not name your VM "Whonix-Gateway"!
+VBoxManage modifyvm "Whonix-Gateway" --natpf1 "ssh",tcp,127.0.0.1,2200,,22
+</pre>
+
+Whonix-Gateway AND Whonix-Workstation.
+<pre>
+sudo apt-get update
+sudo apt-get install openssh-server
+</pre>
+
+On Whonix-Gateway.
+<pre>
+echo "GATEWAY_ALLOW_INCOMING_SSH=1" | sudo tee -a "/etc/whonix_buildconfig.d/50_terminal_only"
+sudo whonix_firewall
+</pre>
+
+On Whonix-Gateway.
+<pre>
+ssh.real 192.168.0.11
+## yes (accept fingerprint)
+## Terminate ssh connection.
+exit
+</pre>
+
+On the host.
+If you are using ssh on the host for other purposes, it might be better to switch to an extra user.
+
+On the host.
+Try this if you are having problems. This might not be neccessary.
+<pre>
+## THINK FIRST!
+killall ssh
+killall sshfs
+</pre>
+
+On the host. Try this if you are having problems. This might not be neccessary. There seems to be a bug with existing ssh known_hosts files.
+<pre>
+## THINK FIRST!
+## or "rm" if you know what you are doing
+trash-put ~/.ssh/known_hosts
+trash-put ~/.ssh/known_hosts.old
+<pre>
+
+On the host.
+<pre>
+mkdir ~/mountworkstation
+</pre>
+
+= Run =
+On the host.
+<pre>
+ssh -f user@127.0.0.1 -p 2200 -L 2222:192.168.0.11:22 -N
+sshfs -p 2222 user@127.0.0.1:/ ~/mountworkstation
+</pre>
+
+== Footnotes ==
+<references/>
+
+[[Category:Documentation]]
