@@ -76,6 +76,7 @@ A correct system clock is crucial for many reasons (see footnotes for more):
 * '''Attack 5:''' Locating hidden services. <ref>For hidden services a correct clock is crucial, see: [http://www.cl.cam.ac.uk/~sjm217/papers/ccs06hotornot.pdf Hot or Not: Revealing Hidden Services by their Clock Skew]; [http://caia.swin.edu.au/talks/CAIA-TALK-080728A.pdf An improved clock-skew measurement technique for revealing hidden services]; [http://people.cs.umass.edu/~elisha/Papers/SkewMask%20-%20final%20version.pdf SkewMask: Frustrating Clock Skew Fingerprinting Attempts]</ref>
 
 = Whonix's Time Synchronization Mechanism =
+== Overview ==
 * Whonix leaves the host's system clock or time synchronization mechanism untouched.
 * Whonix-Gateway and Whonix-Workstation are based on VirtualBox and therefore have their own virtual hardware system clocks.
 * Most VirtualBox time synchronization features get disabled by Whonix.
@@ -106,6 +107,25 @@ A correct system clock is crucial for many reasons (see footnotes for more):
 * sdwdate runs at non-predictable times to prevent the ISP or Tor guard/bridge node to guess, that the user is running Whonix.
 * Implementation details are in Design-Shared, chapter [[Dev/Design-Shared#timesync|TimeSync]]
 * That will reach the design goal, that all clocks, the host's, Whonix-Gateway's and Whonix-Workstation's slightly differ.
+
+== sdwdate ==
+=== Authentication of Servers ===
+The custom /usr/bin/sdwdate we use only connects to HTTPS servers, and delegates TLS X.509 certificate verification to curl. It also uses several different pools of time sources, and if there are too many that fail for any given pool, e.g. because of failed certificate checking or being unreachable, the pool is considered to be potentially compromised and sdwdate aborts.
+
+curl is also directed to only use TLSv1 as a "secure" protocol.
+
+=== sdwdate source pools ===
+What sources should be trusted? This is of course also a problem with NTP.
+
+The sdwdate pools used by Whonix are based on stable and reliable webservers that get great amounts of traffic. They are categorized into three different pools according to their members' relationship to the members in the other pools; any member in a one pool should be unlikely to share logs (or other identifying data), or to agree to send fake time information, with a member from the the other pools. The pools are as follows:
+
+* The "pal" pool are run by groups that are likely to take great care of their visitors' privacy.
+* The "foe" pool are managed by adversaries of the "pal" pool.
+* The "neutral" pool members have a neutral raltionship to both the "pal" and "foe" pool.
+
+The pools are listed in {{Code2|whonix_shared/etc/sdwdate.d/30_sdwdate_default}}.
+
+Basically, sdwdate picks three random servers - one from each pool, and then builds the mediate of the three advertised dates.
 
 = Conclusions =
 * '''Attack 1''' is a general Tor problem. It is impossible to solve for Whonix. It is unsolved in other projects as well.
