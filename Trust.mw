@@ -296,6 +296,9 @@ The {{Code2|/help-steps/analyze_image}} script is the tool which comes with Whon
 * {{Code|(mount_folder) /etc/init.d/.depend.boot}} - {{Code|/sbin/insserv}} (part of sysvinit) does not produce deterministic results. Gets copied to the {{Code|manual_analysis_folder}}. Manually review them. You just have to check, they're not containing anything sketchy. You most likely won't be able to tell, if some services are deliberately not started or in wrong order. This is not an issue, because when Whonix starts for the first time it executes {{Code|whonix_shared/usr/lib/whonix/first_run_initializer}}, which executes {{Code|/sbin/insserv}}, which recreates this file. <ref>We can not delete this file before redistributing Whonix, because then Whonix wouldn't start.</ref>
 * {{Code|(mount_folder) /etc/init.d/.depend.start}} - Same as above.
 * {{Code|(mount_folder) /etc/init.d/.depend.stop}} - Same as above.
+* {{Code|(mount_folder) /usr/share/whonix_build_timestamp}} - Timestamp, naturally differs.
+* {{Code|(mount_folder) /var/lib/initramfs-tools/...}} - Is a one-line text file, which contains the name of the initrd and its checksum. Differs, because the initrd isn't deterministic in the first place.
+* {{Code|(mount_folder) /var/lib/initramfs-tools/...}} - Same as above.
 * {{Code|(manual_analysis_folder) *.dd.1000000}} - The first ~1MB of the {{Code2|.img}}. Disk signature will differ.
 
 === Unexpected Differences ===
@@ -312,22 +315,60 @@ Your report root folder can most likely be found in {{Code|/home/user/whonix_bin
 
 {{Code|auto_hash_folder}} - Are all added to the {{Code2|.report}} and {{Code2|file_list}} and should contain no differences.
 
-{{Code|initrd_folder}} - The are the extracted {{Code|(mount_folder) /boot/initrd.img*}} files. Are all added to the {{Code2|.report}} and {{Code2|file_list}} and should contain no differences.
+{{Code|extracted_initrd_folder}} - The are the extracted {{Code|(mount_folder) /boot/initrd.img*}} files. Are all added to the {{Code2|.report}} and {{Code2|file_list}} and should contain no differences.
 
 {{Code|manual_analysis_folder}} - Not hashed in the {{Code2|.report}} file, because those will show differences anyway which we expect. Those have to be manually audited.
 
 {{Code|debug_folder}} - We copy these files out of the images just in case for convenience. Those have been already checksum'ed (in the {{Code2|.report}} file) as regular files within the (mount_folder). Feel free to ignore that folder. It's only in for debugging purposes.
 
 === How ===
-...
+[[Dev/Build Documentation|Build Whonix from source code.]]. Your report file can most likely be found at {{Code|/home/user/whonix_binary/$VMNAME-$whonix_build_whonix_version_new.report}} and your report_tempfolder at {{Code|/home/user/whonix_binary/$VMNAME-${whonix_build_whonix_version_new}_tempfolder}}. That is your own analyzed {{Code2|.ova}}. To make space for another analysis for other builds (such as those from whonix.org), rename your whonix_binary folder to something else, such as {{Code2|whonix_binary1}}.
 
-Your report file can most likely be found at {{Code|/home/user/whonix_binary/$VMNAME-$whonix_build_whonix_version_new.report}}.
+If you've build for example Whonix 7.5.2, you have to download Whonix 7.5.2 as well. Place the {{Code2|.ova}} in {{Code|/home/user/whonix_binary/}}. Keep the original name. Then go to Whonix's source code folder ({{Code|cd /home/user/Whonix}} and analyze that image. Use.
 
-Diff the virtual machine description file {{Code|(extracted_ova_folder) *.ovf}}. Only the uuids should differ.
+<pre>
+sudo ./build-steps.d/2800_create-report --tor-gateway
+</pre>
+
+(And later repeat that step with the --tor-workstation switch.)
+
+Then you have two {{Code2|.report}} files and two report temp folders.
+
+Use your favorite diff viewer for huge files. For example {{Code2|meld}}. Diff the reports. For example, use.
+
+<pre>
+meld ./whonix_binary1/Whonix-Gateway-7.5.2.report ./whonix_binary/Whonix-Gateway-7.5.2.report
+</pre>
+
+These files should be very similar, expect for a few differences which we earlier mentioned in chapter Expected Differences. Look at the differences. Two of them (because we're installing two kernels) should look like this:
+
+{{Code|(mount_folder) /boot/initrd.img...}}
+
+Check at the top of your report files for (extracted_initrd_folder) and see if both initrd's were really extracted. <ref>They should, because otherwise if extraction failed, the {{Code2|analyze_image}} script should have failed earlier and informed you already.</ref>
+
+Check for more differences, you can ignore {{Code|(mount_folder) /etc/fstab}} for now, this is an expected difference and we audit them later.
+
+Also ignore {{Code|(mount_folder) /etc/init.d/.depend.boot}}, {{Code|(mount_folder) /etc/init.d/.depend.start}}, and {{Code|(mount_folder) /etc/init.d/.depend.stop}} for now, this is an expected difference and we audit them later.
+
+Also ignore {{Code|(mount_folder) /etc/shadow}} and {{Code|(mount_folder) /etc/shadow-}} for now, this is an expected difference and we audit them later.
+
+Also ignore {{Code|(mount_folder) /usr/share/whonix_build_timestamp}} for now, this is an expected difference and we audit them later.
+
+Also ignore {{Code|(mount_folder) /var/lib/initramfs-tools/...}} for now, this is an expected difference and we audit them later.
+
+There should be no other differences in the {{Code2|.report}} files!
+
+Now it's time to audit the differencing files which we ignored above.
+
+Diff the virtual machine description file {{Code|(extracted_ova_folder) *.ovf}}. Only the uuids should differ. (The extracted_ova_folder folder can be found in your report_temp folders.)
 
 Diff the manifest file {{Code|(extracted_ova_folder) *.mf}}. Only the checksums should differ.
 
-Diff the first 1 MB of .img (contains MBR and bootloader) {{Code|(manual_analysis_folder) *.dd.1000000}} - Use for example {{Code|vbindiff}}. Only the disk signature should differ.
+Diff the first ~1 MB of .img (contains MBR and bootloader) {{Code|(manual_analysis_folder) *.dd.1000000}} - Use for example {{Code|vbindiff ....dd.1000000 *.dd.1000000}}. Only the disk signature should differ.
+
+Finally diff the rest of the files in your {{Code2|manual_analysis_folder}}. Using a diff application which can diff whole folders such as {{Code2|meld}} would be useful, but what tools you use is up to you. Have a look at the "Expected Differences" chapter above for the kind of differences you can expect.
+
+Auditing these files is unfortunately a bit difficult. The best tip to be given is to use your common sense. For example, having two {{Code2|/etc/init.d/.depend.start}} files at same size, but different order is probably not a backdoor. But if there are a lot extra lines looking weird ([http://security.stackexchange.com/a/40108 unrelated example code]), there might be something wrong.
 
 == Verifiable Whonix Debian Packages ==
 ...
