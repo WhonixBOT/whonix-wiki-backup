@@ -29,12 +29,12 @@ Boot your air gapped system.
 
 <pre>
 mkdir ~/gpg-master
-mkdir ~/gpg-slave
+mkdir ~/.gnupg
 chmod 700 ~/gpg-master
-chmod 700 ~/gpg-slave
+chmod 700 ~/.gnupg
 </pre>
 
-Create a {{Code|~/gpg-master/gpg.conf}} and {{Code|~/gpg-slave/gpg.conf}}. Source: [https://github.com/ioerror/torbirdy/blob/master/gpg.conf gpg.conf optimized for privacy] Check if there is a newer version available. It probably makes sense to copy that file to an USB stick beforehand so you don't have to type it by hand.
+Create a {{Code|~/gpg-master/gpg.conf}} and {{Code|~/.gnupg/gpg.conf}}. Source: [https://github.com/ioerror/torbirdy/blob/master/gpg.conf gpg.conf optimized for privacy] Check if there is a newer version available. It probably makes sense to copy that file to an USB stick beforehand so you don't have to type it by hand.
 
 <pre>
 ## gpg.conf optimized for privacy
@@ -273,11 +273,11 @@ gpg --homedir ~/gpg-master --export-secret-subkeys bilbo@shire.org > subkeys
 </pre>
 
 == Create your Slave Key without Master Key ==
-'''We are now using {{Code|~/gpg-slave}}!'''
+'''We are now no longer using {{Code|--homedir ~/gpg-master}}!'''
 
 Re-import the sub keys we exported.
 <pre>
-gpg --homedir ~/gpg-slave --import subkeys
+gpg --import subkeys
 </pre>
 
 Clean up our temporary file.
@@ -289,13 +289,13 @@ rm subkeys
 Re-import our public key we exported.
 
 <pre>
-gpg --homedir ~/gpg-slave --import bilbo@shire.org.public.gpg-key
+gpg --import bilbo@shire.org.public.gpg-key
 </pre>
 
 That’s all! You can verify it worked by running:
 
 <pre>
-gpg --homedir ~/gpg-slave --list-secret-keys
+gpg --list-secret-keys
 /home/user/gpg-slave/secring.gpg
 -----------------------------
 sec#  4096R/488BA441 2013-03-13
@@ -308,7 +308,7 @@ See how the third line begins with “sec#”, not “sec”? The pound sign mea
 
 To make sure everything is alright, use switch gpg's homedir to {{Code|~/gpg-master}} and see if the secret master key is available.
 
-You can now copy your {{Code|~/gpg-slave}} folder to an (encrypted) disk and then use it on your every day operating system's {{Code|~/.gnupg}}.
+You can now copy your {{Code|~/.gnupg}} folder to an (encrypted) disk and then use it on your every day operating system's {{Code|~/.gnupg}}.
 
 = In Case of Emergency =
 Should the worst happen and your slave keypair gets lost, compromised or stolen, we need to revoke the subkeys on that keypair.
