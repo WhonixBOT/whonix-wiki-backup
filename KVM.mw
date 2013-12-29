@@ -2,23 +2,28 @@
 
 '''UNFINISHED!'''
 
-==KVM Setup Instructions==
-
-It is highly recommended you use the GUI VirtualMachineManager package to configure your vm for simplicity and ese of use.
+== KVM Setup Instructions ==
+It is highly recommended you use the GUI VirtualMachineManager package to configure your vm for simplicity and ease of use.
 
 1. Extract the downloaded Whonix ova images to obtain the VMDK virtual storage files.
 
+<pre>
 tar -xvf ~/Whonix.ova
+</pre>
 
-NOTE: as of now, they cannot be directly converted or used by KVM due to undocumented structures added to the third version of the vmdk spec. Right now you will have to manage by converting to a vdi file in VboxManange (please include commands as I'm not familiar with them at the top of my head)
+As of now, VMDK files cannot be directly used by KVM or converted to a file type supported by KVM.
 
+<pre>
+VBoxManage clonehd --format VDI vmdk_file vdi_file
+</pre>
 
+(You need to adjust the names vmdk_file and vdi_file.)
 
-2. Use the commandline to run qemu-img ,converting the extracted vmdk or vdi (for now) to a qcow2 formated file. Why qcow2 ? Because it supports snapshotting which is very useful for reverting the workstation to a known clean state. You must not revert gateway snapshots of the gateway vm as that will change your guard nodes which is not good for anonymity. This would increase your chances of having a rogue guard node and exit.
+2. Use qemu-img to convert the vdi to qcow2. Why qcow2? Because it supports snapshotting, which is very useful for reverting Whonix-Workstation to a known clean state. You must not revert gateway snapshots of the gateway vm as that will change your guard nodes which is not good for anonymity. This would increase your chances of having a rogue guard node and exit.
 
-
-qemu-img convert -p -O qcow2 ~/whonix.vmdk ~/whonix.qcow2
-
+<pre>
+qemu-img convert -p -O qcow2 ~/whonix.vdi ~/whonix.qcow2
+</pre>
 
 3. Before starting the new vm wizard we must create an internal isolated network that connects the workstation with the gateway.
 
@@ -29,10 +34,7 @@ Uncheck the dhcpv4 option
 Ignore anything to do with ipv6
 Keep the default option of: Isolated Virtual Network selected and click finish.
 
-
-
 The next steps may need more work to customize vm devices and clock to safe defaults. Work in this area not final.
-
 
 4. Create a Whonix Gateway vm first and choose to edit it before installation.
 Customize the first NIC that is included to be in default NAT mode.
@@ -41,9 +43,7 @@ This new NIC must have the newly created isolated virtual network 'whonix' selec
 Must enable disk controller as SATA
 Must select qcow2 as storage format.
 
-
-
-5.Create Whonix Workstation vm and  make sure you select the isolated int. network for the only NIC this machine has. Launch.
+5. Create Whonix Workstation vm and  make sure you select the isolated int. network for the only NIC this machine has. Launch.
 Disk Controller works only with IDE
 Must select qcow2 as storage format
 
@@ -51,19 +51,15 @@ Don't forget to take snapshot.
 
 Done!
 
-
-
 -SPICE is enabled for graphics by default but needs a vdagent to be installed in the guest vms for accelerated 2D in vm to happen. Not included in workstation install by default which impacts performance greatly.
 
 http://www.linux-kvm.org/page/SPICE
 
 It should be safe for use unless you Adrelanos determine otherwise. 2D and 3D in VBox have an insecure architecture and even the manuals admit to this. 2D in VBox is not even available for anything but windows guests which is not recommended and insecure of course.  Everything Linux based is designed from the ground up with security considerations in mind.
 
--Clock disabling for vms on host is recommended by Adrelanos. Still haven't done it yet,  and it seems to need commandline.
+Clock disabling for vms on host is recommended by Adrelanos. Still haven't done it yet,  and it seems to need command line.
 
-Adrelanos I recommend to you KVM as the best choice for running Whonix. This is from examination of  aspects like security, ease of use, features. If you'd like to discuss the security merits of this hypervisor versus the alternatives, I'd be happy to.
-
-Thanks for maintaining excellent documentation and creating these leaktests. You have something amazing here and I hope its maintained for a very very long time.
+Forum thread: [[Special:AWCforum/st/id306/]]
 
 = Footnotes =
 <references />
