@@ -1,0 +1,99 @@
+Running a mirror for Whonix can be immensely helpful, but takes some knowledge, proper configuration and adequate resources to be truly useful.
+
+== Requirements ==
+
+* A server with a publicly accessibly IP address. You may already have one of these, but [http://lowendbox.com/ lowendbox] often has decent boxes at low prices. Look for ones with higher bandwidth caps, as you will be serving lots of data (~2.5GB for a download of Workstation+Gateway for Whonix 7). The load on your individual mirror will go down as more mirrors are added. If you exceed the allocated bandwidth, you may incur additional charges or even terminated service depending on your provider, so be careful, and overestimate on your bandwidth requirements.
+* SSH root access to that server (sudo is fine)
+* Recommended: Debian Wheezy as the operating system. You can use any distro you like, but this guide is written using Wheezy.
+
+== Install Apache ==
+
+# Install Apache:
+<pre>
+sudo apt-get install apache2
+</pre>
+
+This will create the directory structure where we will put our mirrored copy of Whonix, as well as install Apache which will serve the mirrored content.
+
+== Getting Whonix ==
+
+Install rsync:
+<pre>
+sudo apt-get install rsync
+</pre>
+
+and get Whonix from the rsync master:
+<pre>
+sudo rsync -rtv rsync://rsync.whonix.org/whonix /var/www/whonix
+</pre>
+
+This will put the contents of http://rsync.whonix.org/ in your server's directory /var/www/whonix.
+
+== Automating updates from master ==
+
+So your mirror will be up to date whenever a new version of Whonix is released, we will add an entry to the crontab to check for updates every hour:
+<pre>
+sudo crontab -e
+</pre>
+
+You will see the crontab opened in nano (at least on Wheezy 7.3). Hit "Page Down" or the down cursor key until you are on the last line (below "m h  dom mon dow   command") and enter:
+<pre>
+  0 *   *   *   *    rsync -rt rsync://rsync.whonix.org/whonix /var/www/whonix
+</pre>
+
+The numbers don't have to line up exactly with the heading, but it makes it easier to read.
+
+== Serving the Mirror Content ==
+
+Paste this into /etc/apache2/sites-available/mirror.whonix.org.conf:
+<pre>
+#
+#  mirror.whonix.org (/etc/apache2/sites-available/mirror.whonix.org.conf)
+#
+<VirtualHost *:80>
+        ServerAdmin <YourContactEmail>EDIT THIS
+        ServerName  mirror.whonix.org
+        DocumentRoot /var/www/whonix/
+        # Logfile
+        ErrorLog /var/log/apache2/whonix/error.log
+</VirtualHost>
+</pre>Modified from <ref>http://www.debian-administration.org/articles/412</ref>
+Make the directory for the new logs:
+<pre>
+sudo mkdir /var/log/apache2/whonix
+</pre>
+Once you filled in your contact email (it will throw errors otherwise), enable the site:
+<pre>
+sudo a2ensite mirror.whonix.org.conf
+</pre>
+You will be prompted to reload apache:
+<pre>
+sudo service apache2 reload
+</pre>
+
+== Stripping User IPs ==
+
+While the config file above does not have an access log, user IPs can still be logged in error.log. It is therefore recommended to install mod-removeip to make Apache "blind" to the IP addresses of users. Install it:
+<pre>
+sudo apt-get install libapache2-mod-removeip
+</pre>
+Activate it:
+<pre>
+sudo a2enmod removeip
+</pre>
+and reload Apache
+<pre>
+sudo service apache2 restart
+</pre>
+
+== Getting Your Mirror Added ==
+
+Email the IP address of your new mirror to [[Contact#For_website_issues | Fortasse]], and you will be notified when it has been added to the rotation. Due to the way DNS propagates, it may be up to 24 hours before your system starts seeing traffic.
+
+'''Thanks for your support!'''
+
+== Optional Customization ==
+
+You can customize the header and footer of your directory listing as explained [http://answers.oreilly.com/topic/118-how-to-display-a-standard-header-and-footer-on-directory-listings/ here]. Feel free to have something like "Mirror provided by <link to your blog or company>", but please don't go overboard. Mirrors with blatant banner ads or user-tracking scripts will be rejected.
+
+<references/>
