@@ -1,25 +1,34 @@
 {{Header}}
 
-= Introduction =
-{{Code2|whonixcheck}} is a bash script, checking many important things. Supports to be run in console and also has a grapical progress meter and graphical info popup for the results. It's stored in {{Code|/usr/bin/whonixcheck}} and in {{Code|/usr/lib/whonix/whonixcheck/}}. Whonix will also work without that script. Nothing is compiled, it's just a script and anyone can read the source code.
-
 [[Image:whonixcheck_gui.png|thumb|whonixcheck done]]
 
 [[Image:whonixcheck_progress.png|thumb|whonixcheck in progress]]
 
 [[Image:whonixcheck_cli.png|thumb|whonixcheck in Konsole]]
 
-[[Image:writing to tty1 by adrelanos.png|thumb|[[Desktop#whonixcheck.2Ftimesync_writing_to_tty1|Automatically started whonixcheck writing to tty1.]]]]
+[[Image:writing to tty1 by adrelanos.png|thumb|
 
-= Whonixcheck checks =
+[[Desktop#whonixcheck.2Ftimesync_writing_to_tty1|Automatically started whonixcheck writing to tty1.]]]]
+= Introduction =
+{{Code2|whonixcheck}} is a bash script, checking many important things. Supports to be run in console and also has a grapical progress meter and graphical info popup for the results. It's stored in {{Code|/usr/bin/whonixcheck}} and in {{Code|/usr/lib/whonix/whonixcheck/}}. Whonix will also work without that script. It's only checks things, it doesn't change thigns. Nothing is compiled, it's just a script and anyone can read the source code.
 
+The whonixcheck script was inspired by https://check.torproject.org. In past when people were still recommended to use proxy settings to torify web browsers, it was an important check. While manual torification of web browsers is nowadays recommended against, the Tor Browser Bundle, which is securely pre-configured, still visits check.tpo and checks if everything is okay. Check.tpo also checks if the Tor Browser Bundle version is up to date (technically Tor Button downloads version information and checks locally).
+
+While check.tpo just checks the browser, Whonix is more than a browser. It's a complete operating system. Therefore when the browser starts, it's already too late. It has to be checked earlier, because the user might not start the browser. That's why whonixcheck will be automatically started after boot/login (if it hasn't been recently run, i.e. if whonxicheck has been completed within 24 hours earlier).
+
+whonixcheck will run once every day, even if the system is not restarted. The motivation behind that is also to inform long running systems.
+
+= Checks =
 * If run either on bare metal ([[Physical Isolation]]) or inside VirtualBox. Warns when using an unsupported (by Whonix developers) virtualizer.
+* Whonix 7.7.1.1 and above: checks if the clock source is KVMClock and warns if that is the case. Might probably only happen for users using the [[KVM]] instructions. Reports only if KVMClock is detected. Otherwise quite.
 * Check the validity of Tor's config files by using "sudo tor --verify-config". Whonix-Gateway only. Reports only error. Otherwise quite.
+* Whonix 7.7.1.1 and above: Check if a package manager is currently running. Waits as long as a package manager is running until it continues. It waits, because the Tor package or [[Dev/CPFP]] is currently upgraded, connection checks would fail.
 * Check if the Tor process is running. Only on Whonix-Gateway. Reports error if not. Quite otherwise.
-* Tor connection
+* Tor connection / IP
 ** Tor Bootstrap Status
 ** downloads https://check.torproject.org with curl through extra SocksPort
 ** downloads https://check.torproject.org with curl through TransPort
+** The Whonix design ensures, that never the users real IP can be detected. Why check it anyway? Sometimes check.tpo reports false positives and fails to detect Tor exit nodes. The user should be informed about that possibility. That reduces support requests and bad press. It's fine to investigate if the Tor exit node could not be detected, but we're quite confident, that the outcome will be, that it's a Tor exit node IP. Some users may do dangerous and/or unsupported things, such as changing Whonix-Workstation's network interface from {{Code|internal}} network {{Code|"Whonix"}} to {{Code|bridged}} or {{Code|NAT}} or other creative and adventurous things, such as using virtualizers which are entirely unsupported and untested by Whonix developers. Last but not least, users can and are encouraged to install upgrades using {{Code|apt-get}} and free to install arbitrary packages on Whonix-Workstation. In a totally unexpected case, that may open up for a leak and whonixcheck is Whonix's last layer of defenses against such leaks.
 * Tor Browser version
 ** downloads https://check.torproject.org/RecommendedTBBVersions with curl through extra SocksPort
 * operating system updates
@@ -32,16 +41,9 @@
 ** Adrelanos gpg key got copied to whonix_shared/usr/share/whonix/keys/whonix-keys.d/ at build time.
 ** Warns if the file can not be gpg verified with adrelanos gpg key. In that case version and news is ignored.
 ** Also see [[Trust]].
-** An adversary with (temporary) control over the sourceforge.net server could replace that file with any other message ever signed by adrelanos. There is no defense against this attack, but a defense wouldn't be useful anyway. <ref>An adversary in that position could run even more powerful attacks, such as malicious website news and documentation, malicious downloads</ref>
+** An adversary with (temporary) control over the sourceforge.net server could replace that file with any other message ever signed by adrelanos. Below Whonix 7.7.1.1: There is no defense against this attack, but a defense wouldn't be useful anyway. <ref>An adversary in that position could run even more powerful attacks, such as malicious website news and documentation, malicious downloads</ref> Whonix 7.7.1.1 and above: Messages signed more than one month ago are rejected and the user is informed about the message being no longer valid.
 
-The whonixcheck script was inspired by https://check.torproject.org. In past when people were still recommended to use proxy settings to torify web browsers, it was an important check. While manual torification of web browsers is nowadays recommended against, the Tor Browser Bundle, which is securely pre-configured, still visits check.tpo and checks if everything is okay. Check.tpo also checks if the Tor Browser Bundle version is up to date (technically Tor Button downloads version information and checks locally).
-
-While check.tpo just checks the browser, Whonix is more than a browser. It's a complete operating system. Therefore when the browser starts, it's already too late. It has to be checked earlier, because the user might not start the browser. That's why whonixcheck will be automatically started after boot/login (if it hasn't been recently run, i.e. if whonxicheck has been completed within 24 hours earlier).
-
-The Whonix design ensures, that never the users real IP can be detected. Why check it anyway? Sometimes check.tpo reports false positives and fails to detect Tor exit nodes. The user should be informed about that possibility. That reduces support requests and bad press. It's fine to investigate if the Tor exit node could not be detected, but we're quite confident, that the outcome will be, that it's a Tor exit node IP. Some users may do dangerous and/or unsupported things, such as changing Whonix-Workstation's network interface from {{Code|internal}} network {{Code|"Whonix"}} to {{Code|bridged}} or {{Code|NAT}} or other creative and adventurous things, such as using virtualizers which are entirely unsupported and untested by Whonix developers. Last but not least, users can and are encouraged to install upgrades using {{Code|apt-get}} and free to install arbitrary packages on Whonix-Workstation. In a totally unexpected case, that may open up for a leak and whonixcheck is Whonix's last layer of defenses against such leaks.
-
-whonixcheck will run once every day, even if the system is not restarted. The motivation behind that is also to inform long running systems.
-
+= Security =
 The ''ca-certificates'' Debian package is installed on Whonix. Curl will verify the SSL certificate for downloads from check.tpo (SocksPort Test, TransPort Test, Tor Browser version check) and aborts if the certificate is not valid.
 
 Attack surface for this script includes at least curl, apt-get, gpg, grep, sed, bash, uwt, torsocks, zenity, pgrep. Adrelanos believes, that benefits outweigh the risks not running those checks. The user is free to ''sudo chmod -x /usr/bin/whonixcheck'' and adrelanos remains as always open for reviews and suggestions.
