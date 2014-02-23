@@ -496,6 +496,147 @@ Run.
 
 That's it.
 
+=== Tor Browser Bundle (TBB) ===
+Create a file /etc/apparmor.d/home.user.tor-browser_en-US.Browser.firefox.
+
+<pre>
+kdesudo kwrite /etc/apparmor.d/home.user.tor-browser_en-US.Browser.firefox
+</pre>
+
+<pre>
+#include <tunables/global>
+
+/home/user/tor-browser_en-US/Browser/firefox {
+	#include <abstractions/base>
+	#include <abstractions/user-tmp>
+	#include <abstractions/bash>
+	
+	capability sys_ptrace,
+
+	network,
+	network tcp,
+
+	deny /etc/host.conf r,
+	deny /etc/hosts r,
+	deny /etc/nsswitch.conf r,
+	deny /etc/resolv.conf r,
+	deny /proc/9881/mountinfo r,
+	deny @{HOME}/.config/user-dirs.dirs r,
+	deny @{HOME}/.gtk-bookmarks r,
+	deny @{HOME}/.local/share/recently-used.xbel* rw,
+
+	/bin/dash rix,
+	/bin/open rix,
+	/bin/ps rix,		
+	
+	/dev/dri/card0 rw,
+	/dev/vboxuser rw,
+	/dev/tty r,
+
+	/etc/drirc r,
+	/etc/X11/cursors/* r,
+	/etc/fonts/** r,
+	/etc/mime.types r,
+	/etc/mailcap r,
+	deny /etc/passwd r,
+	deny /etc/resolv.conf.whonix r,
+	deny /etc/hosts.whonix r,
+	/etc/pkcs11/modules/ r,
+	/etc/pkcs11/modules/* r,
+
+	owner @{HOME}/tor-browser_en-US/ r,
+	owner @{HOME}/tor-browser_en-US/.cache/ cx,
+	owner @{HOME}/tor-browser_en-US/* rw, 
+	owner @{HOME}/tor-browser_en-US/.mozilla/ w,
+	owner @{HOME}/tor-browser_en-US/.mozilla/*/ w,
+	owner @{HOME}/tor-browser_en-US/Browser/** r,
+	owner @{HOME}/tor-browser_en-US/Browser/*.so mr,
+	owner @{HOME}/tor-browser_en-US/Browser/browser/components/*.so mr,
+	owner @{HOME}/tor-browser_en-US/Browser/components/*.so mr,
+	owner @{HOME}/tor-browser_en-US/Browser/firefox rix,
+	owner @{HOME}/tor-browser_en-US/Data/Browser/ r,
+	owner @{HOME}/tor-browser_en-US/Data/Browser/** rwk,
+	owner @{HOME}/tor-browser_en-US/Desktop/ rw,
+	owner @{HOME}/tor-browser_en-US/Desktop/** rw,
+	owner @{HOME}/tor-browser_en-US/Downloads/ rw,
+	owner @{HOME}/tor-browser_en-US/Downloads/** rw,
+	owner @{HOME}/tor-browser_en-US/Tor/tor Px,
+
+	
+	/sys/devices/system/cpu/ r,
+	/sys/devices/system/cpu/* r,
+
+	/tmp/.X0-lock r,
+
+	## Looks like a nvidia audio driver.
+	deny /usr/lib/i386-linux-gnu/dri/swrast_dri.so m,
+
+	## Alphabets libraries (32bit).
+	/usr/lib/i386-linux-gnu/pango/1.6.0/modules/* m,
+
+	/usr/lib/i386-linux-gnu/pkcs11/* m,
+	/usr/bin/kde4-config rix,
+	
+	/usr/share/ r,
+	/usr/share/fonts/ r,
+	/usr/share/fonts/** r,
+	/usr/share/icons/ r,
+	/usr/share/icons/** r,
+	/usr/share/mime/ r,
+	/usr/share/mime/** r,
+	/usr/share/pixmaps/ r,
+	/usr/share/pixmaps/** r,
+	/usr/share/themes/ r,
+	/usr/share/themes/** r,
+
+	/usr/share/kde4/config/kdeglobals r,
+	/usr/share/whonix/kde/share/config/kdeglobals r,
+
+	deny /usr/share/applications/** r,
+
+	/var/cache/fontconfig/* r,
+
+	/var/lib/dbus/machine-id r,
+
+	## In 'Edit/Preferences', set 'Saves files to' -> 'Downloads'.	
+	owner @{HOME}/Downloads/* rw,
+
+	owner @{HOME}/.Xauthority r,
+	owner @{HOME}/.local/share/applications/mimeapps.list r,
+	owner @{HOME}/.icons/ r,
+	owner @{HOME}/.icons/** r,
+	owner @{HOME}/.local/share/icons/ r,
+	owner @{HOME}/.themes/** r,
+	deny owner @{HOME}/.local/share/gvfs-metadata/home r,
+	owner @{HOME}/.cache/ r,
+	owner @{HOME}/.cache/* rwk,
+	/home/user/.kde/share/config/gtkrc-2.0 r,
+
+	@{PROC} r,
+	@{PROC}/[0-9]*/maps r,
+	@{PROC}/tty/drivers r,
+	deny @{PROC}/[0-9]*/mounts r,
+	deny @{PROC}/[0-9]*/mountinfo r,
+	@{PROC}/[0-9]*/stat r,
+	@{PROC}/[0-9]*/status r,
+	@{PROC}/[0-9]*/task/*/stat r,
+	@{PROC}/[0-9]*/cmdline r,
+	@{PROC}/[0-9]*/fd/ r,
+	@{PROC}/cpuinfo r,
+	@{PROC}/filesystems r,
+	@{PROC}/meminfo r,
+	@{PROC}/stat r,
+	@{PROC}/sys/kernel/pid_max r,
+	@{PROC}/uptime r,
+}
+</pre>
+
+<pre>
+sudo aa-enforce /etc/apparmor.d/home.user.tor-browser_en-US.Browser.firefox
+</pre>
+
+The profile is in use (under test).
+
 === Additional inspiration ===
 Use [https://en.wikipedia.org/wiki/AppArmor AppArmor] ([http://wiki.debian.org/AppArmor in Debian]):
 
