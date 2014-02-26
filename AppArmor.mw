@@ -1,3 +1,302 @@
 {{Header}}
 
+The following AppArmor profiles are currently under evaluation with Whonix 8 pre-release (7.7.9.8). When considered sufficiently tested, they will be checked for backward compatibility with Whonix 7.
+
+=== Pidgin ===
+{{AppArmorProfileWarning}}
+
+Create a file /etc/apparmor.d/usr.bin.pidgin.
+
+<pre>
+kdesudo kwrite /etc/apparmor.d/usr.bin.pidgin
+</pre>
+
+Credit for this AppArmor profile goes to [http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=676849 intrigeri].
+
+<pre>
+# vim:syntax=apparmor
+
+#include <tunables/global>
+
+/usr/bin/pidgin {
+  #include <abstractions/audio>
+  #include <abstractions/aspell>
+  #include <abstractions/base>
+  #include <abstractions/bash>
+  #include <abstractions/consoles>
+  #include <abstractions/dbus>
+  #include <abstractions/dbus-session>
+  #include <abstractions/fonts>
+  #include <abstractions/freedesktop.org>
+  #include <abstractions/gnome>
+  #include <abstractions/launchpad-integration>
+  #include <abstractions/nameservice>
+  #include <abstractions/private-files-strict>
+  #include <abstractions/ubuntu-browsers>
+  #include <abstractions/ubuntu-console-browsers>
+  #include <abstractions/user-download>
+  #include <abstractions/user-tmp>
+  #include <abstractions/ibus>
+  #include <abstractions/X>
+
+  deny capability sys_ptrace,
+
+  deny @{HOME}/.bash* rw,
+  deny @{HOME}/.cshrc rw,
+  deny @{HOME}/.profile rw,
+  deny @{HOME}/.zshrc rw,
+
+  owner @{HOME}/.cache/dconf/user rw,
+  owner @{HOME}/.config/dconf/user r,
+  owner @{HOME}/.config/enchant/ rw,
+  owner @{HOME}/.config/enchant/* rwk,
+  owner @{HOME}/.local/share/icons/ r,
+  owner @{HOME}/.local/share/mime/* r,
+  owner @{HOME}/.gnome2/nautilus-sendto/** rw,
+  owner @{HOME}/.gstreamer*/ rw,
+  owner @{HOME}/.gstreamer*/** rw,
+  owner @{HOME}/.pulse/ rw,
+  owner @{HOME}/.pulse/** rw,
+  owner @{HOME}/.pulse-cookie rwk,
+  owner @{HOME}/.purple/ rw,
+  owner @{HOME}/.purple/** rwk,
+
+  /bin/dash rix,
+
+  /{dev,run}/shm/ r,
+  /{dev,run}/shm/* rw,
+
+  /etc/ r,
+  /etc/pulse/client.conf r,
+  /etc/ssl/certs/ r,
+  /etc/ssl/certs/** r,
+  /etc/ssl/certs/ssl-cert-snakeoil.pem r,
+
+  owner /tmp/orbit-*/* w,
+  owner /tmp/pulse-*/* w,
+
+  /usr/bin/gconftool-2 rix,
+  /usr/bin/gnome-default-applications-properties ix,
+  /usr/bin/gnome-network-preferences ix,
+  /usr/bin/gnome-open rmix,
+  /usr/bin/gsettings rix,
+  /usr/bin/pidgin r,
+  /usr/bin/xdg-open rmix,
+  /bin/which rix,
+  /usr/bin/gvfs-open rmix,
+
+  /usr/share/glib-2.0/schemas/gschemas.compiled r,
+
+  /usr/lib/ r,
+  /usr/lib/frei0r-1/*.so rm,
+  /usr/lib/libvisual-*/**.so rm,
+  /usr/lib/pidgin/*.so rm,
+  /usr/lib/purple*/*.so rm,
+
+  /usr/share/ca-certificates/*/** r,
+  /usr/share/enchant/enchant.ordering r,
+  /usr/share/locale-langpack/** rm,
+  /usr/share/purple/ca-certs/ r,
+  /usr/share/purple/ca-certs/** r,
+  /usr/share/myspell/dicts/ r,
+  /usr/share/myspell/dicts/** r,
+  /usr/share/tcltk/** r,
+
+  /usr/share/themes/ r,
+  /usr/share/themes/** r,
+
+  /usr/share/hunspell/ r,
+  /usr/share/hunspell/** r,
+
+  deny @{PROC}/** r,
+
+  # Site-specific additions and overrides. See local/README for details.
+  #include <local/usr.bin.pidgin>
+}
+</pre>
+
+Create a file /etc/apparmor.d/local/usr.bin/pidgin.
+
+<pre>
+kdesudo kwrite /etc/apparmor.d/local/usr.bin/pidgin
+</pre>
+
+<pre>
+/etc/resolv.conf.whonix r,
+/etc/hosts.whonix r,
+</pre>
+
+Run.
+
+<pre>
+sudo apparmor_parser -r -W -T /etc/apparmor.d/usr.bin.pidgin
+</pre>
+
+<pre>
+sudo aa-enforce /etc/apparmor.d/usr.bin.pidgin
+</pre>
+
+Run.
+
+That's it.
+
+=== Tor Browser Bundle (TBB) ===
+{{AppArmorProfileWarning}}
+
+Create a file /etc/apparmor.d/home.user.tor-browser_en-US.Browser.firefox.
+
+<pre>
+kdesudo kwrite /etc/apparmor.d/home.user.tor-browser_en-US.Browser.firefox
+</pre>
+
+<pre>
+#include <tunables/global>
+
+/home/user/tor-browser_en-US/Browser/firefox {
+	#include <abstractions/base>
+	#include <abstractions/user-tmp>
+	#include <abstractions/bash>
+	#include <abstractions/fonts>
+	
+	capability sys_ptrace,
+
+	network,
+	network tcp,
+
+	deny /etc/host.conf r,
+	deny /etc/hosts r,
+	deny /etc/nsswitch.conf r,
+	deny /etc/resolv.conf r,
+	deny /etc/passwd r,
+	deny /etc/resolv.conf.whonix r,
+	deny /etc/hosts.whonix r,
+#	deny /proc/9881/mountinfo r,
+	deny @{PROC}/[0-9]*/mounts r,
+	deny @{PROC}/[0-9]*/mountinfo r,
+	deny @{HOME}/.config/user-dirs.dirs r,
+	deny @{HOME}/.gtk-bookmarks r,
+	deny @{HOME}/.local/share/recently-used.xbel* rw,
+	deny owner @{HOME}/.local/share/gvfs-metadata/home r,
+	deny owner @{HOME}/.cache/ rw,
+	deny /usr/share/applications/** r,
+
+	/bin/dash rix,
+	/bin/open rix,
+	/bin/ps rix,
+	
+	/dev/dri/card0 rw,
+	/dev/vboxuser rw,
+	/dev/tty r,
+
+	/etc/drirc r,
+	/etc/X11/cursors/* r,
+	/etc/fonts/** r,
+	/etc/mime.types r,
+	/etc/mailcap r,
+	/etc/pkcs11/modules/ r,
+	/etc/pkcs11/modules/* r,
+
+	/etc/gnome-vfs-2.0/modules/ r,	# not in my copy of 7.7.8.9
+	/etc/gnome-vfs-2.0/modules/* r,	# not in my copy of 7.7.8.9
+	
+	owner @{HOME}/tor-browser_en-US/ r,
+	owner @{HOME}/tor-browser_en-US/.cache/ cx,
+	owner @{HOME}/tor-browser_en-US/* rw, 
+	owner @{HOME}/tor-browser_en-US/.mozilla/ w,
+	owner @{HOME}/tor-browser_en-US/.mozilla/*/ w,
+	owner @{HOME}/tor-browser_en-US/Browser/** r,
+	owner @{HOME}/tor-browser_en-US/Browser/*.so mr,
+	owner @{HOME}/tor-browser_en-US/Browser/browser/components/*.so mr,
+	owner @{HOME}/tor-browser_en-US/Browser/components/*.so mr,
+	owner @{HOME}/tor-browser_en-US/Browser/firefox rix,
+	owner @{HOME}/tor-browser_en-US/Data/Browser/ r,
+	owner @{HOME}/tor-browser_en-US/Data/Browser/** rwk,
+	owner @{HOME}/tor-browser_en-US/Desktop/ rw,
+	owner @{HOME}/tor-browser_en-US/Desktop/** rw,
+	owner @{HOME}/tor-browser_en-US/Downloads/ rw,
+	owner @{HOME}/tor-browser_en-US/Downloads/** rw,
+	owner @{HOME}/tor-browser_en-US/Tor/tor Px,
+
+	
+	/sys/devices/system/cpu/ r,
+	/sys/devices/system/cpu/* r,
+
+	/tmp/.X0-lock r,
+
+	## Looks like a nvidia audio driver.
+	deny /usr/lib/i386-linux-gnu/dri/swrast_dri.so m,
+
+	## Alphabets libraries (32bit).
+	/usr/lib/i386-linux-gnu/pango/1.6.0/modules/* m,
+
+	/usr/lib/i386-linux-gnu/pkcs11/* m,
+	/usr/bin/kde4-config rix,
+	
+	/usr/share/ r,
+	/usr/share/fonts/ r,
+	/usr/share/fonts/** r,
+	/usr/share/icons/ r,
+	/usr/share/icons/** r,
+	/usr/share/mime/ r,
+	/usr/share/mime/** r,
+	/usr/share/pixmaps/ r,
+	/usr/share/pixmaps/** r,
+	/usr/share/themes/ r,
+	/usr/share/themes/** r,
+
+	/usr/share/kde4/config/kdeglobals r,
+	/usr/share/whonix/kde/share/config/kdeglobals r,
+
+	/var/cache/fontconfig/* r,
+
+	/var/lib/dbus/machine-id r,
+
+	## In 'Edit/Preferences', set 'Saves files to' -> 'Downloads'.	
+	owner @{HOME}/Downloads/* rw,
+
+	owner @{HOME}/.Xauthority r,
+
+	owner @{HOME}/.local/share/ r,
+	owner @{HOME}/.local/share/applications/mimeinfo.cache r,
+	owner @{HOME}/.local/share/mime/ r,
+	owner @{HOME}/.local/share/mime/** r,
+	owner @{HOME}/.local/share/applications/mimeapps.list r,
+	owner @{HOME}/.icons/ r,
+	owner @{HOME}/.icons/** r,
+	owner @{HOME}/.local/share/icons/ r,
+	owner @{HOME}/.themes/** r,
+	owner @{HOME}/.kde/share/config/gtkrc-2.0 r,
+	owner @{HOME}/.kde/share/config/kdeglobals r,
+	owner @{HOME}/.config/oxygen-gtk/argb-apps.conf rw,
+	
+	@{PROC} r,
+	@{PROC}/[0-9]*/maps r,
+	@{PROC}/tty/drivers r,
+	@{PROC}/[0-9]*/stat r,
+	@{PROC}/[0-9]*/status r,
+	@{PROC}/[0-9]*/task/*/stat r,
+	@{PROC}/[0-9]*/cmdline r,
+	@{PROC}/[0-9]*/fd/ r,
+	@{PROC}/cpuinfo r,
+	@{PROC}/filesystems r,
+	@{PROC}/meminfo r,
+	@{PROC}/stat r,
+	@{PROC}/sys/kernel/pid_max r,
+	@{PROC}/uptime r,
+}
+</pre>
+
+Run
+<pre>
+sudo aa-enforce /etc/apparmor.d/home.user.tor-browser_en-US.Browser.firefox
+</pre>
+
+[https://www.whonix.org/forum/index.php?action=profile;u=24 troubadour] created this profile. You can discuss it in this [https://www.whonix.org/forum/index.php/topic,24.0.html forum thread].
+
+=== Additional inspiration ===
+Use [https://en.wikipedia.org/wiki/AppArmor AppArmor] ([http://wiki.debian.org/AppArmor in Debian]):
+
+* [https://trac.torproject.org/projects/tor/wiki/doc/AppArmorForTBB AppArmor Profile for TBB]
+* [https://github.com/adrelanos/Inoffical-TBB-AppArmor Inoffical-TBB-AppArmor]
+
 {{Footer}}
