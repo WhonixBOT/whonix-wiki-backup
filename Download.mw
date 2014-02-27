@@ -177,94 +177,18 @@ If you won't get into trouble by letting others learn about Whonix, feel free to
 <!--T:54-->
 In case you are interested in Whonix source code updates, [[Dev/git#subscribe_to_code_changes|subscribe to code changes]].
 
-= Known bugs = <!--T:55-->
+= Known bugs =
 == Normal ==
-=== apt-get Hash Sum mismatch ===
-If you get a hash sum mismatch when updating through sudo apt-get update then deleting the package lists should solve it. A hash sum mismatch can look like:
-
-<pre>
-W: Failed to fetch http://ftp.us.debian.org/debian/dists/testing/contrib/i18n/Translation-enIndex  Hash Sum mismatch
-</pre>
-
-<!--T:94-->
-To delete the package lists, run:
-<pre>
-sudo rm -fR /var/lib/apt/lists/*
-</pre>
-
-<!--T:95-->
-To make sure everything works like it should, update your package lists and upgrade your distro. Chances are that your previous update/upgrade attempts have failed due to the mismatch.
-
-<!--T:96-->
-<pre>
-sudo apt-get update && apt-get dist-upgrade
-</pre>
-
-<!--T:97-->
-(Source <ref>http://askubuntu.com/questions/41605/trouble-downloading-updates-due-to-hash-sum-mismatch-error</ref>)
-
-=== Tor Browser Updater (Whonix) === <!--T:83-->
-Currently broken due to changes by torproject.org. You have to [[Manually Updating Tor Browser|manually update Tor Browser]] in meanwhile.
-
-<!--T:56-->
-Forum help thread:
-[[Special:AWCforum/st/id262/updating_TOR_browser_error...html]]
-
-=== Tor Browser Starter (Whonix) === <!--T:84-->
-After manually upgrading Tor Browser (see above)... To start Tor Browser, got to your /home/user/tor-browser_en-US folder and double click start-tor-browser. Or type in terminal (Konsole).
-
-<!--T:85-->
-<pre>
-/home/user/tor-browser_en-US/start-tor-browser
-</pre>
-
-=== Enigmail Encryption === <!--T:59-->
-When using OpenPGP encryption in Icedove / Enigmail you might get "encryption command failed".
-
-<!--T:60-->
-Icedove has been updated in Debian Testing in meanwhile. Upgrade it.
-
-<!--T:61-->
-<pre>
-sudo apt-get update
-sudo apt-get dist-upgrade
-</pre>
-
-<!--T:62-->
-You should then install enigmail as usual: <br />
-<pre>
-sudo apt-get install enigmail
-</pre>
-
 === Mounting (CD/DVD) Devices === <!--T:64-->
 Currently needs a workaround as well. Please see [[Special:AWCforum/st/id167/#post_700|forum]].
 
 === VLC / Video Player Crash === <!--T:86-->
 For problem and workaround see forum thread: [[Special:AWCforum/st/id282/vlc_video_crash.html]].
 
-== Minor == <!--T:65-->
-=== Whonix-Gateway: Err: http://deb.torproject.org tor-0.2.4.x-jessie/main i386 Packages 404 Not Found ===
-'''Short answer''': <br />
-Update and upgrade your underlying Debian system (Whonix is a derivative of Debian).
-<pre>
-sudo apt-get update
-sudo apt-get dist-upgrade
-</pre>
-
-<!--T:87-->
-See also [[Security_Guide#Recommendation_to_install_latest_security_updates_on_all_systems]]. This bug will be fixed with next Whonix upgrade (will take some time). No other action strictly required for now.
-
-<!--T:88-->
-'''Long answer''': <br />
-This is because torproject deprecated that repository. That was to be expected. The repository we're using now is already preconfigured (in /etc/apt/sources.list.d/torproject.list).
-
-<!--T:89-->
-Taking action isn't important at this stage. You can comment it out (by putting a # in front of it) in /etc/apt/sources.list.d/torproject.list if you want. ({{Code|kdesudo kate /etc/apt/sources.list.d/torproject.list}} for graphical Whonix-Gateway or {{Code|sudo nano /etc/apt/sources.list.d/torproject.list}} for terminal-only Whonix-Gateway) If you don't do it, it will be auto fixed with next upgrade of Whonix.
-
+== Minor ==
 === There is no public key available for the following key IDs === <!--T:99-->
 The message "{{Code2|There is no public key available for the following key IDs}}" is not necessarily an error. It might be just a warning/information.
 
-<!--T:100-->
 <pre>
 sudo apt-get update
 ...
@@ -274,40 +198,31 @@ W: There is no public key available for the following key IDs:
 9C131AD3713AAEEF
 </pre>
 
-<!--T:101-->
 Check the exit code of apt-get.
 
-<!--T:102-->
 <pre>
 echo $?
 0
 </pre>
 
-<!--T:103-->
 When it's 0, there is no problem. This is due to key transition, because Whonix's repository is currently signed with the old and the new signing key.
 
 === "apt-get source package" will show "dpkg-source: warning: failed to verify signature" === <!--T:66-->
 More info [http://lists.debian.org/debian-derivatives/2013/08/msg00000.html here] (and in the following mails).
 
-<!--T:67-->
 It is only a warning. If you want, you can get rid of it with the following workaround.
 
-<!--T:68-->
 1. Modify <code>/etc/dpkg/origins/default</code>.
 
-<!--T:69-->
 <pre>
 sudo unlink /etc/dpkg/origins/default
 sudo ln -s /etc/dpkg/origins/debian /etc/dpkg/origins/default
 </pre>
 
-<!--T:70-->
 2. {{Code|apt-get source package}}
 
-<!--T:71-->
 3. Undo afterwards to prevent unexpected issues.
 
-<!--T:72-->
 <pre>
 sudo unlink /etc/dpkg/origins/default
 sudo ln -s /etc/dpkg/origins/whonix /etc/dpkg/origins/default
