@@ -67,7 +67,6 @@ Paste the following content.
 	/etc/mailcap r,
 	/etc/pkcs11/modules/ r,
 	/etc/pkcs11/modules/* r,
-
 	
 	owner @{HOME}/tor-browser_en-US/ r,
 	owner @{HOME}/tor-browser_en-US/* rw, 
@@ -153,6 +152,133 @@ Paste the following content.
 Run
 <pre>
 sudo aa-enforce /etc/apparmor.d/home.user.tor-browser_en-US.Browser.firefox
+</pre>
+
+[https://www.whonix.org/forum/index.php?action=profile;u=24 troubadour] created this profile. You can discuss it in this [http://kkkkkkkkkk63ava6.onion/forum/index.php/topic,97.0.html forum thread].
+
+= Icedove =
+{{AppArmorProfileWarning}}
+
+There is one restriction with this profile: the attachments (received or to be sent) must be in '/home/user/Downloads'. The directory should be already created if you are using the TBB profile.
+
+Create a file /etc/apparmor.d/usr.lib.icedove.icedove.
+
+<pre>
+kdesudo kwrite /etc/apparmor.d/usr.lib.icedove.icedove
+</pre>
+
+Paste the following content.
+
+<pre>
+#include <tunables/global>
+
+/usr/lib/icedove/icedove {
+  #include <abstractions/base>
+  #include <abstractions/user-tmp>
+  #include <abstractions/bash>
+  #include <abstractions/fonts>
+  
+  capability sys_ptrace,
+  
+  deny /etc/host.conf r,
+  deny /etc/hosts r,
+  deny /etc/nsswitch.conf r,
+  deny /etc/passwd r,
+  deny /etc/hosts.whonix r,
+  deny /etc/fstab r,
+	owner @{HOME}/* rw,
+	owner @{HOME}/.* rw,
+	owner @{HOME}/Desktop/ r,
+  deny owner @{HOME}/.cache/ rw,
+  deny owner @{HOME}/.cache/** rw,
+	deny owner @{HOME}/.local/share/recently-used.xbel* rw,
+  deny @{PROC}/[0-9]*/mounts r,
+  deny @{PROC}/[0-9]*/mountinfo r,
+  deny /usr/lib/i386-linux-gnu/dri/swrast_dri.so m,
+  deny /usr/share/applications/ rw,
+
+ 	/bin/dash  rix,
+  /bin/ps rix,
+	/bin/mknod rix,
+  
+  /dev/tty r,
+  /dev/vboxuser rw,
+  /dev/dri/card0 rw,
+  
+  /etc/drirc r,
+  /etc/ld.so.cache r,
+  /etc/resolv.conf r,
+  /etc/resolv.conf.whonix r,
+  /etc/mailcap r, 
+  /etc/icedove/pref/ r,
+  /etc/icedove/pref/* r,
+  /etc/X11/cursors/* r,
+  /etc/mime.types r,
+  /etc/gai.conf r,
+  
+  /lib/i386-linux-gnu/i686/cmov/libc-2.13.so r,
+  /lib/i386-linux-gnu/libprocps.so.0.0.1 r,
+  
+  owner @{HOME}/ r,	  
+  owner @{HOME}/Downloads/ rw,	
+  owner @{HOME}/Downloads/* rw,	
+	
+  owner @{HOME}/.Xauthority r,
+  owner @{HOME}/.icedove/** rwk,
+  owner @{HOME}/.icedove/up40c30c.default/lock rw,
+  owner @{HOME}/.icedove/up40c30c.default/.parentlock rwk,
+  owner @{HOME}/.kde/share/** rw,
+  owner @{HOME}/.config/oxygen-gtk/argb-apps.conf rw,
+  owner @{HOME}/.local/share/applications/mimeapps.list r,
+  owner @{HOME}/.local/share/applications/userapp-Icedove* r,
+  
+  @{PROC} r,
+  @{PROC}/[0-9]*/maps r,
+  @{PROC}/tty/drivers r,
+  @{PROC}/[0-9]*/stat r,
+  @{PROC}/[0-9]*/status r,
+  @{PROC}/[0-9]*/task/*/stat r,
+  @{PROC}/[0-9]*/cmdline r,
+  @{PROC}/[0-9]*/fd/ r,
+  @{PROC}/cpuinfo r,
+  @{PROC}/filesystems r,
+  @{PROC}/meminfo r,
+  @{PROC}/stat r,
+  @{PROC}/sys/kernel/pid_max r,
+  @{PROC}/uptime r,
+  
+  /sys/devices/system/cpu/ r,  
+  /sys/devices/system/cpu/present r,  
+  
+  /usr/bin/kde4-config rix,
+ 
+  /usr/lib/icedove/icedove mr,
+  /usr/lib/i386-linux-gnu/pango/1.6.0/modules/* m,
+  
+  /usr/share/ r,
+  /usr/share/icons/ r,
+  /usr/share/icons/** r,
+  /usr/share/mime/ r,
+  /usr/share/mime/** r,
+  /usr/share/pixmaps/ r,
+  /usr/share/pixmaps/** r,
+  /usr/share/themes/ r,
+  /usr/share/themes/** r,
+  /usr/share/icedove/ r,
+  /usr/share/icedove/** r,
+  /usr/share/glib-2.0/schemas/gschemas.compiled r, 
+  /usr/share/whonix/kde/share/config/kdeglobals rw,
+  /usr/share/hunspell/ r,
+  /usr/share/hunspell/* r,
+  /usr/.local/share/applications/ rw,
+
+  /var/lib/dbus/machine-id r,
+}
+</pre>
+
+Run
+<pre>
+sudo aa-enforce /etc/apparmor.d/usr.lib.icedove.icedove
 </pre>
 
 [https://www.whonix.org/forum/index.php?action=profile;u=24 troubadour] created this profile. You can discuss it in this [http://kkkkkkkkkk63ava6.onion/forum/index.php/topic,97.0.html forum thread].
