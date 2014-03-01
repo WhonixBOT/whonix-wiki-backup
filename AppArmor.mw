@@ -156,7 +156,7 @@ sudo aa-enforce /etc/apparmor.d/home.user.tor-browser_en-US.Browser.firefox
 
 [https://www.whonix.org/forum/index.php?action=profile;u=24 troubadour] created this profile. You can discuss it in this [http://kkkkkkkkkk63ava6.onion/forum/index.php/topic,97.0.html forum thread].
 
-= Icedove =
+= Icedove (with Enigmail)=
 {{AppArmorProfileWarning}}
 
 There is one restriction with this profile: the attachments (received or to be sent) must be in '/home/user/Downloads'. The directory should be already created if you are using the TBB profile.
@@ -180,14 +180,13 @@ Paste the following content.
   
   capability sys_ptrace,
   
-  deny /etc/host.conf r,
+  deny / r,
+	deny /etc/host.conf r,
   deny /etc/hosts r,
   deny /etc/nsswitch.conf r,
   deny /etc/passwd r,
   deny /etc/hosts.whonix r,
   deny /etc/fstab r,
-	owner @{HOME}/* rw,
-	owner @{HOME}/.* rw,
 	owner @{HOME}/Desktop/ r,
   deny owner @{HOME}/.cache/ rw,
   deny owner @{HOME}/.cache/** rw,
@@ -196,12 +195,18 @@ Paste the following content.
   deny @{PROC}/[0-9]*/mountinfo r,
   deny /usr/lib/i386-linux-gnu/dri/swrast_dri.so m,
   deny /usr/share/applications/ rw,
-
+	deny owner @{HOME}/* rw,
+	deny owner @{HOME}/.* rw,
+	
  	/bin/dash  rix,
   /bin/ps rix,
 	/bin/mknod rix,
+	/bin/grep rix,
+	/bin/chmod rix,
+	/bin/mktemp rix,
+	/bin/which rix,
   
-  /dev/tty r,
+  /dev/tty rw,
   /dev/vboxuser rw,
   /dev/dri/card0 rw,
   
@@ -215,23 +220,24 @@ Paste the following content.
   /etc/X11/cursors/* r,
   /etc/mime.types r,
   /etc/gai.conf r,
+	/etc/whonix.d/ r, 
+	/etc/whonix.d/* r, 
   
   /lib/i386-linux-gnu/i686/cmov/libc-2.13.so r,
   /lib/i386-linux-gnu/libprocps.so.0.0.1 r,
   
   owner @{HOME}/ r,	  
-  owner @{HOME}/Downloads/ rw,	
-  owner @{HOME}/Downloads/* rw,	
+	owner @{HOME}/Downloads/ rw,	
+	owner @{HOME}/Downloads/* rw,	
 	
   owner @{HOME}/.Xauthority r,
-  owner @{HOME}/.icedove/** rwk,
-  owner @{HOME}/.icedove/up40c30c.default/lock rw,
-  owner @{HOME}/.icedove/up40c30c.default/.parentlock rwk,
+  owner @{HOME}/.icedove/** mrwk,
   owner @{HOME}/.kde/share/** rw,
   owner @{HOME}/.config/oxygen-gtk/argb-apps.conf rw,
   owner @{HOME}/.local/share/applications/mimeapps.list r,
   owner @{HOME}/.local/share/applications/userapp-Icedove* r,
-  
+	owner @{HOME}/.gnupg/* lrwkcix,
+ 
   @{PROC} r,
   @{PROC}/[0-9]*/maps r,
   @{PROC}/tty/drivers r,
@@ -251,10 +257,18 @@ Paste the following content.
   /sys/devices/system/cpu/present r,  
   
   /usr/bin/kde4-config rix,
- 
-  /usr/lib/icedove/icedove mr,
+ 	/usr/bin/basename rix,
+	/usr/bin/grep rix,
+	/usr/bin/uwt rix,
+	/usr/bin/torsocks rix,
+	/usr/bin/gpg.whonix rix,
+	/usr/bin/gpg.whonix-orig rix,
+
+  /usr/lib/icedove/icedove mrix,
   /usr/lib/i386-linux-gnu/pango/1.6.0/modules/* m,
-  
+  /usr/lib/whonix/uwtwrapper rix,
+	/usr/lib/gnupg/gpgkeys_hkp ix,
+
   /usr/share/ r,
   /usr/share/icons/ r,
   /usr/share/icons/** r,
