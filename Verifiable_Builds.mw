@@ -8,9 +8,9 @@
 {{Verifiable Ovas Introduction}}
 
 === Short Overview - How it Works ===
-When building Whonix {{Code2|.ova}}'s from source code, for example {{Code2|/home/user/whonix_binary/Whonix-Gateway-7.ova}} also report {{Code2|/home/user/whonix_binary/Whonix-Gateway-7.report}} file will be created.
+When building Whonix {{Code2|.ova}}'s from source code, for example {{Code2|/home/user/whonix_binary/Whonix-Gateway-8.ova}} also report {{Code2|/home/user/whonix_binary/Whonix-Gateway-8.report}} file will be created.
 
-After building the {{Code2|.ova}}, the last build-step will extract the {{Code2|.ova}}, which will result getting three files, i.e. {{Code2|Whonix-Gateway-7.ovf}}, {{Code2|Whonix-Gateway-7.mf}} and {{Code2|Whonix-Gateway-7-disk1.vmdk}}. The {{Code2|.vmdk}}<ref>https://en.wikipedia.org/wiki/VMDK</ref> image then will be converted to {{Code2|.vdi}}<ref>https://en.wikipedia.org/wiki/VDI_(file_format)</ref>, then converted to {{Code2|raw}}<ref>https://en.wikipedia.org/wiki/Raw_image_format</ref> ({{Code2|.img}}. (Converting as in creating a copy, not actually converting.) The filesystem layout, the MBR<ref>https://en.wikipedia.org/wiki/Master_boot_record</ref> and the VBR<ref>https://en.wikipedia.org/wiki/Volume_boot_record</ref> are written in to separate files. The raw image will then be mounted. A sha512 checksum of every file will be created and stored in the report.
+After building the {{Code2|.ova}}, the last build-step will extract the {{Code2|.ova}}, which will result getting three files, i.e. {{Code2|Whonix-Gateway-8.ovf}}, {{Code2|Whonix-Gateway-8.mf}} and {{Code2|Whonix-Gateway-8-disk1.vmdk}}. The {{Code2|.vmdk}}<ref>https://en.wikipedia.org/wiki/VMDK</ref> image then will be converted to {{Code2|.vdi}}<ref>https://en.wikipedia.org/wiki/VDI_(file_format)</ref>, then converted to {{Code2|raw}}<ref>https://en.wikipedia.org/wiki/Raw_image_format</ref> ({{Code2|.img}}. (Converting as in creating a copy, not actually converting.) The filesystem layout, the MBR<ref>https://en.wikipedia.org/wiki/Master_boot_record</ref> and the VBR<ref>https://en.wikipedia.org/wiki/Volume_boot_record</ref> are written in to separate files. The raw image will then be mounted. A sha512 checksum of every file will be created and stored in the report.
 
 Anyone building {{Code2|Whonix.ova}} images will hopefully end up with the same report. We can then compare the reports using tools such as {{Code2|diff}} and/or {{Code2|meld}}. Those reports should be very similar. We can't end up with the very same reports, because again, there are no deterministically built operating systems yet. However, we can manually review the few remaining differences. That should make it reasonable to believe, that the original {{Code2|Whonix.ova}} images have been build from the source code that has been published for that Whonix version.
 
@@ -33,7 +33,7 @@ Unfortunately, we can not directly mount the {{Code2|.ova}}. We have to extract 
 The {{Code2|/help-steps/analyze_image}} script is the tool which comes with Whonix's source code to audit {{Code2|Whonix.ova}}. Nothing prevents you from cooking up your own custom method to verify {{Code2|Whonix.ova}}. On the contrary, we'd be very happy to hear about your methods, source code and results. Since this hasn't ever happened in past, Whonix came up with its own {{Code2|/help-steps/analyze_image}} script.
 
 === Possible Future Improvements ===
-[https://github.com/sleuthkit/sleuthkit/ sleuthkit] could be an interesting addition or even replacement for our custom script. Then we could create a report using something like {{Code|fls -f ext4 ./Whonix-Gateway-7.img}}. Does {{Code|fls}} very similar results when run on very similar images or does it mess up the ordering? The version in Debian even in [http://packages.debian.org/sid/sleuthkit sid] is outdated and does unfortunately not include support for ext4 and our images are using ext4. More recent sleuthkit upstream releases do support ext4, but there are no signed git tags yet ([https://github.com/sleuthkit/sleuthkit/issues/264 reported an issue]), so getting sleuthkit is a bit difficult. (If we want to defeat sophisticated backdoors, we shouldn't encourage auditors to blindly trust github's SSL alone for sleuthkit's integrity.) We could think about bending our images, downgrading from ext4 to ext3.
+[https://github.com/sleuthkit/sleuthkit/ sleuthkit] could be an interesting addition or even replacement for our custom script. Then we could create a report using something like {{Code|fls -f ext4 ./Whonix-Gateway-8.img}}. Does {{Code|fls}} very similar results when run on very similar images or does it mess up the ordering? The version in Debian even in [http://packages.debian.org/sid/sleuthkit sid] is outdated and does unfortunately not include support for ext4 and our images are using ext4. More recent sleuthkit upstream releases do support ext4, but there are no signed git tags yet ([https://github.com/sleuthkit/sleuthkit/issues/264 reported an issue]), so getting sleuthkit is a bit difficult. (If we want to defeat sophisticated backdoors, we shouldn't encourage auditors to blindly trust github's SSL alone for sleuthkit's integrity.) We could think about bending our images, downgrading from ext4 to ext3.
 
 === Expected Differences ===
 * {{Code|(mount_folder) /boot/initrd.img*}} - Those are extracted to the {{Code|initrd_folder}} and diffed.
@@ -71,7 +71,7 @@ Your report root folder can most likely be found in {{Code|/home/user/whonix_bin
 === How-To ===
 First of all, you need to create your own Whonix.ova images from source code, refer to [[Dev/Build Documentation|Build Documentation]]. Your report file can most likely be found at {{Code|/home/user/whonix_binary/$VMNAME-$whonix_build_whonix_version_new.report}} and your report_tempfolder at {{Code|/home/user/whonix_binary/$VMNAME-${whonix_build_whonix_version_new}_tempfolder}}. That is your own analyzed {{Code2|.ova}}. To make space for another analysis for other builds (such as those from whonix.org), rename your whonix_binary folder to something else, such as {{Code2|whonix_binary1}}.
 
-If you've build for example Whonix 7.5.4, you have to download Whonix 7.5.4 as well. Place the {{Code2|.ova}} in {{Code|/home/user/whonix_binary/}}. Keep the original name. Then go to Whonix's source code folder ({{Code|cd /home/user/Whonix}} and analyze that image. Use.
+If you've build for example Whonix 8, you have to download Whonix 8 as well. Place the {{Code2|.ova}} in {{Code|/home/user/whonix_binary/}}. Keep the original name. Then go to Whonix's source code folder ({{Code|cd /home/user/Whonix}} and analyze that image. Use.
 
 <pre>
 sudo ./build-steps.d/2800_create-report --tor-gateway
@@ -84,7 +84,7 @@ Then you have two {{Code2|.report}} files and two report temp folders.
 Use your favorite diff viewer for huge files. For example {{Code2|meld}}. Diff the reports. For example, use.
 
 <pre>
-meld ./whonix_binary1/Whonix-Gateway-7.5.4.report ./whonix_binary/Whonix-Gateway-7.5.4.report
+meld ./whonix_binary1/Whonix-Gateway-8.report ./whonix_binary/Whonix-Gateway-8.report
 </pre>
 
 These files should be very similar, expect for a few differences which we earlier mentioned in chapter Expected Differences. Look at the differences. Two of them (because we're installing two kernels) should look like this:
