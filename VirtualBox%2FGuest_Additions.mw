@@ -23,13 +23,20 @@ Very simple.
 
 Searching<ref>http://packages.debian.org/search?searchon=names&keywords=virtualbox</ref> for Debian packages containing VirtualBox was a wise thing. In past it was sometimes a real pain to install the guest additions. The search brought up, that honorable people created a debian package with the tools. Inside your Whonix Virtual Machine, simply do:
 
+Make sure debian sources are available to apt-get by editing  /etc/apt/sources.list. You need debian sources to install kernel headers.
+
 <pre>
-sudo apt-get update && sudo apt-get dist-upgrade
+/etc/apt/sources.list  ### uncomment the two lines starting with "deb-src"
 </pre>
 
 Followed by.
 
 <pre>
+sudo apt-get update && sudo apt-get dist-upgrade
+
+# You need kernel headers to be able to compile the kernel module
+sudo apt-get install linux-headers-$(uname -r)
+
 ## If you only want Shared Folder, for improved security,
 ## you can try using only the next line, but not the line after next.
 sudo apt-get install --no-install-recommends virtualbox-guest-dkms virtualbox-guest-utils
@@ -44,23 +51,6 @@ Reboot. And you're done.
 Alternatively, if this fails, you could also refer to the upstream documentation, [https://www.virtualbox.org/manual/ch04.html VirtualBox: Chapter 4. Guest Additions].
 
 NOTE: Sometimes after reboot the Workstation guest fails to pick up a new resolution. Try to change the screen resolution manually a few times, from KDE settings. Once it succeeds to change to fullscreen, the change will stay persistent across reboots.
-
-NOTE: If installation of virtualbox-guest-dkms finishes without error, but there is no kernel module generated you're probably missing the kernel-headers. 
-Do the following:
-In 
-
-<pre>
-/etc/apt/sources.list #uncomment the two lines starting with "deb-src"
-</pre>
-
-This will make linux sources available in apt-get.
-
-<pre>
-sudo apt-get install linux-headers-$(uname -r)
-sudo apt-get install --reinstall virtualbox-guest-dkms
-</pre>
-
-Restart VM (to make the kernel module available)
 
 === (Instructions for Debian Jessie) ===
 Recommend avoid for Guest Additionsǃ This version is difficult to get working with guest additions and vbox shares. Debian Jessie has the issue that Whonix installs with Kernel 3.10 and the distro is at 3.12, and the 3.10 headers are not available. Therefore, it is dangerous (and unsafe) to get the Kernel headers on a different repository. Additionally, there are reports that updating the kernel can cause issues (and is also unsafe). Therefore, instead install experimental version 7.7.8.6 located at https://www.whonix.org/blog/
