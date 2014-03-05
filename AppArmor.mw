@@ -6,6 +6,138 @@ __FORCETOC__
 = Introduction =
 The following AppArmor profiles are currently under evaluation with Whonix 8. When considered sufficiently tested, they will be checked for backward compatibility with Whonix 7.
 
+= VirtualBox =
+{{AppArmorProfileWarning}}
+
+This profile has to be used in the host. It is tested with VirtualBox 4.3 (4.3_4.3.8-92456~Debian~wheezy_amd64), no other versions. If you build a Whonix image, t will install VirtualBox 4.1. Please report any message you might see in the forum. https://www.whonix.org/forum/index.php/topic,97.0.html 
+
+In the host, create a file /etc/apparmor.d/usr.bin.VBox.
+
+<pre>
+kdesudo kwrite /etc/apparmor.d/usr.bin.VBox
+</pre>
+
+Paste the following content.
+
+<pre>
+#include <tunables/global>
+
+/usr/bin/VBox {
+	#include <abstractions/base>
+	#include <abstractions/bash>
+	#include <abstractions/fonts>	
+	#include <abstractions/audio>  	
+
+	capability net_admin, 
+	capability net_raw,
+	capability sys_ptrace,
+
+	owner @{HOME}/ r,
+	owner @{HOME}/* r,    # Check. Files denied.
+	owner @{HOME}/.ICEauthority r,
+	owner @{HOME}/.Xauthority r,
+	owner @{HOME}/.config/** r,
+	owner @{HOME}/.config/VirtualBox/** rw,
+	owner @{HOME}/.config/Trolltech.conf rk,
+	owner @{HOME}/.local/share/mime/* r,			
+	owner @{HOME}/.gtk-bookmarks r,
+	owner @{HOME}/.VirtualBox/ r,
+	owner @{HOME}/.VirtualBox/* rw,
+	owner @{HOME}/Documents/ r,
+	owner @{HOME}/Documents/** r,
+	owner @{HOME}/Desktop/ r,
+	owner @{HOME}/Desktop/** rw,
+	owner @{HOME}/.local/share/recently-used.xbel* rw,
+	
+	## Disk images (ISO, OVF/OVA...) directory. Create.
+	owner @{HOME}/Disk_Images/ r,	
+	owner @{HOME}/Disk_Images/* r,
+	
+	## Default Virtual Machine directory.
+	owner "@{HOME}/VirtualBox VMs/" r,
+	owner "@{HOME}/VirtualBox VMs/**" rw,
+	
+	## Shared folders. Replace with your own host share.
+	owner @{HOME}/share/ r,
+	owner @{HOME}/share/* rw,
+
+	/bin/dash rix,
+	/bin/kmod rix,
+	/bin/grep rix,
+	/bin/uname rix,
+	/bin/cat rix,
+	/bin/gawk rix,
+	/bin/ps rix,
+	/bin/rm rix,		
+	
+	/dev/dri/card0 rw,
+	/dev/vboxdrv rw,
+	/dev/vboxdrvu rw,
+	/dev/tty r,
+
+	/etc/nsswitch.conf r,
+	/etc/passwd r,
+	/etc/resolv.conf r,
+	/etc/fstab r,
+	/etc/drirc r,
+	/etc/xdg/** r,
+
+	/usr/lib/virtualbox/** mrcux,
+	/usr/lib/x86_64-linux-gnu/** mrix,
+	
+	@{PROC}/ r,
+	@{PROC}/cmdline r,
+	@{PROC}/[0-9]*/cmdline r,
+	@{PROC}/modules r,
+	@{PROC}/net r,
+	@{PROC}/[0-9]*/net/** r,
+	@{PROC}/[0-9]*/stat r,
+	@{PROC}/[0-9]*/status r,
+	@{PROC}/[0-9]*/fd r,
+	@{PROC}/uptime r,
+	@{PROC}/tty/drivers r,
+	@{PROC}/sys/kernel/pid_max r,
+		
+	/run/gdm3/** r,
+	
+	/sys/devices/pci0000:00/** r,
+	/sys/devices/virtual/** r,
+	/sys/devices/system/cpu/** r,
+	/sys/devices/LNXSYSTM:00/LNXSYBUS:00/** r,
+	/sys/module/** r,	
+	/sys/block/ r,
+	/sys/class/** r,	
+
+	owner /tmp/** rw,
+	
+	/usr/bin/VBox rix,
+	/usr/bin/whoami	rix,
+	/usr/bin/basename rix,
+	/usr/bin/ps rix,
+	/usr/bin/gawk rix,
+	/usr/bin/mawk rix,
+	
+	/usr/share/themes/** r,
+	/usr/share/icons/ r,	
+	/usr/share/icons/** rk,	
+	/usr/share/mime/ r,
+	/usr/share/mime/** r,
+	/usr/share/pixmaps/ r,
+	/usr/share/pixmaps/** r,
+	/usr/share/gvfs/** r,
+	/usr/share/virtualbox/** r,
+
+	/var/lib/dbus/machine-id r,
+}
+</pre>
+
+Run
+<pre>
+sudo aa-enforce /etc/apparmor.d/usr.bin.VBox
+</pre>
+
+[https://www.whonix.org/forum/index.php?action=profile;u=24 troubadour] created this profile. You can discuss it in this [http://kkkkkkkkkk63ava6.onion/forum/index.php/topic,97.0.html forum thread].
+
 = Tor Browser Bundle (TBB) =
 {{AppArmorProfileWarning}}
 
