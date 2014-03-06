@@ -191,6 +191,38 @@ See [[Dev/Developer_Portal|Developer Portal]].
 = Contact =
 [https://www.whonix.org/forum/index.php?board=5.0 Development Forum] | <html><a href="/cgi-bin/mailman/listinfo/whonix-devel">Developer Mailing List</a></html> | [https://github.com/Whonix/Whonix/issues github] | [[Contact]]
 
+= Expected Build Warnings =
+<pre>
+Can not write log, openpty() failed (/dev/pts not mounted?)
+</pre>
+Does not affect the build. <ref>Nothing to worry about. Only happens because we are running commands inside chroot. If you research this "issue", you'll read that it is purely cosmetic.</ref>
+
+<pre>
+[....] Your system does not have the CPU extensions required to use KVM. Not doing anything. ...[ FAIL ]
+</pre>
+Does not affect the build. <ref>KVM gets installed as dependency of our build dependency libguestfs-tools. We don't need KVM for building the actual images.</ref>
+
+<pre>
+[....] Stopping VirtualBox kernel modules [ ok ].
+[....] Starting VirtualBox kernel modules[....] No suitable module for running kernel found ...[ FAIL ]
+invoke-rc.d: initscript virtualbox, action "restart" failed.
+</pre>
+Does not affect the build. <ref>Only means, that VirtualBox can not be started. VirtualBox kernel modules could not be complied, because the {{Code|linux-headers-$(uname -r)}} package was not installed prior installing VirtualBox (prior starting Whonix's build script). The build script doesn't start VirtualBox, hence does not affect the build. The build script only uses {{Code|VBoxManage}} for creation of virtual machine description files and that tool doesn't need VirtualBox kernel modules.</ref>
+
+<pre>
+WARNING: The character device /dev/vboxdrv does not exist.
+	 Please install the virtualbox-ose-dkms package and the appropriate
+	 headers, most likely linux-headers-486.
+
+	 You will not be able to start VMs until this problem is fixed.
+</pre>
+Does not affect the build. <ref>Same as above.</ref>
+
+<pre>
+dpkg: warning: failed to open configuration file '/root/.dpkg.cfg' for reading: Permission denied
+</pre>
+Does not affect the build.
+
 = Footnotes =
 <references/>
 
