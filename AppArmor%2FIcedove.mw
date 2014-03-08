@@ -1,0 +1,163 @@
+{{Header}}
+{{#seo:
+|description=AppArmor profiles (Security Hardening) for Whonix and other Linux. TBB, Pidgin, more soon.
+}}
+__FORCETOC__
+{{AppArmorProfileWarning}}
+
+
+There is one restriction with this profile: the attachments (received or to be sent) must be in '/home/user/Downloads'. The directory should be already created if you are using the TBB profile.
+
+Create a file /etc/apparmor.d/usr.lib.icedove.icedove.
+
+<pre>
+kdesudo kwrite /etc/apparmor.d/usr.lib.icedove.icedove
+</pre>
+
+Paste the following content.
+
+<pre>
+#include <tunables/global>
+
+/usr/lib/icedove/icedove {
+	#include <abstractions/base>
+	#include <abstractions/user-tmp>
+	#include <abstractions/bash>
+	#include <abstractions/fonts>
+	#include <abstractions/kde>
+	#include <abstractions/gnome>
+
+	#include <local/usr.lib.icedove.icedove>
+	  
+	capability sys_ptrace,
+	  
+	deny / r,
+	deny /etc/host.conf r,
+	deny /etc/hosts r,
+	deny /etc/nsswitch.conf r,
+	deny /etc/passwd r,
+	deny /etc/hosts.whonix r,
+	deny /etc/fstab r,
+
+	@{HOME}/ r,	  
+	@{HOME}/Desktop/ r,
+	@{HOME}/Downloads/ r,	
+	@{HOME}/Downloads/** rw,	
+	@{HOME}/.icedove/** mrwk,
+	@{HOME}/.kde/share/** rw,
+	@{HOME}/.config/oxygen-gtk/argb-apps.conf rw,
+	@{HOME}/.local/share/ r,
+	@{HOME}/.local/share/applications/* r,
+	@{HOME}/.local/share/mime/ r,
+	@{HOME}/.local/share/mime/** r,
+	@{HOME}/.local/share/recently-used.xbel* rw,
+	@{HOME}/.local/share/applications/kate-2.desktop r,
+	@{HOME}/.cache/ r,
+	@{HOME}/.cache/** rwk,
+	@{HOME}/.gnupg/* lrwkcix,
+	@{HOME}/.Xauthority r,
+	
+	/usr/share/ r,
+	/usr/share/icons/ r,
+	/usr/share/icons/** r,
+	/usr/share/mime/ r,
+	/usr/share/mime/** r,
+	/usr/share/pixmaps/ r,
+	/usr/share/pixmaps/** r,
+	/usr/share/themes/ r,
+	/usr/share/themes/** r,
+	/usr/share/icedove/ r,
+	/usr/share/icedove/** r,
+	/usr/share/glib-2.0/schemas/gschemas.compiled r, 
+	/usr/share/whonix/kde/share/config/kdeglobals rw,
+	/usr/share/hunspell/ r,
+	/usr/share/hunspell/* r,
+	/usr/.local/share/applications/ rwk,
+	/usr/share/applications/ rwk,
+	
+	/etc/drirc r,
+	/etc/ld.so.cache r,
+	/etc/resolv.conf r,
+	/etc/resolv.conf.whonix r,
+	/etc/mailcap r, 
+	/etc/icedove/pref/ r,
+	/etc/icedove/pref/* r,
+	/etc/X11/cursors/* r,
+	/etc/mime.types r,
+	/etc/gai.conf r,
+	/etc/whonix.d/ r, 
+	/etc/whonix.d/* r, 
+        /etc/xul-ext/enigmail.js rix,
+
+	/bin/ps rix,
+	/bin/dash  rix,
+	/bin/mknod rix,
+	/bin/grep rix,
+	/bin/chmod rix,
+	/bin/mktemp rix,
+	/bin/which rix,
+	  
+	/dev/tty rw,
+	/dev/vboxuser rw,
+	/dev/dri/card0 rw,
+		  
+	/lib/i386-linux-gnu/i686/cmov/libc-2.13.so r,
+	/lib/i386-linux-gnu/libprocps.so.0.0.1 r,
+	 
+	@{PROC} r,
+	@{PROC}/[0-9]*/maps r,
+	@{PROC}/tty/drivers r,
+	@{PROC}/[0-9]*/stat r,
+	@{PROC}/[0-9]*/status r,
+	@{PROC}/[0-9]*/task/*/stat r,
+	@{PROC}/[0-9]*/cmdline r,
+	@{PROC}/[0-9]*/fd/ r,
+	@{PROC}/cpuinfo r,
+	@{PROC}/filesystems r,
+	@{PROC}/meminfo r,
+	@{PROC}/stat r,
+	@{PROC}/sys/kernel/pid_max r,
+	@{PROC}/uptime r,
+	@{PROC}/[0-9]*/mounts r,
+	@{PROC}/[0-9]*/mountinfo r,
+	  
+	/sys/devices/system/cpu/ r,  
+	/sys/devices/system/cpu/present r,  
+	  
+	/usr/bin/kde4-config rix,
+	/usr/bin/basename rix,
+	/usr/bin/grep rix,
+	/usr/bin/uwt rix,
+	/usr/bin/torsocks rix,
+	/usr/bin/gpg.whonix rix,
+	/usr/bin/gpg.whonix-orig rix,
+	/usr/bin/gpg2 rix,
+
+	/usr/lib/i386-linux-gnu/** rm,
+	/usr/lib/icedove/icedove mrix,
+	/usr/lib/whonix/uwtwrapper rix,
+	/usr/lib/gnupg/gpgkeys_hkpr ix,
+
+	/var/lib/dbus/machine-id r,
+}
+</pre>
+
+Create a file /etc/apparmor.d/local/usr.lib.icedove.icedove.
+
+<pre>
+kdesudo kwrite /etc/apparmor.d/local/usr.lib.icedove.icedove
+</pre>
+
+Paste the following content.
+<pre>
+/usr/share/fontconfig/conf.avail/* r,
+/usr/share/poppler/cMap/ r,
+/usr/share/poppler/cMap/** r,
+</pre>
+
+Run
+<pre>
+sudo aa-enforce /etc/apparmor.d/usr.lib.icedove.icedove
+</pre>
+
+[https://www.whonix.org/forum/index.php?action=profile;u=24 troubadour] created this profile. You can discuss it in this [http://kkkkkkkkkk63ava6.onion/forum/index.php/topic,97.0.html forum thread].
