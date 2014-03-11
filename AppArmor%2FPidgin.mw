@@ -17,8 +17,7 @@ kdesudo kwrite /etc/apparmor.d/usr.bin.pidgin
 Paste the following content.
 
 <pre>
-# vim:syntax=apparmor
-
+# Last Modified: Tue Mar 11 21:10:20 UTC 2014
 #include <tunables/global>
 
 /usr/bin/pidgin {
@@ -32,16 +31,19 @@ Paste the following content.
   #include <abstractions/fonts>
   #include <abstractions/freedesktop.org>
   #include <abstractions/gnome>
-  #include <abstractions/launchpad-integration>
+  #include <abstractions/kde>
+#  #include <abstractions/launchpad-integration>
   #include <abstractions/nameservice>
   #include <abstractions/private-files-strict>
-  #include <abstractions/ubuntu-browsers>
-  #include <abstractions/ubuntu-console-browsers>
+#  #include <abstractions/ubuntu-browsers>
+#  #include <abstractions/ubuntu-console-browsers>
   #include <abstractions/user-download>
   #include <abstractions/user-tmp>
   #include <abstractions/ibus>
-  #include <abstractions/X>
+#  #include <abstractions/X>
 
+  deny capability net_admin, 
+  deny capability net_raw,
   deny capability sys_ptrace,
 
   deny @{HOME}/.bash* rw,
@@ -55,7 +57,7 @@ Paste the following content.
   owner @{HOME}/.config/enchant/* rwk,
   owner @{HOME}/.local/share/icons/ r,
   owner @{HOME}/.local/share/mime/* r,
-  owner @{HOME}/.gnome2/nautilus-sendto/** rw,
+#  owner @{HOME}/.gnome2/nautilus-sendto/** rw,
   owner @{HOME}/.gstreamer*/ rw,
   owner @{HOME}/.gstreamer*/** rw,
   owner @{HOME}/.pulse/ rw,
@@ -63,7 +65,8 @@ Paste the following content.
   owner @{HOME}/.pulse-cookie rwk,
   owner @{HOME}/.purple/ rw,
   owner @{HOME}/.purple/** rwk,
-  owner @{HOME}/.kde/share/config/* r,  # added 
+  owner @{HOME}/.kde/share/config/* r,
+
   /bin/dash rix,
 
   /{dev,run}/shm/ r,
@@ -75,19 +78,24 @@ Paste the following content.
   /etc/ssl/certs/ r,
   /etc/ssl/certs/** r,
   /etc/ssl/certs/ssl-cert-snakeoil.pem r,
+  
+## Added here instead of local profile ##
+  /etc/resolv.conf.whonix r,
+  /etc/hosts.whonix r,
+#########################################
 
   owner /tmp/orbit-*/* w,
   owner /tmp/pulse-*/* w,
 
-  /usr/bin/gconftool-2 rix,
-  /usr/bin/gnome-default-applications-properties ix,
-  /usr/bin/gnome-network-preferences ix,
-  /usr/bin/gnome-open rmix,
-  /usr/bin/gsettings rix,
+#  /usr/bin/gconftool-2 rix,
+#  /usr/bin/gnome-default-applications-properties ix,
+#  /usr/bin/gnome-network-preferences ix,
+#  /usr/bin/gnome-open rmix,
+#  /usr/bin/gsettings rix,
   /usr/bin/pidgin r,
   /usr/bin/xdg-open rmix,
   /bin/which rix,
-  /usr/bin/gvfs-open rmix,
+#  /usr/bin/gvfs-open rmix,
 
   /usr/share/glib-2.0/schemas/gschemas.compiled r,
 
@@ -115,7 +123,7 @@ Paste the following content.
   deny @{PROC}/** r,
 
   # Site-specific additions and overrides. See local/README for details.
-  #include <local/usr.bin.pidgin>
+  ## include <local/usr.bin.pidgin>
 }
 </pre>
 
