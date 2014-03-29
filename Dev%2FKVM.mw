@@ -219,6 +219,65 @@ whonixcheck (since Whonix 8) would tell you if kvmclock is enabled. whonixcheck 
 = Archived Discussions =
 * [https://www.whonix.org/forum/index.php/topic,202.0/topicseen.html qcow2 with metadata preallocation file sizes]
 
+= Archived IRC Logs =
+
+<blockquote>* Now talking on #kvm
+* Topic for #kvm is: KVM wiki website is http://www.linux-kvm.org - try status and faq pages, no really, read them! || you can also check the qemu manual at http://wiki.qemu.org/download/qemu-doc.html || don't paste on chan, use http://pastebin.com/ instead || libvirt/virt-manager support is #virt on irc.oftc.net
+* Topic for #kvm set by aliguori at Wed Mar 30 13:38:24 2011
+<bancfc> Hi How do I check if virtio storage is in use or an existing fallback driver for an emulated device?
+<iggy> there's no fallback in kvm like in xen
+<bancfc> so a simple grep should verify if a virtio device is used then - not merely attached I mean?
+<iggy> well... if you really want to check, it's going to be /dev/vdX
+<iggy> and lspci will show virtio block device
+<bancfc> Thanks iggy I have a few more questions that I'd really appreciate your help with
+<iggy> ask away
+<bancfc> I am trying to isolate the vm clock so no changes on the host can affect it. This is currently possible with -rtc clock=vm afaik,
+<bancfc> but it would be much more helpful for my project's purpose if this can be done through something like libvirt
+<bancfc> is this possible with libvirt?
+<iggy> that I don't know
+<bancfc> the appealing part of using libvirt is the xml settings file it creates, but I think something similar can be done with qemu-kvm cfgfiles option
+* iggy hates xml
+<bancfc> But that means all settings would have to be imitated but directly for the qemu-kvm utility which is fine if I can get it to do the same things
+<bancfc> namely the functionality of isoalted internal networking between two vms
+<bancfc> is that possible with qemu-kvm directly?
+<iggy> libvirt has an option to pass options directly to qemu-kvm
+<bancfc> please tell me how this is done :-)
+<bancfc> or where I can know this.
+<bancfc> ok nevermind, I just want to know if this means that a setting in the xml file is passed directly to qemu-kvm then?
+<iggy> ... You might try asking in the libvirt channel
+<bancfc> I did but no one seems to reply...
+<iggy> I know it's possible, I don't remember it off the top of my head
+<bancfc> Thank you so far for your replies. I am actually working on a project that uses virtualization to route all of a vm's traffic through a TOR instance running on another network facing gateway vm.
+<bancfc> Its known as Whonix
+<bancfc> Just letting you know that I'd appreciate any help on getting the main issues with porting it to KVM solved
+<bancfc> so we can prepare this for a greater good.
+<bancfc> This is the bugtracker page I am working on resolving: https://www.whonix.org/wiki/Dev/KVM#How_to_get_virtio_running_for_storage.3F
+<bancfc> iggy do you mind if I post the contents of this thread on our forum?
+<iggy> no...</blockquote>
+
+
+<blockquote>ancfc> Is there any security drawbacks from using a raw image file?
+<iggy> bancfc: security drawbacks? like what?
+<bancfc> iggy: are its contents directly interpreted by the host or is that when lvm is used only?
+<iggy> I'm not sure what you mean by "contents directly interpreted", but raw devices/files just means there's a 1:1 correlation between guest request and host request
+<bancfc> like a virus or advanced persistent threat running in the vm
+<iggy> the host doesn't "interpret" what it's reading/writing... it just becomes a read/write in the host
+<bancfc> ok good just checking. iAnother question is raw snapshotting possible albeit not directly?
+<bancfc> I saw something about a differencing image applied in qcow format, yes?
+<iggy> only if there's something underlying the files that supports it (btrfs, lvm, zfs, etc)
+<bancfc> so not at the "block" level I guess?
+<bancfc> iggy: just a question or two about storage if thats ok, becuase we are trying to see which can give maximum performance
+<iggy> lvm > raw files > qcow2 > everything else
+<bancfc> Is qcow2 the standard? Is qed recommended instead? When is the qcow"3" changes included into the present format?
+<bancfc> didn't mean to send this as you had already responded
+<bancfc> but anyhow qed seems to have been designed as a speedier replacement for qcow2. But qcow2 were adding changes to become more competitive again
+<bancfc> I wanted to know what you think about this and thats all. thanks
+<iggy> bancfc: qed is deprecated (as all of it's performance improvements that actually ended up helping were backported to qcow2)
+<iggy> the features are handled by feature flags in the qcow2 format, so there's technically no need for a "qcow3" format
+<iggy> as long as you don't use the features that qed didn't support (i.e. snapshots, etc.), qcow2 should be as fast
+<bancfc> iggy: thanks alot for your help
+<iggy> np</blockquote>
+
 = Footnotes =
 <references />
 
