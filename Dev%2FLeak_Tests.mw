@@ -116,6 +116,61 @@ Shut down the Whonix-Gateway and start the Whonix-Workstation. The Whonix-Workst
 
 First, make sure both VMs are online. Since ICMP is not supported by Tor and filtered by Whonix firewall, you should not be able to ping any servers.
 
+= FIN ACK / RST ACK - Leak Test=
+<font size="-3">Credit for FIN ACK / RST ACK - Leak Test (coined by Whonix): Originally written by Mike Perry on the tor-talk mailing list, he found a transparent proxy leak without references to Whonix. ([https://lists.torproject.org/pipermail/tor-talk/2014-March/032503.html source]) The test has been adapted for Whonix.</font>
+
+Note, the following IP 74.125.28.104 points to www.google.com and should be seen as an example.
+
+On the host.
+
+Close your browser and cease all other non-Whonix online activity to avoid contaminating the following test.
+
+Install tcpdump.
+
+<pre>
+sudo apt-get update
+sudo apt-get install tcpdump
+</pre>
+
+Run tcpdump.
+
+<pre>
+sudo tcpdump -n -i any host 74.125.28.104
+</pre>
+
+For testing/learning, connect to 74.125.28.104 (ping, open in a browser, use wget or similar) and see how it looks like when a connection to that IP is being made.
+
+Close the connection. Stop tcpdump. Start tcpdump again.
+
+In Whonix-Workstation.
+
+Create a socket connection.
+
+<pre>
+import socket
+s = socket.create_connection(("74.125.28.104", 80))
+</pre>
+
+On Whonix-Gateway.
+
+Stop Tor.
+
+<pre>
+sudo service tor stop
+</pre>
+
+In Whonix-Workstation.
+
+Close the socket connection.
+
+<pre>
+s.close()
+</pre>
+
+On the host.
+
+Check, that you can not see any connections to 74.125.28.104 in tcpdump.
+
 = Integrated tshark leaktest =
 
 The necessary scripts for leak testing are now integrated into the Whonix machines.
