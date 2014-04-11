@@ -15,7 +15,7 @@ kdesudo kwrite /etc/apparmor.d/home.user.tor-browser_en-US.Browser.firefox
 Paste the following content.
 
 <pre>
-# Last modified: Sun Mar 30 19:46:33 UTC 2014
+# Last modified: Fri Apr 11 20:26:39 UTC 2014
 #include <tunables/global>
 
 /home/user/tor-browser_en-US/Browser/firefox {
@@ -26,17 +26,40 @@ Paste the following content.
 	#include <abstractions/kde>
 	#include <abstractions/gnome>
 	#include <abstractions/audio>	
+	#include <abstractions/freedesktop.org>	
 	#include <abstractions/whonix>	
 	
 	#include <local/home.user.tor-browser_en-US.Browser.firefox>
 		
 	capability sys_ptrace,
 
+	deny / r,	
 	deny /etc/host.conf r,
 	deny /etc/hosts r,
 	deny /etc/nsswitch.conf r,
 	deny /etc/resolv.conf r,
 	deny /etc/passwd r,
+
+	## Connot use 'deny @{PROC}/** r,". See below.
+	deny @{PROC} r,
+	deny @{PROC}/tty/drivers r,
+	deny @{PROC}/[0-9]*/mounts r,
+	deny @{PROC}/[0-9]*/mountinfo r,
+	deny @{PROC}/[0-9]*/stat r,
+	deny @{PROC}/[0-9]*/status r,
+	deny @{PROC}/[0-9]*/task/*/stat r,
+	deny @{PROC}/[0-9]*/cmdline r,
+	deny @{PROC}/[0-9]*/fd/ r,
+	deny @{PROC}/cpuinfo r,
+	deny @{PROC}/filesystems r,
+	deny @{PROC}/meminfo r,
+	deny @{PROC}/stat r,
+	deny @{PROC}/sys/kernel/pid_max r,
+	deny @{PROC}/uptime r,
+
+	deny /sys/devices/system/cpu/ r,
+	deny /sys/devices/system/cpu/* r,
+	deny /var/lib/dbus/machine-id r,
 
 	@{HOME}/tor-browser_en-US/ r,
 	@{HOME}/tor-browser_en-US/* rw, 
@@ -73,18 +96,18 @@ Paste the following content.
 	@{HOME}/.config/** rw,		
 	@{HOME}/.fontconfig/** rw,		
 	@{HOME}/.Xauthority r,
-## NOT in <abstractions/kde>
+	## NOT in <abstractions/kde>
 	@{HOME}/.kde/share/** rw,	
 	
 	/usr/share/ r,
 	/usr/share/mime/ r,
 	/usr/share/mime/** r,
-	/usr/share/pixmaps/ r,
-	/usr/share/pixmaps/** r,
+#	/usr/share/pixmaps/ r,
+#	/usr/share/pixmaps/** r,
 	/usr/share/themes/ r,
 	/usr/share/themes/** r,
 	/usr/share/whonix/kde/share/config/kdeglobals r,
-	/usr/share/applications/ r,
+#	/usr/share/applications/ r,
  	/usr/share/applications/** rwk,
 	/usr/share/fontconfig/conf.avail/* r, 	 	
 	
@@ -103,36 +126,19 @@ Paste the following content.
 	/dev/vboxuser rw,
 	/dev/tty r,
 
-	@{PROC} r,
+	## If denied, prevents Tor Browser from starting,
+	## without notification/log.
 	@{PROC}/[0-9]*/maps r,
-	@{PROC}/tty/drivers r,
-	@{PROC}/[0-9]*/mounts r,
-	@{PROC}/[0-9]*/mountinfo r,
-	@{PROC}/[0-9]*/stat r,
-	@{PROC}/[0-9]*/status r,
-	@{PROC}/[0-9]*/task/*/stat r,
-	@{PROC}/[0-9]*/cmdline r,
-	@{PROC}/[0-9]*/fd/ r,
-	@{PROC}/cpuinfo r,
-	@{PROC}/filesystems r,
-	@{PROC}/meminfo r,
-	@{PROC}/stat r,
-	@{PROC}/sys/kernel/pid_max r,
-	@{PROC}/uptime r,
-
-	/sys/devices/system/cpu/ r,
-	/sys/devices/system/cpu/* r,
 
 	/tmp/.X0-lock r,
 
-# Not in <abstractions/kde>
+	# Not in <abstractions/kde>
 	/usr/bin/kde4-config rix,
 	
 	/usr/lib/i386-linux-gnu/** mr,
 	
 	/usr/share/libthai/thbrk.tri r,
 	
-	/var/lib/dbus/machine-id r,
 	/var/cache/fontconfig/ rwk,
 }
 </pre>
