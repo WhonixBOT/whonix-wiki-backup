@@ -55,7 +55,34 @@ https://wiki.debian.org/DebianKVMGuests
 Do [[KVM]] instructions need changes to activate virtio?
 
 == How to get virtio running for storage? ==
-http://wiki.libvirt.org/page/Virtio
+
+Virtio-blk now works
+
+Here are the steps, which I'll throw altogether here before the server downtime. Will move into the wiki later:
+
+http://www.linux-kvm.org/page/Boot_from_virtio_block_device        < Original steps that needed to be changed so it can apply to Debian.
+
+Quote
+
+    in guest os, change /boot/grub/device.map from "(hd0) /dev/sda" to "(hd0) /dev/vda"
+    in guest os, change /boot/grub/grub.cfg from "root=/dev/sda1" to "root=/dev/vda1", if you are using UUID, then no need to do this step. 
+
+
+I changed all mention of sda1 to vda1 in the grub file. I changed the disk controller type from virtmanager to virtio which takes care of this at the libvirt xml level. Now the vm boots normally with no hangups and I feel a little faster.
+
+ A bit of advice, that I'll add so you can decide:
+
+
+Quote
+
+    <iggy> bancfc: the better option would be using LABELs and UUIDs and such in the source image
+    <iggy> unless this is a one time conversion kind of thing
+
+
+
+Not really important but is interesting:
+
+http://www.linux-kvm.org/page/Virtio/Block/Latency
 
 == Boot from virtio block device? ==
 What is http://www.linux-kvm.org/page/Boot_from_virtio_block_device good for? Required?
