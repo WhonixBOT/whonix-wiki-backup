@@ -17,7 +17,7 @@ kdesudo kwrite /etc/apparmor.d/usr.bin.pidgin
 Paste the following content.
 
 <pre>
-# Last Modified: Mon Mar 24 21:50:13 UTC 2014
+# Last Modified: Mon Apr 14 19:14:10 UTC 2014
 #include <tunables/global>
 
 /usr/bin/pidgin {
@@ -26,28 +26,40 @@ Paste the following content.
 	#include <abstractions/base>
 	#include <abstractions/bash>
 	#include <abstractions/consoles>
-	#include <abstractions/dbus>
-	#include <abstractions/dbus-session>
+#	#include <abstractions/dbus>
+#	#include <abstractions/dbus-session>
 	#include <abstractions/fonts>
 	#include <abstractions/freedesktop.org>
 	#include <abstractions/gnome>
 	#include <abstractions/kde>
-	#include <abstractions/nameservice>
+#	#include <abstractions/nameservice>
 	#include <abstractions/private-files-strict>
 	#include <abstractions/user-download>
-	#include <abstractions/user-tmp>
-	#include <abstractions/ibus>
+#	#include <abstractions/user-tmp>
+#	#include <abstractions/ibus>
 	#include <abstractions/whonix>
 
-	capability net_admin, 
-	capability net_raw,
 	capability sys_ptrace,
 	
+	deny / r,	
+	deny /etc/fstab r,
+	deny /etc/host.conf r,
+	deny /etc/hosts r,
+	deny /etc/nsswitch.conf r,
+	deny /etc/resolv.conf r,
+	deny /etc/passwd r,
+	deny /etc/group r,
+
 	deny @{HOME}/.bash* rw,
 	deny @{HOME}/.cshrc rw,
 	deny @{HOME}/.profile rw,
 	deny @{HOME}/.zshrc rw,
-	  
+	deny @{HOME}/Documents/** r,
+
+	deny @{PROC}** r,
+ 
+	/etc/gai.conf r,
+
 	@{HOME}/.cache/dconf/user rw,
 	@{HOME}/.config/dconf/user r,
 	@{HOME}/.config/enchant/ rw,
@@ -62,25 +74,22 @@ Paste the following content.
 	@{HOME}/.purple/ rw,
 	@{HOME}/.purple/** rwk,
 	@{HOME}/.kde/share/config/* r,
-	#@{HOME}/.whonix/* rwk,
-	/home/user/tor-browser_en-US/Browser/firefox rix,
-	/home/user/tor-browser_en-US/Browser/** mrixk,
+	# @{HOME}/.whonix/* rwk,
 
 	/bin/grep rix,
 	/bin/dash rix,
 	/bin/uname rix,
 	/bin/mkdir rix,
 	/bin/rm rix,
-
 	/{dev,run}/shm/ r,
 	/{dev,run}/shm/* rw,
 
-	deny /etc/fstab r,  # Required by the change buddyicon button
 	/etc/ r,
 	/etc/pulse/client.conf r,
 	/etc/ssl/certs/ r,
 	/etc/ssl/certs/** r,
 	/etc/ssl/certs/ssl-cert-snakeoil.pem r,
+	/etc/purple/prefs.xml r,
 	# /etc/whonix.d/* r,
 	 
 	## Added here instead of local profile ##
@@ -118,14 +127,10 @@ Paste the following content.
 	/usr/share/myspell/dicts/** r,
 	/usr/share/tcltk/** r,
 	/usr/share/zenity/* r,
-
 	/usr/share/themes/ r,
 	/usr/share/themes/** r,
-
 	/usr/share/hunspell/ r,
 	/usr/share/hunspell/** r,
-
-	deny @{PROC}/** r,
 
 	# Site-specific additions and overrides. See local/README for details.
 	#  #include <local/TBB.Pidgin>
