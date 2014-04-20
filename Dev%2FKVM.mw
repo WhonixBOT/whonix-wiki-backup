@@ -322,6 +322,82 @@ whonixcheck (since Whonix 8) would tell you if kvmclock is enabled. whonixcheck 
 <iggy> np
 </pre>
 
+<pre>* Now talking on #tor
+* Topic for #tor is: Welcome to #tor, the discussion channel for Tor users and operators | https://www.torproject.org/ | https://www.torproject.org/docs/faq | https://tor.stackexchange.com/ | Developer discussion on #tor-dev | It's 'Tor', not 'TOR' | non-tor talk => #nottor
+* Topic for #tor set by ChanServ!services@services.oftc.net at Sun Feb  2 13:56:09 2014
+* Riastradh (~riastradh@82JAAD1W2.tor-irc.dnsbl.oftc.net) has joined #tor
+<expedient> I am working on the Whonix KVM port and ran the leaktest for this bug reported here: https://lists.torproject.org/pipermail/tor-talk/2014-March/032503.html
+<expedient> It turns out that this issue applies to us too and its an upstream bug
+<arma> i believe you
+<arma> upstream meaning what -- the kernel? iptables?
+<expedient> I am thinking iptables
+<expedient> You guys can probably get to them easier than we can
+<arma> is there a patch?
+* drtor (~drtor@9YYAAK2T4.tor-irc.dnsbl.oftc.net) has joined #tor
+<expedient> We are looking at some workaround in iptables but are not sure how well this will work
+<expedient> but one thing for sure is it needs to be fixed upstream because it affects any Linux platform that uses Tor as a transproxy
+<expedient> AFAIK Patrick  -Whoix leader- doesn't write kernel level code
+<expedient> https://www.whonix.org/forum/index.php/topic,243.0.html
+* realitygaps has quit (Remote host closed the connection)
+<expedient> According to my findings, the leak can be seen in tcpdump running on the host, as direct communication to Google without going through any Tor node. Its a catastrophe by all means
+<velope> a kernel patch is not necessarily appropriate, and upstream might well not consider it a bug
+<velope> the iptables workaround i gave is in a followup post from mike in that thread
+<velope> it would appear that "it needs to be fixed upstream" is just false
+<velope> i only skimmed that forum page quickly, and i really don't want to wade through every bit of it
+<velope> it contains my workaround based on --state INVALID
+<expedient> That's fine we will apply your advice, but are you sure that there is nothing fundamentally wrong with the kernel or iptables though?
+<velope> but it doesn't clearly seem to have been used
+<velope> apply it and test, a lot
+<velope> there is not yet any solid case made that there is something "fundamentally wrong"
+<velope> using iptables to redirect for transproxying relies on connection tracking
+<arma> i think the conclusion is "it is hard to use these things safely"
+<arma> which isn't really a bug in upstream so much as a challenge with the approach
+<velope> you have to test
+<velope> people don't test thoroughly
+<velope> they just read a man page or get some cookbook approach from some post, and run with it
+<velope> that is why something like this goes unnoticed for so long
+<velope> (gee, sounds like some other notable problems ...)
+<expedient> Sorry to throw another link your way, but so far this is what we do when testing:
+<expedient> https://www.whonix.org/wiki/Dev/Leak_Tests#FIN_ACK_.2F_RST_ACK_-_Leak_Test
+<expedient> Any advice if this is enough or anything we should add to ensure its safe after a workaround?
+* quiliro has quit (Quit: Leaving.)
+<velope> do violent tests with your networking connection
+<expedient> You are very sharp btw. That bug was a great find
+<velope> interrupt it and restore it at various moments, for various periods
+* blumenkraft (~eristisk@a1.networktest.34sp.com) has joined #tor
+<velope> well actually i never announced or reported the problem, so even though i fixed the problem for myself a couple years ago, mike appropriately gets credit for finding it. i just get credit for a better workaround.
+* amiller has quit (Remote host closed the connection)
+<velope> y'all need to understand that connection tracking was never intended to be more than a loose fit around categories of traffic, not some leakproof box
+<expedient> do you know if this applies to nftables too?
+<expedient> Its gradually becoming the successor to iptables and was added in 3.13
+<velope> when the kernel's info on a connection is lost or dropped (timeout), it's gone forever, so subsequent traffic won't be redirected
+<velope> i haven't used it and don't know. unless there's been some massively radical re-architecting of connection tracking, it's unlikely to be totally different, though there could be minor differences in behavior.
+<arma> the tails approach is starting to look a bit smarter
+* eristisk has quit (Ping timeout: 480 seconds)
+<expedient> tails is robus but it has to secure an entire rich os stack to protect the user
+<arma> approach to torifying the traffic i mean
+<expedient> ok
+<arma> i don't argue that wrapping stuff in vm's can make it harder for an attacker to break out
+<velope> in that tails doesn't rely on transproxy redirection, yes it's better
+<expedient> what specifics are you talking about for torifying maybe we can replicate that?
+<arma> but torifying outgoing streams is harder to make safe than explicit proxy settings
+* darkclown (~darkclown@p2011-ipbf7306marunouchi.tokyo.ocn.ne.jp) has joined #tor
+* anong0 has quit (Ping timeout: 480 seconds)
+<velope> right, we've always warned that transproxying is not as great as it seems
+<arma> "set your proxy settings to use tor, only allow tor to use the network"
+* Gentlecat has quit (Ping timeout: 480 seconds)
+<arma> so, implicitly, "don't allow anything that isn't configured to use tor to use the network"
+<velope> and most people just ignore the warnings about transproxying, because "just stuffing everything through tor" seems just what they want, and so simple. but not really.
+* mdik is now known as Guest6988
+* mdik (~mdik@brln-4d0c41d4.pool.mediaWays.net) has joined #tor
+<expedient>  the problem is when a box is rooted the software that is configured to use Tor can do things it shouldn't do
+<expedient> but I get your point
+* Guest6988 has quit (Ping timeout: 480 seconds)
+<expedient> its those people who think stuffing flash through a transproxy pipe think their safe
+<velope> that problem only exists for you because you insist on running tor in isolation
+* huseby has quit (Ping timeout: 480 seconds)
+</pre>
+
 = Footnotes =
 <references />
 
