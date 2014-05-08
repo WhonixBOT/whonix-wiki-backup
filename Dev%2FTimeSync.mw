@@ -106,11 +106,15 @@ For hidden services a correct clock is crucial, see:
 ** Using it at all is better against Attack (1) when using a bridge.
 ** Running sdwdate also every \[1440 minutes + random(0-1440)\]. Not running this every hour at a random time, because Tor does not like clock jumps. When testing this, there were cases where the clock jumped about 800 seconds, which caused Tor to expire circuits, which caused connection interrupts.
 ** '''TODO''': Open question... How often should sdwdate run on Whonix-Gateway? Every hour is a bad idea, as we see above. Not running it again when some people may run Whonix-Gateway for days or weeks is not good either, since the clock can drift. Maybe it should run wait 24 hours and then wait a random amount of minutes within 24 hours? -> Will be solved when [https://github.com/Whonix/Whonix/issues/169 sclockadj] gets finished.
-*** The entry guard or bridge can see the time through TCP timestamp. <ref name=tlsleakone>[https://trac.torproject.org/projects/tor/ticket/7277 torproject.org #7277: timestamp leaked in TLS client hello]</ref>; <ref name=tlsleaktwo>[https://trac.torproject.org/projects/tor/ticket/4852 torproject.org #4852: Clients send NETINFO with time]</ref>
+*** The entry guard or bridge can see the time through TCP timestamp. <ref name=tlsleakone>
+See [https://trac.torproject.org/projects/tor/ticket/7277 torproject.org #7277: timestamp leaked in TLS client hello]. The ticket says fixed. However, [https://packages.debian.org/de/wheezy/openssl Debian wheezy (currently: stable) (which Whonix 8 is based on) is using OpenSSL 1.0.1e] but Nick's [https://trac.torproject.org/projects/tor/ticket/7277#comment:15 patch will appear first in 1.0.1e]. It will be solved when Whonix is based on Debian jessie, because that contains [https://packages.debian.org/de/jessie/openssl a more recent version of OpenSSL].
+</ref>; <ref name=tlsleaktwo>
+[https://trac.torproject.org/projects/tor/ticket/4852 torproject.org #4852: Clients send NETINFO with time]
+</ref>
 *** Continuous clock jumps could help the entry guard or bridge guessing, that a Whonix-Gateway is connected.
 *** '''TODO''': Open question... "''ntpd adjusts the clock in small steps so that the timescale is effectively continuous and without discontinuities''" - is that possible with a sdwdate like approach as well? -> Will be solved when [https://github.com/Whonix/Whonix/issues/169 sclockadj] gets finished.
 * Hardware Clock:
-** Whonix-Gateway: set to UTC. Tor leaks it <ref name=tlsleakone />; <ref name=tlsleaktwo />, but that is of no concern. Tor is running on Linux and Linux is expected to be run in UTC. Therefore there is no point to set it to the local time zone of the user.
+** Whonix-Gateway: set to UTC. OpenSSL (used by Tor) leaks it <ref name=tlsleakone />; <ref name=tlsleaktwo />, but that is of no concern. Tor is running on Linux and Linux is expected to be run in UTC. Therefore there is no point to set it to the local time zone of the user.
 ** Whonix-Workstation: set to UTC
 * sdwdate runs at non-predictable times to prevent the ISP or Tor guard/bridge node to guess, that the user is running Whonix.
 * Implementation details are in Design-Shared, chapter [[Dev/Design-Shared#timesync|TimeSync]]
