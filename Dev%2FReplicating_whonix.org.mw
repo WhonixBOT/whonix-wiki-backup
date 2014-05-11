@@ -8,7 +8,7 @@
 
 (Iceweasel is required, because Tor Browser no longer supports visiting 127.0.0.1. Any other browser would work as well.)
 
-Install web software.
+Install web software:
 
 <pre>
 sudo apt-get install git apache2 php5-mysql php5 libapache2-mod-php5 php-apc mysql-client mysql-server iceweasel php5-dev liblua5.1-dev lua5.1
@@ -16,13 +16,13 @@ sudo apt-get install git apache2 php5-mysql php5 libapache2-mod-php5 php-apc mys
 
 You will be asked for a mysql root password. Remember it.
 
-Get our wiki images and content database backup.
+Get our wiki images and content database backup:
 
 <pre>
 git clone --depth=1 https://github.com/WhonixBOT/WhonixWikiBackups.git
 </pre>
 
-Get and install the mediawiki web app.
+Get and install the mediawiki web app:
 
 <pre>
 sudo su
@@ -37,7 +37,7 @@ Start iceweasel.
 
 Setup mediawiki. Go to http://127.0.0.1/wiki/mw-config/index.php.
 
-Use the following settings.
+Use the following settings:
 
 <pre>
 Database name: wiki
@@ -47,7 +47,7 @@ Otherwise use the defaults.
 Name of wiki: Whonix
 </pre>
 
-Download LocalSettings.php, safe as /home/user/LocalSettings.php.
+Download LocalSettings.php, save as /home/user/LocalSettings.php.
 
 <pre>
 sudo mv /home/user/LocalSettings.php /var/www/wiki/
@@ -55,26 +55,26 @@ sudo mv /home/user/LocalSettings.php /var/www/wiki/
 
 Go to http://127.0.0.1/wiki, see if you see a fresh wiki, log in, see if that works as well.
 
-Move the dummy wiki out of the way.
+Move the dummy wiki out of the way:
 
 <pre>
 ## Maybe rm when this instructions are finished.
 sudo mv /var/www /var/www_dummy
 </pre>
 
-Replicate Whonix's {{Code|/var/www}} folder from git.
+Replicate Whonix's {{Code|/var/www}} folder from git:
 
 <pre>
 sudo git clone --depth=1 https://github.com/Whonix/www.git /var/www
 </pre>
 
-Create a file {{Code|/etc/apache2/wikiSecrets.php}} (adjusting $wgDBpassword as needed).
+Create a file {{Code|/etc/apache2/wikiSecrets.php}} (adjusting $wgDBpassword as needed):
 
 <pre>
 kdesudo kwrite /etc/apache2/wikiSecrets.php
 </pre>
 
-With the following content.
+With the following content:
 
 <pre>
 <?php
@@ -113,13 +113,13 @@ foreach ( $arr as $key => $value ) {
 }
 </pre>
 
-Append {{Code|/var/www/.htaccess}}.
+Append {{Code|/var/www/.htaccess}}:
 
 <pre>
 kdesudo kwrite /var/www/.htaccess
 </pre>
 
-With the following content.
+With the following content:
 
 <pre>
 RewriteRule ^/?wiki(/.*)?$ /w/index.php [QSA,L]
@@ -134,19 +134,29 @@ RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-d
 RewriteRule ^/?w/images/thumb/archive/[0-9a-f]/[0-9a-f][0-9a-f]/([^/]+)/([0-9]+)px-.*$ %{DOCUMENT_ROOT}/w/thumb.php?f=$1&width=$2&archived=1 [L,QSA,B]
 </pre>
 
-Run.
+Tell Apache to let .htaccess files overrule the default configs:
+
+<pre>
+kdesudo kwrite /etc/apache2/sites-enabled/000-default
+</pre>
+At the end of the file, but before </VirtualHost> add:
+<pre>
+AllowOverride All
+</pre>
+
+Run:
 
 <pre>
 sudo mkdir /var/www/w/cache
 </pre>
 
-Your webserver must have read/write access to your /var/www folder. Run.
+Your webserver must have read/write access to your /var/www folder. Run:
 
 <pre>
 sudo chown --recursive www-data:www-data /var/www
 </pre>
 
-Run.
+Run:
 
 <pre>
 php /var/www/wiki/maintenance/update.php --quick
@@ -155,13 +165,13 @@ php /var/www/wiki/maintenance/importDump.php /home/user/WhonixWikiBackups/dumpCo
 php /var/www/wiki/maintenance/rebuildrecentchanges.php
 </pre>
 
-Run.
+Run:
 
 <pre>
 sudo a2enmod rewrite
 </pre>
 
-Run.
+Run:
 
 <pre>
 sudo service apache2 restart
