@@ -39,7 +39,50 @@ Get our /var/www folder.
 git clone https://github.com/Whonix/www.git
 </pre>
 
-Create a file /var/www/wiki/.htaccess
+Create a file {{Code|/etc/apache2/wikiSecrets.php}}.
+
+With the following content.
+
+<pre>
+<?php
+## Database settings
+$wgDBtype = "mysql";
+$wgDBserver = "localhost";
+$wgDBname = "wiki";
+$wgDBuser = "root";
+$wgDBpassword = "xxxxxx";
+
+# MySQL specific settings
+$wgDBprefix = "";
+
+# MySQL table options to use during installation or update
+$wgDBTableOptions = "ENGINE=InnoDB, DEFAULT CHARSET=binary";
+
+# Experimental charset support for MySQL 5.0.
+$wgDBmysql5 = false;
+
+$wgSecretKey = "xxxxxx";
+
+# Site upgrade key. Must be set to a string (default provided) to turn on the
+# web installer while LocalSettings.php is in place
+$wgUpgradeKey = "xxxxxx";
+
+#CAPTCHA here
+
+require_once( "$IP/extensions/ConfirmEdit/ConfirmEdit.php" );
+require_once( "$IP/extensions/ConfirmEdit/QuestyCaptcha.php");
+$wgCaptchaClass = 'QuestyCaptcha';
+$arr = array (
+        "type answerhere" => "answerhere",
+);
+foreach ( $arr as $key => $value ) {
+        $wgCaptchaQuestions[] = array( 'question' => $key, 'answer' => $value );
+}
+</pre>
+
+Create a file {{Code|/var/www/wiki/.htaccess}}.
+
+With the following content.
 
 <pre>
 RewriteEngine On
