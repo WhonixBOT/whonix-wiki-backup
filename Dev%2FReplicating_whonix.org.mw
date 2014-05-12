@@ -113,15 +113,16 @@ foreach ( $arr as $key => $value ) {
 }
 </pre>
 
-Append {{Code|/var/www/.htaccess}}:
+Edit {{Code|/etc/apache2/sites-enabled/000-default}}:
 
 <pre>
-kdesudo kwrite /var/www/.htaccess
+kdesudo kwrite /etc/apache2/sites-enabled/000-default
 </pre>
 
-With the following content:
+Insert the following at the end of the file, but before </VirtualHost>:
 
 <pre>
+RewriteEngine On
 RewriteRule ^/?wiki(/.*)?$ /w/index.php [QSA,L]
 RewriteRule ^/?$ /w/index.php [QSA,L]
 
@@ -132,20 +133,6 @@ RewriteRule ^/?w/images/thumb/[0-9a-f]/[0-9a-f][0-9a-f]/([^/]+)/([0-9]+)px-.*$ %
 RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-f
 RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-d
 RewriteRule ^/?w/images/thumb/archive/[0-9a-f]/[0-9a-f][0-9a-f]/([^/]+)/([0-9]+)px-.*$ %{DOCUMENT_ROOT}/w/thumb.php?f=$1&width=$2&archived=1 [L,QSA,B]
-</pre>
-
-Tell Apache to let .htaccess files overrule the default configs:
-
-<pre>
-kdesudo kwrite /etc/apache2/sites-enabled/000-default
-</pre>
-In the middle of the file, in the section <Directory /var/www> change the line
-<pre>
-AllowOverride None
-</pre>
-to
-<pre>
-AllowOverride All
 </pre>
 
 Run:
