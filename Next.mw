@@ -216,7 +216,31 @@ Or.
 sudo service tor restart
 </pre>
 
-'''Limitations''':
+===== Let Tor wait for OpenVPN =====
+To improve this situation, if you are using OpenVPN and Debian's init script to automatically start it, you can configure Tor's init script to wait for openvpn being started. Open {{Code|/etc/init.d/tor}}.
+
+<pre>
+kdesudo kwrite /etc/init.d/tor
+</pre>
+
+Search for.
+<pre>
+# Should-Start:      $syslog
+</pre>
+
+And modify that line to.
+
+<pre>
+# Should-Start:      $syslog openvpn
+</pre>
+
+<pre>
+sudo update-rc.d tor defaults
+</pre>
+
+Next time {{Code|/etc/init.d/tor}} is upgraded by the Debian maintainer, you'll get a [[Whonix_Configuration_Files#dpkg_interactive_conflict_resolution_dialog|dpkg interactive conflict resolution dialog]]. Install the package maintainer's version by pressing {{Code|y}} and enter then. Then re-apply these changes.
+
+===== Limitations =====
 
 * Only tested with OpenVPN. Most other VPN's have deficiencies anyway.
 * DNS has to be manually resolved. There is technically no way to automatically resolve DNS without making the setup much more complex. The VPN server's IP address should not be resolved over Tor, because that's what you wanted to hide in the first place. Since outside observers will know, that you are connecting to the VPN IP anyway, it is probably save to resolve the DNS over clearnet or by asking the VPN provider if they don't already document their IPs on their website anyway.
