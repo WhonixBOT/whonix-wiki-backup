@@ -217,21 +217,36 @@ sudo service tor restart
 </pre>
 
 ===== Let Tor wait for OpenVPN =====
-To improve this situation, if you are using OpenVPN and Debian's init script to automatically start it, you can configure Tor's init script to wait for openvpn being started. Open {{Code|/etc/init.d/tor}}.
+To improve this situation, if you are using OpenVPN and Debian's init script to automatically start it, add an insserv override to wait for openvpn being started.
+
+Create a new file {{Code|/etc/insserv/overrides/tor}}. If using a graphical Whonix-Gateway.
 
 <pre>
-kdesudo kwrite /etc/init.d/tor
+kdesudo kwrite /etc/insserv/overrides/tor
 </pre>
 
-Search for.
+Or if using the terminal-only version.
+
 <pre>
-# Should-Start:      $syslog
+sudo nano /etc/insserv/overrides/tor
 </pre>
 
-And modify that line to.
+Add the following content.
 
 <pre>
+### BEGIN INIT INFO
+# Provides:          tor
+# Required-Start:    $local_fs $remote_fs $network $named $time
+# Required-Stop:     $local_fs $remote_fs $network $named $time
 # Should-Start:      $syslog openvpn
+# Should-Stop:       $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Starts The Onion Router daemon processes
+# Description:       Start The Onion Router, a TCP overlay
+#                    network client that provides anonymous
+#                    transport.
+### END INIT INFO
 </pre>
 
 Then apply these changes by running.
@@ -239,8 +254,6 @@ Then apply these changes by running.
 <pre>
 sudo update-rc.d tor defaults
 </pre>
-
-Next time {{Code|/etc/init.d/tor}} is upgraded by the Debian maintainer, you'll get a [[Whonix_Configuration_Files#dpkg_interactive_conflict_resolution_dialog|dpkg interactive conflict resolution dialog]]. Install the package maintainer's version by pressing {{Code|y}} and enter then. Then re-apply these changes.
 
 ===== Limitations =====
 
