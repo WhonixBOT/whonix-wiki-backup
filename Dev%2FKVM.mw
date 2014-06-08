@@ -104,6 +104,32 @@ Patrick asks: How do we apply these settings in a way, so they do survive an "su
 === System gets unbootable? ===
 Patrick comments: After editing  /boot/grub/grub.cfg, in worst case, maybe, the system will be no longer bootable then. You can test/simulate this case by running "sudo update-grub". Please try.
 
+HulaHoop comments: I found a solution, one that survives kernel and grub upgrades: http://grumpymole.blogspot.nl/2007/05/ubuntu-how-to-edit-grub-boot-parameters.html
+
+<pre>2.2 Making a change survive upgrades
+
+Depending on how frequently you upgrade your system, you might find that when a new kernel is installed, or grub is upgraded (there may be other scenarios), the /boot/grub/menu.lst file may be replaced by a newer version, or a new line might be added for the new kernel. In this case, your "permanent" changes might be as permanent as you thought.
+
+The best way to address this is to change the "#kopt..." line in /boot/grub/menu.lst. Note that the line is not commented out, even though it starts with a "#". See the excerpt below.
+
+    ### BEGIN AUTOMAGIC KERNELS LIST
+    ## lines between the AUTOMAGIC KERNELS LIST markers will be modified
+    ## by the debian update-grub script except for the default options below
+
+    ## DO NOT UNCOMMENT THEM, Just edit them to your needs
+
+    ## ## Start Default Options ##
+    ## default kernel options
+    ## default kernel options for automagic boot options
+    ## If you want special options for specific kernels use kopt_x_y_z
+    ## where x.y.z is kernel version. Minor versions can be omitted.
+    ## e.g. kopt=root=/dev/hda1 ro
+    ## kopt_2_6_8=root=/dev/hdc1 ro
+    ## kopt_2_6_8_2_686=root=/dev/hdc2 ro
+    # kopt=root=UUID=fccafcc7-d7cc-4594-9459-a8f0db7b9f7f ro
+
+Add the parameter changes to the end of the line "#kopt...". These parameters will then be automatically added to any new kernel entries and should also survive an upgrade of grub</pre>
+
 === Virtio Block Latency ===
 Not really important but is interesting: <br />
 http://www.linux-kvm.org/page/Virtio/Block/Latency
