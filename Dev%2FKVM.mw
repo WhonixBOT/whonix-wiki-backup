@@ -19,7 +19,7 @@ As soon as all blockers have been sorted out. We could recommend using [[KVM]] i
 
 = Non-Blockers =
 
-==Automated Exporting/Cloning of virtual machines==
+==Exporting/Cloning of virtual machines==
 
 Important links:
 
@@ -27,9 +27,72 @@ http://libvirt.org/sources/virshcmdref/html-single/
 
 https://unix.stackexchange.com/questions/8351/how-to-create-a-dupe-of-a-kvm-libvirt-virt-manager-vm
 
+<pre>
+
+I'm a bit lost with virt-manager / libvirt / KVM.
+
+I've got a working KVM VM (Windows XP) which works nicely.
+
+The VM is backed by a 4GB file or so (a .img).
+
+Now I want to do something very simple: I want to duplicate my VM.
+
+I thought "OK, no problem, let's copy the 4GB file and copy the XML" file.
+
+But then the libvirt FAQ states in all uppercase: "you SHOULD NOT CARE WHERE THE XML IS STORED"
+
+http://wiki.libvirt.org/page/FAQ
+
+OK fine, I shouldn't care. But then how do I duplicate my VM?
+
+I want to create a new VM that is a copy of that VM.
+</pre>
+
+<pre>
+
+The most convenient is simply:
+
+# virt-clone --connect=qemu://example.com/system -o this-vm -n that-vm --auto-clone
+
+Which will make a copy of this-vm, named that-vm, and takes care of duplicating storage devices. Nothing new here except detail.
+
+More to the point, What the FAQ is saying is that the XML domain descriptions are not directly editable, you need to go through libvirt. To complete the steps taken by the virt-clone command, you could:
+
+# You cannot "clone" a running vm, stop it.  suspend and destroy
+# are also valid options for less graceful cloning
+virsh shutdown this.vm
+
+# copy the storage.
+cp /var/lib/libvirt/images/{this-vm,that-vm}.img
+
+# dump the xml for the original
+virsh dumpxml this-vm > /tmp/that-vm.xml
+
+# hardware addresses need to be removed, libvirt will assign
+# new addresses automatically
+sed -i /uuid/d /tmp/that-vm.xml
+sed -i '/mac address/d' /tmp/that-vm.xml
+
+# and actually rename the vm: (this also updates the storage path)
+sed -i s/this-vm/that-vm /tmp/that-vm.xml
+
+# finally, create the new vm
+virsh define /tmp/that-vm.xml
+virsh start this-vm
+virsh start that-vm
+
+</pre>
+
+<pre># dump the xml for the virtual isolated network
+virsh net-dumpxml whonix > /tmp/whonix.xml
+
+# hardware addresses need to be removed, libvirt will assign
+# new addresses automatically
+sed -i /uuid/d /tmp/whonix.xml
+sed -i '/mac address/d' /whonix.xml
+</pre>
+
 http://linux.die.net/man/1/virt-clone
-
-
 
 == Document: how to leave KVM when no X is running? ==
 Situation... User is in terminal in a VM... No X is running ("sudo service kdm stop"). User wants to switch back to the host... How to do this?
