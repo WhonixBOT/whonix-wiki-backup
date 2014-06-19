@@ -23,52 +23,6 @@ Network 'Whonix' has been started
 </pre>
 
 
-Should be fixed now in git. kvmclock had to be under rtc for it to work. The Network xml validates on my machine without changes however. Please check if it works and post back.
-
-== xml does not validate ==
-<pre>
-virt-xml-validate whonix_gateway.xml
-Relax-NG validity error : Extra element clock in interleave
-whonix_gateway.xml:15: element clock: Relax-NG validity error : Element domain failed to validate content
-whonix_gateway.xml fails to validate
-</pre>
-
-<pre>
-virt-xml-validate whonix_workstation.xml 
-Relax-NG validity error : Extra element clock in interleave
-whonix_workstation.xml:15: element clock: Relax-NG validity error : Element domain failed to validate content
-whonix_workstation.xml fails to validate
-</pre>
-
-<pre>
-virt-xml-validate whonix_network.xml 
-whonix_network.xml:1: element network: Relax-NG validity error : Invalid attribute connections for element network
-whonix_network.xml fails to validate
-</pre>
-
-== What is timer pit? ==
-What is timer pit?
-
-HulaHoop:
-Whatever it was, its now gone. I overlooked this by mistake.
-
-We are using.
-<pre>
-    <timer name='kvmclock' present='no'/>
-    <timer name='hpet' present='no'/>
-</pre>
-
-But why are we using?
-<pre>
-    <timer name='pit' tickpolicy='no'/>
-</pre>
-
-Why are we not using?
-<pre>
-    <timer name='pit' present='no'/>
-</pre>
-
-
 = Non-Blockers =
 == KVM Shared Folders ==
 To move data between the guest and host follow these steps.
@@ -601,6 +555,51 @@ How to check, that KVM '''-rtc''' is set to '''clock=vm''' ?
 
 
 Does not seem to be a valid or accepted parameter by libvirt as its always sanitized from the xml file upon saving. But it is  accepted by QEMU directly. However I noticed that even with kvmclock enabled, I no longer see any change in a guest's time in response to a host skew of the time. In the recent past this was not true, as any change was immediately reflected in the Guest clock immediately. kvmclock on its own can be disabled  and confirmed to be so as outlined below.
+
+== What is timer pit? ==
+What is timer pit?
+
+HulaHoop:
+Whatever it was, its now gone. I overlooked this by mistake.
+
+We are using.
+<pre>
+    <timer name='kvmclock' present='no'/>
+    <timer name='hpet' present='no'/>
+</pre>
+
+But why are we using?
+<pre>
+    <timer name='pit' tickpolicy='no'/>
+</pre>
+
+Why are we not using?
+<pre>
+    <timer name='pit' present='no'/>
+</pre>
+
+== xml does not validate ==
+<pre>
+virt-xml-validate whonix_gateway.xml
+Relax-NG validity error : Extra element clock in interleave
+whonix_gateway.xml:15: element clock: Relax-NG validity error : Element domain failed to validate content
+whonix_gateway.xml fails to validate
+</pre>
+
+<pre>
+virt-xml-validate whonix_workstation.xml 
+Relax-NG validity error : Extra element clock in interleave
+whonix_workstation.xml:15: element clock: Relax-NG validity error : Element domain failed to validate content
+whonix_workstation.xml fails to validate
+</pre>
+
+<pre>
+virt-xml-validate whonix_network.xml 
+whonix_network.xml:1: element network: Relax-NG validity error : Invalid attribute connections for element network
+whonix_network.xml fails to validate
+</pre>
+
+Should be fixed now in git. kvmclock had to be under rtc for it to work. The Network xml validates on my machine without changes however. Please check if it works and post back.
 
 == virt-image ==
 === Users Expected Scenario ===
