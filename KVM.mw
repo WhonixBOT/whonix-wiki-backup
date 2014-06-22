@@ -49,71 +49,7 @@ sudo tar xvf Whonix-Gateway-X.X.qcow2.xz
 
 Do not use unxz! Extract the images using tar
 
-== Enabling SPICE == 
-SPICE allows accelerated graphics and clipboard sharing. Its implications for security are an open question that needs a detailed answer rather than a vague clear cut one.
 
-1. Enable SPICE by selecting it from the VMM GUI. (It is the default option if you decide not select VNC when creating the VM).
- 
-Not enabling SPICE from the beginning, will prevent the spice channel device from being added which impacts performance. To fix this add a channel device and select SPICE. This steps is not necessary if you leave the defaults as they are at the beginning.
-
-2. QXL is the GPU model that should be attached.
-
-3. Install vdagent in guest and reboot.
-
-== .qcow file size too big? ==
-'''Short:''' <br />
-It won't really take up 101 GB. Just ~ 2.6 GB. This is an issue with file managers, not Whonix.
-
-'''Long:''' <br />
-<ref>
-Don't get fooled by {{Code|ls}} or usual GUI file managers. We're using [http://en.wikipedia.org/wiki/Sparse_file sparse files]. When you are using a reasonable modern file system - which you most likely do - it won't use up a lot space. You can check this for yourself.
-
-<pre>
-du -h --apparent-size Whonix-Gateway-8.2.qcow2
-101G    Whonix-Gateway-8.2.qcow2
-du -h Whonix-Gateway-8.2.qcow2
-2.6G    Whonix-Gateway-8.2.qcow2
-</pre>
-
-This is tested. If you don't have 500 GB free space, you can have 10 copies if Whonix-Gateway-8.2.qcow2.
-</ref>
-
-== KVM Shared Folders ==
-To move data between the guest and host follow these steps:
-
-1. Set the following settings for shared folders in virt-manager:
-
-''The file sharing mode 'mapped' is just an example, using squash or passthrough is possible by selecting them from the drop down menu.''
-
-Driver:Default
-
-Mode: Mapped
-
-
-
-Source Path: [This is the path of the folder on the Host you are sharing with the Guest]
-
-Target Path: [A custom tag for the shared directory that is used when running the mounting commands within the guest. for example: /tmpshare]
-
-
-2. Run terminal as root in Guest then use the following command:
-
-mount -t 9p -o trans=virtio [mount tag] [mount point] -oversion=9p2000.L
-
-Mount tag is: /tmpshare
-
-Mount point is the path of the directory that you will share in the Guest with the Host. If it doesn't exist you must create that folder.
-
-Note: you replace the parentheses in the command, they are just a placeholder in this example and should not be typed in.
-
-3. To automatically mount this every time at boot, add the following to your guest's /etc/fstab:
-
-sudo nano /etc/fstab
-[mount tag] [mount point]    9p  trans=virtio,version=9p2000.L,rw    0   0
-
-= Footnotes =
-[1] http://wiki.qemu.org/Documentation/9psetup#Starting_the_Guest_using_libvirt
-<references />
 
 {{Footer}}
 
