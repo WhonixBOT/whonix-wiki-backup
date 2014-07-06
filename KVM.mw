@@ -40,6 +40,66 @@ sudo tar xvf Whonix-Gateway-X.X.qcow2.xz
 
 Do not use unxz! Extract the images using tar
 
+== KVM Shared Folders ==
+To move data between the guest and host follow these steps.
+
+On the host.
+
+Run the following command in terminal (Start Menu -> Applications -> System -> Terminal).
+
+<pre>
+sudo mkdir /mnt/shared
+</pre>
+
+Enable shared folders in VirtManager go to.
+
+<pre>
+VirtManager -> click once on virtual machine -> Edit -> Virtual Machine Details -> Details ->
+Add Hardware -> File System
+</pre>
+
+Set.
+
+Mode: Mapped <ref>The file sharing mode {{Code2|mapped}} is just an example, using squash or passthrough is possible by selecting them from the drop down menu.</ref>
+
+Driver: Default
+
+Source Path: {{Code|/mnt/shared}}
+
+Target Path: {{Code|/mnt/shared}}
+
+Click finish. Done.
+
+In the VM.
+
+Run the following command in terminal (Start Menu -> Applications -> System -> Terminal).
+
+<pre>
+sudo mount -t 9p -o trans=virtio shared /mnt/shared -oversion=9p2000.L
+</pre>
+
+To automatically mount this every time at boot, open {{Code2|/etc/fstab}}.
+
+If you are using a graphical virtual machine.
+
+<pre>
+kdesudo kwrite /etc/fstab
+</pre>
+
+Or if you are using a terminal-only virtual machine.
+
+<pre>
+sudo nano /etc/fstab
+</pre>
+
+Add.
+
+<pre>
+shared /mnt/shared    9p  trans=virtio,version=9p2000.L,rw    0   0
+</pre>
+
+Save.
+
 == Footnotes ==
 <references/>
 
