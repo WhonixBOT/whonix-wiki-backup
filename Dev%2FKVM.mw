@@ -257,35 +257,38 @@ I want to create a new VM that is a copy of that VM.
 
 The most convenient is simply:
 
-# virt-clone --connect=qemu://example.com/system -o this-vm -n that-vm --auto-clone
+virt-clone --connect=qemu://example.com/system -o this-vm -n that-vm --auto-clone
 
 Which will make a copy of this-vm, named that-vm, and takes care of duplicating storage devices. Nothing new here except detail.
 
 More to the point, What the FAQ is saying is that the XML domain descriptions are not directly editable, you need to go through libvirt. To complete the steps taken by the virt-clone command, you could:
 
-# You cannot "clone" a running vm, stop it.  suspend and destroy
-# are also valid options for less graceful cloning
+You cannot "clone" a running vm, stop it.  suspend and destroy are also valid options for less graceful cloning
+
 virsh shutdown this.vm
 
-# copy the storage.
+copy the storage.
+
 cp /var/lib/libvirt/images/{this-vm,that-vm}.img
 
-# dump the xml for the original
+dump the xml for the original
+
 virsh dumpxml this-vm > /tmp/that-vm.xml
 
-# hardware addresses need to be removed, libvirt will assign
-# new addresses automatically
+hardware addresses need to be removed, libvirt will assign new addresses automatically
+
 sed -i /uuid/d /tmp/that-vm.xml
 sed -i '/mac address/d' /tmp/that-vm.xml
 
-# and actually rename the vm: (this also updates the storage path)
+and actually rename the vm: (this also updates the storage path)
+
 sed -i s/this-vm/that-vm /tmp/that-vm.xml
 
-# finally, create the new vm
+finally, create the new vm
+
 virsh define /tmp/that-vm.xml
 virsh start this-vm
 virsh start that-vm
-
 </blockquote>
 
 <pre># dump the xml for the virtual isolated network
