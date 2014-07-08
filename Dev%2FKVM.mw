@@ -227,9 +227,9 @@ This is probably what users have to do to import. What command must be used to i
 == Exporting/Cloning of virtual machines ==
 Important links:
 
-http://libvirt.org/sources/virshcmdref/html-single/
-
-https://unix.stackexchange.com/questions/8351/how-to-create-a-dupe-of-a-kvm-libvirt-virt-manager-vm
+* http://libvirt.org/sources/virshcmdref/html-single/
+* https://unix.stackexchange.com/questions/8351/how-to-create-a-dupe-of-a-kvm-libvirt-virt-manager-vm
+* http://linux.die.net/man/1/virt-clone
 
 Archived thread SE
 
@@ -257,7 +257,9 @@ I want to create a new VM that is a copy of that VM.
 
 The most convenient is simply:
 
+<pre>
 virt-clone --connect=qemu://example.com/system -o this-vm -n that-vm --auto-clone
+</pre>
 
 Which will make a copy of this-vm, named that-vm, and takes care of duplicating storage devices. Nothing new here except detail.
 
@@ -265,33 +267,46 @@ More to the point, What the FAQ is saying is that the XML domain descriptions ar
 
 You cannot "clone" a running vm, stop it.  suspend and destroy are also valid options for less graceful cloning
 
+<pre>
 virsh shutdown this.vm
+</pre>
 
 copy the storage.
 
+<pre>
 cp /var/lib/libvirt/images/{this-vm,that-vm}.img
+</pre>
 
 dump the xml for the original
 
+<pre>
 virsh dumpxml this-vm > /tmp/that-vm.xml
+</pre>
 
 hardware addresses need to be removed, libvirt will assign new addresses automatically
 
+<pre>
 sed -i /uuid/d /tmp/that-vm.xml
 sed -i '/mac address/d' /tmp/that-vm.xml
+</pre>
 
 and actually rename the vm: (this also updates the storage path)
 
+<pre>
 sed -i s/this-vm/that-vm /tmp/that-vm.xml
+</pre>
 
 finally, create the new vm
 
+<pre>
 virsh define /tmp/that-vm.xml
 virsh start this-vm
 virsh start that-vm
+</pre>
 </blockquote>
 
-<pre># dump the xml for the virtual isolated network
+<pre>
+# dump the xml for the virtual isolated network
 virsh net-dumpxml whonix > /tmp/whonix.xml
 
 # hardware addresses need to be removed, libvirt will assign
@@ -299,8 +314,6 @@ virsh net-dumpxml whonix > /tmp/whonix.xml
 sed -i /uuid/d /tmp/whonix.xml
 sed -i '/mac address/d' /whonix.xml
 </pre>
-
-http://linux.die.net/man/1/virt-clone
 
 == libguestfs import/export feature request ==
 Let's together write a feature request for an import/export feature for libguestfs, similar to VirtualBox's import/export feature. Then post in [https://bugzilla.redhat.com/buglist.cgi?component=libguestfs&product=Virtualization%20Tools libguestfs's bug tracker].
