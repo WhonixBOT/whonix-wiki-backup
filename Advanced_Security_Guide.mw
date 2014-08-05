@@ -435,6 +435,39 @@ Whonix isn't a perfectly hardened system. Additional hardening would be very wel
 === AppArmor ===
 Learn about [http://wiki.apparmor.net AppArmor]. Check out Whonix's [[AppArmor]] profiles.
 
+
+==SELinux==
+
+SELinux is more robust than Apparmor because its label based vs file-path based. But his comes at the expense of being difficult to write policies. The good news is if you are a KVM user and want to harden your GNU/Linux host, its as simple as enabling SELinux and libvirt will automatically take advantage of it without any further effort needed on your part.
+
+These instructions apply to Whonix and could be easily replicated for your Debian host.
+First disable Apparmor if you are using it. Both MAC systems cannot be run simultaneously run. This is not supported by LSM and may also be a source of conflicts. 
+
+AppArmor is disabled, and the kernel module unloaded by entering the following<ref>https://help.ubuntu.com/12.04/serverguide/apparmor.html</ref>:
+
+<pre>sudo /etc/init.d/apparmor stop
+sudo update-rc.d -f apparmor remove</pre>
+
+To enable SELinux follow these steps.<ref>http://debian-handbook.info/browse/stable/sect.selinux.html</ref> The cited guide also includes steps for writing custom policy for hardening.
+
+
+<pre>
+    # aptitude install selinux-basics selinux-policy-default
+    # selinux-activate
+    # reboot
+
+    # sudo nano /etc/default/grub
+
+    Replace all mention of apparmor in settings for GRUB_CMDLINE_LINUX with selinux=1 and the enforcing=1 parameter to the Linux kernel. The audit=1 parameter enables SELinux logging which records all the denied operations.
+
+    Remove the line under it that starts with: GRUB_CMDLINE_LINUX_DEFAULT
+
+    # update-grub
+</pre>
+
+To check the status of SELinux run:
+<pre># sestatus</pre>
+
 == More than one Tor Browser in Whonix ==
 These instructions only work with TBB 3.x and above.
 
