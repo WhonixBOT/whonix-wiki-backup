@@ -1,0 +1,112 @@
+{{Header}}
+{{#seo:
+|description=How to Upgrade from Whonix 8.x to Whonix 9.x
+}}
+
+{{Testing}}
+
+'''UNFINISHED!'''
+
+'''Not yet possible!''' (Since testers repository not yet updated.)
+
+= Upgrading Whonix-Gateway =
+Warning: Your changes in {{Code|/etc/tor/torrc}} will be lost! Backup your torrc <ref>
+sudo cp /etc/tor/torrc /etc/tor/torrc.mybackup
+</ref> in case you care to restore your settings.
+
+[[Download|Downloading]] a new Whonix-Gateway will be probably easier than applying the following instructions for upgrading.
+
+Become root.
+
+<pre>
+sudo su
+</pre>
+
+Temporarily disable uwtwrapper. <ref name=uwtwrapper>
+This is related to [[Stream Isolation]].
+Because during upgrade the following code would cause issues. (Because the marker file /usr/share/whonix/whonix_[gateway|workstation] gets removed.)
+
+<pre>
+   if [ -f "/usr/share/whonix/whonix_workstation" ]; then
+      uwtwrapper_gateway_ip="192.168.0.10"
+   elif [ -f "/usr/share/whonix/whonix_gateway" ]; then
+      uwtwrapper_gateway_ip="127.0.0.1"
+   else
+      error "/usr/bin/"$SCRIPTNAME" uwt wrapper could not determine if this is Whonix-Workstation or Whonix-Gateway."
+      error "Please report this bug!"
+   fi
+</pre>
+</ref>
+
+<pre>
+echo uwtwrapper_global=0 > /etc/whonix.d/30_uwt_default
+</pre>
+
+(It will be automatically enabled again after upgrading. No further action required. <ref name=uwtwrapper2>After upgrading the [https://github.com/Whonix/uwt uwt] package will be installed.</ref>)
+
+Enable Whonix's {{Code2|testers}} repository. (TODO: When Whonix 9 become stable, remove the --codename testers switch.)
+
+<pre>
+whonix_repository --enable --codename testers
+</pre>
+
+Enable extensive debugging so reporting eventual bugs becomes easier.
+
+<pre>
+export DEBDEBUG=1
+</pre>
+
+Upgrade. <ref name=aptupgrade>
+Upgrading using {{Code|sudo apt-get dist-upgrade}} is not possible due to extensive changes on how Whonix is packaged. (The -files packages were [https://github.com/Whonix/Whonix/issues/40 split into multiple packages].
+</ref>
+
+<pre>
+apt-get install \
+whonix-gateway-packages-dependencies-pre \
+anon-shared-build-apt-sources-tpo \
+anon-shared-build-upgrade-torsocks \
+anon-shared-build-fix-grub \
+anon-shared-build-log-build-version \
+anon-shared-build-remember-sources \
+anon-shared-build-ban-nonfree \
+anon-shared-build-sanity-checks \
+anon-shared-packages-dependencies \
+anon-shared-packages-recommended \
+anon-shared-desktop \
+anon-shared-desktop-kde \
+anon-shared-kde-accessibility \
+whonix-shared-packages-dependencies \
+whonix-shared-packages-recommended \
+anon-gw-build-upgrade-tor \
+anon-gateway-packages-dependencies \
+anon-gateway-packages-recommended \
+whonix-gateway-packages-dependencies \
+whonix-gateway-packages-recommended
+</pre>
+
+You can ignore the following error.
+
+<pre>
+line 7: /usr/share/whonix/postinst.d/pre.bsh: No such file or directory
+</pre>
+
+Purge {{Code2|whonix-shared-files}} to get rid of deprecated config files. <ref name=oldconfigs>
+Otherwise old config files would interfere.
+</ref>
+
+<pre>
+dpkg --purge whonix-shared-files ; echo $?
+</pre>
+
+Purge {{Code2|whonix-gateway-files}} to get rid of deprecated config files.
+
+<pre>
+dpkg --purge whonix-gateway-files ; echo $?
+</pre>
+
+= Footnotes =
+<references />
+
+[[Category:Documentation]]
+
+{{Footer}}
