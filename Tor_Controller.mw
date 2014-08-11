@@ -64,6 +64,7 @@ This is a [https://trac.torproject.org/projects/tor/ticket/7709 bug] in arm.
 * <blockquote>[WARN] Rejecting request for anonymous connection to private address [scrubbed] on a TransPort or NATDPort.  Possible loop in your NAT rules?</blockquote> --> This happens for example if you run "curl 192.168.0.15", because when you type "curl", by default in Whonix, you are not directly using curl, but a uwt wrapped (stream isolated) [[Stream Isolation]] curl. It would not try to directly connect to 192.168.0.15, but to connect to 192.168.0.15 through Tor and this is what Tor is mentioning. This is not of concern for security. It only means, that you attempted something, that will not work that way. Deactivate the curl stream isolation wrapper or use the non-wrapped version (see [[Stream Isolation]]).
 
 = tor-ctrl =
+== On Whonix-Gateway ==
 tor-ctrl<ref>https://svn.torproject.org/svn/tor/branches/hidserv-perf/contrib/tor-ctrl.sh</ref> comes with Whonix by default.
 
 Example usage to get a new circuit, on Whonix-Gateway:
@@ -77,6 +78,53 @@ See also:
 <pre>
 man tor-ctrl
 </pre>
+
+== On Whonix-Workstation ==
+=== Example: Get a New Identity using Whonix-Workstation Terminal ===
+Do once. (Install missing dependencies. Only required for Whonix 8. Will be no longer required on Whonix 9.)
+
+<pre>
+sudo apt-get update
+sudo apt-get install telnet
+</pre>
+
+Do every time you want a new circuit. Run {{Code|tor-ctrl}} (installed by default) with {{Code|signal newnym}}.
+
+<pre>
+bash -x tor-ctrl -p notrequired -c "signal newnym"
+</pre>
+
+If you see at the bottom of the output.
+
+<pre>
++ sendcmd signal newnym
++ echo signal newnym
++ sleep 1
++ sendcmd QUIT
++ echo QUIT
++ sleep 1
++ STR='Trying 127.0.0.1...
+Connected to 127.0.0.1.
+Escape character is '\''^]'\''.
+250 OK
+250 OK'
++ vecho 'Trying 127.0.0.1...
+Connected to 127.0.0.1.
+Escape character is '\''^]'\''.
+250 OK
+250 OK'
++ '[' 0 -ge 1 ']'
++ echo 'Trying 127.0.0.1...
+Connected to 127.0.0.1.
+Escape character is '\''^]'\''.
+250 OK
+250 OK'
+++ grep -c '^250 '
++ '[' 2 = 3 ']'
++ exit 1
+</pre>
+
+Then it succeeded. ({{Code|exit 1}} is a bug in tor-ctrl, because it doesn't understand the double {{Code|250 OK}}.)
 
 = Footnotes =
 <references />
