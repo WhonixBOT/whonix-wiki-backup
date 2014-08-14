@@ -9,39 +9,7 @@
 * [https://github.com/Whonix/Whonix/issues/121 KVM Support github ticket]
 
 = Blockers =
-==Disable Microphone Input==
-Figure out how to disable Microphone input to Guests. While a nice feature for VOIP, is a very dangerous setting to have by default as its unexpected.
 
-https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Virtualization_Administration_Guide/section-libvirt-dom-xml-sound-devices.html
-
-http://libvirt.org/formatdomain.html
-
-'''Somewhat Solved:'''
-After speaking with Cole Robinson, libvirt developer, its clear that this is a feature provided by SPICE rather than something having to do with the sound card. I found that all sound cards have this after testing yesterday. When I changed Spice to VNC this no longer happens. Before you say that we shouldn't use spice, its important to note that audio does not function without it at all.
-
-I've asked on the mailinglists if there is some xml attribute to disable the feature. From what I've seen in the documentation this is not possible. However it can be accomplished through the Host's audio popup menu in the taskbar. The devices show up with the name "virt-manager: record" and can be set to mute as with any other device on the host.
-
-http://libvirt.org/formatdomain.html#elementsGraphics
-
-Other spice channel functionality provided:
-<pre>Valid channel names include main, display, inputs, cursor, playback, record (all since 0.8.6); smartcard (since 0.8.8); and usbredir (since 0.9.12). </pre>
-
-Mailinglist reply:
-https://www.redhat.com/archives/virt-tools-list/2014-August/msg00002.html 
-Currently not supported through libvirt but planned. Not a problem, we can just document how to disable its easy and gui based. For those running from commandlines, they should just revert to a non SPICE adapter and they'll be fine. They are not missing much because they are not using the workstation as a desktop.
-
-Bugzilla Ticket:
-https://bugzilla.redhat.com/show_bug.cgi?id=1126641
-
-== Document: how to leave KVM when no X is running? ==
-Situation... User is in terminal in a VM... No X is running ("sudo service kdm stop"). User wants to switch back to the host... How to do this?
-
-The emulated tablet device handles this by not allowing the mouse to be captured by the guest.
-Its still possible though:
-
-serverfault.com/questions/457603/any-way-to-release-focus-on-a-kvm-guest-in-virt-manager-without-havin-g-to-click
-
-<pre>press Ctrl_L & Alt_L</pre>
 
 
 =Long Term Feature Goal=
@@ -76,14 +44,8 @@ Dependencies:
 
 
 = Non-Blockers =
-== qemu i386 support ==
-Why are our qemu xml files currently called ${VMNAME}_qemu-x86-x64.xml. Are they dependent on x86-x64? Should they work on i386 systems as well? Maybe just <pae/> must be removed? Can you test please?
 
-== libguestfs import/export feature request ==
-Let's together write a feature request for an import/export feature for libguestfs, similar to VirtualBox's import/export feature. Then post in [https://bugzilla.redhat.com/buglist.cgi?component=libguestfs&product=Virtualization%20Tools libguestfs's bug tracker].
 
-== virt-manager import/export feature request ==
-Let's together write a feature request for an import/export feature for virt-manager, similar to VirtualBox's import/export feature. Then post in [https://bugzilla.redhat.com/buglist.cgi?product=Virtualization%20Tools&classification=Community&component=virt-manager&bug_status=NEW&bug_status=ASSIGNED virt-manager's bug tracker].
 
 == Preconfigured Shared Folders ==
 Patrick asks: For better usability, should we add the necessary settings for shared folders by default to whonix_gateway.xml and whonix_workstation.xml?
@@ -96,13 +58,23 @@ Patrick said: HulaHoop reported, that "virsh define" will fail if the shared fol
 
 See also: https://github.com/Whonix/Whonix/issues/223
 
+
+
+
+=In Progress=
+
+= Answered Questions =
+
 == Two Separate Whonix-Gateway's ==
 https://www.whonix.org/forum/index.php/topic,397.msg2973.html#new
+Possible and documented.
 
 == SPICE security implications ==
 http://lists.freedesktop.org/archives/spice-devel/2013-December/015810.html
 
 http://lists.freedesktop.org/archives/spice-devel/2014-January/015815.html
+
+Protections applying to QEMU apply here too. 
 
 == How to check if virtio storage access is in use or an eventually existing fallback driver? ==
 === Question ===
@@ -189,6 +161,8 @@ http://libvirt.org/drvqemu.html#securitysvirtaa
 
 AppArmor profiles for Ubuntu could be ported to Debian:
 http://bazaar.launchpad.net/~ubuntu-branches/ubuntu/utopic/libvirt/utopic/files/head:/debian/apparmor/
+
+DONE. DOCUMENTED.
 
 == Set cluster_size 512 - 2MB for better performance? ==
 HulaHoop1 wrote: The qcow2 defaults seem fine to me, however the one parameter of interest we should play with is image's : 'cluster_size' 512 - 2MB the larger the size the better performance but the size is bigger. I think we should try the largest and see if the image size stays reasonable.
@@ -347,7 +321,69 @@ sudo apt-get install linux-image-amd64
 Asked on stackexchange: <br />
 http://unix.stackexchange.com/questions/148163/is-it-possible-to-use-comments-in-virsh-libvirt-xml-files
 
-= Answered Questions =
+== qemu i386 support ==
+Why are our qemu xml files currently called ${VMNAME}_qemu-x86-x64.xml. Are they dependent on x86-x64? Should they work on i386 systems as well? Maybe just <pae/> must be removed? Can you test please?
+
+Any QEMU architecture works on any host supported by QEMU.i386 tested and working but pointless when x86-64 works on i386 hosts too.
+
+
+
+==Disable Microphone Input==
+Figure out how to disable Microphone input to Guests. While a nice feature for VOIP, is a very dangerous setting to have by default as its unexpected.
+
+https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Virtualization_Administration_Guide/section-libvirt-dom-xml-sound-devices.html
+
+http://libvirt.org/formatdomain.html
+
+'''Somewhat Solved:'''
+After speaking with Cole Robinson, libvirt developer, its clear that this is a feature provided by SPICE rather than something having to do with the sound card. I found that all sound cards have this after testing yesterday. When I changed Spice to VNC this no longer happens. Before you say that we shouldn't use spice, its important to note that audio does not function without it at all.
+
+I've asked on the mailinglists if there is some xml attribute to disable the feature. From what I've seen in the documentation this is not possible. However it can be accomplished through the Host's audio popup menu in the taskbar. The devices show up with the name "virt-manager: record" and can be set to mute as with any other device on the host.
+
+http://libvirt.org/formatdomain.html#elementsGraphics
+
+Other spice channel functionality provided:
+<pre>Valid channel names include main, display, inputs, cursor, playback, record (all since 0.8.6); smartcard (since 0.8.8); and usbredir (since 0.9.12). </pre>
+
+Mailinglist reply:
+https://www.redhat.com/archives/virt-tools-list/2014-August/msg00002.html 
+Currently not supported through libvirt but planned. Not a problem, we can just document how to disable its easy and gui based. For those running from commandlines, they should just revert to a non SPICE adapter and they'll be fine. They are not missing much because they are not using the workstation as a desktop.
+
+Bugzilla Ticket:
+https://bugzilla.redhat.com/show_bug.cgi?id=1126641
+
+== Document: how to leave KVM when no X is running? ==
+Situation... User is in terminal in a VM... No X is running ("sudo service kdm stop"). User wants to switch back to the host... How to do this?
+
+The emulated tablet device handles this by not allowing the mouse to be captured by the guest.
+Its still possible though:
+
+serverfault.com/questions/457603/any-way-to-release-focus-on-a-kvm-guest-in-virt-manager-without-havin-g-to-click
+
+<pre>press Ctrl_L & Alt_L</pre>
+
+
+== libguestfs import/export feature request ==
+Let's together write a feature request for an import/export feature for libguestfs, similar to VirtualBox's import/export feature. Then post in [https://bugzilla.redhat.com/buglist.cgi?component=libguestfs&product=Virtualization%20Tools libguestfs's bug tracker].
+
+Irrelevant see virt-manager feature instead.
+
+== virt-manager import/export feature request ==
+Let's together write a feature request for an import/export feature for virt-manager, similar to VirtualBox's import/export feature. Then post in [https://bugzilla.redhat.com/buglist.cgi?product=Virtualization%20Tools&classification=Community&component=virt-manager&bug_status=NEW&bug_status=ASSIGNED virt-manager's bug tracker].
+
+Update on import/export Support:
+
+Gnome Boxes, another simplified GUI for libvirt will have an OVF import feature added. Note that OVF is not the vmware vmdk specfic format OVA. In this sense making it a true standard.
+
+Its in the works and the Gnome contributor behind it has posted that he plans to make it into a stand-alone library so it could be used by other projects. Meaning it could be easily included in virt-manager too.
+
+His post:
+http://zee-nix.blogspot.com/2014/05/berlin-dx-hackfest-boxes-rain-and.html
+
+Initial commit:
+https://gitorious.org/govf
+
+
 == virt-v2v ==
 === How to install virt-v2v on Debian? ===
 virt-v2v is not yet in Debian. [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=743261 wishlist request]
