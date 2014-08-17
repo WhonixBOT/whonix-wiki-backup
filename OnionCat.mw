@@ -86,8 +86,38 @@ At least one node has to run as a 'server' with a Hidden service configured for 
 
 ==== Notes ====
 
-==== Security ====
+===== Security =====
 For official documentation on security read the reference at the end of this sentence. <ref>https://www.cypherpunk.at/onioncat_trac/wiki/Security</ref>
+
+Authentication Notes and Definitions:
+*) Bi-directional mode is what was used for OC since the beginning. That means 
+that one established circuit (TCP session through Tor) is being used to send 
+AND transmit packets. Thus, it is called bi-directional.
+
+*) Uni-directional mode means that there are two separate circuits: one for 
+sending and one for receiving.
+
+So what's the implications:
+Circuits are established through Tor and are identified and authenticated by 
+the network through the onion hostname (= OC IPv6 address). But this 
+authentication is just one-ended. That means that the client (the one 
+initiating the circuit) can authenticate the server but the server can't 
+authenticate the client. As a consequence the client could spoof it's IP 
+address. In Tor/OnionCat context, IP spoofing means to use any IPv6 address 
+but not the one which is associated to the onion ID (that's actually what -R 
+does). Although this is technically no problem there's a security risk which 
+could be that someone takes over the IPv6 address from someone else and could 
+thereby attract (steal) packets. The risk is still very low.
+
+Uni-Directional mode addresses exactly that problem. It forces the server to 
+not reuse an incoming connection but establish a new circuit to the supposed 
+client. Thus spoofing is defeated because it requires for the client to own 
+the private key as well.
+
+Uni-directional mode and -R are incompatible! That means an OnionCat using -R 
+will not be able to communicate with an OnionCat in uni-directional mode.
+
+OnionCats with -R can only talk to bi-directional OnionCats having -U set as noted above.<ref>These are Onioncat dev, Bernhard Fischer's words. All credit goes to him.</ref>
 
 ===== Tunneling IPv4 =====
 For official documentation tunneling IPv4 read the reference at the end of this sentence.<ref>https://www.cypherpunk.at/onioncat_trac/wiki/IPv4</ref>
