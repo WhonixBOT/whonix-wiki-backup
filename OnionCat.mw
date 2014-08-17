@@ -39,15 +39,64 @@ sudo apt-get update
 sudo apt-get install onioncat
 </pre>
 
-(1). Create a hidden service <-- on Whonix-Gateway
+(<u>On your Whonix-Gateway.</u>
 
-(2). Create the directory /etc/tor/ocat <-- on Whonix-Gateway
+If you want to read and introduction about hidden services and to learn about about hidden service security, see [[Hidden Services]].
 
-(3). Find the hostname of your hidden service <-- on Whonix-Gateway Also possibly see [[Hidden Services|hosting hidden services]] for reference. Debugging: It's recommended to test if your hidden service is reachable first (for example, use test wise a hidden webserver), before you proceed with OnionCat.
+If you also want to run a hidden web server on the same .onion domain (nice for testing and learning Hidden Services basics), see [[Hidden Services]].
 
-(4). Start ocat <-- on Whonix-Workstation
+Open your {{Code2|/etc/tor/torrc}}.
 
-(5). Final nodes. <-- on Whonix-Workstation
+<pre>
+sudo nano /etc/tor/torrc
+</pre>
+
+Add. <ref>Arbitrary choice of port to avoid conflicts with custom onioncat setups.</ref>
+
+<pre>
+HiddenServiceDir /var/lib/tor/onioncat/
+HiddenServicePort 64739 192.168.0.11:64739
+</pre>
+
+Reload Tor.
+
+<pre>
+sudo service tor reload
+</pre>
+
+Reminder: To get your hidden service url.
+
+<pre>
+sudo cat /var/lib/tor/onioncat/hostname
+</pre>
+
+Reminder: Backup your hidden service key, in case you want to be able to restore it, on another machine, on a newer Whonix-Gateway, after hdd failure, etc. You can find it here and need sudo to access it.
+
+<pre>
+/var/lib/tor/onioncat/private_key
+</pre>
+
+<u>On your Whonix-Workstation.</u>
+
+Update your package lists
+
+<pre>
+sudo apt-get update
+</pre>
+
+Install onioncat.
+
+<pre>
+sudo apt-get install onioncat
+</pre>
+
+Start onioncat. Replace {{Code|address.onion}} with your actual hidden service url from above.
+
+<pre>
+sudo ocat address.onion -U -l 192.168.0.11:64739
+</pre>
+
+As of onioncat r555 (only applies to Jessie onwards) onioncat starts in unidirection 'client' mode by default. To accept incoming connections '''-U''' must be used. Mutual authentication is also available in this newer version which is needed to ensure that the identities of all endpoints engaged in a transaction are verified. <ref>http://manpages.debian.org/cgi-bin/man.cgi?query=ocat&apropos=0&sektion=0&manpath=Debian+testing+jessie&format=html&locale=en</ref>
 
 == Over i2p ==
 
