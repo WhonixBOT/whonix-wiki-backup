@@ -78,6 +78,20 @@ How could you find out if the file is coming from a Whonix specific package or n
 * Whonix specific packages are always called {{Code|whonix-...}}. In the example above it's saying "{{Code2|Setting up ifupdown ..."}}, so the file isn't coming from a Whonix specific package. In this case, you should press {{Code|n}} as advised in the paragraph above.
 * If the package name does include {{Code|whonix-...}}, it's a Whonix specific package. In that case, your safest bet should be pressing {{Code|y}}, but then you would loose your customized settings. You can re-add them afterwards. Such conflicts will hopefully rarely happen, if you use [[Whonix_Configuration_Files|Whonix modular flexible .d style configuration folders]].
 
+'''4. Other Important Details.'''
+
+Debian has a distribution channel that provides security updates only so that administrators can choose to run a stable system with only the absolute minimum of changes. Additionally, this distribution channel is kept somewhat separate from the normal channel: all security updates are fed directly from security.debian.org, whereas it is recommended to use mirrors for everything else. This has a number of advantages. (I don't remember which of these are official motivations I read on Debian mailing lists and which are my own mini-analysis. Some of these are touched on in the Debian security FAQ.)<ref>https://unix.stackexchange.com/a/5009</ref>
+
+ *Security updates are spread immediately, without the delay incurred by mirror updates (which can add about 1 day of propagation time).
+ *Mirrors can go stale. Direct distribution avoids that problem.
+*There is less infrastructure to maintain as a critical service. Even if most of Debian's servers are unavailable and people can't install new packages, as long as security.debian.org points to a working server, security updates can be distributed.
+*Mirrors can be compromised (this has happened in the past). It's easier to watch a single distribution point. If an attacker managed to upload a malicious package somewhere, security.debian.org could push a package with a more recent version number. Depending on the nature of the exploit and the timeliness of the response, this could be enough to keep some machines uninfected or at least warn administrators.
+*Fewer people have upload rights on security.debian.org. This limits the possibilities for an attacker trying to subvert an account or machine in order to inject a malicious package.
+*Servers that don't need ordinary web access can be kept behind a firewall that only allows security.debian.org through.
+
+
+Using <pre>-o Acquire::Check-Valid-Until=false</pre> with apt is a bad idea.It disables release file validation. Won't counter stale mirrors. Will make them go unnoticed.<ref>http://manpages.debian.org/cgi-bin/man.cgi?&query=apt.conf</ref>
+
 = Whonix-Gateway Security =
 == General ==
 You should never use Whonix-Gateway for anything other than running Tor on it!
