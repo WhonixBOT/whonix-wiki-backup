@@ -26,7 +26,25 @@ To make use of it, it needs to be enabled host-side following this guide<ref>htt
 Using it on the host is as simple as starting the two services ''ksm'' and ''ksmtuned'' following the guide above.
 No need to adjust the number of pages it uses anymore as newer versions automatically handle it with bigger RAM amounts as to give a bigger performance improvement compared to earlier versions that used just 2000 pages of RAM.
 
-HugePages tangibly improve performance further and should be enabled in the configuration. I'll handle that as soon as you give me the green light. More info<ref>https://fedoraproject.org/wiki/Features/KVM_Huge_Page_Backed_Memory#Benefit_to_Fedora</ref>
+KSM security implications?
+<pre>3.
+ATTACK ON MEMORY
+DEDUPLICATION
+Memory deduplication may be subject to a memory disclosure
+attack from the attacker’s VM to the victim’s VM. The attack
+guesses a process running on a victim’s VM or a file downloaded
+by a browser.
+Memory deduplication shares 4KB pages which have the
+same contents. When data is written to a deduplicated page, the
+page is re-created with a copy of its contents (Copy On Write).
+This causes the write access time to be slower than normal,
+because it includes the overhead to re-create the same page. An
+attacker can measure access time to determine whether a page was
+deduplicated by another VM. </pre><ref>https://staff.aist.go.jp/k.suzaki/EuroSec2011-suzaki.pdf</ref>
+
+Enable Hugepages for guests?
+No. It prevents use of memory ballooning and swapping<ref>https://fedoraproject.org/wiki/Features/KVM_Huge_Page_Backed_Memory#Detailed_Description</ref> and is subject to lack of adequate sVirt protections.<ref>https://bugzilla.redhat.com/show_bug.cgi?id=515741</ref>
+More info<ref>https://fedoraproject.org/wiki/Features/KVM_Huge_Page_Backed_Memory#Benefit_to_Fedora</ref>
 
 == memory balloon ==
 https://rwmj.wordpress.com/2010/07/17/virtio-balloon/
