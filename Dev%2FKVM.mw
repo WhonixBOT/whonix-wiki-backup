@@ -26,7 +26,10 @@ To make use of it, it needs to be enabled host-side following this guide<ref>htt
 Using it on the host is as simple as starting the two services ''ksm'' and ''ksmtuned'' following the guide above.
 No need to adjust the number of pages it uses anymore as newer versions automatically handle it with bigger RAM amounts as to give a bigger performance improvement compared to earlier versions that used just 2000 pages of RAM.
 
-Most accurate guide found so far to enable and verify that KSM is working.<ref>https://www.suse.com/documentation/sles11/book_kvm/data/kvm_qemu_ksm.html</ref>
+How to verify that KSM is working and looking at its stats.<ref>https://www.suse.com/documentation/sles11/book_kvm/data/kvm_qemu_ksm.html</ref>
+
+Notes: What appeared to be effects of KSM was actually just the Linux Guests not using all allocated RAM by default. Non Linux guests usually take over the entire assigned RAM allocated space while Linux does not.
+By default KSM kicks in when there is very little free free RAM on the host. Settings must be tweaked in ksmtuned.conf to change this behavior. Experimenting in progress...
 
 KSM security implications?
 <pre>3.
@@ -45,7 +48,10 @@ attacker can measure access time to determine whether a page was
 deduplicated by another VM. </pre><ref>https://staff.aist.go.jp/k.suzaki/EuroSec2011-suzaki.pdf</ref>
 
 Enable Hugepages for guests?
-No. It prevents use of memory ballooning and swapping<ref>https://fedoraproject.org/wiki/Features/KVM_Huge_Page_Backed_Memory#Detailed_Description</ref> and is subject to lack of adequate sVirt protections.<ref>https://bugzilla.redhat.com/show_bug.cgi?id=515741</ref>
+Yes. I am seeing benchmarks of 40% improvement of performance for all workloads in a guest according to the literature. However using it will prevent use of memory ballooning and swapping<ref>https://fedoraproject.org/wiki/Features/KVM_Huge_Page_Backed_Memory#Detailed_Description</ref> <s>and is subject to lack of adequate sVirt protections.<ref>https://bugzilla.redhat.com/show_bug.cgi?id=515741</ref></s> Just confirmed from Dan Walsh, SELinux policy developer that this is no longer the case.
+
+Its up to us to decide which tradeoffs provide the best gains.
+
 More info<ref>https://fedoraproject.org/wiki/Features/KVM_Huge_Page_Backed_Memory#Benefit_to_Fedora</ref>
 
 == memory balloon ==
