@@ -48,9 +48,8 @@ attacker can measure access time to determine whether a page was
 deduplicated by another VM. </pre><ref>https://staff.aist.go.jp/k.suzaki/EuroSec2011-suzaki.pdf</ref>
 
 Enable Hugepages for guests?
-Yes. I am seeing benchmarks of 40% improvement of performance for all workloads in a guest according to the literature. However using it will prevent use of memory ballooning and swapping<ref>https://fedoraproject.org/wiki/Features/KVM_Huge_Page_Backed_Memory#Detailed_Description</ref> <s>and is subject to lack of adequate sVirt protections.<ref>https://bugzilla.redhat.com/show_bug.cgi?id=515741</ref></s> Just confirmed from Dan Walsh, SELinux policy developer that this is no longer the case.
-
-Its up to us to decide which tradeoffs provide the best gains.
+Yes. I am seeing benchmarks of 40% improvement of performance for all workloads in a guest according to the literature.  <s>However using it will prevent use of memory ballooning and swapping<ref>https://fedoraproject.org/wiki/Features/KVM_Huge_Page_Backed_Memory#Detailed_Description</ref> and is subject to lack of adequate sVirt protections.<ref>https://bugzilla.redhat.com/show_bug.cgi?id=515741</ref></s> Just confirmed from Dan Walsh, SELinux policy developer that this is no longer the case.
+The sacrificing of one performance feature for another may not be a problem afterall. Since 2012 there has been an effort to teach KSM how to play nice with THP transparent Hugetables. <ref>http://www.linux-kvm.org/wiki/images/1/19/2012-forum-memory-mgmt.pdf</ref>
 
 More info<ref>https://fedoraproject.org/wiki/Features/KVM_Huge_Page_Backed_Memory#Benefit_to_Fedora</ref>
 
@@ -58,12 +57,17 @@ Documentation:
 A kind soul posted how to interpret what ksmuned.conf's parameters mean in plain English in the first post. Its worth mirroring in our documentation:
 http://forum.proxmox.com/threads/5041-KSM-with-2-6-35
 
-More accurate instrcutions on starting ksm and ksmtuned services and keeping them that way at boo. They will be summarized in the documentation too:
+No need to play around with the defaults. ksmtuned should handle memory overcommitment adjustments dynamically when the host is under pressure.
+
+More accurate instructions on starting ksm and ksmtuned services and keeping them that way at boot. They will be summarized in the documentation too:
 
 http://www-01.ibm.com/support/knowledgecenter/api/content/linuxonibm/liaat/liaatbpsharing.htm
 http://www-01.ibm.com/support/knowledgecenter/api/content/linuxonibm/liaat/liaatbpksm.htm
 http://www-01.ibm.com/support/knowledgecenter/api/content/linuxonibm/liaat/liaatbprunksm6.htm
 http://www-01.ibm.com/support/knowledgecenter/api/content/linuxonibm/liaat/liaatbpksmmemsavings6.htm
+
+
+TO DO: Document on KVM wikipage how users can enable this permanently.
 
 == memory balloon ==
 https://rwmj.wordpress.com/2010/07/17/virtio-balloon/
