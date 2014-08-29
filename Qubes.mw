@@ -3,14 +3,488 @@
 |description=Using Whonix with Qubes OS
 }}
 
-'''UNFINISHED!'''
 
-See: <br />
-* https://www.whonix.org/forum/index.php/topic,392.45.html
+
+= General =
+
+This page provides primary information and instructions for running Whonix on the Qubes virtualization platform for the goal of torifying your internet traffic inside of the highly secure VM isolation framework that Qubes provides.
+
+Learn more about Qubes at: https://qubes-os.org
+
+Qubes + Whonix currently exists as a customized dual HVM (HardwareVM) configuration:
+
+<pre>Whonix-Gateway HVM + Whonix-Workstation HVM</pre>
+
+A simple networking setup for Qubes + Whonix would look like:
+
+<pre>NetVM <- FirewallVM <- Whonix-Gateway <- Whonix-Workstation</pre>
+
+Where, for example, the Whonix-Gateway conceptually replaces TorVM as your Tor ProxyVM, and Whonix-Workstation conceptually replaces your standard AppVMs (AnonVMs).
+
+We hope to provide a native ProxyVM + AppVM support, once the Qubes Debian Template gets ProxyVM capability added.
+
+We could use your help. Please feel free to join in with improving the Qubes + Whonix platform!
+
+
+
+= Starting Whonix HVMs =
+
+Unfortunately Qubes doesn't presently seem to allow you to set a custom config file as the default.
+
+This means you have to ALWAYS startup the Whonix HVMs in the dom0 terminal, using the (qvm-start --custom-config=) command.
+
+These sample Whonix startup commands will work if your variable names match those in the Install Guides.
+
+* For Whonix-Gateway:
+** <pre>qvm-start --custom-config=/var/lib/qubes/appvms/whonix-gateway/custom.conf whonix-gateway</pre>
+
+* For Whonix-Workstation:
+** <pre>qvm-start --custom-config=/var/lib/qubes/appvms/whonix-workstation/custom.conf whonix-workstation</pre>
+
+* Otherwise you can adjust this Whonix startup command to your own custom setup:
+** <pre>qvm-start --custom-config=<ABSOLUTE_PATH_TO_CUSTOM_CONFIG_FILE> <WHONIX_HVM_NAME></pre>
+
+
+
+= Whonix vs. TorVM =
+
+The Qubes project provides TorVM for routing VM traffic through Tor.
+
+Running Whonix within Qubes provides an alternative to TorVM and similarly routes VM traffic through Tor.
+
+The Whonix-Gateway serves as an alternative replacement to TorVM, while the Whonix-Workstation acts as an alternative replacement to AppVMs (AnonVMs) when using Whonix within Qubes.
+
+There has been prior discussions and information shared in the Whonix & Qubes communities about the comparative differences and pros vs. cons between Whonix & TorVM.
+
+Here are some sources of relevant discussion and information on Whonix vs. TorVM:
+
+* https://www.whonix.org/wiki/Comparison_with_Others
+
+* https://www.whonix.org/wiki/Features
+
+* https://wiki.qubes-os.org/wiki/UserDoc/TorVM
+
+* https://groups.google.com/d/topic/qubes-devel/2vnGqsoM9p0
+
+* https://groups.google.com/d/topic/qubes-devel/GT8LyE-la-o
+
+* https://tor.stackexchange.com/questions/38/what-threat-model-is-qubes-os-torvm-most-appropriate-for
+
+
+We welcome further discussion and curation on the pros & cons of using Whonix vs. TorVM in Qubes, so that users may better understand which alternative is the right choice for them.
+
+
+
+= Install Guides =
+
+Additional install guides will be provided as new Qubes + Whonix configurations are developed.
+
+The following install guides are currently compatible with Whonix 8.2. If wanting to use a later Whonix version, it will likely take some modifications.
+
+
+
+== Install in Qubes HVM with Whonix Binary Images ==
+
+This approach uses the Whonix qcow2 binary image downloads to import the Whonix-Gateway and Whonix-Workstation into Qubes HVMs.
+
+
+
+=== Provide Whonix Raw Images to Qubes dom0 ===
+
+There are several differing methods and security philosophies for completing this section of steps, so if you prefer a different approach of acquiring, extracting, converting, or transferring the Whonix raw-formatted images to dom0, then please feel free to do so.
+
+
+
+'''1. Create a Temporary AppVM (whonix-images) for Processing Whonix Images:'''
+
+* In dom0: Qubes VM Manager: Create New VM
+** Choose Settings:
+*** Name and label: whonix-images
+*** Use this template: fedora-20-x64 (default)
+*** Type: AppVM
+** Press: OK
+
+
+
+'''2. Expand Private Disk Image of whonix-images:'''
+
+* In dom0: Terminal:
+** <pre>qvm-grow-private whonix-images 15G</pre>
+
+* In whonix-images: Terminal:
+** <pre>sudo resize2fs /dev/xvdb</pre>
+
+
+
+'''3. Download and Transfer Whonix qcow2 Images to whonix-images:'''
+
+Depending upon your workflow and security preferences, you can:
+
+
+* Download Whonix directly within whonix-images:
+
+** For Whonix-Gateway:
+*** Whonix-Gateway 8.2 qcow2 Image: http://mirror.whonix.de/8.2/Whonix-Gateway-8.2.qcow2.xz
+*** Whonix-Gateway 8.2 qcow2 Signature: http://mirror.whonix.de/8.2/Whonix-Gateway-8.2.qcow2.xz.asc
+*** Whonix-Gateway 8.2 qcow2 Signing Key: https://www.whonix.org/wiki/Whonix_Signing_Key
+
+** For Whonix-Workstation:
+*** Whonix-Workstation 8.2 qcow2 Image: http://mirror.whonix.de/8.2/Whonix-Workstation-8.2.qcow2.xz
+*** Whonix-Workstation 8.2 qcow2 Signature: http://mirror.whonix.de/8.2/Whonix-Workstation-8.2.qcow2.xz.asc</pre>
+*** Whonix-Workstation 8.2 qcow2 Signing Key: https://www.whonix.org/wiki/Whonix_Signing_Key
+
+
+* Download Whonix elsewhere and transfer into whonix-images:
+
+** Qubes File Copy Between VMs:
+*** https://qubes-os.org/wiki/CopyingFiles
+
+** Qubes USB Storage Mounting:
+*** https://qubes-os.org/wiki/StickMounting
+
+
+Important: Please check file verification signatures of Whonix downloads before using them!
+
+Whonix Verification Instructions: https://www.whonix.org/wiki/Download#Verify_the_Whonix_images
+
+
+
+'''4. Extract Whonix qcow2 Images:'''
+
+* For Whonix-Gateway:
+** In whonix-images: Terminal:
+*** <pre>tar -xvf Whonix-Gateway-*.qcow2.xz</pre>
+
+* For Whonix-Gateway:
+** In whonix-images: Terminal:
+*** <pre>tar -xvf Whonix-Workstation-*.qcow2.xz</pre>
+
+
+
+'''5. Install qemu-img Package:'''
+
+* In whonix-images: Terminal:
+** <pre>sudo yum install qemu-img</pre>
+
+
+
+'''6. Convert Whonix qcow2 Images to raw Images:'''
+
+* For Whonix-Gateway:
+** In whonix-images: Terminal:
+*** <pre>qemu-img convert Whonix-Gateway-*.qcow2 -O raw Whonix-Gateway.img</pre>
+
+* For Whonix-Workstation:
+** In whonix-images: Terminal:
+*** <pre>qemu-img convert Whonix-Workstation-*.qcow2 -O raw Whonix-Workstation.img</pre>
+
+
+
+'''7. Transfer raw Images from whonix-images to dom0:'''
+
+This transfer process may take a while. Maybe ~15 minutes per file, depending upon the speed of your system.
+
+First ensure that the raw images (.img) are in the "/home/user" directory of whonix-images.
+
+* For Whonix-Gateway:
+** In dom0: Terminal:
+*** <pre>qvm-run --pass-io whonix-images 'tar -cvSf - Whonix-Gateway.img' > ~/Whonix-Gateway.img.tar && tar -xvSf ~/Whonix-Gateway.img.tar</pre>
+
+* For Whonix-Workstation:
+** In dom0: Terminal:
+*** <pre>qvm-run --pass-io whonix-images 'tar -cvSf - Whonix-Workstation.img' > ~/Whonix-Workstation.img.tar && tar -xvSf ~/Whonix-Workstation.img.tar</pre>
+
+
+
+=== Qubes HVM Create and Custom Config ===
+
+
+
+'''8. Create Whonix HVMs:'''
+
+* For Whonix-Gateway:
+** In dom0: Terminal:
+*** <pre>qvm-create whonix-gateway --hvm --standalone --label=purple --root-copy-from=/home/user/Whonix-Gateway.img</pre>
+
+* For Whonix-Workstation:
+** In dom0: Terminal:
+*** <pre>qvm-create whonix-workstation --hvm --standalone --label=purple --root-copy-from=/home/user/Whonix-Workstation.img</pre>
+
+
+
+'''9. Boot & Kill Whonix HVMs to Establish Network Adapter:'''
+
+* For Whonix-Gateway:
+** Qubes VM Manager: Start VM: whonix-gateway
+** Qubes VM Manager: Kill VM: whonix-gateway
+
+* For Whonix-Workstation:
+** Qubes VM Manager: Start VM: whonix-workstation
+** Qubes VM Manager: Kill VM: whonix-workstation
+
+
+
+'''10. Attach eth1 Network Adapter to Whonix-Gateway:'''
+
+* For Whonix-Gateway:
+** In dom0: Terminal:
+*** <pre>cd /var/lib/qubes/appvms/whonix-gateway</pre>
+*** <pre>cp whonix-gateway.conf custom.conf</pre>
+*** <pre>nano custom.conf</pre>
+** In dom0: Terminal: nano: custom.conf: For the following line:
+*** <pre>vif = [ 'mac=XX:XX:XX:XX:XX:XX,script=/etc/xen/scripts/vif-route-qubes,ip=10.137.2.X,backend=firewallvm' ]</pre>
+*** Add a comma (,) after the ending single quote (') of the first virtual network interface, before the closing bracket (]).
+*** Copy and paste a duplicate of the first single quoted virtual network interface after the comma (,) and before the closing bracket (]).
+*** Change the last "YY:YY:YY" MAC address characters to something random with the same number of total characters.
+*** Change the IP address of the second virtual network interface to "192.168.0.10".
+*** Your changes should look like this:
+*** <pre>vif = [ 'mac=XX:XX:XX:XX:XX:XX,script=/etc/xen/scripts/vif-route-qubes,ip=10.137.2.X,backend=firewallvm', 'mac=XX:XX:XX:YY:YY:YY,script=/etc/xen/scripts/vif-route-qubes,ip=192.168.0.10,backend=firewallvm' ]</pre>
+*** Save/WriteOut (Ctrl + o) your changes to custom.conf and Exit nano (Ctrl + x).
+
+
+
+'''11. Modify IP of eth0 Network Adapter on Whonix-Workstation:'''
+
+* For Whonix-Workstation:
+** In dom0: Terminal:
+*** <pre>cd /var/lib/qubes/appvms/whonix-workstation</pre>
+*** <pre>cp whonix-workstation.conf custom.conf</pre>
+*** <pre>nano custom.conf</pre>
+** In dom0: Terminal: nano: custom.conf: For the following line:
+*** <pre>vif = [ 'mac=XX:XX:XX:XX:XX:XX,script=/etc/xen/scripts/vif-route-qubes,ip=10.137.2.X,backend=firewallvm' ]</pre>
+*** Change the IP address of the second virtual network interface to "192.168.0.11".
+*** Your changes should look like this:
+*** <pre>vif = [ 'mac=XX:XX:XX:XX:XX:XX,script=/etc/xen/scripts/vif-route-qubes,ip=192.168.0.11,backend=firewallvm' ]</pre>
+*** Save/WriteOut (Ctrl + o) your changes to custom.conf and Exit nano (Ctrl + x).
+
+
+
+'''12. Set Time to UTC in custom.conf:'''
+
+Important for anonymity!
+
+* For Whonix-Gateway:
+** In dom0: Terminal:
+*** <pre>cd /var/lib/qubes/appvms/whonix-gateway</pre>
+*** <pre>nano custom.conf</pre>
+** In dom0: Terminal: nano: custom.conf: For the following line:
+*** <pre>localtime = 1</pre>
+*** Change the 1 to 0.
+*** Your changes should look like this:
+*** <pre>localtime = 0</pre>
+*** Save/WriteOut (Ctrl + o) your changes to custom.conf and Exit nano (Ctrl + x).
+
+* For Whonix-Workstation:
+** In dom0: Terminal:
+*** <pre>cd /var/lib/qubes/appvms/whonix-workstation</pre>
+*** <pre>nano custom.conf</pre>
+** In dom0: Terminal: nano: custom.conf: For the following line:
+*** <pre>localtime = 1</pre>
+*** Change the 1 to 0.
+*** Your changes should look like this:
+*** <pre>localtime = 0</pre>
+*** Save/WriteOut (Ctrl + o) your changes to custom.conf and Exit nano (Ctrl + x).
+
+
+
+=== Qubes Firewall Configuration ===
+
+
+
+'''13. Open FirewallVM Between Whonix-Gateway and Whonix-Workstation:'''
+
+* In firewallvm: Terminal:
+** <pre>sudo bash</pre>
+** <pre>echo "iptables -I FORWARD 2 -s 192.168.0.10 -d 192.168.0.11 -j ACCEPT" >> /rw/config/qubes_firewall_user_script</pre>
+** <pre>echo "iptables -I FORWARD 2 -s 192.168.0.11 -d 192.168.0.10 -j ACCEPT" >> /rw/config/qubes_firewall_user_script</pre>
+** <pre>chmod +x /rw/config/qubes_firewall_user_script</pre>
+
+
+
+=== Whonix Boot Configuration ===
+
+
+
+'''14. Boot Whonix HVM and Edit GRUB Root Device:'''
+
+Notice that presently in Qubes you must ALWAYS start VMs from the dom0 terminal when using a custom config (qvm-start --custom-config=).
+
+* For Whonix-Gateway:
+** In dom0: Terminal:
+*** <pre>qvm-start --custom-config=/var/lib/qubes/appvms/whonix-gateway/custom.conf whonix-gateway</pre>
+*** In whonix-gateway: Within 5 seconds, interrupt boot (Press: "Space Bar")
+*** In whonix-gateway: GNU GRUB Boot Menu:
+**** Highlight: Debian GNU/Linux, with Linux 3.2.0-4-686-pae
+**** Press: "e" to edit
+**** Arrow down and over, change "root=/dev/sda1" to "root=/dev/xvda1"
+**** Press: "Ctrl + x" or "F10" to boot
+*** During first boot, Whonix will go through the "Whonix First Run Initializer" and then shut down.
+*** After first boot, you will need to restart and repeat the steps above with whonix-gateway, again, for a second time.
+
+* For Whonix-Workstation:
+** In dom0: Terminal:
+*** <pre>qvm-start --custom-config=/var/lib/qubes/appvms/whonix-workstation/custom.conf whonix-workstation</pre>
+*** In whonix-workstation: Within 5 seconds, interrupt boot (Press: "Space Bar")
+*** In whonix-workstation: GNU GRUB Boot Menu:
+**** Highlight: Debian GNU/Linux, with Linux 3.2.0-4-686-pae
+**** Press: "e" to edit
+**** Arrow down and over, change "root=/dev/sda1" to "root=/dev/xvda1"
+**** Press: "Ctrl + x" or "F10" to boot
+*** During first boot, Whonix will go through the "Whonix First Run Initializer" and then shut down.
+*** After first boot, you will need to restart and repeat the steps above with whonix-workstation, again, for a second time.
+
+
+
+'''15. Complete the whonixsetup Connection Wizard:'''
+
+* For Whonix-Gateway:
+** In whonix-gateway: whonixsetup:
+*** Complete the wizard and enable Tor.
+
+* For Whonix-Workstation:
+** In whonix-workstation: whonixsetup:
+*** Complete the wizard and enable Tor.
+
+
+
+'''16. Update GRUB to Retain "xvda1" Root Device:'''
+
+* For Whonix-Gateway:
+** In whonix-gateway: Terminal:
+*** <pre>sudo update-grub</pre>
+**** Default Password: changeme
+
+* For Whonix-Workstation:
+** In whonix-workstation: Terminal:
+*** <pre>sudo update-grub</pre>
+**** Default Password: changeme
+
+
+
+=== Whonix Network Configuration ===
+
+
+
+'''17. Configure eth0 Network Adapter on Whonix-Gateway:'''
+
+* For Whonix-Gateway:
+** In whonix-gateway: Terminal:
+*** <pre>kdesudo kwrite /etc/network/interfaces</pre>
+**** Default Password: changeme
+
+*** For eth0: Deactivate DHCP networking by commenting out:
+**** <pre>#auto eth0</pre>
+**** <pre>#iface eth0 inet dhcp</pre>
+**** <pre>#pre-up /usr/bin/whonix_firewall</pre>
+
+*** For eth0: Activate static networking by uncommenting:
+**** <pre>auto eth0</pre>
+**** <pre>iface eth0 inet static</pre>
+**** <pre>address 10.0.2.15</pre>
+**** <pre>netmask 255.255.255.0</pre>
+**** <pre>gateway 10.0.2.2</pre>
+**** <pre>pre-up /usr/bin/whonix_firewall</pre>
+
+*** For eth0: Change static networking to match Qubes credentials:
+**** <pre>auto eth0</pre>
+**** <pre>iface eth0 inet static</pre>
+**** <pre>address 10.137.2.X</pre>
+**** <pre>netmask 255.255.255.0</pre>
+**** <pre>gateway 10.137.2.1</pre>
+**** <pre>pre-up /usr/bin/whonix_firewall</pre>
+**** Get the ending IP number (X) found in the Qubes VM Manager for whonix-gateway.
+
+*** Save & Close the network interfaces file.
+
+** In whonix-gateway: Terminal:
+*** <pre>sudo service networking restart</pre>
+**** Default Password: changeme
+
+
+
+=== Test Tor Internet Connectivity ===
+
+
+
+'''18. CURL Tor Check:'''
+
+* For Whonix-Gateway:
+** In whonix-gateway: Terminal:
+*** <pre>curl https://check.torproject.org | grep Congrat</pre>
+*** If your Tor internet connectivity is working, then you will see the response: "Congratulations. This browser is configured to use Tor."
+*** If not, then you will have to check your connection another way or do some troubleshooting.
+
+* For Whonix-Workstation:
+** In whonix-workstation: Terminal:
+*** <pre>curl https://check.torproject.org | grep Congrat</pre>
+*** If your Tor internet connectivity is working, then you will see the response: "Congratulations. This browser is configured to use Tor."
+*** If not, then you will have to check your connection another way or do some troubleshooting.
+*** To install the Tor Browser, you may have to download and install it manually, if none of the Tor Browser desktop buttons are working.
+*** More info: https://www.whonix.org/wiki/Manually_Updating_Tor_Browser
+
+
+=== Update Whonix OS ===
+
+Important for anonymity and security!
+
+
+'''19. Fetch and Install Whonix OS Updates:'''
+
+* For Whonix-Gateway:
+** In whonix-gateway: Terminal:
+*** <pre>sudo apt-get update</pre>
+*** <pre>sudo apt-get dist-upgrade</pre>
+**** Default Password: changeme
+
+* For Whonix-Workstation:
+** In whonix-workstation: Terminal:
+*** <pre>sudo apt-get update</pre>
+*** <pre>sudo apt-get dist-upgrade</pre>
+**** Default Password: changeme
+
+
+
+=== Final Cleanup (optional) ===
+
+
+
+'''20. Remove Temporary AppVM whonix-images:'''
+
+* Qubes VM Manager: Remove AppVM: whonix-images
+
+
+
+'''21. Remove Excess Whonix Images:'''
+
+* In dom0: Terminal:
+** <pre>rm ~/Whonix*</pre>
+
+
+
+'''All Finished!'''
+
+
+
+== Install in Qubes HVM with Whonix Source Code ==
+
+This approach uses the Whonix source code to build the Whonix-Gateway and Whonix-Workstation in Qubes HVMs.
+
+'''Coming Soon!'''
+
+
+
+= Additional Info =
+See:
+* https://www.whonix.org/forum/index.php/topic,392.0.html
 * https://www.whonix.org/wiki/Dev/Qubes
+* https://www.whonix.org/wiki/Comparison_with_Others
+* https://groups.google.com/d/topic/qubes-devel/2vnGqsoM9p0
+* https://groups.google.com/d/topic/qubes-devel/GT8LyE-la-o
+
 
 = Footnotes =
 <references/>
+
 
 {{Footer}}
 
