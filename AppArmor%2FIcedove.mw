@@ -6,18 +6,17 @@ __FORCETOC__
 {{AppArmorProfileWarning}}
 
 
-There is one restriction with this profile: the attachments (received or to be sent) must be in '/home/user/Downloads'. The directory should be already created if you are using the TBB profile.
-
 Create a file /etc/apparmor.d/usr.lib.icedove.icedove.
 
 <pre>
 kdesudo kwrite /etc/apparmor.d/usr.lib.icedove.icedove
 </pre>
 
+
 Paste the following content.
 
 <pre>
-# Last Modified: Fri Apr 25 19:38:17 UTC 2014
+# Last Modified: Wed Sep 17 19:26:46 UTC 2014
 #include <tunables/global>
 
 /usr/lib/icedove/icedove {
@@ -27,15 +26,12 @@ Paste the following content.
 	#include <abstractions/fonts>
 	#include <abstractions/kde>
 	#include <abstractions/gnome>
-	#include <abstractions/audio>   
+	#include <abstractions/audio>
 	#include <abstractions/freedesktop.org>
 	#include <abstractions/user-download>
-	#include <abstractions/whonix>   
 
-	#include <local/usr.lib.icedove.icedove>
-	  
 	capability sys_ptrace,
-	  
+
 	deny / r,
 	deny /etc/host.conf r,
 	deny /etc/hosts r,
@@ -43,59 +39,62 @@ Paste the following content.
 	deny /etc/passwd r,
 	deny /etc/fstab r,
 
-#	deny @{PROC} r,
-#	deny @{PROC}/** r,
-
-	deny /sys/devices/system/cpu/ r,  
-	deny /sys/devices/system/cpu/present r,  
+	deny /sys/devices/system/cpu/ r,
+	deny /sys/devices/system/cpu/present r,
 	deny /var/lib/dbus/machine-id r,
 
-#	@{HOME}/ r,	  
-#	@{HOME}/Desktop/ r,
-#	@{HOME}/Downloads/ r,	
-#	@{HOME}/Downloads/** rw,	
+	## Required to choose application for "Open link in browser" ##
+	## for the first time. Not necessary afterwards ###############
+	@{HOME}/ r,
+	@{HOME}/** r,
+	###############################################################
+	
+	@{HOME}/.mozilla/ rwk,
+	@{HOME}/.mozilla/** rwk,
+	@{HOME}/.icedove/ rwk,
 	@{HOME}/.icedove/** mrwk,
 	@{HOME}/.kde/share/** rw,
-	@{HOME}/.config/** rw,		
-	@{HOME}/.fontconfig/ rwk, 
+	@{HOME}/.config/** rw,
+	@{HOME}/.fontconfig/ rwk,
 	@{HOME}/.local/share/ r,
-	@{HOME}/.local/share/applications/* r,
-	@{HOME}/.local/share/mime/ r,
-	@{HOME}/.local/share/mime/** r,
-#	@{HOME}/.local/share/recently-used.xbel* rw,
-#	@{HOME}/.local/share/applications/ r,  
-#	@{HOME}/.local/share/applications/* rwk,  
+	@{HOME}/.local/share/applications/ rwk,
+	@{HOME}/.local/share/applications/* rwk,
+	@{HOME}/.local/share/mime/ rwk,
+	@{HOME}/.local/share/mime/** rwk,
 	@{HOME}/.cache/ r,
 	@{HOME}/.cache/** rwk,
 	@{HOME}/.gnupg/* lrwkcix,
 	@{HOME}/.Xauthority r,
-	
+	@{HOME}/tor-browser_*/Browser/firefox Px,
+
 	/etc/drirc r,
 	/etc/ld.so.cache r,
 	/etc/resolv.conf r,
-	/etc/mailcap r, 
+	/etc/mailcap r,
 	/etc/icedove/pref/ r,
 	/etc/icedove/pref/* r,
 	/etc/X11/cursors/* r,
 	/etc/mime.types r,
 	/etc/gai.conf r,
 	/etc/xul-ext/enigmail.js rix,
+	/etc/pkcs11/modules/ r,
 
 	/bin/ps rix,
+	/bin/bash rix,
 	/bin/dash  rix,
 	/bin/mknod rix,
 	/bin/grep rix,
 	/bin/chmod rix,
 	/bin/mktemp rix,
 	/bin/which rix,
-	  
+
 	/dev/tty rw,
 	/dev/vboxuser rw,
 	/dev/dri/card0 rw,
-		  
+
 	/lib/i386-linux-gnu/i686/cmov/libc-2.13.so r,
 	/lib/i386-linux-gnu/libprocps.so.0.0.1 r,
-	 
+
 	@{PROC}/ r,
 	@{PROC}/[0-9]*/maps r,
 	@{PROC}/tty/drivers r,
@@ -112,8 +111,7 @@ Paste the following content.
 	@{PROC}/uptime r,
 	@{PROC}/[0-9]*/mounts r,
 	@{PROC}/[0-9]*/mountinfo r,
-	  
-	  
+
 	/usr/bin/kde4-config rix,
 	/usr/bin/basename rix,
 	/usr/bin/grep rix,
@@ -128,37 +126,24 @@ Paste the following content.
 	/usr/lib/gnupg/* rix,
 
 	/usr/share/ r,
-#	/usr/share/icons/ r,
-#	/usr/share/icons/** r,
 	/usr/share/mime/ r,
 	/usr/share/mime/** r,
-#	/usr/share/pixmaps/ r,
-#	/usr/share/pixmaps/** r,
 	/usr/share/themes/ r,
 	/usr/share/themes/** r,
 	/usr/share/icedove/ r,
 	/usr/share/icedove/** r,
-	/usr/share/glib-2.0/schemas/gschemas.compiled r, 
+	/usr/share/glib-2.0/schemas/gschemas.compiled r,
 	/usr/share/hunspell/ r,
 	/usr/share/hunspell/* r,
 	/usr/.local/share/applications/ rwk,
-	/usr/share/applications/ r,		
-	/usr/share/applications/** rwk, 
+	/usr/share/applications/ r,
+	/usr/share/applications/** rwk,
+	/usr/share/fontconfig/conf.avail/* r,
+	/usr/share/poppler/cMap/ r,
+	/usr/share/poppler/cMap/** r,
 }
 </pre>
 
-Create a file /etc/apparmor.d/local/usr.lib.icedove.icedove.
-
-<pre>
-kdesudo kwrite /etc/apparmor.d/local/usr.lib.icedove.icedove
-</pre>
-
-Paste the following content.
-<pre>
-/usr/share/fontconfig/conf.avail/* r,
-/usr/share/poppler/cMap/ r,
-/usr/share/poppler/cMap/** r,
-</pre>
 
 Run
 <pre>
