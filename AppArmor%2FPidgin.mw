@@ -14,10 +14,11 @@ Create a file /etc/apparmor.d/usr.bin.pidgin.
 kdesudo kwrite /etc/apparmor.d/usr.bin.pidgin
 </pre>
 
+
 Paste the following content.
 
 <pre>
-# Last Modified: Mon Apr 14 19:14:10 UTC 2014
+# Last Modified: Wed Sep 17 19:26:46 UTC 2014
 #include <tunables/global>
 
 /usr/bin/pidgin {
@@ -26,22 +27,16 @@ Paste the following content.
 	#include <abstractions/base>
 	#include <abstractions/bash>
 	#include <abstractions/consoles>
-#	#include <abstractions/dbus>
-#	#include <abstractions/dbus-session>
 	#include <abstractions/fonts>
 	#include <abstractions/freedesktop.org>
 	#include <abstractions/gnome>
 	#include <abstractions/kde>
-#	#include <abstractions/nameservice>
 	#include <abstractions/private-files-strict>
 	#include <abstractions/user-download>
-#	#include <abstractions/user-tmp>
-#	#include <abstractions/ibus>
-	#include <abstractions/whonix>
 
 	capability sys_ptrace,
-	
-	deny / r,	
+
+	deny / r,
 	deny /etc/fstab r,
 	deny /etc/host.conf r,
 	deny /etc/hosts r,
@@ -56,8 +51,12 @@ Paste the following content.
 	deny @{HOME}/.zshrc rw,
 	deny @{HOME}/Documents/** r,
 
+	deny @{HOME}/orcexec* rw,	
+	deny /tmp/orcexec* rw,
+	deny /{,var/}run/user/*/orcexec* rw,
+
 	deny @{PROC}** r,
- 
+
 	/etc/gai.conf r,
 
 	@{HOME}/.cache/dconf/user rw,
@@ -75,7 +74,7 @@ Paste the following content.
 	@{HOME}/.purple/** rwk,
 	@{HOME}/.kde/share/config/* r,
 	@{HOME}/.config/oxygen-gtk/argb-apps.conf rwk,
-	# @{HOME}/.whonix/* rwk,
+	@{HOME}/tor-browser_*/Browser/firefox Px,
 
 	/bin/grep rix,
 	/bin/dash rix,
@@ -84,6 +83,7 @@ Paste the following content.
 	/bin/rm rix,
 	/{dev,run}/shm/ r,
 	/{dev,run}/shm/* rw,
+	/run/utmp rwk,
 
 	/etc/ r,
 	/etc/pulse/client.conf r,
@@ -91,15 +91,10 @@ Paste the following content.
 	/etc/ssl/certs/** r,
 	/etc/ssl/certs/ssl-cert-snakeoil.pem r,
 	/etc/purple/prefs.xml r,
-	# /etc/whonix.d/* r,
-	 
-	## Added here instead of local profile ##
-	#  /etc/resolv.conf.whonix r,
-	#  /etc/hosts.whonix r,
-	#########################################
+	/etc/wildmidi/wildmidi.cfg r,
 
-	owner /tmp/orbit-*/* w,
-	owner /tmp/pulse-*/* w,
+	/tmp/orbit-*/* w,
+	/tmp/pulse-*/* w,
 
 	/usr/bin/pidgin r,
 	/usr/bin/xdg-open rmix,
@@ -118,7 +113,6 @@ Paste the following content.
 	/usr/lib/libvisual-*/**.so rm,
 	/usr/lib/pidgin/*.so rm,
 	/usr/lib/purple*/*.so rm,
-	# /usr/lib/whonix/confirm_open rix,
 
 	/usr/share/ca-certificates/*/** r,
 	/usr/share/enchant/enchant.ordering r,
@@ -134,11 +128,11 @@ Paste the following content.
 	/usr/share/hunspell/ r,
 	/usr/share/hunspell/** r,
 	/usr/share/fontconfig/conf.avail/* r,
-
-	# Site-specific additions and overrides. See local/README for details.
-	#  #include <local/TBB.Pidgin>
+	/usr/share/poppler/cMap/ r,
+	/usr/share/poppler/cMap/** r,
 }
 </pre>
+
 
 Run.
 <pre>
