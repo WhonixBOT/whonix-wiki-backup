@@ -137,9 +137,7 @@ Socks5Proxy 127.0.0.1:1080
 8. We are done, from now on, Tor will connect through the SSH server.
 
 == Tunnel Tor through VPN ==
-
 === Introduction ===
-
 '''user -> VPN -> Tor'''
 
 There are too many different VPN protocols. Too many to add all of them to this guide. However, at least adding OpenVPN would be worth it.
@@ -158,19 +156,203 @@ This is not a Whonix specific problem. It is a general problem with VPNs. Most u
 
 In case of Whonix you would be left to the protections provided by Tor. Whonix-Workstation will seamlessly continue to make "direct" connections through Tor once the VPN breaks down. If you are using the VPN only to circumvent the censorship of Tor, you may not care so much. On the other hand, if you believe a VPN improves your security, it would be rational to make sure, the VPN is always used instead only most of the time.
 
-If you want to enforce, that the VPN gets always used, see [[VPN-Firewall]].
+If you want to enforce, that the VPN gets always used:
+
+* Whonix-Gateway: Already includes a fail closed (firewall settings {{Code|VPN_FIREWALL}} setting) mechanism, which is documented below.
+* Other operating systems: See [[VPN-Firewall]].
 
 === How ===
-
+==== Introduction ====
 If you are forced to use a VPN server or if you are already using a VPN server, you most likely know how you can connect to it.
 
 You can either add the VPN on the host. Whonix-Gateway will be tunneled through it.
 
-Or you can add the VPN into Whonix-Gateway. In that case you must know how to connect to your VPN server from the linux command line. (TODO: Any new firewall rules required?)
+Or you can add the VPN into Whonix-Gateway.
 
 When your VPN is properly set up, all your connections are forced through the VPN first. If you start Tor on top of that, tunneling Tor through the VPN will work.
 
 See also [[TestVPN|Free example VPNs working with Whonix for testing purposes]].
+
+See also [[FAQ#What.27s_the_difference_of_installing_a_VPN_on_the_host_versus_installing_on_Whonix-Gateway.3F|What's the difference of installing a VPN on the host versus installing on Whonix-Gateway?]]
+
+==== VPN on the Host ====
+Besides what has been written above already, nothing special is required.
+
+==== VPN on Whonix-Gateway ====
+===== How =====
+
+If you want to hide Tor by using a VPN, after install Whonix-Gateway, do the following steps before activating Tor in {{Code|whonixsetup}}.
+
+Have a look at {{Code|/etc/whonix_firewall.d/30_default}}. To open.
+
+<pre>
+Start menu -> Applications -> System -> Whonix Default Firewall Settings
+</pre>
+
+If you are using a terminal-only Whonix-Gateway, use.
+
+<pre>
+nano /etc/whonix_firewall.d/30_default
+</pre>
+
+It contains default settings, settings you can use as template (copy and paste) and an interesting comment.
+
+<pre>
+## Please use "/etc/whonix_firewall.d/50_user" for your custom configuration,
+## which will override the defaults found here. When Whonix is updated, this
+## file may be overwritten.
+</pre>
+
+Create a file  {{Code|/etc/whonix_firewall.d/50_user}}. If you are using a graphical Whonix-Gateway, use.
+
+<pre>
+Start menu -> Applications -> System -> Whonix User Firewall Settings
+</pre>
+
+If you are using a terminal-only Whonix-Gateway, use.
+
+<pre>
+sudo nano /etc/whonix_firewall.d/50_user
+</pre>
+
+Add the following settings. You can skip comments (starting with {{Code|#}}). Unless you are using {{Code|seattle.vpn.riseup.net}} as your VPN service, which we use as an example, you have to adjust the {{Code|VPN_SERVERS}} variable in your config.
+
+<pre>
+###########################
+## VPN-Firewall Settings ##
+###########################
+
+## Make sure Tor always connects through the VPN.
+VPN_FIREWALL=1
+
+## IP address of the VPN server.
+## Get the IP using: nslookup vpn-example-server.org
+## Example: seattle.vpn.riseup.net
+## Some providers provide multiple VPN servers.
+## You can enter multiple IP addresses, separated by spaces.
+VPN_SERVERS="198.252.153.26"
+
+## For OpenVPN.
+VPN_INTERFACE=tun0
+
+## Destinations you don not want routed through the VPN.
+LOCAL_NET="192.168.1.0/24 192.168.0.0/24 127.0.0.0/8"
+</pre>
+
+Reload Whonix's Firewall.
+
+If you are using a graphical Whonix-Gateway, use.
+
+<pre>
+Start Menu -> Applications -> System -> Reload Whonix Firewall
+</pre>
+
+Or if you are using a terminal-only Whonix-Gateway, use.
+
+<pre>
+sudo whonix_firewall
+</pre>
+
+Now setup OpenVPN. It should be able to connect. You find some help on setting up OpenVPN on the [[TestVPN]] page.
+
+Enable Tor using whonixsetup.
+
+If you are using a graphical Whonix-Gateway, use.
+
+<pre>
+Start Menu -> Applications -> System -> whonixsetup
+</pre>
+
+Or if you are using a terminal-only Whonix-Gateway, use.
+
+<pre>
+sudo whonixsetup
+</pre>
+
+The VPN may not be ready when Tor is attempting to connect, because the VPN connection initialization takes too long. Due to a bug in Tor, it won't keep trying to connect. You may have to manually restart Tor after boot, if whonixcheck reports, that Tor is not fully bootstrapped. The same may be necessary if your VPN software or connection temporarily broke down.
+
+<pre>
+Start Menu -> Applications -> System -> Restart Tor
+
+Or.
+
+sudo service tor restart
+</pre>
+
+===== Let Tor wait for OpenVPN =====
+To improve this situation, if you are using OpenVPN and Debian's init script to automatically start it, add an insserv override to wait for openvpn being started.
+
+Create a new file {{Code|/etc/insserv/overrides/tor}}. If using a graphical Whonix-Gateway.
+
+<pre>
+kdesudo kwrite /etc/insserv/overrides/tor
+</pre>
+
+Or if using the terminal-only version.
+
+<pre>
+sudo nano /etc/insserv/overrides/tor
+</pre>
+
+Add the following content.
+
+<pre>
+### BEGIN INIT INFO
+# Provides:          tor
+# Required-Start:    $local_fs $remote_fs $network $named $time
+# Required-Stop:     $local_fs $remote_fs $network $named $time
+# Should-Start:      $syslog openvpn
+# Should-Stop:       $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Starts The Onion Router daemon processes
+# Description:       Start The Onion Router, a TCP overlay
+#                    network client that provides anonymous
+#                    transport.
+### END INIT INFO
+</pre>
+
+Then apply these changes by running.
+
+<pre>
+sudo update-rc.d tor defaults
+</pre>
+
+===== Limitations =====
+
+* Only tested with OpenVPN. Most other VPN's have deficiencies anyway.
+* DNS (IP address) of VPN server has to be manually resolved. There is technically no way to automatically resolve DNS without making the setup much more complex. The VPN server's IP address should not be resolved over Tor, because that's what you wanted to hide in the first place. Since outside observers will know, that you are connecting to the VPN IP anyway, it is probably save to resolve the DNS over clearnet or by asking the VPN provider if they don't already document their IPs on their website anyway.
+* No support for IPv6 yet.
+
+=====  Troubleshooting =====
+====== VPN Logs ======
+Check your VPN software's logs.
+
+====== VPN Connectivity Test ======
+Test if you are able to connect using your VPN.
+
+Login as user {{Code|clearnet}}.
+
+<pre>
+sudo su clearnet
+</pre>
+
+Try connecting to check.tpo. Note, at time of writing, it looked like, that usaip free trial is probably blocking SSL, therefore it might not work.
+
+<pre>
+curl.whonix-orig --tlsv1 --proto =https -H 'Host: check.torproject.org' -k https://38.229.72.22 | grep IP
+</pre>
+
+Should show something along "Welcome to sergii". Unfortunately won't echo IP, but will show, that connectivity is functional.
+
+Get back to normal user.
+
+<pre>
+exit
+</pre>
+
+=====  Leak Tests =====
+When you shut down the VPN, neither Tor, nor Whonix-Gateway's whonixcheck/apt-get/etc. nor Whonix-Workstation should be able to connect anywhere anymore.
 
 = Footnotes =
 <references />
