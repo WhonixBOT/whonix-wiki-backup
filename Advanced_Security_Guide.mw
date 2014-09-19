@@ -491,12 +491,55 @@ There is a Second, Optional, Extra Firewall for Whonix-Workstation, which is dis
 Read the script comments and decide if you want to use it.
 
 = Whonix-Gateway Security =
-
 == Static VirtualBox IP ==
-
 Instead of using DHCP to obtain the internal IP for Whonix-Workstation eth0 NAT adapter, you could also use a static IP instead. Perhaps this could (minimally?) improve security, since you can remove one more package: the DHCP package.
 
 Open ''/etc/network/interfaces'' [https://github.com/Whonix/Whonix/blob/stable/whonix_gateway/etc/network/interfaces on github], read the comments, comment out DHCP and comment in Static VirtualBox IP.
+
+== Disable Control Port Filter Proxy ==
+'''UNFINISHED'''
+
+Disabling [[Dev/CPFP|Control Port Filter Proxy]] (CPFP) can improve security while sacrificing usability.
+
+Apply the following steps on Whonix-Gateway as well as Whonix-Workstation.
+
+Disable autostart of CPFP.
+
+<pre>
+sudo chmod -x /etc/init.d/control-port-filter
+</pre>
+
+Stop CPFP.
+
+<pre>
+sudo service control-port-filter stop
+</pre>
+
+Deactivate [[whonixcheck]]'s Tor bootstrap test, because it relies on CPFP. Create a file {{Code|/etc/whonix.d/50_whonixcheck_user}}.
+
+<pre>
+sudo nano /etc/whonix.d/50_whonixcheck_user
+</pre>
+
+Add the following content.
+
+<pre>
+whonixcheck_skip_functions+=" check_tor_bootstrap "
+</pre>
+
+Uninstall (TODO: currently a bit difficult, needs ticket and explanation) or currently easier, deactivate [https://github.com/Whonix/sdwdate-plugin-anon-shared-con-check sdwdate-plugin-anon-shared-con-check]. Create a file {{Code|/etc/sdwdate.d/50_anon_dist_con_check_plugin_user}}.
+
+<pre>
+sudo nano /etc/sdwdate.d/50_anon_dist_con_check_plugin_user
+</pre>
+
+Add the following content.
+
+<pre>
+DISPATCH_PREREQUISITE=""
+</pre>
+
+<ref>This will undo setting by [https://github.com/Whonix/sdwdate-plugin-anon-shared-con-check/blob/master/etc/sdwdate.d/31_anon_dist_con_check_plugin /etc/sdwdate.d/31_anon_dist_con_check_plugin].</ref>
 
 = Tor =
 == Changing Tor Entry Guards ==
