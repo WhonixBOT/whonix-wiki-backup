@@ -88,7 +88,7 @@ We have opened a dedicated thread for further discussion on Whonix vs. TorVM in 
 
 Additional install guides will be provided as new Qubes + Whonix configurations are developed.
 
-The following install guides are currently compatible with Whonix 8.2. If wanting to use a later Whonix version, it will likely take some modifications.
+The following install guides are currently compatible with Whonix 9. If wanting to use a different Whonix version, it may take some modifications.
 
 
 
@@ -132,13 +132,13 @@ Depending upon your workflow and security preferences, you can:
 
 * Download Whonix directly within whonix-images:
 ** For Whonix-Gateway:
-*** Whonix-Gateway 8.2 qcow2 Image: http://mirror.whonix.de/8.2/Whonix-Gateway-8.2.qcow2.xz
-*** Whonix-Gateway 8.2 qcow2 Signature: http://mirror.whonix.de/8.2/Whonix-Gateway-8.2.qcow2.xz.asc
-*** Whonix-Gateway 8.2 qcow2 Signing Key: https://www.whonix.org/wiki/Whonix_Signing_Key
+*** Whonix-Gateway 9 qcow2 Image: http://mirror.whonix.de/9/Whonix-Gateway-9.libvirt.xz
+*** Whonix-Gateway 9 qcow2 Signature: http://mirror.whonix.de/9/Whonix-Gateway-9.libvirt.xz.asc
+*** Whonix-Gateway 9 qcow2 Signing Key: https://www.whonix.org/wiki/Whonix_Signing_Key
 ** For Whonix-Workstation:
-*** Whonix-Workstation 8.2 qcow2 Image: http://mirror.whonix.de/8.2/Whonix-Workstation-8.2.qcow2.xz
-*** Whonix-Workstation 8.2 qcow2 Signature: http://mirror.whonix.de/8.2/Whonix-Workstation-8.2.qcow2.xz.asc
-*** Whonix-Workstation 8.2 qcow2 Signing Key: https://www.whonix.org/wiki/Whonix_Signing_Key
+*** Whonix-Workstation 9 qcow2 Image: http://mirror.whonix.de/9/Whonix-Workstation-9.libvirt.xz
+*** Whonix-Workstation 9 qcow2 Signature: http://mirror.whonix.de/9/Whonix-Workstation-9.libvirt.xz.asc
+*** Whonix-Workstation 9 qcow2 Signing Key: https://www.whonix.org/wiki/Whonix_Signing_Key
 
 
 * Download Whonix elsewhere and transfer into whonix-images:
@@ -158,11 +158,11 @@ Whonix Verification Instructions: https://www.whonix.org/wiki/Download#Verify_th
 
 * For Whonix-Gateway:
 ** In whonix-images: Terminal:
-*** <pre>tar -xvf Whonix-Gateway-*.qcow2.xz</pre>
+*** <pre>tar -xvf Whonix-Gateway-*.libvirt.xz</pre>
 
 * For Whonix-Gateway:
 ** In whonix-images: Terminal:
-*** <pre>tar -xvf Whonix-Workstation-*.qcow2.xz</pre>
+*** <pre>tar -xvf Whonix-Workstation-*.libvirt.xz</pre>
 
 
 
@@ -201,7 +201,7 @@ First ensure that the raw images (.img) are in the "/home/user" directory of who
 
 
 
-=== Qubes HVM Create and Custom Config ===
+=== Qubes HVM Create and Custom Configuration ===
 
 
 
@@ -220,12 +220,12 @@ First ensure that the raw images (.img) are in the "/home/user" directory of who
 '''9. Boot & Kill Whonix HVMs to Establish Network Adapter:'''
 
 * For Whonix-Gateway:
-** Qubes VM Manager: Start VM: whonix-gateway
-** Qubes VM Manager: Kill VM: whonix-gateway
+** Qubes VM Manager: whonix-gateway: Start VM
+** Qubes VM Manager: whonix-gateway: Kill VM
 
 * For Whonix-Workstation:
-** Qubes VM Manager: Start VM: whonix-workstation
-** Qubes VM Manager: Kill VM: whonix-workstation
+** Qubes VM Manager: whonix-workstation: Start VM
+** Qubes VM Manager: whonix-workstation: Kill VM
 
 
 
@@ -319,6 +319,7 @@ Important for anonymity and security!
 *** Press: OK
 
 
+
 '''14. Open FirewallVM Between Whonix-Gateway and Whonix-Workstation:'''
 
 * In firewallvm: Terminal:
@@ -327,37 +328,31 @@ Important for anonymity and security!
 ** <pre>echo "iptables -I FORWARD 2 -s 10.152.152.11  -d 10.152.152.10 -j ACCEPT" >> /rw/config/qubes_firewall_user_script</pre>
 ** <pre>chmod +x /rw/config/qubes_firewall_user_script</pre>
 
-=== Whonix Boot Configuration ===
 
 
-
-'''15. Boot Whonix HVM and Edit GRUB Root Device:'''
+=== Whonix First Run ===
 
 Notice that presently in Qubes you must ALWAYS start VMs from the dom0 terminal when using a custom config (qvm-start --custom-config=).
+
+During first boot, Whonix will go through the "Whonix First Run Initializer" and then shut down.
+
+After first boot, you will need to restart the VMs with the following startup commands.
+
+
+
+'''15. Start Whonix HVMs:'''
 
 * For Whonix-Gateway:
 ** In dom0: Terminal:
 *** <pre>qvm-start --custom-config=/var/lib/qubes/appvms/whonix-gateway/custom.conf whonix-gateway</pre>
-*** In whonix-gateway: Within 5 seconds, interrupt boot (Press: "Space Bar")
-*** In whonix-gateway: GNU GRUB Boot Menu:
-**** Highlight: Debian GNU/Linux, with Linux 3.2.0-4-686-pae
-**** Press: "e" to edit
-**** Arrow down and over, change "root=/dev/sda1" to "root=/dev/xvda1"
-**** Press: "Ctrl + x" or "F10" to boot
-*** During first boot, Whonix will go through the "Whonix First Run Initializer" and then shut down.
-*** After first boot, you will need to restart and repeat the steps above with whonix-gateway, again, for a second time.
 
 * For Whonix-Workstation:
 ** In dom0: Terminal:
 *** <pre>qvm-start --custom-config=/var/lib/qubes/appvms/whonix-workstation/custom.conf whonix-workstation</pre>
-*** In whonix-workstation: Within 5 seconds, interrupt boot (Press: "Space Bar")
-*** In whonix-workstation: GNU GRUB Boot Menu:
-**** Highlight: Debian GNU/Linux, with Linux 3.2.0-4-686-pae
-**** Press: "e" to edit
-**** Arrow down and over, change "root=/dev/sda1" to "root=/dev/xvda1"
-**** Press: "Ctrl + x" or "F10" to boot
-*** During first boot, Whonix will go through the "Whonix First Run Initializer" and then shut down.
-*** After first boot, you will need to restart and repeat the steps above with whonix-workstation, again, for a second time.
+
+
+
+=== Whonix Network Configuration ===
 
 
 
@@ -373,25 +368,7 @@ Notice that presently in Qubes you must ALWAYS start VMs from the dom0 terminal 
 
 
 
-'''17. Update GRUB to Retain "xvda1" Root Device:'''
-
-* For Whonix-Gateway:
-** In whonix-gateway: Terminal:
-*** <pre>sudo update-grub</pre>
-**** Default Password: changeme
-
-* For Whonix-Workstation:
-** In whonix-workstation: Terminal:
-*** <pre>sudo update-grub</pre>
-**** Default Password: changeme
-
-
-
-=== Whonix Network Configuration ===
-
-
-
-'''18. Configure eth0 Network Adapter on Whonix-Gateway:'''
+'''17. Configure eth0 Network Adapter on Whonix-Gateway:'''
 
 * For Whonix-Gateway:
 ** In whonix-gateway: Terminal:
@@ -423,25 +400,16 @@ Notice that presently in Qubes you must ALWAYS start VMs from the dom0 terminal 
 
 
 
-=== Test Tor Internet Connectivity ===
-
-
-
-'''19. CURL Tor Check:'''
+'''18. Run Whonix Check:'''
 
 * For Whonix-Gateway:
 ** In whonix-gateway: Terminal:
-*** <pre>curl https://check.torproject.org | grep Congrat</pre>
-*** If your Tor internet connectivity is working, then you will see the response: "Congratulations. This browser is configured to use Tor."
-*** If not, then you will have to check your connection another way or do some troubleshooting.
+*** <pre>whonixcheck</pre>
 
 * For Whonix-Workstation:
 ** In whonix-workstation: Terminal:
-*** <pre>curl https://check.torproject.org | grep Congrat</pre>
-*** If your Tor internet connectivity is working, then you will see the response: "Congratulations. This browser is configured to use Tor."
-*** If not, then you will have to check your connection another way or do some troubleshooting.
-*** To install the Tor Browser, you may have to download and install it manually, if none of the Tor Browser desktop buttons are working.
-*** More info: https://www.whonix.org/wiki/Manually_Updating_Tor_Browser
+*** <pre>whonixcheck</pre>
+
 
 
 === Update Whonix OS ===
@@ -449,7 +417,8 @@ Notice that presently in Qubes you must ALWAYS start VMs from the dom0 terminal 
 Important for anonymity and security!
 
 
-'''20. Fetch and Install Whonix OS Updates:'''
+
+'''19. Fetch and Install Whonix OS Updates:'''
 
 * For Whonix-Gateway:
 ** In whonix-gateway: Terminal:
@@ -469,9 +438,9 @@ Important for anonymity and security!
 
 
 
-'''21. Remove Temporary AppVM whonix-images:'''
+'''20. Remove Temporary AppVM whonix-images:'''
 
-* Qubes VM Manager: Remove AppVM: whonix-images
+* Qubes VM Manager: whonix-images: Remove AppVM
 
 
 
@@ -484,8 +453,6 @@ Important for anonymity and security!
 This approach uses the Whonix source code to build the Whonix-Gateway and Whonix-Workstation in Qubes HVMs.
 
 '''Coming Soon!'''
-
-
 
 = Additional Info =
 See:
