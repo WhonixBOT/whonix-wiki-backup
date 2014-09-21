@@ -450,7 +450,539 @@ Important for anonymity and security!
 
 This approach uses the Whonix source code to build the Whonix-Gateway and Whonix-Workstation in Qubes HVMs.
 
-'''Coming Soon!'''
+
+
+=== Qubes HVM Create and Prepare Debian Install ===
+
+
+
+'''1. Provide Debian iso to a Trusted AppVM:'''
+
+The objective here is to download, verify, and provide an iso of the Debian OS to a trusted AppVM in Qubes.
+
+You can make a new standard AppVM or use an existing one for obtaining the Debian OS iso file in.
+
+Follow these instructions for getting Debian:
+
+* https://www.whonix.org/wiki/Dev/Build_Documentation/Physical_Isolation/9#Get_Debian
+
+* https://www.whonix.org/wiki/Debian
+
+
+
+'''2. Create a Temporary HVM (whonix-build) for Preparing the Whonix Build:'''
+
+This temporary HVM will be used as a base template for cloning and building the whonix-gateway and whonix-workstation HVMs.
+
+* In dom0: Qubes VM Manager: Create New VM
+** Choose Settings:
+*** Name and label: whonix-build
+*** Type: HVM
+*** Check: Standalone
+*** Check: Allow networking: firewallvm (default)
+** Press: OK
+
+
+
+'''3. Set HVM Memory Size:'''
+
+The default Whonix configuration is based on 768 MB of RAM. You can follow this default size for fingerprinting purposes, or increase/decrease this size based on your computing needs.
+
+* In dom0: Qubes VM Manager: whonix-build: VM Settings: Advanced Tab: Memory/CPU
+** Choose Settings:
+*** Initial memory: 768 MB
+** Press: OK
+
+
+
+'''4. Mount Debian iso as an Additional Drive:'''
+
+* In dom0: Qubes VM Manager: whonix-build: VM Settings: Advanced Tab: Additional Drive
+** Choose Settings:
+*** Check: Additional drive
+*** Type: cdrom
+*** Backend domain: Select the AppVM where your Debian iso is located
+*** Path: Click to browse and select the path where your Debian iso is located
+** Press: OK
+
+
+
+'''5. Start HVM whonix-build:'''
+
+After starting the whonix-build HVM, you should likely see the "Debian GNU/Linux installer boot menu".
+
+* In dom0: Qubes VM Manager: whonix-build: Start VM
+
+
+
+=== Install Debian OS ===
+
+
+
+'''6. Install Debian OS in HVM whonix-build:'''
+
+After starting the whonix-build HVM and seeing the "Debian GNU/Linux installer boot menu", you can proceed to installing the Debian OS.
+
+Follow the build instructions for installing Debian:
+
+* https://www.whonix.org/wiki/Dev/Build_Documentation/Physical_Isolation/9#Install_Debian
+
+
+
+'''7. Unmount Debian iso as an Additional Drive:'''
+
+* In dom0: Qubes VM Manager: whonix-build: VM Settings: Advanced Tab: Additional Drive
+** Choose Settings:
+*** Uncheck: Additional drive
+** Press: OK
+
+
+
+=== Prepare Whonix Build ===
+
+
+
+'''8. Start HVM whonix-build:'''
+
+* In dom0: Qubes VM Manager: whonix-build: Start VM
+
+
+
+'''9. Configure eth0 Network Adapter on whonix-build:'''
+
+Based on the build instructions:
+
+* https://www.whonix.org/wiki/Dev/Build_Documentation/Physical_Isolation/9#Network_Configuration
+
+* In whonix-build: Terminal:
+** <pre>su root</pre>
+** <pre>nano /etc/network/interfaces</pre>
+** For eth0: Activate static networking by changing "dhcp" to "static":
+*** <pre>iface eth0 inet static</pre>
+** For eth0: Change static networking to match Qubes credentials:
+*** <pre>address 10.137.2.X</pre>
+*** <pre>netmask 255.255.255.0</pre>
+*** <pre>gateway 10.137.2.1</pre>
+*** Get the ending IP number (X) found in the Qubes VM Manager for whonix-build.
+** Save/WriteOut (Ctrl + o) your changes to "/etc/network/interfaces" and Exit nano (Ctrl + x).
+** <pre>service networking restart</pre>
+** <pre>ifup eth0</pre>
+
+
+
+'''10. Logon and Upgrade Debian on whonix-build:'''
+
+Based on the build instructions:
+
+* https://www.whonix.org/wiki/Dev/Build_Documentation/Physical_Isolation/9#Logon_and_upgrade_Debian
+
+* In whonix-build: Terminal:
+** <pre>su root</pre>
+** <pre>echo "deb http://ftp.us.debian.org/debian stable main" >> /etc/apt/sources.list</pre>
+** <pre>apt-get update && apt-get dist-upgrade -y</pre>
+
+
+
+'''11. Preparation on whonix-build:'''
+
+Based on the build instructions:
+
+* https://www.whonix.org/wiki/Dev/Build_Documentation/Physical_Isolation/9#Preparation
+
+* In whonix-build: Terminal:
+** <pre>su root</pre>
+** <pre>apt-get install sudo -y</pre>
+** <pre>addgroup user sudo</pre>
+
+* In dom0: Qubes VM Manager: whonix-build: Shutdown VM
+* In dom0: Qubes VM Manager: whonix-build: Start VM
+
+
+
+'''12. Get the Source Code on whonix-build:'''
+
+Based on the build instructions:
+
+* https://www.whonix.org/wiki/Dev/Build_Documentation/Physical_Isolation/9#Get_the_Source_Code
+
+* In whonix-build: Terminal:
+** <pre>sudo apt-get install git curl -y</pre>
+** <pre>cd /home/user</pre>
+** <pre>git clone https://github.com/Whonix/Whonix</pre>
+
+
+
+'''13. Get the Signing Key on whonix-build:'''
+
+Based on the build instructions:
+
+* https://www.whonix.org/wiki/Dev/Build_Documentation/Physical_Isolation/9#Get_the_Signing_Key
+
+* In whonix-build: Terminal:
+** <pre>curl --tlsv1 --proto =https https://www.whonix.org/patrick.asc | gpg --import</pre>
+* See the link above for instructions to properly verify the signing key.
+
+
+
+'''14. OpenPGP Verify the Source Code on whonix-build:'''
+
+Based on the build instructions:
+
+* https://www.whonix.org/wiki/Dev/Build_Documentation/Physical_Isolation/9#OpenPGP_Verify_the_Source_Code
+
+* In whonix-build: Terminal:
+** <pre>cd /home/user</pre>
+** <pre>git tag -v 9</pre>
+* See the link above for instructions to properly verify the source code.
+
+
+
+'''15. Choose Version on whonix-build:'''
+
+Based on the build instructions:
+
+* https://www.whonix.org/wiki/Dev/Build_Documentation/Physical_Isolation/9#Choose_Version
+
+* In whonix-build: Terminal:
+** <pre>cd /home/user/Whonix</pre>
+** <pre>git checkout 9</pre>
+
+
+
+'''16. Shutdown HVM whonix-build:'''
+
+* In dom0: Qubes VM Manager: whonix-build: Shutdown VM
+
+
+
+'''17. Clone HVM whonix-build:'''
+
+* For Whonix-Gateway:
+** In dom0: Qubes VM Manager: whonix-build: Clone VM
+*** Enter name for VM whonix-build clone: whonix-gateway
+
+* For Whonix-Workstation:
+** In dom0: Qubes VM Manager: whonix-build: Clone VM
+*** Enter name for VM whonix-build clone: whonix-workstation
+
+
+
+=== Complete Whonix Build ===
+
+
+
+'''18. Start Build HVMs:'''
+
+* For Whonix-Gateway:
+** In dom0: Qubes VM Manager: whonix-gateway: Start VM
+
+* For Whonix-Workstation:
+* In dom0: Qubes VM Manager: whonix-workstation: Start VM
+
+
+
+'''19. Reconfigure eth0 Network Adapter:'''
+
+Based on the build instructions:
+
+* https://www.whonix.org/wiki/Dev/Build_Documentation/Physical_Isolation/9#Network_Configuration
+
+* For Whonix-Gateway:
+** In whonix-gateway: Terminal:
+*** <pre>sudo nano /etc/network/interfaces</pre>
+*** For eth0: Change static networking address to match Qubes credentials:
+**** <pre>address 10.137.2.X</pre>
+**** Get the ending IP number (X) found in the Qubes VM Manager for whonix-gateway.
+*** Save/WriteOut (Ctrl + o) your changes to "/etc/network/interfaces" and Exit nano (Ctrl + x).
+*** <pre>sudo service networking restart</pre>
+*** <pre>sudo ifup eth0</pre>
+
+* For Whonix-Workstation:
+** In whonix-workstation: Terminal:
+*** <pre>sudo nano /etc/network/interfaces</pre>
+*** For eth0: Change static networking address to match Qubes credentials:
+**** <pre>address 10.137.2.X</pre>
+**** Get the ending IP number (X) found in the Qubes VM Manager for whonix-workstation.
+*** Save/WriteOut (Ctrl + o) your changes to "/etc/network/interfaces" and Exit nano (Ctrl + x).
+*** <pre>sudo service networking restart</pre>
+*** <pre>sudo ifup eth0</pre>
+
+
+
+'''20. Run Build Script:'''
+
+Based on the build instructions:
+
+* https://www.whonix.org/wiki/Dev/Build_Documentation/Physical_Isolation/9#Run_Build_Script
+
+* For Whonix-Gateway:
+** In whonix-gateway: Terminal:
+*** <pre>cd /home/user/Whonix</pre>
+*** <pre>sudo ./whonix_build --tor-gateway --install-to-root --build >> ~/log-phyiso 2>&1</pre>
+** In a second terminal window, to monitor the build process:
+*** <pre>tail -f ~/log-phyiso</pre>
+** <pre>Upon successful build completion, the end of the build log should say:</pre>
+*** <pre>+ true INFO: End of: ./whonix_build --tor-gateway --install-to-root --build No error detected.</pre>
+
+* For Whonix-Workstation:
+** In whonix-workstation: Terminal:
+*** <pre>cd /home/user/Whonix</pre>
+*** <pre>sudo ./whonix_build --tor-workstation --install-to-root --build >> ~/log-phyiso 2>&1</pre>
+** In a second terminal window, to monitor the build process:
+*** <pre>tail -f ~/log-phyiso</pre>
+** <pre>Upon successful build completion, the end of the build log should say:</pre>
+*** <pre>+ true INFO: End of: ./whonix_build --tor-workstation --install-to-root --build No error detected.</pre>
+
+
+
+'''21. Shutdown Build HVMs:'''
+
+* For Whonix-Gateway:
+** In dom0: Qubes VM Manager: whonix-gateway: Shutdown VM
+
+* For Whonix-Workstation:
+** In dom0: Qubes VM Manager: whonix-workstation: Shutdown VM
+
+
+
+=== Qubes Firewall Configuration ===
+
+
+
+'''22. Deny Unnecessary Network Access:'''
+
+Important for anonymity and security!
+
+* For Whonix-Gateway:
+** In dom0: Qubes VM Manager: whonix-gateway: Edit VM firewall rules
+*** Choose Settings:
+**** Select/Allow: Allow network access
+**** Uncheck/Deny: Allow ICMP traffic
+**** Uncheck/Deny: Allow DNS queries
+**** Uncheck/Deny: Allow connections to Updates Proxy
+*** Press: OK
+
+* For Whonix-Workstation:
+** In dom0: Qubes VM Manager: whonix-workstation: Edit VM firewall rules
+*** Choose Settings:
+**** Select/Deny: Deny network access
+**** Uncheck/Deny: Allow ICMP traffic
+**** Uncheck/Deny: Allow DNS queries
+**** Uncheck/Deny: Allow connections to Updates Proxy
+*** Press: OK
+
+
+
+'''23. Open FirewallVM Between Whonix-Gateway and Whonix-Workstation:'''
+
+* In firewallvm: Terminal:
+** <pre>sudo bash</pre>
+** <pre>echo "iptables -I FORWARD 2 -s 10.152.152.10 -d 10.152.152.11 -j ACCEPT" >> /rw/config/qubes_firewall_user_script</pre>
+** <pre>echo "iptables -I FORWARD 2 -s 10.152.152.11 -d 10.152.152.10 -j ACCEPT" >> /rw/config/qubes_firewall_user_script</pre>
+** <pre>chmod +x /rw/config/qubes_firewall_user_script</pre>
+
+
+
+=== Qubes Custom Configuration ===
+
+
+
+'''24. Attach eth1 Network Adapter to Whonix-Gateway:'''
+
+* For Whonix-Gateway:
+** In dom0: Terminal:
+*** <pre>cd /var/lib/qubes/appvms/whonix-gateway</pre>
+*** <pre>cp whonix-gateway.conf custom.conf</pre>
+*** <pre>nano custom.conf</pre>
+** In dom0: Terminal: nano: custom.conf: For the following line:
+*** <pre>vif = [ 'mac=XX:XX:XX:XX:XX:XX,script=/etc/xen/scripts/vif-route-qubes,ip=10.137.2.X,backend=firewallvm' ]</pre>
+*** Add a comma (,) after the ending single quote (') of the first virtual network interface, before the closing bracket (]).
+*** Copy and paste a duplicate of the first single quoted virtual network interface after the comma (,) and before the closing bracket (]).
+*** Change the last "YY:YY:YY" MAC address characters to something random with the same number of total characters.
+*** Change the IP address of the second virtual network interface to "10.152.152.10".
+*** Your changes should look like this:
+*** <pre>vif = [ 'mac=XX:XX:XX:XX:XX:XX,script=/etc/xen/scripts/vif-route-qubes,ip=10.137.2.X,backend=firewallvm', 'mac=XX:XX:XX:YY:YY:YY,script=/etc/xen/scripts/vif-route-qubes,ip=10.152.152.10,backend=firewallvm' ]</pre>
+*** Save/WriteOut (Ctrl + o) your changes to custom.conf and Exit nano (Ctrl + x).
+
+
+
+'''25. Modify IP of eth0 Network Adapter on Whonix-Workstation:'''
+
+* For Whonix-Workstation:
+** In dom0: Terminal:
+*** <pre>cd /var/lib/qubes/appvms/whonix-workstation</pre>
+*** <pre>cp whonix-workstation.conf custom.conf</pre>
+*** <pre>nano custom.conf</pre>
+** In dom0: Terminal: nano: custom.conf: For the following line:
+*** <pre>vif = [ 'mac=XX:XX:XX:XX:XX:XX,script=/etc/xen/scripts/vif-route-qubes,ip=10.137.2.X,backend=firewallvm' ]</pre>
+*** Change the IP address of the second virtual network interface to "10.152.152.11 ".
+*** Your changes should look like this:
+*** <pre>vif = [ 'mac=XX:XX:XX:XX:XX:XX,script=/etc/xen/scripts/vif-route-qubes,ip=10.152.152.11 ,backend=firewallvm' ]</pre>
+*** Save/WriteOut (Ctrl + o) your changes to custom.conf and Exit nano (Ctrl + x).
+
+
+
+'''26. Set Time to UTC in custom.conf:'''
+
+Important for anonymity!
+
+* For Whonix-Gateway:
+** In dom0: Terminal:
+*** <pre>cd /var/lib/qubes/appvms/whonix-gateway</pre>
+*** <pre>nano custom.conf</pre>
+** In dom0: Terminal: nano: custom.conf: For the following line:
+*** <pre>localtime = 1</pre>
+*** Change the 1 to 0.
+*** Your changes should look like this:
+*** <pre>localtime = 0</pre>
+*** Save/WriteOut (Ctrl + o) your changes to custom.conf and Exit nano (Ctrl + x).
+
+* For Whonix-Workstation:
+** In dom0: Terminal:
+*** <pre>cd /var/lib/qubes/appvms/whonix-workstation</pre>
+*** <pre>nano custom.conf</pre>
+** In dom0: Terminal: nano: custom.conf: For the following line:
+*** <pre>localtime = 1</pre>
+*** Change the 1 to 0.
+*** Your changes should look like this:
+*** <pre>localtime = 0</pre>
+*** Save/WriteOut (Ctrl + o) your changes to custom.conf and Exit nano (Ctrl + x).
+
+
+
+=== Whonix First Run ===
+
+Notice that presently in Qubes you must ALWAYS start VMs from the dom0 terminal when using a custom config (qvm-start --custom-config=).
+
+During first boot, Whonix will go through the "Whonix First Run Initializer" and then shut down.
+
+After first boot, you will need to restart the VMs with the following startup commands.
+
+
+
+'''27. Start Whonix HVMs:'''
+
+* For Whonix-Gateway:
+** In dom0: Terminal:
+*** <pre>qvm-start --custom-config=/var/lib/qubes/appvms/whonix-gateway/custom.conf whonix-gateway</pre>
+
+* For Whonix-Workstation:
+** In dom0: Terminal:
+*** <pre>qvm-start --custom-config=/var/lib/qubes/appvms/whonix-workstation/custom.conf whonix-workstation</pre>
+
+
+
+=== Whonix Network Configuration ===
+
+
+
+'''28. Complete the whonixsetup Connection Wizard:'''
+
+* For Whonix-Gateway:
+** In whonix-gateway: whonixsetup:
+*** Complete the wizard and enable Tor.
+
+* For Whonix-Workstation:
+** In whonix-workstation: whonixsetup:
+*** Complete the wizard and enable Tor.
+
+
+
+'''29. Configure eth0 Network Adapter on Whonix-Gateway:'''
+
+Based on the build instructions:
+
+* https://www.whonix.org/wiki/Dev/Build_Documentation/Physical_Isolation/9#Network_Configuration
+
+* For Whonix-Gateway:
+** In whonix-gateway: Terminal:
+*** <pre>kdesudo kwrite /etc/network/interfaces</pre>
+*** For eth0: Deactivate DHCP networking by commenting out:
+**** <pre>#auto eth0</pre>
+**** <pre>#iface eth0 inet dhcp</pre>
+**** <pre>#pre-up /usr/bin/whonix_firewall</pre>
+*** For eth0: Activate static networking by uncommenting:
+**** <pre>auto eth0</pre>
+**** <pre>iface eth0 inet static</pre>
+**** <pre>address 10.0.2.15</pre>
+**** <pre>netmask 255.255.255.0</pre>
+**** <pre>gateway 10.0.2.2</pre>
+**** <pre>pre-up /usr/bin/whonix_firewall</pre>
+*** For eth0: Change static networking to match Qubes credentials:
+**** <pre>auto eth0</pre>
+**** <pre>iface eth0 inet static</pre>
+**** <pre>address 10.137.2.X</pre>
+**** <pre>netmask 255.255.255.0</pre>
+**** <pre>gateway 10.137.2.1</pre>
+**** <pre>pre-up /usr/bin/whonix_firewall</pre>
+**** Get the ending IP number (X) found in the Qubes VM Manager for whonix-gateway.
+*** Save & Close the network interfaces file.
+** In whonix-gateway: Terminal:
+*** <pre>sudo service networking restart</pre>
+
+
+
+'''30. Run Whonix Check:'''
+
+* For Whonix-Gateway:
+** In whonix-gateway: Terminal:
+*** <pre>whonixcheck</pre>
+
+* For Whonix-Workstation:
+** In whonix-workstation: Terminal:
+*** <pre>whonixcheck</pre>
+
+
+
+=== Update Whonix OS ===
+
+Important for anonymity and security!
+
+
+
+'''31. Fetch and Install Whonix OS Updates:'''
+
+* For Whonix-Gateway:
+** In whonix-gateway: Terminal:
+*** <pre>sudo apt-get update</pre>
+*** <pre>sudo apt-get dist-upgrade</pre>
+
+* For Whonix-Workstation:
+** In whonix-workstation: Terminal:
+*** <pre>sudo apt-get update</pre>
+*** <pre>sudo apt-get dist-upgrade</pre>
+
+
+
+=== Final Cleanup (optional) ===
+
+
+
+'''32. Remove Temporary Files:'''
+
+Based on the build instructions:
+
+* https://www.whonix.org/wiki/Dev/Build_Documentation/Physical_Isolation/9#Cleanup
+
+* For Whonix-Gateway:
+** In whonix-gateway: Terminal:
+*** <pre>cd /home/user/Whonix</pre>
+*** <pre>./help-steps/cleanup-files</pre>
+
+* For Whonix-Workstation:
+** In whonix-workstation: Terminal:
+*** <pre>cd /home/user/Whonix</pre>
+*** <pre>./help-steps/cleanup-files</pre>
+
+
+
+'''33. Remove Temporary HVM whonix-build:'''
+
+* In dom0: Qubes VM Manager: whonix-build: Remove AppVM
+
+
+
+'''All Finished!'''
 
 = Additional Info =
 See:
