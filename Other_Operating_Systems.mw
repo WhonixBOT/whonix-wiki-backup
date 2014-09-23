@@ -82,6 +82,49 @@ Debian based Linux, such as Ubuntu:
 sudo apt-get update && sudo apt-get dist-upgrade
 </pre>
 
+= Whonix-Android x86-Workstation =
+== Easy ==
+
+VM settings are the same: attach the network adapter to the internal network named '''Whonix'''
+
+Android x86 doesn't seem to support static IPs for Ethernet, so a DHCP server needs to be set up on Whonix Gateway.
+
+Install a DHCP server package:
+
+<pre>
+$ sudo apt-get install isc-dhcp-server
+</pre>
+
+Note that it won't start, because it's not configured yet
+
+Modify '''/etc/dhcp/dhcpd.conf''' to look like this:
+
+<pre>
+
+option domain-name "whonix";
+option domain-name-servers 10.152.152.10;
+subnet 10.152.128.0 netmask 255.255.192.0 {
+        range 10.152.152.12 10.152.152.15;
+        option subnet-mask 255.255.192.0;
+        option broadcast-address 10.152.191.255;
+        option routers 10.152.152.10;
+}
+default-lease-time 600;
+max-lease-time 7200;
+
+</pre>
+
+Run
+
+<pre>
+$ sudo dpkg-reconfigure isc-dhcp-server
+</pre>
+
+and choose '''eth1''' as interface for the DHCP server to run on.
+
+After this the DHCP server on workstation starts properly and the Whonix
+Gateway is ready to serve a dynamic IP to the Android x86 Whonix Workstation.
+
 = More security =
 
 Recommendations:
