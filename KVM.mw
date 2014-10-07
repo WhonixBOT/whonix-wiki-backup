@@ -458,6 +458,32 @@ The emulated tablet device handles this by not allowing the mouse to be captured
 
 <pre>press Ctrl_L & Alt_L</pre>
 
+== KSM ==
+KSM is a kernel feature that allows de-deuplication of anonymous memory pages belonging to multiple instances of the same process. Only software that is designed to explicitly take advantage of it can use it such as KVM. It is usually not enabled by default. KSM only kicks in when a certain low memory threshold is reached on the host.
+
+Depending on your use case, enabling KSM may have privacy implications as per this research <ref>https://staff.aist.go.jp/c.artho/papers/EuroSec2011-suzaki.pdf</ref>.
+
+The security assumptions about virtual environments is that each vm is a completely isolated instance that knows nothing about what's happening outside it. It posses a privacy problem for an isolated multi-workstation setup.
+
+In a single workstation-to-gateway scenario, KSM isn't problematic because technically, nothing going on, on the gateway, even if known would endanger privacy. However should someone run multiple workstation vms, each with the intent that they are all separated - each with its own internal network for isolation for example, then with KSM all similar activities or processes running in the other vms, would register to an attacker who has compromised one of them. For example, information that the same website has been visited in another vm too. This would allow cross-vm activity correlation.
+
+Its not really a weakness unique to KSM, but a common problem shared by using the equivalent feature on other hypervisors too.
+
+<quote> 4.3
+Detection of Downloaded Files
+The memory disclosure attack can also be applied to find an
+opened file on a victim’s VM. We have tried to detect a logo file
+when Firefox shows a home page.
+We confirmed that the Google logo file was detected if page
+caching is enabled on Firefox. When the page cache was set to 0,
+detection failed. If an attacker leads a victim to a malicious home
+page which includes an identifiable logo file, the attacker can
+detect the page view from the victim’s VM.
+This disclosure attack is dangerous because it detects a page
+view even if the network is encrypted by TLS/SSL. Especially in a
+multi-tenant data center, this attack is serious, because it does not
+violate any SLA statements on cloud computing.  </quote>
+
 == XML Settings ==
 TODO: Soon here xml settings will be explained here.
 
