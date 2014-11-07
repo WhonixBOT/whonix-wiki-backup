@@ -17,31 +17,25 @@ Advanced users only!
 
 = Whonix Debian Packages =
 == Which ones are safe to remove? ==
-Feel free to remove the following desktop specific meta packages.
+Note the removal notes below! When you understood those, feel free to remove the following desktop specific meta packages.
 
 <pre>
-sudo apt-get remove whonix-shared-desktop
-sudo apt-get remove whonix-shared-desktop-kde
-sudo apt-get remove whonix-shared-kde-accessibility
+whonix-shared-desktop
+whonix-shared-desktop-kde
+whonix-shared-kde-accessibility
 </pre>
 
-Feel free to remove the following meta packages, which contain a list of recommended (as in useful to have, not necessary to have them for some other reason):
+Also feel free to remove the following meta packages, which contain a list of recommended (as in useful to have, not necessary to have them for some other reason):
 
 <pre>
-sudo apt-get remove whonix-shared-packages-recommended
-sudo apt-get remove whonix-gateway-packages-recommended
-sudo apt-get remove whonix-workstation-packages-recommended
-sudo apt-get remove whonix-workstation-default-applications
-</pre>
-
-After removing these packages, it is recommended to run the following command, so the packages which the meta packages above installed get uninstalled.
-
-<pre>
-sudo apt-get autoremove
+whonix-shared-packages-recommended
+whonix-gateway-packages-recommended
+whonix-workstation-packages-recommended
+whonix-workstation-default-applications
 </pre>
 
 == What other packages do Whonix meta packages install? ==
-See {{Code2|debian/control}} in Whonix source code folder or [https://github.com/Whonix/Whonix/blob/master/debian/control debian/control on github].
+See {{Code2|debian/control}} in Whonix [https://github.com/Whonix/anon-meta-packages anon-meta-packages] source code folder or [https://github.com/Whonix/anon-meta-packages/blob/master/debian/control on github] (choose the correct branch!).
 
 Or use for example.
 
@@ -50,28 +44,55 @@ apt-cache show whonix-workstation-default-applications
 </pre>
 
 == Which packages should never be removed? ==
-Do not remove {{Code2|...-dependencies}} packages.
+Do not remove {{Code2|...-dependencies}} packages, unless you really know what you are doing.
 
 * whonix-shared-packages-dependencies
 * whonix-gateway-packages-dependencies
 * whonix-workstation-packages-dependencies
 
-Do not remove {{Code2|...-files}} packages.
-
-* whonix-shared-files
-* whonix-gateway-files
-* whonix-workstation-files
-
-Do not remove {{Code2|...-postinst}} packages.
-
-* whonix-shared-postinst
-* whonix-gateway-postinst
-* whonix-workstation-postinst
-
 == Why is package X installed? ==
 * https://github.com/Whonix/whonix-developer-meta-files/blob/master/package_documentation/Whonix-Shared_packages
 * https://github.com/Whonix/whonix-developer-meta-files/blob/master/package_documentation/Whonix-Gateway_packages
 * https://github.com/Whonix/whonix-developer-meta-files/blob/master/package_documentation/Whonix-Workstation_packages
+
+== Removal Instructions ==
+[[Security_Guide#Updates|Upgrade your system.]]
+
+When you installed and uninstalled some custom packages or dependencies changed in meanwhile, get rid of unneeded dependencies first.
+
+<pre>
+sudo apt-get autoremove
+</pre>
+
+Let's see how for example the {{Code2|uwt}} package could be uninstalled.
+
+<pre>
+sudo apt-get purge uwt
+</pre>
+
+<pre>
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following packages were automatically installed and are no longer required:
+  anon-banned-packages anon-iceweasel-warning gpl-sources-download knetattach-hide power-savings-disable-in-vms poweroff-passwordless rads scurl shared-folder-help
+  swap-file-creator swappiness-lowest tor-ctrl
+Use 'apt-get autoremove' to remove them.
+The following packages will be REMOVED:
+  anon-shared-packages-recommended* uwt* whonix-shared-packages-recommended*
+0 upgraded, 0 newly installed, 3 to remove and 2 not upgraded.
+After this operation, 152 kB disk space will be freed.
+Do you want to continue [Y/n]? 
+</pre>
+
+Since you most likely want to keep the other packages which were installed by the anon-shared-packages-recommended and the whonix-shared-packages-recommended meta packages, mark them as manually installed, so they do not get removed. <ref>https://unix.stackexchange.com/questions/166590/what-is-the-apt-get-equvalent-of-aptitude-keep-all</ref>
+
+<pre>
+sudo aptitude keep-all
+</pre>
+
+* http://administratosphere.wordpress.com/2011/11/29/the-metapackage-problem-and-apt-get-autoremove/
+* http://tanguy.ortolo.eu/blog/article8/uninstall-meta-package
 
 = See Also =
 * [[Whonix-APT-Repository|Whonix's APT Repository, how to enable/disable it?]]
