@@ -429,6 +429,47 @@ Edit.
 virsh -c qemu:///system edit Whonix-Gateway
 </pre>
 
+== Enabling HugePages ==
+Huge memory pages improve performance for some virtualized workloads such as running databases.
+They are not enabled by default in Linux because the amount of memory to be allocated this way depends on the different needs from one user/admin to another. <ref>https://bugzilla.redhat.com/show_bug.cgi?id=1173218#c12</ref>
+
+You need to activate the nr_hugepages setting in the proc filesystem:
+
+<pre>
+  $ echo 1054 > /proc/sys/vm/nr_hugepages
+</pre>
+
+  NOTE: To make the above value persistent, you'd need to set:
+
+<pre>
+      $ echo "vm.nr_hugepages=1054" >> /etc/sysctl.conf
+</pre>
+
+Then, `grep` for the HugePages_Total:
+
+<pre>
+  $ grep -i HugePages_Total /proc/meminfo 
+  HugePages_Total:    1054
+</pre>
+
+The total system RAM allocated as hugepages can be calculated as:
+
+<b>2Mb * 1054 = 2108 ~ 2GiB</b>
+
+Then, boot a libvirt virtual machine with 2 GB memory with appropriate XML setting as noted in the example below:
+
+<pre>
+  <memory unit='KiB'>2000896</memory>
+  <currentMemory unit='KiB'>2000000</currentMemory>
+ <b> <memoryBacking>
+    <hugepages>
+      <page size='2048' unit='KiB' nodeset='0'/>
+    </hugepages>
+  </memoryBacking></b>
+  <vcpu placement='static'>8</vcpu>
+</pre>
+
+
 == Enabling Clipboard Sharing ==
 SPICE allows accelerated graphics and clipboard sharing. The clipboard is disabled by default for security reasons <ref>So you don't accidentally copy for example a link to a website you visited anonymously to your non-anonymous host browser or vice versa.</ref> but could be enabled.
 
