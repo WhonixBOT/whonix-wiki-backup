@@ -86,25 +86,25 @@ Please refer to upstream documentation on how to interpret the DNSSEC test resul
 
 This is different from DNSSEC.
 
-=== DNSCrypt by OpenDNS ===
+=== DNSCrypt ===
 
-Although the official [https://www.opendns.com/technology/dnscrypt/ DNSCrypt website] states, that a Linux version does not exit, this [http://www.webupd8.org/2012/02/encrypt-dns-traffic-in-linux-with.html blog post] suggests there is one.
+As the official [http://dnscrypt.org DNSCrypt website] states, DNSCrypt is available for many platforms, including Linux.
 
-This has nothing to do with [https://en.wikipedia.org/wiki/Domain_Name_System_Security_Extensions DNSSEC], the differences of DNSSEC and DNSCrypt are well explained on the [https://www.opendns.com/technology/dnscrypt/ DNSCrypt website].
+DNSCrypt has nothing to do with [https://en.wikipedia.org/wiki/Domain_Name_System_Security_Extensions DNSSEC], although DNSCrypt can take advantage of DNSSEC in order to verify the packages and the public keys it uses.
 
-These instructions completely replace Tor's DNS resolver with opendns's dnscrypt for all users and the whole system. Not recommended for a longer amount of time, see warning above. Some hints are included how to do it only for a specific user account.
+These instructions completely replace Tor's DNS resolver with a dnscrypt-enabled resolver for all users and the whole system. Not recommended for a longer amount of time, see warning above. Some hints are included how to do it only for a specific user account.
 
-(1). Download the [https://github.com/opendns/dnscrypt-proxy/downloads dnscrypt source code] and unpack. You have to compile it. Get into the dnscrypt directory ''cd dnscrypt-proxy-...''. Configure ''./configure'', make ''make''.
+(1). Download the [http://dnscrypt.org dnscrypt source code] and unpack. You have to install [http://doc.libsodium.org/ libsodium] before compiling it. Then, get into the dnscrypt directory ''cd dnscrypt-proxy-...''. Configure ''./configure'', make ''make install''.
 
-(2). Start dnscrypt-proxy. <ref>''--tcp-only'' is required since Tor does not support UDP. The UDP DNS request will immediately get truncated reply and a RFC-compliant resolver should repeat same query via TCP in this case. This is the case for Ubuntu's default DNS resolver. You can get some more information on UDP/TCP/DNS on the unrelated [http://darkk.net.ru/redsocks/ redsocks] website.</ref> <ref>To start it later in background (after debugging) add ''--daemonize''.</ref> <ref>''--help'' to see all options.</ref> <ref>Start up takes a few seconds "INFO Generating a new key pair", this is normal, wait. Until it's done, DNS will not work.</ref> <ref>''--user=username'' can and should be used to start the dnscrypt-proxy under a specific user account.</ref> <ref>Since this instructions completely replace Tor's DNS resolver with opendns's dnscrypt for all users and the whole system, you could add ''--local-port=5800'' to let dnscrypt-proxy listen on port 5800. You would be able to add iptables rules to redirect only the DNS requests of a specific user account to opendns's dnscrypt, you can get some hints how to do that in the ''httpsdnsd by JonDos'' chapter below, which would be a very similar setup.</ref>
+(2). Start dnscrypt-proxy. <ref>''--tcp-only'' is required since Tor does not support UDP. The UDP DNS request will immediately get truncated reply and a RFC-compliant resolver should repeat same query via TCP in this case. This is the case for Ubuntu's default DNS resolver. You can get some more information on UDP/TCP/DNS on the unrelated [http://darkk.net.ru/redsocks/ redsocks] website.</ref> <ref>To start it later in background (after debugging) add ''--daemonize''.</ref> <ref>''--help'' to see all options.</ref> <ref>Start up takes a few seconds "INFO Generating a new key pair", this is normal, wait. Until it's done, DNS will not work.</ref> <ref>''--user=username'' can and should be used to start the dnscrypt-proxy under a specific user account.</ref> <ref>Since this instructions completely replace Tor's DNS resolver with opendns's dnscrypt for all users and the whole system, you could add ''--local-port=5800'' to let dnscrypt-proxy listen on port 5800. You would be able to add iptables rules to redirect only the DNS requests of a specific user account to the dnscrypt resolver, you can get some hints how to do that in the ''httpsdnsd by JonDos'' chapter below, which would be a very similar setup.</ref>
 
-<pre>sudo dnscrypt-proxy --tcp-only</pre>
+<pre>sudo dnscrypt-proxy --tcp-only -R okturtles</pre>
 
 (3). Edit your resolv.conf ''nano /etc/resolv.conf'', comment out everything and add ''nameserver 127.0.0.1''.
 
-(4). Check if it's working, there are several [https://www.opendns.com/support/article/64 test pages] on opendns.com.
+(4). Check if it's working. Try ''sudo pkill -STOP dnscrypt-proxy'' and check that DNS resolution doesn't work any more. To resume, type ''sudo pkill -CONT dnscrypt-proxy''.
 
-(5). To shut it down you can use ''sudo killall dnscrypt-proxy'' and don't forget to revert the changes in /etc/resolv.conf.
+(5). To shut it down you can use ''sudo pkill dnscrypt-proxy'' and don't forget to revert the changes in /etc/resolv.conf.
 
 === httpsdnsd by JonDos ===
 
