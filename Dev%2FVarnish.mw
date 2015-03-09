@@ -7,50 +7,49 @@
 = Varnish Cheat Sheet =
 For Varnish 4.
 
-Show most requested URLs from backend.
+== Show most requested URLs from backend ==
 <pre>
 varnishtop -i BereqURL
 </pre>
 
-Show requests for single URL.
+== Show requests for single URL ==
 <pre>
 varnishlog -q 'ReqURL ~ "^/wiki/Translatetest"'
 </pre>
 
-(Resets Age in http header to 0.)
-<pre>
-curl --head https://www.whonix.org/adrelanos.asc
-</pre>
+== HTTP Purges ==
 
-Show HTTP purges.
+<code>curl -X "PURGE / HTTP/1.0" 127.0.0.1:6081/adrelanos.asc</code><br />
+or: <code>curl --head -X "PURGE / HTTP/1.0" 127.0.0.1:6081/adrelanos.asc</code
+check (Resets Age in http header to 0.): <code>curl --head https://www.whonix.org/adrelanos.asc</code>
+
+== Show HTTP purges ==
 
 <pre>
 varnishlog -q "VCL_return eq purge"
 </pre>
 
-Ban single URL.
+== Ban single URL ==
 
 <pre>
 varnishadm 'ban req.url ~ "/adrelanos.asc"'
 </pre>
 
-Show how many connections are currently open.
+== Show how many connections are currently open ==
 <pre>
 netstat -anp | grep :443 | grep ESTABLISHED | wc -l
 </pre>
 
-
-wordpress Total Cache<br />
+== wordpress Total Cache varnish setup ==
 wordpress -> Performance (on the side) -> General Settings -> Reverse Proxy<br />
 <code>127.0.0.1:6081</code>
 run in shell: <code>varnishlog -q "VCL_return eq purge"</code><br />
 test: wordpress -> Performance (at the top) -> empty all cache
 
-list of all variables such as client.ip:<br/>
+== list of all variables such as client.ip ==
 https://www.varnish-cache.org/docs/trunk/reference/vcl.html
 
-Show nuked items.
-
+== Show nuked items ==
 <pre>
 varnishstat -1 -f MAIN.n_lru_nuked
 </pre>
