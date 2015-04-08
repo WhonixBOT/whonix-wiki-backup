@@ -11,6 +11,7 @@
 * '''Recommended against'''
 * '''Recommended to use VirtualBox'''
 
+
 == Goal ==
 '''Whonix needs a contributor, maintainer, to support Whonix in VMware!'''
 
@@ -27,25 +28,29 @@ Ideal:
 * Future development.
 * Describes best security practices
 
+
 = Unofficial Supported VMware Products =
 
 '''VMware Workstation''' was tested. It's currently in a ''it works'' state, but ''rarely tested''.
 
-'''VMware ESXi''' (up to version 5.5) is tested and "it works" after some template conversion.
+'''VMware ESX(i)''' (up to version 5.5) is tested and ''it works''.
 
-'''VMware Server''' or other products are ''untested'', but perhaps also in a ''it works'' state (most likely).
+'''VMware Server''' or other products are ''untested'', but most likely also in a ''it works'' state.
 
-'''VMware Player''' <s>is unsupported, because there is no option for internal networking?<ref><s>Perhaps [[OneVM]] could work with VMware, but that would require even more contributions.</s></ref></s> 
-UPDATE: An anonymous user reported in the old forum<ref>https://sourceforge.net/p/whonix/discussion/general/thread/84452a10/?limit=25&page=1#8f27</ref> that VMware Player works as well. Untested. This [http://xmodulo.com/2013/02/how-to-create-multiple-networks-on-vmware-player.html guide] contains instructions how to set up the internal network.
+'''VMware Player''' is tested an anonymous user in the old forum <ref>https://sourceforge.net/p/whonix/discussion/general/thread/84452a10/?limit=25&page=1#8f27</ref> works as well. Unconfirmed. This [http://xmodulo.com/2013/02/how-to-create-multiple-networks-on-vmware-player.html guide] contains instructions how to set up the internal network.
+
 
 = About VMware =
-Maybe I am a spoiled by Free Software (see <ref>https://en.wikipedia.org/wiki/Free_software</ref> for definition). VMware is not very open, but in my opinion openness is important for security. I haven't found out how to submit a bug report. It looks like only buying customers may submit bug reports and there is only community support for products that are free in price. There is also no list with open bugs. Without a list of known bugs, I am unable to determine if VMware is suitable for Whonix, i.e. does not compromise the user's anonymity. Since bug reports remained entirely unanswered, it's also demotivating to investigate, contribute and submit further report bugs.
+Maybe I am spoiled by Free Software (see <ref>https://en.wikipedia.org/wiki/Free_software</ref> for definition). VMware is not very open, but in my opinion openness is important for security. I haven't found out how to submit a bug report. It looks like only buying customers may submit bug reports and there is only community support for products that are free in price. There is also no list with open bugs. Without a list of known bugs, I am unable to determine if VMware is suitable for Whonix, i.e. does not compromise the user's anonymity. Since bug reports remained entirely unanswered, it's also demotivating to investigate, contribute and submit further report bugs.
+
 
 = HowTo =
 == VMware Workstation ==
 Do not forget to read the [[Documentation]].
 
-You can either import the [[Download]] version of manually build from source. Import Whonix-Gateway.ova and Whonix-Workstation.ova. Due to a VMware upstream bug, you may have to press ''retry'' when importing the .ova images (to relax the importing requirements).
+You can either import the [[Download]] version or manually build from source. 
+Import Whonix-Gateway.ova and Whonix-Workstation.ova. 
+Due to a VMware upstream bug, you may have to press ''retry'' when importing the .ova images (to relax the importing requirements).
 
 Due to a VMware upstream bug the network settings have to be adjusted.
 
@@ -62,15 +67,38 @@ Due to a VMware upstream bug, VM time is not set to UTC. Set VM time to UTC, oth
 (Black screen forum help thread: <br />
 [[Special:AWCforum/st/id268/Gateway_7_issue_on_Vmware_workst....html]])
 
+
+== VMware ESX(i) ==
+Importing the .ova templates will simply not work. ESX will not recognize the hardware family.
+Working with VMware OVFtool ([https://www.vmware.com/support/developer/ovf/ Link]) won't get you much further either.
+
+Import the appliances into ESX(i):
+* Create two virtual machines in ESX(i) with default settings, do not create a virtual disk for them.
+* Import both ova templates in VirtualBox, yes, VirtualBox.
+* Once they are imported, grab the .vmdk disk files from their physical location on your disk (VirtualBox has extracted them from the .ova)
+* Upload both disk files to the datastore that you are using in ESX(i)
+* Attach the disk files to the appropriate virtual machines.
+
+Set the networking:
+* Make sure the Whonix-Gateway has two network adapters configured as a virtaul machine, the Whonix-Workstation only one.
+* Attach the first Whonix-Gateway network adapter to your '''outside network vSwitch''' (this can be WAN, LAN, DMZ, ...)
+* Attach the second Whonix-Gateway network adapter to an '''isolated vSwitch'''. Preferably create a new vSwitch, which will be used only by Whonix-Gateway and Whonix-Workstation. Attach no physical NICs to this vSwitch!
+* Attach the Whonix-Workstation network adapter to the isolated vSwitch from previous step.
+
+Once the machines boot, everything should come online nicely.
+Double check the vSwitch logic in your setup! 
+
+
 = Harden VMware products =
 
 * Remove printer
 * Disable 3D acceleration
 * Remove CD/DVD drive
-* Remove floppy drive
+* Remove Floppy drive
 * Remove USB controller (at least disable automatically connect new devices)
 * Remove sound card
 * Do not install VMware Tools or open-vm-tools (comfort vs. security). VMware Tools leak information towards the Host OS.
+
 
 = Security =
 == VMware Workstation ==
