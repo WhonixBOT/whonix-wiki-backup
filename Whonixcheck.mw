@@ -109,6 +109,29 @@ Function {{Code2|whonixcheck_main}} then calls:
 * function [https://github.com/Whonix/whonixcheck/blob/master/usr/lib/whonixcheck/preparation#L82 {{Code2|preparation}}]
 * then uses function [https://github.com/Whonix/whonixcheck/blob/master/usr/lib/whonixcheck/preparation#L17 {{Code2|whonixcheck_run_function}}] to run all other functions. The order differs for Whonix-Gateway and Whonix-Workstation. To find out how exactly and in which order, please have a look at {{Code2|/usr/bin/whonixcheck}}. The purpose of function {{Code2|whonixcheck_run_function}} is to allow users adding function names to configuration variable {{Code2|whonixcheck_skip_functions}} which allows to skip certain functions. (See also [[Advanced_Security_Guide#whonixcheck_Hardening|whonixcheck Hardening]].)
 
+The {{Code2|/usr/lib/whonixcheck/}} folder isn't a real .d style plugin drop-in folder. Shell function for separate [Whonix, unit] checks can be be put into separate files for better readability. The provided functions are then supposed to be run from {{Code2|/usr/bin/whonixcheck}} function {{Code2|whonixcheck_main}}.
+
+For a simple example have a look at file [https://github.com/Whonix/whonixcheck/blob/master/usr/lib/whonixcheck/check_entropy {{Code2|/usr/lib/whonixcheck/check_entropy}}] which contains function {{Code2|check_entropy}}. You can just do any information gathering and analysis as you want. In essence, in the function {{Code2|check_entropy}} example, that is.
+
+<pre>
+entropy_file="/proc/sys/kernel/random/entropy_avail"
+entropy_size="$(cat "$entropy_file")"
+if [ "${entropy_size}" -lt "112" ]; then
+</pre>
+
+Then you can use, copy and paste, common boilerplate for making what you found out visible.
+<pre>
+local MSG="<p>Entropy Available Check Result: low. <code>$entropy_file</code>: <code>$entropy_size</code> Please report this issue!</p>"
+$output ${output_opts[@]} --messagex --typex "warning" --message "$MSG"
+$output ${output_opts[@]} --messagecli --typecli "warning" --message "$MSG"
+</pre>
+
+Or if you wanted to only output it, if the user has run whonixcheck with --verbose, then you could use.
+
+<pre>
+ if [ "$verbose" = "1" ]; then
+</pre>
+
 = Footnotes =
 <references/>
 
