@@ -434,14 +434,23 @@ shared /mnt/shared    9p  trans=virtio,version=9p2000.L,rw    0   0
 Save.
 
 
-Note: If your system is configured to use a Mandatory Access Control framework like AppArmor, you may need to configure an exception rule to allow the confined guests to communicate with the designated shared folder on the guest. Do NOT be tempted to disable AppArmor to get this working, as it removes a critical protection layer that protects your host. Be patient and read the documentation.
-By default Whonix can automount a shared folder on the host as long as you use set up virt-manager to use hostshare tag: shared
-If you are using commandline add this xml code to your configuration, this is an example and should be adapted for your usage:
+Note: If your system is configured to use a Mandatory Access Control framework you may need to configure exceptions to allow the confined guests to communicate with the shared folder on the host.
+
+Tests with Apparmor has shown it to operate transparently with shared folders without needing any manual exception configuration by the user.
+
+Applying chown to the shared folder's contents is needed however to access the files:
+
+<pre>
+# chown -R yourusername /mnt/shared
+</pre>
+
+
+If you are using commandline instead of virt-manager to edit your vm's device settings, add this next section to the xml. 
 
 <pre>
 <filesystem type='mount' accessmode='mapped'>
     <source dir='/mnt/shared'/>
-    <target dir='tag'/>
+    <target dir='shared'/>
 </filesystem>
 </pre>
 
