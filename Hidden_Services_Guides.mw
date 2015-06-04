@@ -29,7 +29,141 @@ For a private and anonymous DropBox alternative you can run [https://guardianpro
 = Stormy =
 Stormy is a simple hidden service blog setup script. The developer hopes to have it packaged for Debian at some point. You can see it on [https://github.com/glamrock/Stormy Github].
 
-=Syncthing=
+=Syncthing with OnionCat=
+
+Syncthing is a libre software solution for private file synchronization.
+
+This section will file syncing with peers inside the Tor network.
+
+1. Set up [[OnionCat]] on Whonix Gateway. All parties involved will need to configure a Hidden Service with OnionCat because syncing is bidirectional.
+
+2. [https://www.whonix.org/w/index.php?title=OnionCat&stable=0&shownotice=1&fromsection=Tunneling_IPv4#Tunneling_IPv4 IPv4 over IPv6 tunneling] for OnionCat is a must because Syncthing only supports IPv4 peer addresses. Make sure you can successfully ping all OnionCat IPv4 addresses before proceeding.
+
+3. Next, add the Syncthing offical repo <ref>apt.syncthing.net</ref>:
+
+First add the release PGP keys:
+<pre>
+curl -s https://syncthing.net/release-key.txt | sudo apt-key add -
+</pre>
+
+
+Add the "release" channel to your APT sources:
+<pre>
+sudo sh -c 'echo deb http://apt.syncthing.net/ syncthing release > /etc/apt/sources.list.d/syncthing-release.list'
+</pre>
+
+
+The project's GPG key information is posted on this [https://syncthing.net/security.html page].
+
+Cross-reference the keys by visual comparing them with the output of:
+<pre>
+sudo apt-key list
+</pre>
+
+
+Update and install Syncthing:
+<pre>
+sudo apt-get update
+sudo apt-get install syncthing
+</pre>
+
+
+4. Lauch Syncthing:
+<pre>
+$ syncthing
+</pre>
+
+Do not close the running terminal or Syncthing will shutdown.
+Answer 'No' if asked to 'Allow Anonymous Usage Reporting'.
+
+To open the WebGUI, open Iceweasel and paste:
+<pre>
+http://127.0.0.1:8384/
+</pre>
+
+Do NOT use Iceweasel for any other purpose because of fingerprinting threats. Opening the WebGUI in TBB won't work because of stream isolation settings.
+
+
+5. At this point Syncthing back-end should have generated your unique Device ID.
+Go to:
+<pre>
+Actions > Show ID
+</pre>
+
+Copy and distribute this Device ID along with your IPv4 OnionCat address to other endpoints out-of-band (using OTR encrypted chat or similar). This data is needed for configuring Syncthing instances to find one another.
+
+
+6. Once the data is exchanged go to <pre>Add Device</pre> and paste the other endpoint's Device ID. Then under '''Addresses''' change ''dynamic'' to <pre>192.168.100.2:22000</pre> 
+
+
+This example is based on IPv4 tunneling with OnionCat and may vary with custom choices.
+
+Make sure to select the ''default'' under '''Share Folders With Device'''.
+
+
+7. Syncing more than two endpoints can quickly become tedious so select at least one node to be an '''Introducer''' by selecting the option.
+
+
+8. Finally drag and drop any files you want to sync to the 'Sync' folder under your Home directory. Done.
+
+
+Note: No one can connect to your swarm without you adding them but you may still want to make your virtual network more private. This is done using '''HiddenServiceAuthorizeClient''' - a Tor feature.
+
+
+***
+'''OPTIONAL'''
+
+Adding a Syncthing discovery server that acts as a tracker is not necessary and adds no value, but here are some steps for those wanting to experiment.
+ 
+The Discovery Server is not packaged for Debian and has no official repos. Your options are to roll your own build from the code on [https://github.com/syncthing/discosrv Github] or to download the  [http://build.syncthing.net/job/discosrv/lastSuccessfulBuild/artifact/ nightlies]. 
+
+Note: Nightlies are not signed. Building from source is a more secure option but might not succeed without extensive troubleshooting. Go is a rapidly changing language and the language features the nigtlies rely on are incompatible with the older Go compiler packages from the repos.
+
+
+Running the Nightlies:
+
+1. Install Go:
+
+<pre>
+ sudo apt-get install golang
+</pre>
+
+ 
+For privacy refuse to report the download of public packages to Go Dashboard.
+
+ 
+2. [http://build.syncthing.net/job/discosrv/lastSuccessfulBuild/artifact/ Download] the i386 build file to your Home folder.
+
+3. Extract
+<pre>
+ tar -xvf discosrv*
+</pre>
+
+
+4. Change directory to the one holding the binary:
+<pre>
+cd ~/discosrv*
+</pre>
+
+
+5. Mark the file as executable to run it:
+<pre>
+sudo chmod +x discosrv
+</pre>
+
+
+6. Run the binary file by typing the following command:
+<pre>
+./discosrv
+</pre>
+
+
+7. Other peers will need to add your Discovery server by going to: <pre>Actions > Settings</pre>
+
+Under '''Global Discovery Server''' Append <pre>udp4://192.168.100.1:22026</pre> separated by a comma from the defaults.
+
+
+Note that Device IDs will still need to be exchanged to permit connections.
 
 =Torrenting over OnionCat=
 
