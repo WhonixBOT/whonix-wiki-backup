@@ -3,7 +3,14 @@
 |description=Collection of various Hidden Services Guides
 }}
 
-= GlobaLeaks =
+=Introduction=
+Whonix handles the anonymity aspect safely and transparently allowing you to concentrate on running and managing your service.
+
+Here are guides for some interesting usecases.
+
+To make your service better known you can list it on [https://ahmia.fi ahmia.fi] - a public directory of Onion sites that works closely with the Tor Project.
+
+== GlobaLeaks ==
 [https://globaleaks.org/ Project main site]
 
 {{Third Party Repository}}
@@ -12,26 +19,26 @@
 
 This is a guide to help you set up your own secure and anonymous whistle blowing platform. Note that this is a standalone node and not part of a network, although you can optionally list yourself in the [http://leakdirectory.org/ Leaks Directory].
 
-= OnionCat =
+== OnionCat ==
 See [[OnionCat]].
 
-= OpenBazaar =
+== OpenBazaar ==
 OpenBazaar supports both TCP and UDP. The latter was added to aid those using it on the clearnet that had difficulties connecting from behind their routers. <ref>https://github.com/OpenBazaar/OpenBazaar/issues/795</ref> When using Tor you don't have to worry about that.
 
 A [https://www.reddit.com/r/OpenBazaar/comments/2iusp4/openbazaar_tor_demo/ community demo] for OpenBazaar  was done with Tor by hosting seed nodes as Hidden Services.
 
-= SecureDrop =
+== SecureDrop ==
 SecureDrop is another widely used whistle-blowing platform installed at many news organizations. To set it up please refer to the [https://github.com/freedomofpress/securedrop/blob/develop/docs/install.md official guide]. To use SecureDrop as a source, refer to this [https://github.com/freedomofpress/securedrop/blob/develop/docs/source_user_manual.md documentation] and for using SecureDrop as a journalist go [https://github.com/freedomofpress/securedrop/blob/develop/docs/journalist_user_manual.md here]. For general information and project code go to their main [https://github.com/freedomofpress/securedrop Github page].
 
 If you are a news or whistle-blowing site operator you may be interested in having your Hidden Service address listed at the [https://freedom.press/securedrop/directory Freedom of The Press Foundation].
 
-= Sparkleshare =
+== Sparkleshare ==
 For a private and anonymous DropBox alternative you can run [https://guardianproject.info/2013/11/12/your-own-private-dropbox-with-free-software/ Sparkleshare as a Hidden Service]. To ensure that only you and the intended parties can access the service you need to set up Hidden Service Authentication, see [https://www.whonix.org/wiki/Hidden_Services#Hidden_Service_Authentication instructions].
 
-= Stormy =
+== Stormy ==
 Stormy is a simple hidden service blog setup script. The developer hopes to have it packaged for Debian at some point. You can see it on [https://github.com/glamrock/Stormy Github].
 
-=Syncthing with OnionCat=
+== Syncthing with OnionCat ==
 
 Syncthing is a libre software solution for private file synchronization.
 
@@ -169,9 +176,89 @@ Under '''Global Discovery Server''' Append <pre>udp4://192.168.100.1:22026</pre>
 
 Note that Device IDs will still need to be exchanged to permit connections.
 
-=Torrenting over OnionCat=
+== Torrenting over OnionCat ==
 
 This section will cover torrenting with anonymous peers inside the Tor network.
+
+===Public Torrents===
+
+'''Trackers'''
+opentracker is a highly performing and feature rich bittorrent tracker released under a DFSG comliant license. Its not yet in Debian but there are plans to packages it. <ref>https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=685575</ref>
+
+These are basic instructions<ref>https://erdgeist.org/arts/software/opentracker/</ref> for building and running opentracker,  that will serve any torrents announced to it. The tracker's IP address is that of OnionCat. By default it listens for TCP/UDP on all interfaces, on port 6969.
+
+1. Build opentracker from source with IPv6 support and start it:
+
+<pre>
+git clone git://erdgeist.org/opentracker
+
+cd opentracker
+
+echo "FEATURES+=-DWANT_V6" >> Makefile
+
+make
+
+./opentracker
+</pre>
+
+
+For further configuration options check the documentation at the [https://erdgeist.org/arts/software/opentracker/ official site]
+
+A very well documented example config can be found in the file opentracker.conf.sample.
+
+<pre>
+cd opentracker
+
+cat opentracker.conf.sample
+</pre>
+
+
+All you need to make your tracker known is to share its Hidden Service address on [https://ahmia.fi ahmia.fi]. You can also include your OnionCat address in the description but users can derive the IPv6 address from the Hidden Service name:
+
+<pre>
+ocat -i <onion.address>
+</pre>
+
+
+'''Clients'''
+
+
+[[OnionCat]]
+
+1. Install any client know to have IPv6 support and OnionCat. qbittorrent is the example for purposes of this guide:
+
+<pre>
+sudo apt-get install qbittorrent onioncat</pre>
+
+
+2. Enable IPv6 support and restart client:
+
+<pre>
+Options -> Advanced
+</pre>
+Check:
+<pre>
+Listen on IPv6 address (requires restart)
+</pre>
+
+
+3. Create your torrent: <pre>Tools > Torrent creator</pre> Add the file/folder you want to share. Format the Tracker URL this way:
+
+<pre>
+http://<opentracker-onioncat-address>:6969/announce
+</pre>
+
+Check <pre>Start seeding after creation</pre> then create and save the torrent file.
+
+
+4. Share the torrent file or alternatively the magnet link which you can get from right clicking the seeded torrent from the main panel.
+
+N.B. OnionCat is a cross-platform package that can allow clients running different hosts to participate in an anonymous swarm. However safely configuring Torrent clients on platforms different from Whonix is out of scope.
+
+
+===Small Scale Setups===
+
+This setup is not really useful for sharing public torrents. Its more suited for a small group that know and actively coordinate with each other to set IP routing tables with OnionCat. But then you're more well off using Syncthing.
 
 1. Set up [[OnionCat]] on Whonix Gateway. All parties involved will need to configure a Hidden Service with OnionCat because torrenting is bidirectional.
 
