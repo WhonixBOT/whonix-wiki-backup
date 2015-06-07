@@ -178,135 +178,41 @@ Note that Device IDs will still need to be exchanged to permit connections.
 
 == Torrenting over OnionCat ==
 
-This section will cover torrenting with anonymous peers inside the Tor network.
+This section will cover torrenting with anonymous peers inside the Tor network. This is a trackerless setup.
 
-===Public Torrents===
+'''Seeding'''
 
-'''Trackers'''
+1. Set up [[OnionCat]] on Whonix Gateway. All parties involved will need to configure a Hidden Service with OnionCat because torrenting is bidirectional.
 
-opentracker is a highly performing and feature rich bittorrent tracker released under a DFSG compliant license. Its not yet in Debian but there are plans to packages it. <ref>https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=685575</ref>
-
-These are basic instructions<ref>https://erdgeist.org/arts/software/opentracker/</ref> for building and running opentracker,  that will serve any torrents announced to it. The tracker's IP address is that of OnionCat. By default it listens for TCP/UDP on all interfaces, on port 6969.
-
+2. Next install qBittorrent: 
+<pre>sudo apt-get install qbittorrent</pre>
 
 
-1. Setup [[OnionCat]]
+3. Create your torrent: <pre>Tools > Torrent creator</pre> Add the file/folder you want to share. Leave the Tracker information boxes empty. Insert your OnionCat IPv6 IP into the Comment section.
+
+Check <pre>Start seeding after creation</pre> then create and save the torrent file.
 
 
-2. Install required packages:
-
-<pre>sudo apt-get install cvs git libgd-dev</pre>
+6. Share the torrent file on your personal Onion Site blog or some other channel as you normally would.
 
 
-3. Build opentracker from source with IPv6 support and start it:
+'''Downloading'''
 
-{{Third_Party_Software}}
+1. Add the torrent file in qBittorrent
 
-<pre>
-cvs -d :pserver:cvs@cvs.fefe.de:/cvs -z9 co libowfat
+2. Select the the torrent from the list and go to the ''General tab''. Copy the OnionCat IPv6 address from the Comment section.
 
-cd libowfat
-
-make
-
-cd ..
-
-git clone git://erdgeist.org/opentracker
-
-cd opentracker
-
-echo "FEATURES+=-DWANT_V6" >> Makefile
-
-make
-
-./opentracker
-</pre>
+3. Click the ''Peers'' tab and right-click into the empty tab.  Click ''Add a new peer...'' and paste the IPv6 address. Note that the default listening port for incoming connections is set to 6881 and nothing needs to be done.
 
 Done.
 
 
+'''Optional'''
 
+*To improve your chances of finding other peers who have the same file go to:
+<pre>Options > BitTorrent </pre> and cheeck ''Enable DHT''
 
-
-For further configuration options check the documentation at the [https://erdgeist.org/arts/software/opentracker/ official site]
-
-A very well documented example config can be found in the file opentracker.conf.sample.
-
-<pre>
-cd opentracker
-
-cat opentracker.conf.sample
-</pre>
-
-
-All you need to make your tracker known is to share its Hidden Service address on [https://ahmia.fi ahmia.fi]. You can also include your OnionCat address in the description but users can derive the IPv6 address from the Hidden Service name:
-
-<pre>
-ocat -i <onion.address>
-</pre>
-
-
-'''Clients'''
-
-
-
-1. Install any torrent client known to have IPv6 support and configure [[OnionCat]]. qbittorrent is the example for purposes of this guide:
-
-<pre>
-sudo apt-get install qbittorrent onioncat</pre>
-
-
-2. Enable IPv6 support and restart client:
-
-<pre>
-Options -> Advanced
-</pre>
-Check:
-<pre>
-Listen on IPv6 address (requires restart)
-</pre>
-
-
-3. Create your torrent: <pre>Tools > Torrent creator</pre> Add the file/folder you want to share. Format the Tracker URL this way:
-
-<pre>
-http://<opentracker-onioncat-address>:6969/announce
-</pre>
-
-Check <pre>Start seeding after creation</pre> then create and save the torrent file.
-
-
-4. Share the torrent file or alternatively the magnet link which you can get from right clicking the seeded torrent from the main panel.
-
-N.B. OnionCat is a cross-platform package that can allow clients running different hosts to participate in an anonymous swarm. However safely configuring Torrent clients on platforms different from Whonix is out of scope.
-
-===Small Scale Setups===
-
-This setup is not really useful for sharing public torrents. Its more suited for a small group that know and actively coordinate with each other to set IP routing tables with OnionCat. But then you're more well off using Syncthing.
-
-1. Set up [[OnionCat]] on Whonix Gateway. All parties involved will need to configure a Hidden Service with OnionCat because torrenting is bidirectional.
-
-2. You will need to configure [https://www.whonix.org/w/index.php?title=OnionCat&stable=0&shownotice=1&fromsection=Tunneling_IPv4#Tunneling_IPv4 IPv4 over IPv6 tunneling] for OnionCat because the qBittorrent version in Debian Stable does not have IPv6 support.
-
-3. Next install qBittorrent: <pre>sudo apt-get install qbittorrent</pre>
-
-
-4. Start the torrent client and go to <pre>Options > Advanced</pre> and check  <pre>Enable embedded tracker</pre> and restart the program.<ref>https://github.com/qbittorrent/qBittorrent/wiki/How-to-use-qBittorrent-as-a-tracker</ref>
-
-
-5. Create your torrent: <pre>Tools > Torrent creator</pre> Add the file/folder you want to share. For Tracker Urls append the Workstation's OnionCat IPv4 address, for example 192.168.100.1, followed by the port number (default 9000) to the url: <pre>http://192.168.100.1:9000/announce</pre>
-Check <pre>Start seeding after creation</pre> then create and save the torrent file.
-
-
-6. Share the torrent file or alternatively the magnet link which you can get from right clicking the seeded torrent from the main panel.
-
-
-In summary to share files you will need two things:
-* Hidden Service addresses exchanged in order to derive the OnionCat IPv6 addresses and setup IPv4 tunneling. 
-* magnet links or .torrent files.
-
-
-For a private sharing environment you will need to configure Tor to use the HiddenServiceAuthorizeClient option. More on that [https://www.whonix.org/wiki/Hidden_Services#Hidden_Service_Authentication here].
+*For a private sharing environment you will need to configure Tor to use the HiddenServiceAuthorizeClient option. More on that [https://www.whonix.org/wiki/Hidden_Services#Hidden_Service_Authentication here].
 
 = See Also =
 * [[Hosting_Location_Hidden_Services|Hosting Location Hidden Services]]
