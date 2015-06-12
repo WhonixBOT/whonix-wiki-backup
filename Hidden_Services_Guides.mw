@@ -46,35 +46,35 @@ This section will cover file syncing with peers inside the Tor network.
 
 1. Set up [[OnionCat]] on Whonix Gateway. All parties involved will need to configure a Hidden Service with OnionCat because syncing is bidirectional. Make sure you can successfully ping all OnionCat addresses before proceeding.
 
-2. Next, add the Syncthing offical repo <ref>apt.syncthing.net</ref>:
 
 {{Third_Party_Repository}}
 
-First add the release PGP keys:
+2. Before adding the repo<ref>apt.syncthing.net</ref>, fetch the key and verify<ref>https://syncthing.net/security.html</ref> fingerprints.  '''Always check the fingerprint for yourself.''' The output at the moment is:
+
 <pre>
-curl -s https://syncthing.net/release-key.txt | sudo apt-key add -
+pub  2048R/0xD26E6ED000654A3E 2014-12-29 Syncthing Release Management <release@syncthing.net>
+      Key fingerprint = 37C8 4554 E7E0 A261 E4F7  6E1E D26E 6ED0 0065 4A3E
+
 </pre>
 
 
-Add the "release" channel to your APT sources:
 <pre>
+## Download key with scurl to home folder.
+scurl -o syncthing-pubkey.asc https://syncthing.net/release-key.txt
+
+## Check fingerprints/owners without importing anything.
+gpg --with-fingerprint syncthing-pubkey.asc
+
+## If it looks good import into trusted.gpg.d
+sudo cp syncthing-pubkey.asc /etc/apt/trusted.gpg.d/
+
+
 sudo sh -c 'echo deb http://apt.syncthing.net/ syncthing release > /etc/apt/sources.list.d/syncthing-release.list'
-</pre>
 
-
-The project's GPG key information is posted on this [https://syncthing.net/security.html page].
-
-Cross-reference the keys by visually comparing them with the output of:
-<pre>
-sudo apt-key list
-</pre>
-
-
-Update and install Syncthing:
-<pre>
-sudo apt-get update
+sudo apt-get update -qq
 sudo apt-get install syncthing
 </pre>
+
 
 
 3. Launch Syncthing:
