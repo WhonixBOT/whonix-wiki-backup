@@ -4,6 +4,63 @@
 }}
 
 = Advanced Topics =
+== Non-Persistent Entry Guards ==
+
+=== Introduction ===
+
+Persistent Tor entry guards are beneficial for security, however in some situations it is safer to not use your usual guard node.
+
+The guard nodes picked by your client can make your Tor use fingerprintable across different physical locations and access points, potentially deanonymizing you in some corner cases such as the one described below. This attack is less severe that now upstream Tor Project is moving from using three nodes to a single one.
+
+Consider this scenario: You run Tor from home. Then there is some prominent event or protest in your city that you attend and anonymously blog about it from there. The fact that your client is using the same entry guard from this other location gives network adversaries a high certainty that the anonymous posts came from the same person that was connected to that specific guard node from their home. The relative uncommoness of Tor usage already exasperates the problem even more.
+
+
+=== torrc ===
+
+1. Adjust whonixcheck settings (applies until Whonix 12):
+Create a file:
+<pre>
+sudo nano /etc/whonix.d/50_user 
+</pre>
+
+Add line:
+<pre>
+whonixcheck_skip_functions+=" check_tor_pid "
+</pre>
+
+2. Disable Tor using whonixsetup / whonix-setup-wizard (safest option)
+
+3. Add torrc setting:
+<pre>
+DataDirectory /var/run/tor
+</pre>
+
+4. Enable Tor using whonixsetup / whonix-setup-wizard at your new location.
+
+5. Before you leave this location, disable Tor and repeat the aboe steps if going to a different place. To go back to your usual guard nodes at home, remove the torrc setting before you enable the network or rollback to a vm snapshot you created there.
+
+
+
+=== Bridges ===
+
+1. A different option is to collect some bridge addresses while using Tor at home (either directly from the TorProject site or by requesting them from an anonymously created inbox).
+
+2.  Disable Tor using whonixsetup / whonix-setup-wizard (safest option)
+
+3. Add a bridge address to Tor's configuration.
+
+4. Enable Tor using whonixsetup / whonix-setup-wizard at your new location.
+
+5. Before you leave this location, disable Tor and add a different bridge address if going to a different place. To go back to your usual guard nodes at home, remove the torrc bridge settings before you enable the network or rollback to a vm snapshot you created there.
+
+=== Notes ===
+
+* The proposed TAILS solutions towards AdvGoalTracking have disadvantages<ref>https://tails.boum.org/blueprint/persistent_Tor_state/</ref><ref>https://blog.torproject.org/blog/tor-weekly-news-%E2%80%94-june-17th-2015#A_persistent_Tor_state_for_Tails</ref> and are not options for Whonix because we don't connect directly to a user's internet LAN anyway, so trying to fingerprint a network based on its SSID will not work. Unlike wireless access points, wired networks (physical or virtual) lack SSIDs and cannot be "remembered" that way.
+
+* Even if it were possible, it is best to avoid letting adversaries influence guard changes in any way. Spoofing MAC addresses or SSIDs would trigger use of the other entry guard recorded
+for another "location profile". Also global networks have generic characteristics that cannot be differentiated from the point of view of a connecting device.
+
+
 == Blacklist Certain Hidden Services from Connecting ==
 '''Experimental'''
 
