@@ -9,7 +9,48 @@
 * [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=778357 audit 'apt-get update' exit codes]
 
 = Security Issues when using apt-get update in Scripts =
-TODO: document
+The issue is, that apt-get does not provide meaningful exit codes for gpg and network failures. "Not meaningful" here means, that `apt-get update` exits `0`, even if it failed. This makes it hard to figure out in scripts if `apt-get update` actually succeeded loading repository metadata or failed.
+
+The threat model here is using multiple repositories. Such as Debian's main repository as well as Debian's security repository. For consistent and secure builds, both have to be enabled. Now, an adversary could make fetching the Debian main repository succeed, but simulate a gpg or network failure for the Debian security repository. Then the build would go on only with the Debian main repository, without the Debian security repository.
+
+In other words... Here is a practical example...
+
+Consider the following sources.list which is fine.
+
+```
+deb http://security.debian.org wheezy/updates main contrib non-free
+deb http://ftp.us.debian.org/debian wheezy main contrib non-free
+```
+
+Consider the following sources.list which is fine which contains an intentional typo for demonstration purposes.
+
+```
+deb http://not-security.debian.org wheezy/updates main contrib non-free
+deb http://ftp.us.debian.org/debian wheezy main contrib non-free
+```
+
+Now, when you run...
+
+```
+sudo apt-get update ; echo $?
+```
+
+The output shows.
+
+```
+Err http://not-security.debian.org wheezy/updates Release.gpg                                                                                                                      
+  Could not resolve 'not-security.debian.org'
+Hit http://ftp.us.debian.org wheezy Release.gpg                                                                                                                                    
+...
+W: Failed to fetch http://not-security.debian.org/dists/wheezy/updates/Release.gpg  Could not resolve 'not-security.debian.org'
+
+W: Some index files failed to download. They have been ignored, or old ones used instead.
+0
+```
+
+Security repository was excluded. That's an attack an adversary can mount or it can happen for other reasons also. The bad thing here is, apt-get exited `0`. Therefore hard to detect these situations in scripts. (Bugs are reported upstream - see ticket description - could take a very long time until fixed upstream.)
+
+The way this was solved in Whonix 10 is by using a wrapper. [https://github.com/Whonix/whonixcheck/blob/master/usr/lib/apt-get-wrapper /usr/lib/apt-get-wrapper], that parses `apt-get update`'s output. Awful hack, but the real fix would require fixing apt-get upstream at Debian.
 
 = apt-get Install Signed vs Unsigned Packages =
 == Preparation ==
