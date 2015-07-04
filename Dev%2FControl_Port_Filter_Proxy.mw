@@ -7,7 +7,7 @@
 
 = Control Port Filter Proxy =
 == Introduction ==
-https://github.com/Whonix/control-port-filter
+https://github.com/Whonix/control-port-filter-python
 
 Tor's control port has in context of Whonix, dangerous features. The answer to the Tor control command {{Code2|GETINFO address}} will be the real external IP of the Tor client. Other dangerous commands include {{Code2|SETCONF}}, {{Code2|LOADCONF}} and {{Code2|GETCONF}}. This can not be limited any other way, since the feature request [https://trac.torproject.org/projects/tor/ticket/8369 Option to limit information Tor's control port discloses] against Tor has not been implemented. By the way, this Tor control port feature makes also a [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO/BridgeFirewall Bridge Firewall] impossible. Therefore before Whonix {{Whonix6}}, Whonix-Workstation had no access to Tor's control port. This was because, Whonix-Workstation is not supposed to have an way of finding out its own external IP address.
 
@@ -19,7 +19,7 @@ In future, Tor Button will likely also use something like [https://trac.torproje
 
 Therefore all requirements, Whonix-Workstation having no way of finding its own external IP address, joining Tor Browser's fingerprint for Whonix users, having no access for Whonix-Workstation to Tor's control port with Tor Buttons new requirement to have access to Tor's control port contradicted itself.
 
-Control Port Filter Proxy (CPFP) has been implemented as a solution. It gives Whonix-Workstation access to a limited selection of Tor's control port commands, using white listing (not blacklisting). For example, it allows {{Code2|SIGNAL NEWNYM}} to make Tor Buttons New Identity feature available for users who use Tor Browser in Whonix-Workstation.
+Control Port Filter Proxy (CPFP or sometimes called cpfpy) has been implemented as a solution. It gives Whonix-Workstation access to a limited selection of Tor's control port commands, using white listing (not blacklisting). For example, it allows {{Code2|SIGNAL NEWNYM}} to make Tor Buttons New Identity feature available for users who use Tor Browser in Whonix-Workstation.
 
 Therefore when CPFP gets asked {{Code2|GETINFO net/listeners/socks}}, it lies, and answers '250-net/listeners/socks="127.0.0.1:9150"'. This makes Tor Button happy and therefore it shows a "Congratulations!" (success) welcome page on its default homepage about:tor and not the failure page, which would confuse users. Since bug [https://trac.torproject.org/projects/tor/ticket/9224 TorButton about:tor fails when using additional socks listeners] has been fixed by Tor Tor Project, it that lie wouldn't be necessary anymore. <font size=-3>We're keeping it, because it is not necessary for Tor Button get a full list of all ports Tor is listening on. If an attacker compromised Whonix-Workstation, hiding that list has an advantage. The attacker can probe what ports are available to that Whonix-Workstation, but if the user added extra ports not available to the compromised Whonix-Workstation (only available to another Whonix-Workstation listening on another IP), at least those remain secret. (This is a bit theoretical, because a compromised Whonix-Workstation can spoof it's LAN IP and most likely very few users are using ARP spoofing defenses. Should we add ARP spoofing defenses by default at some point, we at least don't have to worry about this point.)</font>
 
