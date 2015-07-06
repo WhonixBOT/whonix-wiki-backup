@@ -58,6 +58,716 @@ Done.
 
 Note, that it can due to the nature of the remailer network take a long time until your mail arrives.
 
+
+==Nymserver How-To==
+
+This guide is for Zax-type nymservers<ref>Zax (aka Steve Crooks) is the author of this newer type of nymservers.</ref>. It is based on Zax's [http://is-not-my.name help] [http://www.is-not-my.name/send_howto.html guides] on mixnym.net, also [https://archive.is/uIO5I archived] [https://archive.is/Qss3y here]. They are infinitely more usable than Ghio-type servers which should be avoided at all costs, unless you like to [http://www.iusmentis.com/technology/remailers/nym.html hand-craft reply-blocks]. If you don't know what a reply-block is, good. You won't have to.
+
+
+===Why?===
+
+You will have an uncensorable inbox that does not rely on a single service provider that come with inherent risks of folding under coercion or service decapitation [see lavabit]
+
+No browser based log-ins into webmail interfaces, where connections can be intercepted and poisoned by adversaries attacking a selector.
+
+
+===Instructions===
+The process broken down into steps:
+
+<pre>
+
+A) Prepare nym request -> B) Send to Nymserver -> C) Configure Icedove access to alt.anonymous.messages Usenet group to find reply -> D) Use registered nym with Mixmaster to send bi-directional mail
+
+</pre>
+
+
+'''Conventions'''
+
+For these instructions the example: yournym@domain will be used. You must change them to suit the nym choice you make and the domain name of the Nymserver.
+
+Currently the mixnym.net key has expired but the guide is still generic and relevant enough to apply to any other Nymservers. See the [https://www.whonix.org/w/index.php?title=Mixmaster&stable=0&shownotice=1&fromsection=Other_Useful_Topics#Zax_Server_List list] below for other servers.
+ 
+
+
+'''A) & B) Creating and Sending a Nym Request'''
+
+*Visit the Nymserver page and download their public key to the Home folder. If they post their GPG key on their page, copy-paste it into a text file and save it as nymserver.asc then open KGpg and import it. Sometimes the key may only be available from the keyservers. In that situation, open the keyserver dialog and search for it and import from there.
+    
+
+*Create a new key pair for yournym@domain.
+    
+    <pre>
+    KGpg -> Keys -> Generate Key Pair...
+    
+    Name: John Doe (or any alias of choice)
+    Email: yournym@domain
+    RSA key of 4096 bits
+    
+    
+    Enter passphrase for key. OK.
+    </pre>
+
+    
+    
+*Export your Public Key
+This will extract the newly generated key from your keyring and store it in a text file. In the following example, I've named that file pubkey.txt
+    
+    <pre>
+    gpg --armor --export yournym@domain > pubkey.txt
+    </pre>
+    
+    
+
+*Edit the pubkey.txt file
+You only need to perform this step if you want to configure additional options on your Nym, such as Subject Identification or Symmetric Encryption. 
+For each option, add a line to the pubkey.txt file using the format:-
+option: setting
+    
+Choose some unique keyword as a Subject to be able identify the Nymserver reply on alt.anonymous.messages.
+For example, to add a subject header of dead_parrot:-
+    
+Your message should look like this:
+    
+    <code>
+    Subject: dead-parrot
+    
+    -----BEGIN PGP PUBLIC KEY BLOCK-----
+    <snipped>
+    -----END PGP PUBLIC KEY BLOCK-----
+    </code>
+    
+Caps are unimportant in the option name, but are sensitive in the setting.
+
+    
+    
+*Now you must wrap, pubkey.txt, the message containing your public key + unique Subject Identifier, to the Nymserver.The pubkey.txt file is the input for the following example and the encrypted file will be created as pubkey.txt.asc
+    
+    <pre>
+    gpg --armor --encrypt --recipient send@mixnym.net pubkey.txt
+    </pre>
+    
+Ignore the warning about encrypting to an "untrusted" key and select yes.
+
+    
+Update remailer keys first:<ref>https://www.youtube.com/watch?v=dzbrFPO4604 LinuxJournal</ref>
+
+    <pre>
+    mixmaster
+
+    u)
+
+    *
+
+    </pre>
+    
+Then quit Mixmaster Ncurses interface by pressing 'q'
+    
+    
+    
+*Send the encrypted file to the Nymserver with Mixmaster:
+    
+    <pre>
+    mixmaster --mail -l dizum -c 2 send@mixnym.net pubkey.txt.asc
+    </pre>
+    
+This command customizes the remailer chain length. The shorter the chain the faster your mail will be sent and the more likely it will make it through. Here we are using one node ''dizum'' and sending two copies in case the first is lost. If necessary run Mixmaster from command line and check the remailer chain list to see node availability and reliability stats and choose accordingly.  Note that the protection provided by Mixmaster is not of importance here because everything is done behind Tor. Zax-type Nymservers can respond to nym requests addressed to: '''send@''' or '''config@'''
+
+
+    
+That's it! The Nymserver decrypts the message, extracts your Nym's email address from the supplied Public Key and processes it. Providing the Nym isn't reserved or already allocated, you will receive a confirmation message from the Nymserver, encrypted to your key.
+
+It's worth noting that this is the only message the server will ever accept from you that's not signed by your key. From now on, your digital signature will prove your ownership of the Nym. 
+
+
+
+
+'''C) alt.anonymous.messages'''
+
+Configure a Newsgroup account in Icedove:<ref>https://kb.mit.edu/confluence/pages/viewpage.action?pageId=5899274
+</ref><ref>https://support.mozilla.org/en-US/kb/creating-newsgroup-account</ref>
+
+This section assumes Icedove and Enigmail are pre-installed.
+
+<pre>
+Local Folders -> Create a new account: Newsgroups
+
+Your name: Nobody
+Email Address: nobody@nowhere.net
+
+Newsgroup Server: news.aioe.org
+
+Finish
+
+Click on added Newsgroup server in left side panel -> Manage newsgroup subscriptions -> Search for alt.anonymous.messages and subscribe -> OK
+
+Expand Newsgroup server in left side panel -> Select a.a.m Newsgroup
+
+Click OK to download the default of 500 headers
+
+Search for message the Subject header you picked and decrypt with the pass-phrase for your key. Note that it can take a long time for a reply. Refresh messages regularly.
+
+
+</pre>
+
+Congratulations for registering your first nym. Now you are ready to use it for sending messages. Be sure to check for new messages regularly because messages on Usenet have an expiration date after a few weeks, after which they are flushed from the servers.
+
+
+
+'''D) Sending Bi-Directional Mail'''
+
+<pre>
+KGpg -> Open editor -> write message and Encrypt to recipient's key (its assumed that its been imported beforehand) 
+
+Options -> Allow encryption with untrusted keys
+
+Select recipient key
+
+Save ciphertext as message.txt
+</pre>
+
+
+*Open the saved message.txt and format it with the headers as shown:
+
+<pre>
+From: yournym@domain
+To: recipient@domain
+Subject: dead-parrot
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+    <snipped>
+-----END PGP PUBLIC KEY BLOCK-----
+
+</pre>
+
+You must leave one blank line and paste the ciphertext block
+
+Note that not all exit remailers accept a custom ''From:'' header see list below to choose one that can.
+
+
+
+*Send the message with Mixmaster:
+
+<pre>
+
+mixmaster --mail -l dizum -c 2 recipient@domain message.txt
+
+</pre>
+
+This example is configured to send two copies via one hop, with an exit remailer that supports ''From:'' headers. These options can be changed.
+
+Similar to Tor the last hop between the exit and recipient are not encrypted. Make sure you encrypt the message to recipient as shown above. If they don't use encryption, you have no choice but to send a plaintext message.
+
+The recipient will see the message as coming from a generic anonymous remailer as sender but the ''From:'' header lets them know how they can send a reply to your nym.
+
+The reply will arrive in alt.anonymous.messages as before and will need the same decryption procedure. Nymservers will always decrypt replies because the Newsgroup acts as a public mailbox. Everybody can see and download the messages but only the intended recipient can decrypt it.
+
+===Zax Server List===
+Active Zax nymservers as of 2015:<ref>http://alt.privacy.anon-server.narkive.com/Zd27lR8z/how-to-get-nymserver-help-key</ref>
+
+
+nymphet.paranoici.org
+
+mixnym.net <ref>Very popular but key seems expired</ref>
+
+nym.now.im/nymserver
+
+bravonym.inbox5.com
+
+===Public/Open News Servers===
+
+news.dizum.net<ref>A open (read-only) (text) usenet server. Both nntp and nntps are supported. https://dizum.com/</ref>
+
+news.aioe.org<ref>Used by QSA. https://www.quicksilvermail.net/</ref>
+
+news.mixmin.net<ref>Used by QSA. https://www.quicksilvermail.net/</ref>
+
+eternal-september.org
+
+
+===From: Header Support===
+For a list of remailers that accept ''From:'' headers.<ref>https://www.quicksilvermail.net/links.html</ref>
+
+http://pinger.mixmin.net/from.html
+
+
+
+
+===Other Useful Topics===
+
+* You can change the default editor to something more usable than vi<ref>http://alt.privacy.anon-server.narkive.com/5dbZVYpQ/choice-of-editor-with-mixmaster</ref>:
+<pre>
+sudo echo 'export EDITOR=kwrite' >> ~/.bashrc
+</pre>
+Log-out then back in again for changes to take effect.
+
+
+* What happens if you register a nym that is already taken?
+
+You will receive a message in a.a.m that its already been taken.<ref>http://alt.privacy.anon-server.narkive.com/Zd27lR8z/how-to-get-nymserver-help-key</ref>
+
+===Dev Notes===
+
+See if we can ship:
+
+*Newsgroup access already configured in Icedove
+*Templates for nym request
+*Templates for nym mailing to recipient
+*aampy or aam2mail<ref>The latter also written by Steve Crooks https://github.com/crooks/aam2mail</ref> - stand-alone python utilities for Hsub management to blend in with most messages in a.a.m
+
+
+Resources:
+
+Information on Subject Line types hsub esub and nym deletion.<ref>https://groups.google.com/forum/#!topic/alt.privacy.anon-server/f3H4Xw5j2LI</ref> Future fleshing out of instructions for Hsubs
+
+==Nymserver QuickSilver Mail How-To==
+
+This guide is for QuickSilver Lite, a Libre Software GUI for Mixmaster. QuickSilver Lite was written for Windows but is fully compatible with Wine. The paranoici Zax-type Nymserver is used for this example. Credit goes to Whonix user '''mirimir''' whose instructions this work is based on.<ref>http://www.wilderssecurity.com/threads/installing-quicksilver-lite-in-whonix-and-creating-a-mixmin-nym.344489/</ref><ref>https://archive.is/bNFah</ref>
+
+
+
+<pre>
+
+## Generate your GPG keypair using KGpg. Fill in the nym you chose for the Email field. Use something likely not taken:
+KGpg -> Keys -> Generate Key Pair... ->
+
+Name: John Doe (or any alias of choice)
+Email: yournym@nymphet.paranoici.org
+Keysize: 4096 bits
+    
+OK -> Enter passphrase for key -> OK.
+
+
+## Import Nymserver key from KGpg.
+KGpg -> Open Keyserver Dialog -> Search for 'send@nymphet.paranoici.org' -> Import
+
+
+## Always check the fingerprint for yourself. The output at the moment is:
+
+pub  4096R/0x5CE8D7B97340F3A7 2013-01-06 Nymserver <send@nymphet.paranoici.org>
+      Key fingerprint = B91A FAEE 998D 5134 5AFE  E104 5CE8 D7B9 7340 F3A7
+
+
+## In KGpg, highlight your key, and set Trust level on Nymserver key to 'Marginal' and sign it with your own key.
+
+Right-click on Nymserver key -> Key Properties
+
+Owner Trust: Marginally
+
+-> Apply -> OK
+
+
+Right-click on Nymserver key -> Continue -> Select your nym's secret key to use for signing -> OK -> Enter passphrase
+
+
+
+## Download QuickSilver's signing keys with scurl to home folder.
+scurl -ko quicksilver.asc https://www.quicksilvermail.net/quicksilver.asc
+
+## Check fingerprints/owners without importing anything. 
+gpg --with-fingerprint quicksilver.asc
+
+## Always check the fingerprint for yourself. The output at the moment is:
+
+pub  4096R/0x1B04C05145FF11B1 2013-09-08 QuickSilver <admin@quicksilvermail.net>
+      Key fingerprint = 6BC3 5E3D 7473 E416 F423  E845 1B04 C051 45FF 11B1
+
+## Import key:
+gpg --import quicksilver.asc
+
+## To avoid ''unsafe ownership'' key warnings
+gpg --fingerprint
+chmod --recursive 700 ~/.gnupg
+
+
+
+## Download archives.
+wget -r --no-check-certificate --no-parent -A 'QSLite*.zip' https://www.quicksilvermail.net/qslite/
+wget -r --no-check-certificate --no-parent -A 'QSLite*.zip.sig' https://www.quicksilvermail.net/qslite/
+wget -r --no-check-certificate --no-parent -A 'QSAam*.zip' https://www.quicksilvermail.net/qsaam/
+wget -r --no-check-certificate --no-parent -A 'QSAam*.zip.sig' https://www.quicksilvermail.net/qsaam/
+
+
+## Move files into Home folder.
+mv /home/user/www.quicksilvermail.net/qslite/QSLite*.zip /home/user
+mv /home/user/www.quicksilvermail.net/qslite/QSLite*.zip.sig /home/user
+mv /home/user/www.quicksilvermail.net/qsaam/QSAam*.zip /home/user
+mv /home/user/www.quicksilvermail.net/qsaam/QSAam*.zip.sig /home/user
+
+
+## Verify archive. Fingerprint should match the key above.
+gpg --verify-options show-notations --verify QSLite*.zip.sig QSLite*.zip
+gpg --verify-options show-notations --verify QSAam*.zip.sig QSAam*.zip
+
+
+## Install Wine.
+sudo apt-get install wine
+
+## Run Wine to create its directories. Cancel Wine Mono Installer.
+wine run
+
+## Create folder for QS components and transfer them.
+mkdir /home/user/.wine/drive_c/QS/
+unzip QSLite*.zip -d /home/user/.wine/drive_c/QS/
+unzip QSAam*.zip -d /home/user/.wine/drive_c/QS/
+
+## Select 'Replace All' when prompted for duplicate files.
+A
+
+## Open Terminal and create links to allow QSL and QSA to use Debian gpg:
+mkdir .wine/drive_c/QS/gpg-links
+link '/home/user/.gnupg/pubring.gpg' '/home/user/.wine/drive_c/QS/gpg-links/pubring.gpg'
+link '/home/user/.gnupg/secring.gpg' '/home/user/.wine/drive_c/QS/gpg-links/secring.gpg'
+
+## Run QSL. This way is needed only for the initial run it applies to QSA too. Access QSL from the desktop shortcut afterwards.
+cd /home/user/.wine/drive_c/QS
+wine qsl.exe
+
+## Setup QSL.
+Setup -> Draw randomly in window until "OK" appears ... click "OK" -> Check: Create desktop shortcut | Email Address: yournym@nymphet.paranoici.org -> SMTP Server: gbhpq7eihle4btsn.onion -> Leave SMTP Proxy setings unchanged -> Leave HTTP Proxy setings unchanged -> Finish
+
+(Note: Mixnym's SMTP Onion Service used. Tor Transport used - stream isolation unnecessary)
+
+
+## Configure QSL.
+Open Tools | Options.
+...In General tab:
+......Under "User Mode", check "Expert".
+......Under "On Start-up", check "Open Template Dialog".
+...In PGP tab:
+......Check "PGP Public Key Encryption".
+......For "Private Keyring", use "C:\QS\gpg-links\secring.gpg".
+......For "Public Keyring", use "C:\QS\gpg-links\pubring.gpg".
+......Click "Default key" and select it (will be just your new one).
+......If desired, choose to cache private-key passphrases for five minutes or so.
+...In Mix tab:
+......Select "once a day" for "Update remailer stats".
+...Click "Ok" to finish.
+Open Tools | Stats manager.
+...Click "Update".
+...When you see "done!" click "Ok".
+...If it stalls, there's something wrong with your Tor setup.
+......Check with Firefox, and also check Tor config in Tools | Proxies.
+Open Tools | Allpingers manager.
+...Click "Update".
+...When you see "done!" click "Ok".
+
+
+Now you'll configure the message that QSL uses to create a Mixnym nym.
+In the main compose pane, customize the message to look like the following:
+
+Code:
+
+Fcc: nyms
+Host: gbhpq7eihle4btsn.onion
+From: nobody@nowhere.net
+Chain: *,*,*; copies=2;
+To: send@nymphet.paranoici.org
+Subject:
+
+hsub: New Mail For Jude!
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mQINBFFP2l4BEACXJDUM6SxyjUk8K+MJ4fRJ5VMaE6hSsAD6n8eO04l9HMzSx26X
+<snip>
+wnOpR4sYYD9MFLura6+YiHWtT8ih
+=ndP9
+-----END PGP PUBLIC KEY BLOCK-----
+
+~~
+
+In the above:
+...Replace "Jude" in "hsub: New Mail For Jude!" with your fake first name.
+...Replace the public key block with your public key that you exported above. Get it by exporting it from KGpg then copy-paste the contents.
+...Be very careful near line ends ... Unix vs DOS newline can be buggy here.
+...The "~~" at the bottom, preceeded by two blank lines, is crucial!
+Save as "nym create template".
+...You can reuse it with edits for creating other nyms.
+Click the PGP lock and signing icons.
+......The mixnym server will only accept signed configuration requests.
+Now click "Send" 
+"PGP Enrypt to Recipients..." prompt will appear. 
+...Choose the Nymserver key from the top pane then click "OK"
+Enter your key passphrase when prompted to sign message.
+After it finishes, you should see:
+
+Code:
+
+0 in message queue
+0 in problem queue
+2 sent
+
+All mail sent!
+
+If it worked, the next step is configuring QSA.
+If it hangs, cancel out and go back through everything looking for errors.
+Close QSL when you're done (and ignore the crash error that you may see).
+
+You can't get a reply from the Nymserver until you configure QSA.
+
+
+## Run QSA.
+cd /home/user/.wine/drive_c/QS
+wine qsa.exe
+
+## Setup QSA.
+Check: Create desktop shortcut... click "OK" 
+
+If your Nymserver name and type is not listed you must add it first before you can add AAM subject lines encrypted to you.
+
+Open Tools | Nymservers.
+...New:
+......Nymserver Domain: nymphet.paranoici.org.
+......Type: Zax
+...Click "OK" then "Done"
+Open Tools | AAM Subject Lines.
+...New:
+...In AAM Subject Line Tab:
+......Nym, select your nym's private-key".
+......Subject (HSUB), use the one you set or "New Mail For Jude!" if you are following the example above.
+...Click "OK" then "Done".
+Only one AAM Subject Line can be configured to find your hsub. Be sure to enter it exactly as you did before or else QSA won't find it.
+Click "Get Mail" from the main interface. Replies take a while.
+
+
+## Clean-Up
+rm -rf /home/user/www.quicksilvermail.net
+rm QSLite*.zip
+rm QSLite*.zip.sig
+rm QSAam*.zip
+rm QSAam*.zip.sig
+rm /home/user/Desktop/"QuickSilver Lite.lnk"
+rm /home/user/Desktop/"QuickSilver Aam.lnk"
+
+
+</pre>
+
+
+==Nymserver QuickSilver Mail How-To==
+
+This guide is for QuickSilver Lite, a Libre Software GUI for Mixmaster. QuickSilver Lite was written for Windows but is fully compatible with Wine. The paranoici Zax-type Nymserver is used for this example. Credit goes to Whonix user '''mirimir''' whose instructions this work is based on.<ref>http://www.wilderssecurity.com/threads/installing-quicksilver-lite-in-whonix-and-creating-a-mixmin-nym.344489/</ref><ref>https://archive.is/bNFah</ref>
+
+
+
+<pre>
+
+## Generate your GPG keypair using KGpg. Fill in the nym you chose for the Email field. Use something likely not taken:
+KGpg -> Keys -> Generate Key Pair... ->
+
+Name: John Doe (or any alias of choice)
+Email: yournym@nymphet.paranoici.org
+Keysize: 4096 bits
+    
+OK -> Enter passphrase for key -> OK.
+
+
+## Import Nymserver key from KGpg.
+KGpg -> Open Keyserver Dialog -> Search for 'send@nymphet.paranoici.org' -> Import
+
+
+## Always check the fingerprint for yourself. The output at the moment is:
+
+pub  4096R/0x5CE8D7B97340F3A7 2013-01-06 Nymserver <send@nymphet.paranoici.org>
+      Key fingerprint = B91A FAEE 998D 5134 5AFE  E104 5CE8 D7B9 7340 F3A7
+
+
+## In KGpg, highlight your key, and set Trust level on Nymserver key to 'Marginal' and sign it with your own key.
+
+Right-click on Nymserver key -> Key Properties
+
+Owner Trust: Marginally
+
+-> Apply -> OK
+
+
+Right-click on Nymserver key -> Continue -> Select your nym's secret key to use for signing -> OK -> Enter passphrase
+
+
+
+## Download QuickSilver's signing keys with scurl to home folder.
+scurl -ko quicksilver.asc https://www.quicksilvermail.net/quicksilver.asc
+
+## Check fingerprints/owners without importing anything. 
+gpg --with-fingerprint quicksilver.asc
+
+## Always check the fingerprint for yourself. The output at the moment is:
+
+pub  4096R/0x1B04C05145FF11B1 2013-09-08 QuickSilver <admin@quicksilvermail.net>
+      Key fingerprint = 6BC3 5E3D 7473 E416 F423  E845 1B04 C051 45FF 11B1
+
+## Import key:
+gpg --import quicksilver.asc
+
+## To avoid ''unsafe ownership'' key warnings
+gpg --fingerprint
+chmod --recursive 700 ~/.gnupg
+
+
+
+## Download archives.
+wget -r --no-check-certificate --no-parent -A 'QSLite*.zip' https://www.quicksilvermail.net/qslite/
+wget -r --no-check-certificate --no-parent -A 'QSLite*.zip.sig' https://www.quicksilvermail.net/qslite/
+wget -r --no-check-certificate --no-parent -A 'QSAam*.zip' https://www.quicksilvermail.net/qsaam/
+wget -r --no-check-certificate --no-parent -A 'QSAam*.zip.sig' https://www.quicksilvermail.net/qsaam/
+
+
+## Move files into Home folder.
+mv /home/user/www.quicksilvermail.net/qslite/QSLite*.zip /home/user
+mv /home/user/www.quicksilvermail.net/qslite/QSLite*.zip.sig /home/user
+mv /home/user/www.quicksilvermail.net/qsaam/QSAam*.zip /home/user
+mv /home/user/www.quicksilvermail.net/qsaam/QSAam*.zip.sig /home/user
+
+
+## Verify archive. Fingerprint should match the key above.
+gpg --verify-options show-notations --verify QSLite*.zip.sig QSLite*.zip
+gpg --verify-options show-notations --verify QSAam*.zip.sig QSAam*.zip
+
+
+## Install Wine.
+sudo apt-get install wine
+
+## Run Wine to create its directories. Cancel Wine Mono Installer.
+wine run
+
+## Create folder for QS components and transfer them.
+mkdir /home/user/.wine/drive_c/QS/
+unzip QSLite*.zip -d /home/user/.wine/drive_c/QS/
+unzip QSAam*.zip -d /home/user/.wine/drive_c/QS/
+
+## Select 'Replace All' when prompted for duplicate files.
+A
+
+## Open Terminal and create links to allow QSL and QSA to use Debian gpg:
+mkdir .wine/drive_c/QS/gpg-links
+link '/home/user/.gnupg/pubring.gpg' '/home/user/.wine/drive_c/QS/gpg-links/pubring.gpg'
+link '/home/user/.gnupg/secring.gpg' '/home/user/.wine/drive_c/QS/gpg-links/secring.gpg'
+
+## Run QSL. This way is needed only for the initial run it applies to QSA too. Access QSL from the desktop shortcut afterwards.
+cd /home/user/.wine/drive_c/QS
+wine qsl.exe
+
+## Setup QSL.
+Setup -> Draw randomly in window until "OK" appears ... click "OK" -> Check: Create desktop shortcut | Email Address: yournym@nymphet.paranoici.org -> SMTP Server: gbhpq7eihle4btsn.onion -> Leave SMTP Proxy setings unchanged -> Leave HTTP Proxy setings unchanged -> Finish
+
+(Note: Mixnym's SMTP Onion Service used. Tor Transport used - stream isolation unnecessary)
+
+
+## Configure QSL.
+Open Tools | Options.
+...In General tab:
+......Under "User Mode", check "Expert".
+......Under "On Start-up", check "Open Template Dialog".
+...In PGP tab:
+......Check "PGP Public Key Encryption".
+......For "Private Keyring", use "C:\QS\gpg-links\secring.gpg".
+......For "Public Keyring", use "C:\QS\gpg-links\pubring.gpg".
+......Click "Default key" and select it (will be just your new one).
+......If desired, choose to cache private-key passphrases for five minutes or so.
+...In Mix tab:
+......Select "once a day" for "Update remailer stats".
+...Click "Ok" to finish.
+Open Tools | Stats manager.
+...Click "Update".
+...When you see "done!" click "Ok".
+...If it stalls, there's something wrong with your Tor setup.
+......Check with Firefox, and also check Tor config in Tools | Proxies.
+Open Tools | Allpingers manager.
+...Click "Update".
+...When you see "done!" click "Ok".
+
+
+Now you'll configure the message that QSL uses to create a Mixnym nym.
+In the main compose pane, customize the message to look like the following:
+
+Code:
+
+Fcc: nyms
+Host: gbhpq7eihle4btsn.onion
+From: nobody@nowhere.net
+Chain: *,*,*; copies=2;
+To: send@nymphet.paranoici.org
+Subject:
+
+hsub: New Mail For Jude!
+
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mQINBFFP2l4BEACXJDUM6SxyjUk8K+MJ4fRJ5VMaE6hSsAD6n8eO04l9HMzSx26X
+<snip>
+wnOpR4sYYD9MFLura6+YiHWtT8ih
+=ndP9
+-----END PGP PUBLIC KEY BLOCK-----
+
+~~
+
+In the above:
+...Replace "Jude" in "hsub: New Mail For Jude!" with your fake first name.
+...Replace the public key block with your public key that you exported above. Get it by exporting it from KGpg then copy-paste the contents.
+...Be very careful near line ends ... Unix vs DOS newline can be buggy here.
+...The "~~" at the bottom, preceeded by two blank lines, is crucial!
+Save as "nym create template".
+...You can reuse it with edits for creating other nyms.
+Click the PGP lock and signing icons.
+......The mixnym server will only accept signed configuration requests.
+Now click "Send" 
+"PGP Enrypt to Recipients..." prompt will appear. 
+...Choose the Nymserver key from the top pane then click "OK"
+Enter your key passphrase when prompted to sign message.
+After it finishes, you should see:
+
+Code:
+
+0 in message queue
+0 in problem queue
+2 sent
+
+All mail sent!
+
+If it worked, the next step is configuring QSA.
+If it hangs, cancel out and go back through everything looking for errors.
+Close QSL when you're done (and ignore the crash error that you may see).
+
+You can't get a reply from the Nymserver until you configure QSA.
+
+
+## Run QSA.
+cd /home/user/.wine/drive_c/QS
+wine qsa.exe
+
+## Setup QSA.
+Check: Create desktop shortcut... click "OK" 
+
+If your Nymserver name and type is not listed you must add it first before you can add AAM subject lines encrypted to you.
+
+Open Tools | Nymservers.
+...New:
+......Nymserver Domain: nymphet.paranoici.org.
+......Type: Zax
+...Click "OK" then "Done"
+Open Tools | AAM Subject Lines.
+...New:
+...In AAM Subject Line Tab:
+......Nym, select your nym's private-key".
+......Subject (HSUB), use the one you set or "New Mail For Jude!" if you are following the example above.
+...Click "OK" then "Done".
+Only one AAM Subject Line can be configured to find your hsub. Be sure to enter it exactly as you did before or else QSA won't find it.
+Click "Get Mail" from the main interface. Replies take a while.
+
+## Clean-Up
+rm -rf /home/user/www.quicksilvermail.net
+rm QSLite*.zip
+rm QSLite*.zip.sig
+rm QSAam*.zip
+rm QSAam*.zip.sig
+rm /home/user/Desktop/"QuickSilver Lite.lnk"
+rm /home/user/Desktop/"QuickSilver Aam.lnk"
+
+
+</pre>
+
+
+
+
 == Implementation Notes ==
 
 For technical stuff, see [[Dev/Mixmaster]].
