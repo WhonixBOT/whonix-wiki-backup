@@ -61,46 +61,75 @@ Note, that it can due to the nature of the remailer network take a long time unt
 
 ==Nymserver How-To==
 
-This guide is for Zax-type nymservers<ref>Zax (aka Steve Crooks) is the author of this newer type of nymservers.</ref>. It is based on Zax's [http://is-not-my.name help] [http://www.is-not-my.name/send_howto.html guides] on mixnym.net, also [https://archive.is/uIO5I archived] [https://archive.is/Qss3y here]. They are infinitely more usable than Ghio-type servers which should be avoided at all costs, unless you like to [http://www.iusmentis.com/technology/remailers/nym.html hand-craft reply-blocks]. If you don't know what a reply-block is, good. You won't have to.
+This guide is for Zax-type nymservers<ref>Zax (aka Steve Crook) is the author of this newer type of nymservers.</ref>. It is based on Zax's [http://is-not-my.name help] [http://www.is-not-my.name/send_howto.html guides] on Mixnym.net, also [https://archive.is/uIO5I archived] [https://archive.is/Qss3y here]. A special thanks to Nymphemeral developer, Felipe Dau, for helping with the instructions.
+
+Zax-type Nymservers are infinitely more usable than GHIO-type servers which should be avoided at all costs, unless you like to [http://www.iusmentis.com/technology/remailers/nym.html hand-craft reply-blocks]. If you don't know what a reply-block is, good. You won't have to.
 
 
 ===Why?===
 
-You will have an uncensorable inbox that does not rely on a single service provider that come with inherent risks of folding under coercion or service decapitation [see lavabit]
+*You will have an uncensorable inbox that does not rely on a single service provider that come with the inherent risks of folding under coercion or service decapitation [see [https://en.wikipedia.org/wiki/Lavabit Lavabit]]
 
-No browser based log-ins into webmail interfaces, where connections can be intercepted and poisoned by adversaries attacking a selector.
+*No browser based log-ins into webmail interfaces, where connections can be intercepted and poisoned by adversaries attacking a selector.
 
 
 ===Instructions===
 The process broken down into steps:
 
-<pre>
 
-A) Prepare nym request -> B) Send to Nymserver -> C) Configure Icedove access to alt.anonymous.messages Usenet group to find reply -> D) Use registered nym with Mixmaster to send bi-directional mail
-
-</pre>
+'''A) Create Nym Request -> B) Send Nym Request to Nymserver -> C) Install and Configure aam2mail to Fetch Replies -> D) Send Mail with Registered Nym'''
 
 
 '''Conventions'''
 
-For these instructions the example: yournym@domain will be used. You must change them to suit the nym choice you make and the domain name of the Nymserver.
+For these instructions the example: nym@server will be used. You must change it to suit the nym choice you make and the domain name of the Nymserver.
 
-Currently the mixnym.net key has expired but the guide is still generic and relevant enough to apply to any other Nymservers. See the [https://www.whonix.org/w/index.php?title=Mixmaster&stable=0&shownotice=1&fromsection=Other_Useful_Topics#Zax_Server_List list] below for other servers.
+This example is for Mixnym.net but the guide is still generic and relevant to apply to any other Zax-type Nymserver. For a selection of Nymservers see this [https://www.whonix.org/w/index.php?title=Mixmaster&stable=0&shownotice=1&fromsection=Other_Useful_Topics#Zax_Server_List list].
  
 
 
-'''A) & B) Creating and Sending a Nym Request'''
+====Creating a Nym Request====
 
-*Visit the Nymserver page and download their public key to the Home folder. If they post their GPG key on their page, copy-paste it into a text file and save it as nymserver.asc then open KGpg and import it. Sometimes the key may only be available from the keyservers. In that situation, open the keyserver dialog and search for it and import from there.
+*A Nymserver's key is usually on their homepage, but sometimes it may only be available from the GPG keyservers. In that situation, open KGpg's keyserver dialog and search for it and then import from there.
+
+1. Download the Mixnym.net Nymserver key with curl to home folder.
+
+<pre>
+curl -o key.asc http://is-not-my.name/key.asc
+</pre>
+
+
+
+2. Check fingerprints/owners without importing anything.
+
+<pre>
+gpg --with-fingerprint key.asc
+</pre>
+
+
+Always check the fingerprint for yourself. The output at the moment is: 
+
+<pre>
+pub  4096R/0xFF4DB66014D0C447 2010-05-05 URL is-not-my.name (URL Retrieval address for Is-Not-My Nymserver) <url@is-not-my.name>
+      Key fingerprint = 94F2 04C2 8BF0 0937 EFC8  5D1A FF4D B660 14D0 C447
+</pre>
+
+
+3. If it looks good import with GPG:
+
+<pre>
+gpg --import key.asc
+</pre>
+
     
 
-*Create a new key pair for yournym@domain.
+*Create a new key pair for nym@server with KGpg.
     
     <pre>
     KGpg -> Keys -> Generate Key Pair...
     
     Name: John Doe (or any alias of choice)
-    Email: yournym@domain
+    Email: nym@server
     RSA key of 4096 bits
     
     
@@ -113,110 +142,196 @@ Currently the mixnym.net key has expired but the guide is still generic and rele
 This will extract the newly generated key from your keyring and store it in a text file. In the following example, I've named that file pubkey.txt
     
     <pre>
-    gpg --armor --export yournym@domain > pubkey.txt
+    gpg --armor --export nym@server > pubkey.txt
     </pre>
     
     
 
 *Edit the pubkey.txt file
-You only need to perform this step if you want to configure additional options on your Nym, such as Subject Identification or Symmetric Encryption. 
+You only need to perform this step if you want to configure additional options on your Nym, such as Subject Identification or Symmetric Encryption. Its highly recommended you do so to keep your messages from standing out on the Newsgroup.
 For each option, add a line to the pubkey.txt file using the format:-
-option: setting
+'''option: setting'''
+
+Caps are unimportant in the option name, but are sensitive in the setting.
     
 Choose some unique keyword as a Subject to be able identify the Nymserver reply on alt.anonymous.messages.
-For example, to add a subject header of dead_parrot:-
+For example, to add a hashed subject of ''panda'':-
     
 Your message should look like this:
     
-    <code>
-    Subject: dead-parrot
+    <pre>
+    hsub: panda
     
     -----BEGIN PGP PUBLIC KEY BLOCK-----
     <snipped>
     -----END PGP PUBLIC KEY BLOCK-----
-    </code>
-    
-Caps are unimportant in the option name, but are sensitive in the setting.
+    </pre>
 
-    
+
+The Mixmyn.net Nymserver parameters specified here are optional.<ref>https://groups.google.com/forum/#!topic/alt.privacy.anon-server/f3H4Xw5j2LI</ref> Do not use them unless you know what you are doing:
+
+Symmetric: passphrase  //Add a layer of symmetric encryption (notrecommended).
+
+Subject: hard subject  //Define plain-text - do not use with 'Hsub:'
+
+Hsub: passphrase       //Define your hsub secret subject
+
+DELETE: yes            //Delete a Nym (specify "yes" as the option's value)
+
+Any of the below can be used to set in place of ''hsub: passphrase''
+above:
+
+hash-subject: passphrase
+
+subject-password: passphrase
+
+hash-key: passphrase
+
+hsub: passphrase
+
+
+Do not use ''Symmetric: passphrase''.  If you do, some (if not all) of the free hsub programs and routines will not be able to automatically find your messages. aam2mail supports the option but it comlpicates the operation. Its also not commonly used and therefore not a good choice for blending in.
+
     
 *Now you must wrap, pubkey.txt, the message containing your public key + unique Subject Identifier, to the Nymserver.The pubkey.txt file is the input for the following example and the encrypted file will be created as pubkey.txt.asc
     
     <pre>
-    gpg --armor --encrypt --recipient send@mixnym.net pubkey.txt
+    gpg --armor --encrypt --recipient config@mixnym.net pubkey.txt
     </pre>
     
-Ignore the warning about encrypting to an "untrusted" key and select yes.
+Ignore the warning about encrypting to an "untrusted" key and select 'y' for yes.
 
-    
-Update remailer keys first:<ref>https://www.youtube.com/watch?v=dzbrFPO4604 LinuxJournal</ref>
+
+
+'''OPTIONAL'''
+
+*You can modify any of the settings on your nym.  To change your hsub, create a message containing just this:
+
+<pre>
+hsub: ''your_new_hsub''
+</pre>
+
+Sign and encrypt this message to '''config.@mixnym.net''' as show shown in the next sub-section<ref>https://groups.google.com/forum/?_escaped_fragment_=topic/alt.privacy.anon-server/2INtTYns2p8#!topic/alt.privacy.anon-server/2INtTYns2p8</ref>
+
+
+====Send Nym Request to Nymserver====
+
+*Before sending, update remailer keys first. Its enough to do this once a day:<ref>https://www.youtube.com/watch?v=dzbrFPO4604 LinuxJournal</ref>
 
     <pre>
     mixmaster
 
-    u)
+    u
 
     *
+    
+    pick remailer letter (optional)
+    
+    q)uit
 
     </pre>
-    
-Then quit Mixmaster Ncurses interface by pressing 'q'
-    
+        
     
     
 *Send the encrypted file to the Nymserver with Mixmaster:
     
     <pre>
-    mixmaster --mail -l dizum -c 2 send@mixnym.net pubkey.txt.asc
+    mixmaster --mail -l *,*,* -c 3 config@mixnym.net pubkey.txt.asc
     </pre>
     
-This command customizes the remailer chain length. The shorter the chain the faster your mail will be sent and the more likely it will make it through. Here we are using one node ''dizum'' and sending two copies in case the first is lost. If necessary run Mixmaster from command line and check the remailer chain list to see node availability and reliability stats and choose accordingly.  Note that the protection provided by Mixmaster is not of importance here because everything is done behind Tor. Zax-type Nymservers can respond to nym requests addressed to: '''send@''' or '''config@'''
+Here we are sending three copies through three Mixmaster nodes. If necessary, run Mixmaster and check the remailer chain list to see node availability and reliability stats and choose accordingly.  Note that the protection provided by Mixmaster is not of importance here because everything is done behind Tor.
+
+That's it! The Nymserver decrypts the message, extracts your Nym's email address from the supplied Public Key and processes it. Provided that the nym isn't already taken, you will receive a confirmation message from the Nymserver, encrypted to your key.
 
 
-    
-That's it! The Nymserver decrypts the message, extracts your Nym's email address from the supplied Public Key and processes it. Providing the Nym isn't reserved or already allocated, you will receive a confirmation message from the Nymserver, encrypted to your key.
+'''IMPORTANT'''
 
-It's worth noting that this is the only message the server will ever accept from you that's not signed by your key. From now on, your digital signature will prove your ownership of the Nym. 
+Nym creation and configuration messages should only be sent to '''config@server''' and regular messages intended for recipients to '''send@server'''.
+
+It's worth noting that this is the only message the server will ever accept from you that's not signed by your key. From now on, your digital signature will prove your ownership of the nym.
 
 
-
-
-'''C) alt.anonymous.messages'''
-
-Configure a Newsgroup account in Icedove:<ref>https://kb.mit.edu/confluence/pages/viewpage.action?pageId=5899274
-</ref><ref>https://support.mozilla.org/en-US/kb/creating-newsgroup-account</ref>
-
-This section assumes Icedove and Enigmail are pre-installed.
+*Signing messages to the Nymserver with GPG:
 
 <pre>
-Local Folders -> Create a new account: Newsgroups
-
-Your name: Nobody
-Email Address: nobody@nowhere.net
-
-Newsgroup Server: news.aioe.org
-
-Finish
-
-Click on added Newsgroup server in left side panel -> Manage newsgroup subscriptions -> Search for alt.anonymous.messages and subscribe -> OK
-
-Expand Newsgroup server in left side panel -> Select a.a.m Newsgroup
-
-Click OK to download the default of 500 headers
-
-Search for message the Subject header you picked and decrypt with the pass-phrase for your key. Note that it can take a long time for a reply. Refresh messages regularly.
-
-
+    gpg --armor --sign --encrypt --recipient config@mixnym.net pubkey.txt
 </pre>
 
-Congratulations for registering your first nym. Now you are ready to use it for sending messages. Be sure to check for new messages regularly because messages on Usenet have an expiration date after a few weeks, after which they are flushed from the servers.
+
+Type your password
+
+Answer 'y' for yes when prompted that its not certain that the key belongs to the person named in the user ID.
+
+Note that if you have multiple keys you must specify the nym key as the default so its auomatically used by the ''--sign'' command.
 
 
 
-'''D) Sending Bi-Directional Mail'''
+====Install and Configure aam2mail to Fetch Replies====
+
+1. Install git and clone aam2mail source. aam2mail requires no extra dependencies.
 
 <pre>
-KGpg -> Open editor -> write message and Encrypt to recipient's key (its assumed that its been imported beforehand) 
+sudo apt-get install git
+git clone https://github.com/crooks/aam2mail
+
+cd aam2mail
+sudo python setup.py install
+</pre>
+
+
+2. Configure aam2mail settings. Use the hsub you chose:
+
+<pre>
+mkdir aam2mail/etc
+echo 'panda' >> aam2mail/etc/subject_hsub
+echo 'news.aioe.org' >> aam2mail/etc/servers
+</pre>
+
+
+3. Run aam2mail periodically to check for replies. There is an expected delay of a few hours.
+
+<pre>
+aam2mail --start
+</pre>
+
+or
+
+<pre>
+aam2mail --restart
+</pre>
+
+
+4. Replies will be downloaded aam2mail to a folder with this path: ''/home/user/Maildir/new''. aam2mail does not decrypt messages for you but retrieves them only.
+
+5.To decrypt, copy-paste the ciphertext block '''only''' into KGpg or else decryption will fail.
+
+<pre>
+KGpg -> File -> Open Editor 
+</pre>
+
+
+Congratulations for registering your first nym. Now you are ready to use it for sending messages. Be sure to check for new messages regularly because messages on Usenet accumulate beyond the fetch-limit and you may miss them.
+
+The reply will arrive in the alt.anonymous.messages newsgroup. Nymservers will always encrypt replies to your key because the Newsgroup acts as a public mailbox. Everybody can see and download the messages but only the intended recipient can decrypt it.
+
+
+
+====Send Mail with Registered Nym====
+
+* Create a plaintext file called message.txt in your Home folder. Compose your message and add the required headers so it looks like this:
+
+<pre>
+From: nym@server
+To: recipient@domain
+Subject: Example
+
+This is an example
+</pre>
+
+
+* Optionally encrypt your messages to a recipent if you have their key:
+<pre>
+KGpg -> Open editor -> paste message and Encrypt to recipient's key (its assumed that its been imported beforehand) 
 
 Options -> Allow encryption with untrusted keys
 
@@ -225,41 +340,28 @@ Select recipient key
 Save ciphertext as message.txt
 </pre>
 
+Similar to Tor the last hop between the Nymserver and the recipient are not encrypted. If they don't use encryption, you have no choice but to send a plaintext message.
 
-*Open the saved message.txt and format it with the headers as shown:
 
+* You '''must''' sign and encrypt this message file to the Nymserver:
 <pre>
-From: yournym@domain
-To: recipient@domain
-Subject: dead-parrot
-
------BEGIN PGP PUBLIC KEY BLOCK-----
-    <snipped>
------END PGP PUBLIC KEY BLOCK-----
-
+    gpg --armor --sign --encrypt --recipient send@mixnym.net message.txt
 </pre>
 
-You must leave one blank line and paste the ciphertext block
+Type your password
 
-Note that not all exit remailers accept a custom ''From:'' header see list below to choose one that can.
+Answer 'y' for yes when prompted that its not certain that th key belongs to the person named in the user ID.
+
+Note that if you have multiple keys you must specify the nym key as the default so its auomatically used by the --sign command.
 
 
+*Send the message to the Nymserver which will then pass it onto the recipient(s):
 
-*Send the message with Mixmaster:
+    <pre>
+    mixmaster --mail -l *,*,* -c 3 send@mixnym.net message.txt.asc
+    </pre>
 
-<pre>
 
-mixmaster --mail -l dizum -c 2 recipient@domain message.txt
-
-</pre>
-
-This example is configured to send two copies via one hop, with an exit remailer that supports ''From:'' headers. These options can be changed.
-
-Similar to Tor the last hop between the exit and recipient are not encrypted. Make sure you encrypt the message to recipient as shown above. If they don't use encryption, you have no choice but to send a plaintext message.
-
-The recipient will see the message as coming from a generic anonymous remailer as sender but the ''From:'' header lets them know how they can send a reply to your nym.
-
-The reply will arrive in alt.anonymous.messages as before and will need the same decryption procedure. Nymservers will always decrypt replies because the Newsgroup acts as a public mailbox. Everybody can see and download the messages but only the intended recipient can decrypt it.
 
 ===Zax Server List===
 Active Zax nymservers as of 2015:<ref>http://alt.privacy.anon-server.narkive.com/Zd27lR8z/how-to-get-nymserver-help-key</ref>
@@ -267,11 +369,14 @@ Active Zax nymservers as of 2015:<ref>http://alt.privacy.anon-server.narkive.com
 
 nymphet.paranoici.org
 
-mixnym.net <ref>Very popular but key seems expired</ref>
+mixnym.net
 
-nym.now.im/nymserver
+nym.now.im
+
+breaka.net
 
 bravonym.inbox5.com
+
 
 ===Public/Open News Servers===
 
@@ -284,17 +389,9 @@ news.mixmin.net<ref>Used by QSA. https://www.quicksilvermail.net/</ref>
 eternal-september.org
 
 
-===From: Header Support===
-For a list of remailers that accept ''From:'' headers.<ref>https://www.quicksilvermail.net/links.html</ref>
-
-http://pinger.mixmin.net/from.html
-
-
-
-
 ===Other Useful Topics===
 
-* You can change the default editor to something more usable than vi<ref>http://alt.privacy.anon-server.narkive.com/5dbZVYpQ/choice-of-editor-with-mixmaster</ref>:
+* You can change the default Mixmater editor to something more usable than vi<ref>http://alt.privacy.anon-server.narkive.com/5dbZVYpQ/choice-of-editor-with-mixmaster</ref>:
 <pre>
 sudo echo 'export EDITOR=kwrite' >> ~/.bashrc
 </pre>
@@ -307,18 +404,11 @@ You will receive a message in a.a.m that its already been taken.<ref>http://alt.
 
 ===Dev Notes===
 
-See if we can ship:
+See if we can ship aam2mail<ref>The latter also written by Steve Crooks https://github.com/crooks/aam2mail</ref> - a stand-alone python utility for hsub management.
 
-*Newsgroup access already configured in Icedove
-*Templates for nym request
-*Templates for nym mailing to recipient
-*aampy or aam2mail<ref>The latter also written by Steve Crooks https://github.com/crooks/aam2mail</ref> - stand-alone python utilities for Hsub management to blend in with most messages in a.a.m
+Readings:
 
-
-Resources:
-
-Information on Subject Line types hsub esub and nym deletion.<ref>https://groups.google.com/forum/#!topic/alt.privacy.anon-server/f3H4Xw5j2LI</ref> Future fleshing out of instructions for Hsubs
-
+Mixnym.net key expired but Zax fixes the problem.<ref>https://groups.google.com/forum/?_escaped_fragment_=topic/alt.privacy.anon-server/A6ltHhItGrw#!topic/alt.privacy.anon-server/A6ltHhItGrw</ref>
 
 == Implementation Notes ==
 
