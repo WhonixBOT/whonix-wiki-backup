@@ -319,7 +319,7 @@ The reply will arrive in the alt.anonymous.messages newsgroup. Nymservers will a
 
 ====Send Mail with Registered Nym====
 
-* Create a plaintext file called message.txt in your Home folder. Compose your message and add the required headers so it looks like this:
+* Create a plaintext file called message.txt in your Home folder. Add the required headers so it looks like this:
 
 <pre>
 From: nym@server
@@ -330,33 +330,20 @@ This is an example
 </pre>
 
 
-* Optionally encrypt your messages to a recipient if you have their key. Similar to Tor, the last hop between the Nymserver and the recipient are not encrypted. If they don't use encryption, you have no choice but to send a plaintext message.
+* Optionally encrypt your message body to the recipient if you have their key. Similar to Tor, the last hop between the Nymserver and the recipient are not encrypted. If they don't use encryption, you have no choice but to send a plaintext message.
 <pre>
-KGpg -> Open editor -> paste the message above and Encrypt to recipient's key (its assumed that its been imported beforehand) 
+KGpg -> Open editor -> compose your message body and Encrypt to recipient's key (its assumed that its been imported beforehand) 
 
 Options -> Allow encryption with untrusted keys
 
 Select recipient key
-
-Save ciphertext as message.txt
 </pre>
 
-You must add headers to the saved file so message will look like this:
-
-<pre>
-From: nym@server
-To: send@server
-Subject: Example
-
------BEGIN PGP MESSAGE-----
-...
------END PGP MESSAGE-----
-</pre>
-
-The "From:" and "Subject:" headers do not even have to match or be valid.
+Paste the encrypted message body in place of ''This is an example'' in the example above and save.
 
 
-* Finally, the message  '''must''' be signed and encrypted to the Nymserver before sending:
+
+* The message  '''must''' be signed and encrypted to the Nymserver:
 <pre>
     gpg --armor --sign --encrypt --recipient send@mixnym.net message.txt
 </pre>
@@ -368,13 +355,26 @@ Answer 'y' for yes when prompted that its not certain that the key belongs to th
 Note that if you have multiple keys you must specify the nym key as the default so its automatically used by the --sign command.
 
 
-*Send the message to the Nymserver which will then pass it onto the recipient(s):
+*You '''must''' then edit the message encrypted to the Nymserver and add a set of headers so it looks like this:
+
+<pre>
+From: nym@server
+To: send@server
+Subject: Example
+
+-----BEGIN PGP MESSAGE-----
+<snipped>
+-----END PGP MESSAGE-----
+</pre>
+
+The "From:" and "Subject:" headers do not even have to match or be valid.
+
+
+*Finally, send the message to the Nymserver which will then pass it onto the recipient(s):
 
     <pre>
     mixmaster --mail -l *,*,* -c 3 send@mixnym.net message.txt.asc
     </pre>
-
-
 
 ===Zax Server List===
 Active Zax nymservers as of 2015:<ref>http://alt.privacy.anon-server.narkive.com/Zd27lR8z/how-to-get-nymserver-help-key</ref>
