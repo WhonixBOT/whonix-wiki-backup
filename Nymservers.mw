@@ -14,306 +14,479 @@ To manage your nym, messages  can be sent to the Nymserver, via your SMTP server
 
 ===Instructions===
 
-*Messages to a Nymserver would follow this path:
+*Messages to and from a Nymserver would follow this path:
 
-'''Whonix -> Tor circuit -> Mixmaster network -> Nymserver'''
-
-
-*Replies go from:
-
-'''Nymserver -> alt.anonymous.messages Newsgroup'''
+'''Whonix -> Tor circuit -> Mixmaster network -> Nymserver -> alt.anonymous.messages Newsgroup'''
 
 
-*The process broken down into steps:
+The process broken down into steps:
 
-'''Create Nym Request -> Send Nym Request to Nymserver -> Install and Configure aam2mail to Fetch Replies -> Send Mail with Registered Nym'''
+# Import Nymserver's Key
+# Prepare Nym Request
+# Send Request to Nymserver
+# Retrieve Messages from Newsgroup
+# Decrypt Messages
+# Send Mail with Registered Nym
+# Reconfigure Nym
 
+'''Conventions'''
 
-'''CONVENTIONS'''
+For these instructions the example '''nym@server''' will be used. You
+must change them to suit the nym choice you make and the domain name
+of the Nymserver.
 
-For these instructions the example: nym@server will be used. You must change it to suit the nym choice you make and the domain name of the Nymserver.
+This example is for '''mixnym.net''' but the guide is still generic
+and relevant to apply to any other Zax-type Nymserver. For a
+selection of Nymservers see this
+[https://www.whonix.org/w/index.php?title=Mixmaster&stable=0&shownotice=1&fromsection=Other_Useful_Topics#Zax_Server_List list].
 
-This example is for Mixnym.net but the guide is still generic and relevant to apply to any other Zax-type Nymserver. For a selection of Nymservers see this [https://www.whonix.org/w/index.php?title=Mixmaster&stable=0&shownotice=1&fromsection=Other_Useful_Topics#Zax_Server_List list].
- 
+It is important to know which of the address you are going to use
+when sending messages to the Nymserver:
 
+'''config@server''': creation or configuration requests, to create
+and manage your nym
 
-====Creating a Nym Request====
+'''send@server''': send requests, to send messages from your nym to
+other people
 
-*A Nymserver's key is usually on their homepage, but sometimes it may only be available from the GPG keyservers. In that situation, open KGpg's keyserver dialog and search for it and then import from there.
+'''url@server''': url requests, to retrieve an HTML page
 
-1. Download the Mixnym.net Nymserver key with curl to home folder.
+==== Import Nymserver's Key ====
 
-<pre>
-curl -o key.asc http://is-not-my.name/key.asc
-</pre>
+A Nymserver's key is usually on their homepage, but sometimes it may
+only be available from the PGP keyservers. In that situation, open
+KGpg's keyserver dialog, search for it and then import from there.
 
+1. Download the '''mixnym.net''' Nymserver key with curl to home folder.
 
+    <pre>
+    curl -o key.asc http://is-not-my.name/key.asc
+    </pre>
 
 2. Check fingerprints/owners without importing anything.
 
-<pre>
-gpg --with-fingerprint key.asc
-</pre>
+    <pre>
+    gpg --with-fingerprint key.asc
+    </pre>
 
+Always check the fingerprint for yourself. The output at the moment
+is:
 
-Always check the fingerprint for yourself. The output at the moment is: 
+    <pre>
+    pub  4096R/0xFF4DB66014D0C447 2010-05-05 URL is-not-my.name (URL Retrieval address for Is-Not-My Nymserver) <url@is-not-my.name>
+          Key fingerprint = 94F2 04C2 8BF0 0937 EFC8  5D1A FF4D B660 14D0 C447
+    </pre>
 
-<pre>
-pub  4096R/0xFF4DB66014D0C447 2010-05-05 URL is-not-my.name (URL Retrieval address for Is-Not-My Nymserver) <url@is-not-my.name>
-      Key fingerprint = 94F2 04C2 8BF0 0937 EFC8  5D1A FF4D B660 14D0 C447
-</pre>
+3. If it looks good, import with GPG:
 
+    <pre>
+    gpg --import key.asc
+    </pre>
 
-3. If it looks good import with GPG:
+==== Prepare Nym Request ====
 
-<pre>
-gpg --import key.asc
-</pre>
+===== Create a Key Pair =====
 
-    
+Create a new key pair for '''nym@server''':
 
-*Create a new key pair for nym@server with KGpg.
-    
     <pre>
     KGpg -> Keys -> Generate Key Pair...
-    
+
     Name: John Doe (or any alias of choice)
     Email: nym@server
     RSA key of 4096 bits
-    
-    
+
     Enter passphrase for key. OK.
     </pre>
 
-    
-    
-*Export your Public Key
-This will extract the newly generated key from your keyring and store it in a text file. In the following example, I've named that file pubkey.txt
-    
+Equivalent in the command line:
+
+    <pre>
+    gpg --gen-key
+    </pre>
+
+===== Export Public Key =====
+
+This will extract the newly generated key from your keyring and store
+it in a text file. In the following example, I've named that file
+<code>pubkey.txt</code>:
+
+    <pre>
+    KGpg -> Select key -> Export Public Key -> File -> pubkey.txt -> OK
+    </pre>
+
+Equivalent in the command line:
+
     <pre>
     gpg --armor --export nym@server > pubkey.txt
     </pre>
-    
-    
 
-*Edit the pubkey.txt file
-You only need to perform this step if you want to configure additional options on your Nym, such as Subject Identification or Symmetric Encryption. Its highly recommended you do so to keep your messages from standing out on the Newsgroup.
-For each option, add a line to the pubkey.txt file using the format:-
-'''option: setting'''
+===== Configure Additional Options =====
+
+You only need to perform this step if you want to configure
+additional options on your nym, such as Subject Identification or
+Symmetric Encryption. For each option, prepend a line to the
+<code>pubkey.txt</code> file using the format:
+
+    <pre>
+    option: setting
+    </pre>
 
 Caps are unimportant in the option name, but are sensitive in the setting.
-    
-Choose some unique keyword as a Subject to be able identify the Nymserver reply on alt.anonymous.messages.
-For example, to add a hashed subject of ''panda'':-
-    
-Your message should look like this:
-    
+
+The Nymserver parameters specified here are optional.
+<ref>https://groups.google.com/forum/#!topic/alt.privacy.anon-server/f3H4Xw5j2LI</ref>
+You can set them now or change them in the future as its detailed on
+Reconfigure Nym.
+
+'''Fixed (Plaintext) Subject'''
+
+Choose some unique keyword as a '''Subject''' to be able identify the
+Nymserver reply on the Newsgroup with the <code>subject</code>
+option. Using a fixed subject is convenient, but anyone will be able
+to link all the messages for a nym since they all have the same
+subject.
+
+'''Hashed Subject'''
+
+A better alternative than the <code>subject</code> option is to use
+hashed subjects (hSubs) by providing an hSub passphrase with the
+<code>hsub</code> option instead.
+
+An hSub is made of two parts, where the first is a random number and
+the second part is the hash of that same random number and a
+passphrase. As the hashing is a one-way function, no one can identify
+the owner of the message. However, as you know your nym's hSub
+passphrase, you can hash it with the random number of every message,
+and if the result collides with the second part of the hSub, that
+message was sent to your nym. You can read more on
+[http://is-not-my.name/hsub.html this post] by Zax.
+
+You can also use these options to set an hSub:
+<code>hash-key</code>, <code>hash-subject</code>,
+<code>subject-password</code>. These all mean the same as
+<code>hsub</code>.
+
+'''Symmetric Encryption'''
+
+You can add a symmetric encryption layer by specifying a key with the
+<code>symmetric</code> option.
+
+'''Deletion'''
+
+If you wish to delete your nym, you can send the following option and
+setting: <code>delete: yes</code>.
+
+'''Example'''
+
+For example, to add an hSub passphrase of <code>panda</code>, you
+should edit the <code>pubkey.txt</code> like this:
+
     <pre>
     hsub: panda
-    
+
     -----BEGIN PGP PUBLIC KEY BLOCK-----
     <snipped>
     -----END PGP PUBLIC KEY BLOCK-----
     </pre>
 
+You can add more than one option line to your request. However, you
+should remember that some options might create conflicts. For
+example, <code>subject</code> and <code>hsub</code> work differently,
+but are used for the same purpose. You should choose either one or
+the other.
 
-The Mixmyn.net Nymserver parameters specified here are optional.<ref>https://groups.google.com/forum/#!topic/alt.privacy.anon-server/f3H4Xw5j2LI</ref> You can set them now or change them in the future. Future messages requesting these changes would need to be both signed and encrypted to '''config@mixnym.net''' to be accepted by the Nymserver - as shown in the next sub-section<ref>https://groups.google.com/forum/?_escaped_fragment_=topic/alt.privacy.anon-server/2INtTYns2p8#!topic/alt.privacy.anon-server/2INtTYns2p8</ref>
+===== Encrypt the Request =====
 
-Symmetric: passphrase  //Add a layer of symmetric encryption (not recommended).
+Now you must wrap <code>pubkey.txt</code>, the message containing your
+additional options and public key, to the Nymserver. The
+<code>pubkey.txt</code> file is the input for the following example
+and the encrypted file will be created as
+<code>pubkey.txt.asc</code>:
 
-Subject: hard subject  //Define plain-text - do not use with 'Hsub:'
+    <pre>
+    KGpg -> Open Editor -> Open -> Select pubkey.txt
 
-Hsub: passphrase       //Define your hsub secret subject
+    Encrypt -> Select the Nymserver's key
 
-DELETE: yes            //Delete a Nym (specify "yes" as the option's value)
+    Options -> Allow encryption with untrusted keys -> OK
 
+    Save -> Name the ciphertext pubkey.txt.asc
+    </pre>
 
-Any of the below can be used to set in place of ''hsub: passphrase''
-above:
+Equivalent in the command line:
 
-hash-subject: passphrase
-
-subject-password: passphrase
-
-hash-key: passphrase
-
-hsub: passphrase
-
-
-Do not use ''Symmetric: passphrase''.  If you do, some (if not all) of the free hsub programs and routines will not be able to automatically find your messages. aam2mail supports the option but it complicates the operation. Its also not commonly used and therefore not a good choice for blending in.
-
-To change your hsub, create a message containing just this. The example is applicable to other options:
-
-<pre>
-hsub: your_new_hsub
-</pre>
-
-
-    
-*Now you must wrap, pubkey.txt, the message containing your public key + unique Subject Identifier, to the Nymserver.The pubkey.txt file is the input for the following example and the encrypted file will be created as pubkey.txt.asc
-    
     <pre>
     gpg --armor --encrypt --recipient config@mixnym.net pubkey.txt
     </pre>
-    
-Ignore the warning about encrypting to an "untrusted" key and select 'y' for yes.
 
+You can ignore the warning about encrypting to an "untrusted" key and
+select <code>y</code> for yes.
 
-====Send Nym Request to Nymserver====
+==== Send Request to Nymserver ====
 
-*Before sending, update remailer keys first. Its enough to do this once a day:<ref>https://www.youtube.com/watch?v=dzbrFPO4604 LinuxJournal</ref>
+Before sending the request, update remailer keys first. Its enough to
+do this once a day
+<ref>https://www.youtube.com/watch?v=dzbrFPO4604 LinuxJournal</ref>:
 
     <pre>
     mixmaster
 
-    u
+    u)pdate stats
 
     *
-    
+
     pick remailer letter (optional)
-    
+
     q)uit
-
     </pre>
-        
-    
-    
-*Send the encrypted file to the Nymserver with Mixmaster:
-    
+
+Send the encrypted file to the Nymserver with Mixmaster:
+
     <pre>
-    mixmaster --mail -l *,*,* -c 3 config@mixnym.net pubkey.txt.asc
+    mixmaster --mail -l *,*,* -c 2 config@mixnym.net pubkey.txt.asc
     </pre>
-    
-Here we are sending three copies through three Mixmaster nodes. If necessary, run Mixmaster and check the remailer chain list to see node availability and reliability stats and choose accordingly.  Note that the protection provided by Mixmaster is not of importance here because everything is done behind Tor.<ref>http://www.mail-archive.com/liberationtech@lists.stanford.edu/msg00022.html</ref>
 
-That's it! The Nymserver decrypts the message, extracts your Nym's email address from the supplied Public Key and processes it. Provided that the nym isn't already taken, you will receive a confirmation message from the Nymserver, encrypted to your key.
+Where:
 
+<code>-l</code> customizes the remailer chain length. The shorter the
+chain the faster your mail will be sent and the more likely it will
+make it through. Here we are using three random mixes:
+<code>*,*,*</code>.
 
-'''IMPORTANT'''
+<code>-c</code> sends copies of the message. Here we are using
+<code>2</code>.
 
-Nym creation and configuration messages should only be sent to '''config@server''' and regular messages intended for recipients to '''send@server'''.
+If necessary, run Mixmaster from command line and check the remailer
+chain list to see node availability and reliability stats and choose
+accordingly.
 
-It's worth noting that the nym creation request is the only message the server will ever accept from you that's not signed by your key. From now on, your digital signature will prove your ownership of the nym. Messages without it will be rejected.
+That's it! The Nymserver decrypts the message, extracts your Nym's
+email address from the supplied Public Key and processes it. Provided
+that the Nym isn't reserved or already taken, you will receive a
+confirmation message from the Nymserver, encrypted to your nym's key.
 
+Note that the protection provided by Mixmaster is not of importance
+here because everything is done behind Tor.
+<ref>http://www.mail-archive.com/liberationtech@lists.stanford.edu/msg00022.html</ref>
 
-*Signing messages to the Nymserver with GPG:
+'''Important'''
 
-<pre>
-    gpg --armor --sign --encrypt --recipient config@mixnym.net pubkey.txt
-</pre>
+It's worth noting that this is the only message you will attach your
+public key and the only one the server will ever accept from you
+that's not signed by that key. From now on, you nym's digital
+signature will prove your ownership of it. Examples on signing can be
+found on Send Mail with Registered Nym and
+Reconfigure Nym.
 
+==== Retrieve Messages from Newgroup ====
 
-Type your password
+Zax-type Nymservers deliver messages to the nyms via the
+alt.anonymous.messages Usenet group (a.a.m). Anyone can access these
+messages, but only the nyms can decrypt them, using their private
+keys.
 
-Answer 'y' for yes when prompted that its not certain that the key belongs to the person named in the user ID.
+As explained previously, you can configure your messages to be
+identified by subject. If you chose to use some kind of subject
+identification from the previous section, you can go to
+Use aam2mail to Fetch Replies.
+If you did not configure that and wish to do so, you will have to
+send a configuration message to configure a method of subject
+identification. You will find an example on
+Reconfigure Nym.
 
-Note that if you have multiple keys you must specify the nym key as the default so its auomatically used by the ''--sign'' command.
+If you do not wish to use any kind of subject identification, the
+default way to do this is by downloading and attempting to decrypt
+every message posted on the Newsgroup. If it works, then the message
+was sent to your nym.
 
-====Install and Configure aam2mail to Fetch Replies====
+===== Use aam2mail to Fetch Replies =====
 
-1. Install git and clone aam2mail source. aam2mail requires no extra dependencies.
+1. Install git and clone aam2mail source. aam2mail requires no extra
+dependencies.
 
-<pre>
-sudo apt-get install git
-git clone https://github.com/crooks/aam2mail
-
-cd aam2mail
-sudo python setup.py install
-</pre>
+    <pre>
+    sudo apt-get install git
+    git clone https://github.com/crooks/aam2mail
+    cd aam2mail
+    sudo python setup.py install
+    </pre>
 
 
 2. Configure aam2mail settings. Use the hsub you chose:
 
-<pre>
-mkdir aam2mail/etc
-echo 'panda' >> aam2mail/etc/subject_hsub
-echo 'news.aioe.org' >> aam2mail/etc/servers
-</pre>
+    <pre>
+    mkdir aam2mail/etc
+    echo 'panda' >> aam2mail/etc/subject_hsub
+    echo 'news.aioe.org' >> aam2mail/etc/servers
+    </pre>
 
+3. Run aam2mail periodically to check for messages. There is an
+expected delay of a few hours before getting replies.
 
-3. Run aam2mail periodically to check for messages. There is an expected delay of a few hours before getting replies.
-
-<pre>
-aam2mail --start
-</pre>
+    <pre>
+    aam2mail --start
+    </pre>
 
 or
 
-<pre>
-aam2mail --restart
-</pre>
+    <pre>
+    aam2mail --restart
+    </pre>
 
+4. Replies will be downloaded by aam2mail to this path:
+''/home/user/Maildir/new''. aam2mail does not decrypt messages for
+you but retrieves them only.
 
-4. Replies will be downloaded by aam2mail to this path: ''/home/user/Maildir/new''. aam2mail does not decrypt messages for you but retrieves them only.
+Be sure to check for new messages regularly because messages on
+Usenet accumulate beyond the fetch-limit and you may miss them.
 
-5.To decrypt, copy-paste the ciphertext block '''only''' into KGpg or else decryption will fail.
+==== Decrypt Messages ====
 
-<pre>
-KGpg -> File -> Open Editor 
-</pre>
-
-
-Congratulations for registering your first nym. Now you are ready to use it for sending messages. Be sure to check for new messages regularly because messages on Usenet accumulate beyond the fetch-limit and you may miss them.
-
-The reply will arrive in the alt.anonymous.messages newsgroup. Nymservers will always encrypt replies to your key because the Newsgroup acts as a public mailbox. Everybody can see and download the messages but only the intended recipient can decrypt it.
-
-====Send Mail with Registered Nym====
-
-* Create a plaintext file called message.txt in your Home folder. Add the required headers so it looks like this:
-
-<pre>
-From: nym@server
-To: recipient@domain
-Subject: Example
-
-This is an example
-</pre>
-
-
-* Optionally encrypt your message body to the recipient if you have their key. Similar to Tor, the last hop between the Nymserver and the recipient are not encrypted. If they don't use encryption, you have no choice but to send a plaintext message.
-<pre>
-KGpg -> Open editor -> compose your message body and Encrypt to recipient's key (its assumed that its been imported beforehand) 
-
-Options -> Allow encryption with untrusted keys
-
-Select recipient key
-</pre>
-
-Copy-paste the encrypted message body in place of ''This is an example'' in the step above and save.
-
-
-
-* The message  '''must''' be signed and encrypted to the Nymserver:
-<pre>
-    gpg --armor --sign --encrypt --recipient send@mixnym.net message.txt
-</pre>
-
-Type your password
-
-Answer 'y' for yes when prompted that its not certain that the key belongs to the person named in the user ID.
-
-Note that if you have multiple keys you must specify the nym key as the default so its automatically used by the --sign command.
-
-
-*You '''must''' then edit the message encrypted to the Nymserver and add a set of headers so it looks like this:
-
-<pre>
-From: nym@server
-To: send@server
-Subject: Example
-
------BEGIN PGP MESSAGE-----
-<snipped>
------END PGP MESSAGE-----
-</pre>
-
-The "From:" and "Subject:" headers do not even have to match or be valid.
-
-
-*Finally, send the message to the Nymserver which will then pass it onto the recipient(s):
+With the message saved to a file, open it with KGpg and decrypt it:
 
     <pre>
-    mixmaster --mail -l *,*,* -c 3 send@mixnym.net message.txt.asc
+    KGpg -> File -> Open Editor -> Open
+
+    Select the file with the message
+
+    Decrypt -> Type your nym's key passphrase
+    </pre>
+
+You should see the plaintext of the message your nym received.
+
+Congratulations for registering your first nym. Now you are ready to
+use it for sending messages.
+
+==== Send Mail with Registered Nym ====
+
+To send messages to other people, it is very similar to the way you
+did previously for the creation and configuration. KGpg could be used
+for that:
+
+    <pre>
+    KGpg -> Open editor
+    </pre>
+
+Type the message:
+
+    <pre>
+    To: recipient@domain
+    Subject: Example
+
+    This is an example
+    </pre>
+
+At the bottom, encrypt it:
+
+    <pre>
+    Encrypt -> Select the Nymserver's key
+
+    Options -> Allow encryption with untrusted keys -> OK
+
+    Save -> Name the ciphertext as message.txt
+    </pre>
+
+Send it with Mixmaster, but this time to '''send@server''':
+
+    <pre>
+    mixmaster --mail -l *,*,* send@server message.txt
+    </pre>
+
+Notice that this time we did not send copies of the message. We
+advised sending copies on the creation because after receiving the
+first one, the server would ignore the others. In this case, if you
+send copies, the server will send all of them to the recipient.
+
+The recipient will receive a message from '''nym@server''' and they
+can send a reply to that same address.
+
+==== Reconfigure Nym ====
+
+If you wish to add (or change) an option, all you can send another
+message to '''config@server''', say <code>option.txt</code>, with the
+option(s) you would like to add:
+
+    <pre>
+    hsub: passphrase
+    </pre>
+
+The message does not need to have a body, just headers. Remember that
+after creation, all your messages should be signed before sending to
+either '''config@server''' or '''send@server''':
+
+    <pre>
+    gpg --armor --encrypt --sign --recipient config@mixnym.net option.txt
+    </pre>
+
+Now you just need to send. As you are configuring your nym, you
+should send it to '''config@server''':
+
+    <pre>
+    mixmaster --mail -l *,*,* config@mixnym.net option.txt.asc
+    </pre>
+
+=== Important Notes ===
+
+==== Message Ordering ====
+
+Due to Mixmaster's latency, it is possible that messages arrive out
+of order. Your next messages might arrive earlier than the creation
+message. If you do not get responses, you will have to send them
+again, once the nym is created.
+
+==== Public Mailbox ====
+
+When someone send a message to your nym, the server will receive
+it, encrypt to the nym and post on a.a.m so you can retrieve it. The
+Newsgroup acts as a public mailbox. Everybody can see and download
+the messages but only the intended recipient (your nym) can decrypt
+it.
+
+==== Multiple Nyms ====
+
+If you use more than one nym, you need to remember to choose which
+nym is going to sign the message, or always the same nym is going to
+send the messages, and consequently only his messages will be
+accepted. Remember that the only message accepted without a signature
+is the creation message.
+
+To specify the nym that is going to sign the message, use the
+<code>--local-user</code> flag:
+
+    <pre>
+    gpg --armor --encrypt --sign --recipient send@server --local-user nym@server message.txt
+    </pre>
+
+==== End-to-End Encryption ====
+
+The encryption layers discussed here will only protect data between
+your nym and the server. It is advised that you use some kind of
+end-to-end encryption (another layer) between you and the recipient
+by encrypting the body of the message first, and then encrypting to
+the server's key.
+
+Keep in mind that the headers cannot be encrypted. An end-to-end
+encrypted message would look like this:
+
+    <pre>
+    To: recipient@domain
+    Subject: Subject
+
+    -----BEGIN PGP MESSAGE-----
+    <snipped>
+    -----END PGP MESSAGE-----
+    </pre>
+
+After that you would then encrypt to the Nymserver, and it would look
+like this in the end:
+
+    <pre>
+    To: send@server
+
+    -----BEGIN PGP MESSAGE-----
+    <snipped>
+    -----END PGP MESSAGE-----
     </pre>
 
 ===Zax Server List===
