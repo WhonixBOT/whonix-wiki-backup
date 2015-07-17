@@ -378,6 +378,75 @@ sudo rm /var/lib/libvirt/images/Whonix-Workstation.qcow2
 </div>
 </div>
 
+=KVM Upgrade Instructions=
+
+Its highly recommended that you uninstall older Whonix versions and always run the newer one. Note that Whonix supports in-place apt-get upgrades too.
+
+First, move your data out of the VM via shared folders and perform the [https://www.whonix.org/w/index.php?title=KVM&stable=0&shownotice=1#Uninstall cleanup steps] followed by [https://www.whonix.org/w/index.php?title=KVM&stable=0&shownotice=1#Download_and_Extract installation] of the new images.
+
+
+=Multiple side-by-side Whonix Setups=
+
+To run multiple, separate Whonix instances you will need to clone existing machines. These steps assume Whonix has already been imported.
+
+
+1. Create clones of the Gateway and Workstation VMs rolled back to clean snapshots:
+
+In Virtual Machine Manager:
+
+<pre>
+Highlight VM -> Open -> Virtual Machine -> Clone...
+</pre>
+
+
+2. Export Whonix's internal network settings:
+
+<pre>
+sudo virsh net-dumpxml Whonix > Whonix.xml
+</pre>
+
+
+3. Edit the network configuration to make it unique. Change the '''name''' and '''bridge name'''. Delete the '''mac address''' and '''uuid''' parameters. Alternatively, replace the configuration with the example below:
+
+<pre>
+<network>
+  <name>Whonix-11</name>
+  <bridge name='virbr2' stp='on' delay='0'/>
+</network>
+</pre>
+
+Save and exit:
+
+<pre>
+CTRL-X
+y
+CTRL-M
+</pre>
+
+Note that virbr0 is assigned to the '''default''' network (NAT NIC), and virbr1 to the '''Whonix''' internal network (Whonix NIC), therefore, the network name was changed to '''Whonix2''' and the bridge name to '''virbr2'''.
+
+4. Import and start the new network:
+
+<pre>
+virsh -c qemu:///system net-define Whonix.xml
+</pre>
+
+<pre>
+virsh -c qemu:///system net-autostart Whonix
+</pre>
+
+<pre>
+virsh -c qemu:///system net-start Whonix
+</pre>
+
+5. Attach the Gateway and Workstation VM NICs to the new network. Its important you pay attention and match internal network interfaces to the newer ones and not switch to a NIC that connects outside. To edit the VM virtual NIC settings:
+
+<pre>
+Highlight VM -> Open -> Settings -> NIC virtual hardware -> Set Network Source to: Virtual network 'Whonix2' : Isolated network, internal and host routing only
+</pre>
+
+Note that the network is exclusively internal and does not communicate with the host in any way.
+
 = Extra =
 == Shared Folders ==
 To move data between the guest and host follow these steps.
