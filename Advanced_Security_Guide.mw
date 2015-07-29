@@ -375,14 +375,14 @@ Other security considerations:
 * Swap is an issue. Encrypted swap does not help you as long as the host is powered up. (Key naturally still in RAM.)
 * Disabling swap would require to wipe (special secure delete) the existing swap. It might be the safest to never have used swap before.
 * Memory dumps caused by BSOD or kernel crashes can still leave unintended traces on the host.
-* Unrealistic operational rules?
+* When a VM has been powered down, the RAM that previously contained the VM's encryption key might not have been wiped yet. Memory pages belonging to a terminated process don't get their contents wiped (zeroed) until they are about to be used by another process. <ref>
+https://security.stackexchange.com/a/42186 : "Linux zeroes out (i.e. fills with zeros) all pages of memory not when they are released, but when they are given to another process. Thus, no process may obtain data excerpts from another process. However, the pages will retain their old contents until they are reused."
+</ref> Similar to [[#Cold Boot Attacks|cold boot attacks]], but in this case it might even be a "warm" attack, because under this threat model, the machine and RAM is still powered.
+* Therefore unrealistic operational rules?
 
 Security research questions:
 
 * With swap and crash dumps disabled, could it still happen, that the virtualizer writes [parts] of the VM's RAM's content to the disk? Virtualizer specific. TODO: Specifically ask virtualizer vendors about this.
-* When a VM has been powered down, the RAM that previously contained the VM's encryption key might not have been wiped yet. Memory pages belonging to a terminated process don't get their contents wiped (zeroed) until they are about to be used by another process. <ref>
-https://security.stackexchange.com/a/42186 : "Linux zeroes out (i.e. fills with zeros) all pages of memory not when they are released, but when they are given to another process. Thus, no process may obtain data excerpts from another process. However, the pages will retain their old contents until they are reused."
-</ref> Similar to [[#Cold Boot Attacks|cold boot attacks]], but in this case it might even be a "warm" attack, because under this threat model, the machine and RAM is still powered.
 
 * Can a KVM guest access data from other process' memory pages because of memory ballooning?
 
