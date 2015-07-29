@@ -69,10 +69,42 @@ If you should really ever catch your ISP tampering with NTP, you should probably
 <translate>
 <!--T:254-->
 You have also another option. You could disable NTP on your host and always manually adjust the clock out of band, i.e. using a watch or atomic clock. This might make your clearnet traffic more fingerprintable <ref>See [<tvar|254>https://www.whonix.org/wiki/Fingerprint|</> Fingerprint] page to find out what fingerprinting means in this case.</ref>, since it introduces a device issuing clearnet traffic (at least operating system updates, hopefully), but not using NTP. It is unknown how many people deactivated/broken/uninstalled/never installed NTP. Also unknown, how many people are using alternative time synchronization methods such as authenticated NTP, tails_htp, tlsdate or similar. Search engine research however suggests, that very few people care and do so. 
+</translate>
 
-<!--T:255-->
-Summary:</translate>
+== Spoof the Initial Virtual Hardware Cclock Offset  ==
+=== VirtualBox ===
+<translate><!--T:243-->
+VirtualBox has a feature to spoof the initial virtual hardware clock offset by setting the clock X milliseconds in feature or past. Syntax.</translate>
 
+<pre>
+VBoxManage modifyvm <name> --biossystemtimeoffset -<milliseconds>
+VBoxManage modifyvm <name> --biossystemtimeoffset +<milliseconds>
+</pre>
+
+<translate><!--T:244-->
+It's prudent to add a random delay within the following range.</translate>
+
+<pre>
+VBoxManage modifyvm <name> --biossystemtimeoffset -60000
+VBoxManage modifyvm <name> --biossystemtimeoffset +60000
+</pre>
+
+<translate><!--T:245-->
+Pick one example per VM and use random values within the range. (On the host.)</translate>
+
+<pre>
+VBoxManage modifyvm "Whonix-Gateway" --biossystemtimeoffset -35017
+VBoxManage modifyvm "Whonix-Gateway" --biossystemtimeoffset +27931
+
+VBoxManage modifyvm "Whonix-Workstation" --biossystemtimeoffset -35017
+VBoxManage modifyvm "Whonix-Workstation" --biossystemtimeoffset +27931
+</pre>
+
+<translate>
+<!--T:247-->
+Clock skew apart this small biossystemtimeoffset <ref>biossystemtimeoffset is being used, to unlink the initial clock synchronization of the VM by the Virtualizer from the host clock.</ref> <ref>Powering on a VM will initially synchronize the clock with the host clock until Whonix Timesync adjusts it.</ref> is always bad for privacy <ref>Can lead to linkability, thus would be [[<tvar|A>DoNot#Do_not_confuse_Anonymity_with_Pseudonymity.|</> pseudonymous rather than anonymous]].</ref>.</translate>
+
+== Summary ==
 <translate>
 <!--T:256-->
 * Needs to be done only after importing the Virtual Machine: Modify <code>--biossystemtimeoffset</code> for all Virtual Machines.
