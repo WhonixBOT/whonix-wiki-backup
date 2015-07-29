@@ -1,1 +1,93 @@
-.
+=Introduction=
+Insecure time synchronization clients and clock leaks open the way for all kinds of attacks on systems. Leak vectors are described and techniques are discussed to fully mitigate these attacks.
+
+==Attacks==
+See footnotes for more information:
+
+* '''Attack 1:''' Replay attacks <ref>Replaying older time allows:
+* [https://tails.boum.org/contribute/design/Time_syncing/ Feeding old Tor consensus]
+* Feeding old/outdated/known vulnerable updates and (https) certificates. Cryptographic verification depends on system clock, i.e. a clock two years in past will accept certificates/updates, which have been expired/revoked for two years.
+</ref>
+* '''Attack 2:''' Remote Device Fingerprinting <ref>See: 
+* [http://www.caida.org/publications/papers/2005/fingerprinting/ Clock leaks from software on the host and clock leaks from software on the Workstation allows a passive adversary to easily link the anonymous and non-anonymous traffic to the same machine. Active skew attacks can trivially be mounted to deanonymize Onion Services.]
+* See Tor Browser upstream bug #3059 for the types of application level leaks that happen: [https://trac.torproject.org/projects/tor/ticket/3059 Find some way to deal with time-based fingerprints].</ref>
+* '''Attack 3:''' Denial of Service Attacks <ref>[https://blog.hboeck.de/archives/863-Dont-update-NTP-stop-using-it.html The UDP based NTP protocol can be abused to send much larger replies that can overwhelm a system. These are known as amplification attacks</ref>
+* '''Attack 4:''' Locating hidden services. <ref>Timers can leak data about CPU. related activity data that can allow deanonymization of an Onion Service under some circumstances:
+* [http://www.cl.cam.ac.uk/~sjm217/papers/ccs06hotornot.pdf Hot or Not: Revealing Hidden Services by their Clock Skew]
+* [http://caia.swin.edu.au/talks/CAIA-TALK-080728A.pdf An improved clock-skew measurement technique for revealing hidden services]
+* [http://people.cs.umass.edu/~elisha/Papers/SkewMask%20-%20final%20version.pdf SkewMask: Frustrating Clock Skew Fingerprinting Attempts]
+</ref>
+* '''Attack 5:''' Remote Code Execution. <ref>[https://blog.hboeck.de/archives/863-Dont-update-NTP-stop-using-it.html NTP is a buggy and ancient protocol. Flaws in NTP clients can be remotely exploited to give an attacker control over the system. The unencrypted and unauthenticated nature of NTP makes this trivial for network adversaries of any size.]</ref>
+
+
+==Clock-Leak Vectors==
+
+Certain properties of protocols can leak clock information.<ref>http://caia.swin.edu.au/talks/CAIA-TALK-080728A.pdf</ref>
+
+* '''NTP clients:''' Leak host time.<ref>https://trac.torproject.org/projects/tor/ticket/16659#comment:13</ref> Expose the system to all the types of attacks listed above. 
+
+* '''TCP Timestamps:'''  Leak system information down to the millisecond. Leak system uptime. Included in every TCP packet. <ref>https://mailman.boum.org/pipermail/tails-dev/2013-December/004520.html</ref>
+
+* '''ICMP Timestamps:''' Leak host time in query replies.<ref>http://www.networksorcery.com/enp/protocol/icmp/msg13.htm</ref>
+
+* '''TCP Initial Sequence Numbers (ISNs):''' Even without fully leaking the host's clock, timers can be sources of side-channel attacks because they leak sensitive information about a system's CPU activity. This information is leaked in any traffic sent over the clearnet and can be linked to maliciously induced load patterns on an Onion Site leading to deanonymization.<ref>https://trac.torproject.org/projects/tor/ticket/16659</ref>
+
+* '''Application-level traffic:''' Unlike privacy software developed by the Tor Project, internet-facing applications can leak clock information in their traffic. For example JS in browser and timestamps in emails.
+
+
+==Mitigation==
+
+Its possible and practical to block all the clock leak vectors listed above. Its highly recommended for users needing a very high-level security and those running Onion Services to apply these measures.
+
+On a GNU/Linux Host:
+
+* Uninstall any NTP clients and disable systemd's timdatectl NTP synchronization feature.<ref>http://www.freedesktop.org/software/systemd/man/timedatectl.html</ref>
+
+<pre>
+sudo timedatectl set-ntp 0
+</pre>
+
+or 
+
+<pre>
+sudo systemctl disable systemd-timesyncd.service
+</pre>
+
+
+* Disable TCP Timestamps via kernel sysctl.<ref>http://www.tmltechnologies.com/2015/index.php/security/91-disable-tcp-timestamps-on-linux</ref> Note this boolean disables it for both IPv4 and IPv6 - both are controlled by the same sysctl option.
+
+<pre>
+sudo echo 0 > /proc/sys/net/ipv4/tcp_timestamps
+</pre>
+
+
+* Block incoming ICMP messages (and any traffic in general) with iptables or any of its frontends.<ref>https://www.digitalocean.com/community/tutorials/how-to-setup-a-firewall-with-ufw-on-an-ubuntu-and-debian-cloud-server</ref>
+
+<pre>
+sudo apt-get install ufw
+sudo ufw enable
+sudo ufw default deny incoming
+</pre>
+
+You can check the status of UFW by typing:
+
+<pre>
+sudo ufw status
+</pre>
+
+
+* To mitigate TCP ISNs you (ISNs) must avoid sending any traffic clearnet. It is good practice to avoid exposing the host to the hostile environment of the internet. TCP ISNs cannot be exploited through Tor directly by malicious clients because Tor transports TCP streams, not IP packets and so ends up automatically scrubbing a lot of the potential information leaks. An exception is a malicious guard node colluding with a large network adversary which can abuse this vector at the Tor protocol level and match this information with leaked timestamps from Whonix Workstation. A fix is planned for Tor and possibly for the Linux kernel.<ref>https://trac.torproject.org/projects/tor/ticket/16659</ref> From the outside, this vector cannot be abused for Torrified connections by passive network adversaries. The only necessary external connection from the host is the system updater which can be safely Torrified with the apt-transport-tor on Debian. SSH should only ever run as an [https://www.whonix.org/wiki/Hidden_Services#Hidden_Service_Authentication Authenticated] [https://www.whonix.org/wiki/Hidden_Services_Guides#SSH Hidden Service].
+
+
+* For application-level leak mitigation, the same advice as TCP ISNs applies. Without clock information leaking from the host, network adversaries have no non-anonymous timestamp sources to match this data with even when software on Whonix-Workstation misbehaves.
+
+
+==Whonix Solutions and Limitations==
+
+Whonix implements a secure time synchronization mechanism to replace NTP called sdwdate. Timesync is the GUI frontend. It was written with security in mind and to avoid the many security pitfalls in NTP. NTP is also UDP based and cannot work over Tor. Onion Servcies must have an accurate clock to be reachable.
+
+Sdwdate fetches its time exclusively from reputable sources (Whistle-blowing and Privacy friendly Onion Sites) that are highly likely to be hosted on different hardware. All while benefiting from Tor's end-to-end encryption.
+
+Sdwdate can only protect against passive timestamp linking of data leaking from both the host and Whonix Workstation but it cannot defend against an active attacker that compromises Whonix Workstation. They will be able to see the host clock when the VM is rebooted and link the time readings with Host clock leak data. The only way to prevent this attack and many others is stop the leaks.
+
+==Footnotes==
