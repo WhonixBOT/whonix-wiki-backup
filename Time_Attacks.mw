@@ -45,8 +45,9 @@ Its possible and practical to block all the clock leak vectors listed above. Its
 
 On a GNU/Linux Host:
 
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
 * Uninstall any NTP clients and disable systemd's timdatectl NTP synchronization feature.<ref>http://www.freedesktop.org/software/systemd/man/timedatectl.html</ref>
-
+<div class="mw-collapsible-content">
 <pre>
 sudo timedatectl set-ntp 0
 </pre>
@@ -56,10 +57,11 @@ or
 <pre>
 sudo systemctl disable systemd-timesyncd.service
 </pre>
-
-
-* Disable TCP Timestamps via kernel sysctl.<ref>http://www.tmltechnologies.com/2015/index.php/security/91-disable-tcp-timestamps-on-linux</ref> Note this boolean disables it for both IPv4 and IPv6 - both are controlled by the same sysctl option.
-
+</div>
+</div>
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+* Disable TCP Timestamps via kernel sysctl. Note this boolean disables it for both IPv4 and IPv6 - both are controlled by the same sysctl option.
+<div class="mw-collapsible-content">
 Become root.
 
 <pre>
@@ -89,27 +91,36 @@ Check if it's really set.
 <pre>
 sysctl -a | grep net.ipv4.tcp_timestamps
 </pre>
-
-
+</div>
+</div>
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
 * Block incoming ICMP messages (and any traffic in general) with iptables or any of its frontends.<ref>https://www.digitalocean.com/community/tutorials/how-to-setup-a-firewall-with-ufw-on-an-ubuntu-and-debian-cloud-server</ref>
-
+<div class="mw-collapsible-content">
 <pre>
 sudo apt-get install ufw
 sudo ufw enable
 sudo ufw default deny incoming
 </pre>
 
-You can check the status of UFW by typing:
+You can check the status of UFW:
 
 <pre>
 sudo ufw status
 </pre>
-
-
-* To mitigate TCP ISNs you must avoid sending any traffic clearnet.<ref>http://archives.seul.org/or/talk/Sep-2011/msg00060.html</ref> It is good practice to avoid exposing the host to the hostile environment of the internet. TCP ISNs cannot be exploited through Tor directly by malicious clients because Tor transports TCP streams, not IP packets and so ends up automatically scrubbing a lot of the potential information leaks. An exception is a malicious guard node colluding with a large network adversary which can abuse this vector at the Tor protocol level and match this information with leaked timestamps from Whonix Workstation. A fix is planned for Tor and possibly for the Linux kernel.<ref>https://trac.torproject.org/projects/tor/ticket/16659</ref> From the outside, this vector cannot be abused for Torrified connections by passive network adversaries. The only necessary external connection from the host is the system updater which can be safely Torrified with the ''apt-transport-tor'' package on Debian. SSH should only ever run as an [https://www.whonix.org/wiki/Hidden_Services#Hidden_Service_Authentication Authenticated] [https://www.whonix.org/wiki/Hidden_Services_Guides#SSH Hidden Service].
-
-
-* For application-level leak mitigation, the same advice as TCP ISNs applies. Without clock information leaking from the host, network adversaries have no non-anonymous timestamp sources to match this data with even when software on Whonix-Workstation misbehaves.
+</div>
+</div>
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+* TCP Initial Sequence Numbers mitigation.
+<div class="mw-collapsible-content">
+To mitigate TCP ISNs you must avoid sending any traffic clearnet.<ref>http://archives.seul.org/or/talk/Sep-2011/msg00060.html</ref> It is good practice to avoid exposing the host to the hostile environment of the internet. TCP ISNs cannot be exploited through Tor directly by malicious clients because Tor transports TCP streams, not IP packets and so ends up automatically scrubbing a lot of the potential information leaks. An exception is a malicious guard node colluding with a large network adversary which can abuse this vector at the Tor protocol level and match this information with leaked timestamps from Whonix Workstation. A fix is planned for Tor and possibly for the Linux kernel.<ref>https://trac.torproject.org/projects/tor/ticket/16659</ref> From the outside, this vector cannot be abused for Torrified connections by passive network adversaries. The only necessary external connection from the host is the system updater which can be safely Torrified with the ''apt-transport-tor'' package on Debian. SSH should only ever run as an [https://www.whonix.org/wiki/Hidden_Services#Hidden_Service_Authentication Authenticated] [https://www.whonix.org/wiki/Hidden_Services_Guides#SSH Hidden Service].
+</div>
+</div>
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+* Application-level  mitigation.
+<div class="mw-collapsible-content">
+For application-level leak mitigation, the same advice as TCP ISNs applies. Without clock information leaking from the host, network adversaries have no non-anonymous timestamp sources to match this data with even when software on Whonix-Workstation misbehaves.
+</div>
+</div>
 
 ==Whonix Solutions and Limitations==
 
