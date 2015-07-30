@@ -60,8 +60,34 @@ sudo systemctl disable systemd-timesyncd.service
 
 * Disable TCP Timestamps via kernel sysctl.<ref>http://www.tmltechnologies.com/2015/index.php/security/91-disable-tcp-timestamps-on-linux</ref> Note this boolean disables it for both IPv4 and IPv6 - both are controlled by the same sysctl option.
 
+Become root.
+
 <pre>
-sudo echo 0 > /proc/sys/net/ipv4/tcp_timestamps
+sudo su
+</pre>
+
+You need to add the following line to {{Code2|/etc/sysctl.conf}} or {{Code2|/etc/sysctl.d/tcp_timestamps.conf}}:
+
+<pre>
+net.ipv4.tcp_timestamps = 0
+</pre>
+
+To do that, you could use the following command.
+
+<pre>
+echo "net.ipv4.tcp_timestamps = 0" > /etc/sysctl.d/tcp_timestamps.conf
+</pre>
+
+To apply the sysctl settings without reboot, run the following command.
+
+<pre>
+sysctl -p
+</pre>
+
+Check if it's really set.
+
+<pre>
+sysctl -a | grep net.ipv4.tcp_timestamps
 </pre>
 
 
