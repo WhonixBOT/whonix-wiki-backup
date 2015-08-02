@@ -31,6 +31,87 @@ Preferred DNS server 10.152.152.10
 
 '''Download operating system updates.'''
 
+= Whonix-FreeBSD-Workstation =
+
+'''Create a new FreeBSD VM on VirtualBox'''
+
+VirtualBox -> Machine -> New -> Next -> Enter Name (for example: myVM) -> Enter Operating System and Version -> Next -> define RAM -> Next -> create a new hdd (or not) -> Next -> disk format doesn't matter, VDI works fine however -> Next -> dynamically or fixed size is a matter of preference -> Next hdd size and location is a matter of preference -> Next -> Create 
+
+'''Install FreeBSD and upgrade it'''
+
+This is necessary as freebsd-update or pkg do not support socks.
+<pre>
+#Base OS patches as root
+root_shell> freebsd-update fetch install 
+
+#Application updates
+root_shell> pkg upgrade
+</pre>
+
+You will need a http proxy chained to tor gateway to torify pkg or freebsd-update, else you risk loosing patches.
+Use one of privoxy/proxychains/tsocks when using the whonix gateway.
+
+Install necessary applications.
+<pre>
+root_shell> pkg install privoxy 
+</pre>
+After this shutdown the VM.
+<pre>
+root_shell> shutdown -p now
+</pre>
+
+'''Change the VirtualBox VM settings'''
+
+Choose the newly created VM (for example: myVM) -> Settings -> System -> Motherboard -> Hardware Clock in UTC
+
+System -> Motherboard -> Pointing Device -> PS/2 Mouse (required so that USB controller may be disabled)
+
+System -> Processor -> Enable PAE/NX if available
+
+Network -> Adapter 1 -> attached to Internal Network (Important!)
+
+Network -> Adapter 1 -> Name (of Internal Network) (Important!): Whonix
+
+(Note: It's Whonix, not whonix. Case sensitive. Capital W.)
+
+USB -> uncheck Enable USB controller
+
+-> OK 
+
+Start VM and proceed to configure the OS inside the VM.
+
+'''Configure network.'''
+
+In your Custom-Workstation. Open a terminal and edit as a privileged user {{Code|/etc/rc.conf}}
+
+You need to configure a single interface, here it is em0, there should not be any other 'ifconfig' statements:
+
+<pre>
+#Increment the octect of IP address for configuring other workstations.
+ifconfig_em0="inet 10.152.152.12 netmask 255.255.192.0"
+defaultrouter="10.151.152.10"
+</pre>
+
+
+For the address resolution to work. Open {{Code|/etc/resolv.conf}}, on this workstation.
+
+<pre>
+root_shell> vi /etc/resolv.conf
+</pre>
+
+and delete everything, then add
+
+<pre>
+nameserver 10.152.152.10
+</pre>
+
+Restart network service:
+<pre>
+root_shell> service netif restart
+</pre>
+
+Confirm changes by running ifconfig.
+
 = Whonix-GNU/Linux-Workstation =
 == Easy ==
 {{VM Settings Easy Common}}
