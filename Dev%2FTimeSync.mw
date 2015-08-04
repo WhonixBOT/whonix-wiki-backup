@@ -481,12 +481,12 @@ Proposal.
 
 * sdwdate-python and sdwdate-tray run independently.
 * system starts
-* all network blocked, besides for Tor and sdwdate-python
+* all network blocked, besides for Tor and sdwdate-python - implemented by whonix-gw-firewall / whonix-ws-firewall, which will keep care to create a file /var/run/sdwdate-firewall/limited (with content 'whonix-gw-firewall')
 * sdwdate-python (daemon only) starts
-* sdwdate-tray starts, turns red, when hovering over "sdwdate does not provide connectivity information yet"
+* sdwdate-tray starts, turns red, when hovering over "sdwdate does not provide connectivity information yet. "
 * sdwdate-tray sets up inoitifywait / python-inotifyx to get informed about newly created files in /var/run/sdwdate
 * sdwdate-tray parses existing files in /var/run/sdwdate (that were created prior start / setting up inotifywait)
-* sdwdate-tray turns red, when hovering over "sdwdate does not provide connectivity information yet"
+* sdwdate-tray turns red, when hovering over "sdwdate does not provide connectivity information yet." + "Network limited [by whonix-gw-firewall]."
 * sdwdate-python checks connectivity (I guess reusing the existing bash code would be sufficient.)
 * sdwdate-python creates a file /var/run/sdwdate/connected-false (for example: Tor not yet bootstrapped)
 * sdwdate-tray stays red, when hovering over "sdwdate reports, that there is no connectivity yet"
@@ -497,7 +497,12 @@ Proposal.
 * sdwdate-tray gets informed about the file creation (inotifywait) and turns yellow, when hovering over it "sdwdate reports, Tor fully bootstrapped, time synchronization in progress"
 * sdwdate-python succeeds fetching, deletes /var/run/sdwdate/progress and creates /var/run/sdwdate/first_success_file [on first success] as well as /var/run/sdwdate/success
 * one first successful time synchronization, sdwdate-python dispatched the first success hook (which will run whonix_firewall to make the internet fully usable)
-* sdwdate-tray gets informed about the file creation (inotifywait) and turns green, when hovering over it "time synchronization successful"
+* the firewall deletes /var/run/sdwdate-firewall/limited and creates /var/run/sdwdate-firewall/open
+* sdwdate-tray gets informed about the files creations (inotifywait) and turns green, when hovering over it "time synchronization successful" + "Network open [by whonix-gw-firewall]."
+
+Notes:
+
+* /var/run/sdwdate-firewall is supposed to be a generic name. Optional feature. Only used by Whonix. In Whonix, implemented by whonix-(gw|ws)-firewall.
 
 = See Also =
 == Other ==
