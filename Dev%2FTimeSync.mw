@@ -476,6 +476,44 @@ curl -silent --head torproject.org | grep -i date:
 == biossystemtimeoffset ==
 * Document biossystemtimeoffset alike approaches to circumvent active attacks by an adversary inside Whonix-Workstation.
 
+= sdwdate-tray =
+Proposal.
+
+* sdwdate-python and sdwdate-tray run independently.
+
+* system starts
+
+sdwdate-python (daemon only) starts
+
+sdwdate-tray starts, turns red, when hovering over "sdwdate does not provide connectivity information yet"
+
+sdwdate-tray sets up inoitifywait / python-inotifyx to get informed about newly created files in /var/run/sdwdate
+
+sdwdate-tray parses existing files in /var/run/sdwdate (that were created prior start / setting up inotifywait)
+
+sdwdate-tray turns red, when hovering over "sdwdate does not provide connectivity information yet"
+
+sdwdate-python checks connectivity (I guess reusing the existing bash code would be sufficient.)
+
+sdwdate-python creates a file /var/run/sdwdate/connected-false (for example: Tor not yet bootstrapped)
+
+sdwdate-tray stays red, when hovering over "sdwdate reports, that there is no connectivity yet"
+
+sdwdate-python keeps rerunning the connectivity check until connected
+
+once connected, sdwdate-python deletes /var/run/sdwdate/connected-false and creates /var/run/sdwdate/connected-true
+
+sdwdate-tray gets informed about the file creation (inotifywait) and turns yellow, when hovering over it "sdwdate reports, Tor fully bootstrapped"
+
+sdwdate-python starts fetching, creates file /var/run/sdwdate/progress
+
+sdwdate-tray gets informed about the file creation (inotifywait) and turns yellow, when hovering over it "sdwdate reports, Tor fully bootstrapped, time synchronization in progress"
+
+sdwdate-python succeeds fetching, deletes /var/run/sdwdate/progress and creates /var/run/sdwdate/first_success_file [on first success] as well as /var/run/sdwdate/success
+
+sdwdate-tray gets informed about the file creation (inotifywait) and turns green, when hovering over it "time synchronization successful"
+
+
 = See Also =
 == Other ==
 * [http://curl.haxx.se/docs/security.html List to keep track of curl advisories from the official website. Their descriptions are non-cryptic.]
