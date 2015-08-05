@@ -481,49 +481,41 @@ Proposal.
 
 Successful boot and network time synchronization.
 
-* sdwdate-python and sdwdate-tray run independently.
+* Two independent processes: sdwdate-daemon and sdwdate-tray.
+* A one way messaging mechanism sdwdate-daemon -> sdwdate-tray. [sdwdate-tray runs two threads: the Qt event loop (user events handling) and a thread polling a file "/tmp/sdwdate/status" or so.]
+
+Boot cycle:
 * system starts
 * all network blocked, besides for Tor and sdwdate-python - implemented by whonix-gw-firewall / whonix-ws-firewall, which will keep care to create a file /var/run/sdwdate-firewall/limited (with content 'whonix-gw-firewall')
-* sdwdate-python (daemon only) starts
-* sdwdate-tray starts, turns black, when hovering over "sdwdate does not provide connectivity information yet. You cannot use the internet yet."
-* sdwdate-tray sets up inoitifywait / python-inotifyx to get informed about newly created files in /var/run/sdwdate
-* sdwdate-tray parses existing files in /var/run/sdwdate (that were created prior start / setting up inotifywait)
-* sdwdate-tray turns black, when hovering over "sdwdate does not provide connectivity information yet." + "Network limited [by whonix-gw-firewall]. You cannot use the internet yet."
-* sdwdate-python checks connectivity (I guess reusing the existing bash code would be sufficient.)
-* sdwdate-python creates a file /var/run/sdwdate/connectivity-check.false (for example: Tor not yet bootstrapped)
-* sdwdate-tray stays black, when hovering over "sdwdate reports, that there is no connectivity yet." + "Network limited [by whonix-gw-firewall]. You cannot use the internet yet."
-* sdwdate-python keeps rerunning the connectivity check until connected
-* once connected, sdwdate-python deletes /var/run/sdwdate/connectivity.false and creates /var/run/sdwdate/connectivity.true
-* sdwdate-tray gets informed about the file creation (inotifywait) and turns yellow, when hovering over it "sdwdate reports, connectivity check succeeded." + "sdwdate has not reported being in progress time syncing yet." + "Network limited [by whonix-gw-firewall]. You cannot use the internet yet."
-* sdwdate-python starts fetching, creates file /var/run/sdwdate/progress
-* sdwdate-tray gets informed about the file creation (inotifywait) and turns yellow, when hovering over it "sdwdate reports, Tor fully bootstrapped, time synchronization in progress..." + "Network limited [by whonix-gw-firewall]. You cannot use the internet yet."
-* sdwdate-python succeeds fetching, deletes /var/run/sdwdate/progress and creates /var/run/sdwdate/first_success [on first success], /var/run/sdwdate/success and /var/run/sdwdate/done
-* one first successful time synchronization, sdwdate-python dispatched the first success hook (which will run whonix_firewall to make the internet fully usable)
-* the firewall deletes /var/run/sdwdate-firewall/limited and creates /var/run/sdwdate-firewall/open
-* sdwdate-tray gets informed about the files creations (inotifywait) and turns green, when hovering over it "Time synchronization successful." + "Network open [by whonix-gw-firewall]. Feel free to use the internet."
-<br />
-In case network time synchronization failed after boot.
+* sdwdate-daemon starts
+* sdwdate-daemon writes its successive statuses to a /tmp file, clearing the previous status. The history is kept in the log.
+* sdwdate-tray starts after X is running. Checks bootclockrandomization, checks sdwdate (1), reads the last sdwdate-daemon status file, removes the file.
+* sdwdate-tray sets its icon, updates its on-hover text and a pops a notification according to the last sdwdate-daemon status.
+** sdwdate-daemon status success (2): releases the network, pops a success notification.
+** sdwdate-daemon status warning/error: pops a warning, waits until sdwdate-daemon success (polling).
 
-* sdwdate-python deletes /var/run/sdwdate/progress and creates /var/run/sdwdate/done, but not /var/run/sdwdate/success
-* sdwdate-tray notices, that /var/run/sdwdate/done, but not /var/run/sdwdate/success exists and turns red, when hovering over it "Time synchronization failed." + "Network limited [by whonix-gw-firewall]. You cannot use the internet yet."
+(1) Would have to see where timesanitycheck fits it this scheme (probably in sdwdate-daemon).
 
-<br />
-In case network time synchronization failed during longer second or higher iteration
+(2) In most of the cases, time synchronisation should be completed before sdwdate-tray is ready (kdm started, X running).
 
-* sdwdate-python deletes /var/run/sdwdate/progress and creates /var/run/sdwdate/done, but not /var/run/sdwdate/success
-* sdwdate-tray notices, that /var/run/sdwdate/done and /var/run/sdwdate/first_success exists but not /var/run/sdwdate/success exists and turns red, when hovering over it "A planed repetition of time synchronization failed." + "Network open [by whonix-gw-firewall]. Feel free to use the internet."
+Normal cycle:
+* sdwdate-tray polls sdwdate-daemon status file. Any warning/error is reported by [icon change - on-hover text - pop up notification]
+
+[progress-done-success] mechanism:
+* The asynchronous times fetching in sdwdate-daemon should render the progress feature obsolete. Yet a safety could be implemented in sdwdate-daemon  for the case url_to_unixtime fails.
+* [done-success] could be handled in the messaging mechanism (not that many possible combinations).
 
 Notes:
 <br />
 * /var/run/sdwdate-firewall is supposed to be a generic name. Optional feature. Only used by Whonix. In Whonix, implemented by whonix-(gw|ws)-firewall.
-* always rely on files, i.e. only show "Network limited [by whonix-gw-firewall]." when /var/run/sdwdate-firewall/limited exists
+* always rely on files, i.e. only show "Network limited [by whonix-gw-firewall]." when /var/run/sdwdate-firewall/limited exists (or when the status file says "Network limited [by whonix-gw-firewall].")
 * everything is asynchronous, events could happen in a different order
 
 
 sdwdate-tray right click menu:
-<br />
 * open sdwdate's log
 * restart sdwdate
+* restart fresh ?
 
 
 Development discussion:
