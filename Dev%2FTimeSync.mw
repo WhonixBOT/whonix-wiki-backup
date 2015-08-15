@@ -277,73 +277,6 @@ Is the authority's cert's valid-after date signed/verified/built-into-Tor or can
 * A simple command line tool that can parse Tor's consensus and Tor's log as been implemented: [[#anondate]]
 * Perhaps relying solely on anondate for time setting could be implemented as an alternative [[Dev/TimeSync#Time_Fetching_Methods|Time Fetching Method]] into sdwdate and be available as an option (disabled by default in Whonix).
 
-===== anondate =====
-====== special exit codes ======
-* exit <code>3</code>: <code>$TOR_LOG</code> not readable.
-* exit <code>4</code>: <code>$consensus</code> not readable.
-
-====== /usr/lib/anon-shared-helper-scripts/anondate --has-consensus ======
-
-* yes:
-** exit <code>0</code>
-* no:
-** exit <code>1</code>
-
-====== /usr/lib/anon-shared-helper-scripts/anondate --current-time-in-valid-range ======
-
-* yes:
-** exit <code>0</code>
-* no:
-** exit <code>1</code>
-
-====== /usr/lib/anon-shared-helper-scripts/anondate --show-valid-after ======
-
-* yes:
-** output: <code>2015-08-15 22:00:00</code>
-** exit <code>0</code>
-* no:
-** exit <code>1</code>
-
-====== /usr/lib/anon-shared-helper-scripts/anondate --show-valid-until  ======
-
-* yes:
-** output: <code>2015-08-16 01:00:00</code>
-** exit <code>0</code>
-* no:
-** exit <code>1</code>
-
-====== /usr/lib/anon-shared-helper-scripts/anondate --show-middle-range ======
-
-* yes:
-** output: <code>2015-08-15 23:30:00</code>
-** exit <code>0</code>
-* no:
-** exit <code>1</code>
-
-====== /usr/lib/anon-shared-helper-scripts/anondate --tor-cert-lifetime-invalid ======
-When this exits <code>0</code>, this is actually a bad sign. Example Tor log:
-
-<pre>
-Sep 03 10:32:59.000 [warn] Certificate already expired. Either their clock is set wrong, or your clock is wrong.
-Sep 03 10:32:59.000 [warn] (certificate lifetime runs from Aug 16 00:00:00 2014 GMT through Jul 29 23:59:59 2015 GMT. Your time is Sep 03 10:32:59 2015 UTC.)
-</pre>
-
-When clock is several months or years fast or slow, Tor cannot even download Tor consensus.
-(In this case, Tails is using this probably unverified(?) date and restarts Tor. We probably won't do this. Not sure the date is any useful, but the info, that clock is way off is useful.)
-
-* yes:
-** output: <code>Sep 03 10:34:00.000 [warn] Certificate already expired. Either their clock is set wrong, or your clock is wrong.</code>
-** exit <code>0</code>
-* no:
-** exit <code>1</code>
-
-====== /usr/lib/anon-shared-helper-scripts/anondate --tor-cert-valid-after ======
-* yes:
-** output: <code>Jun 16 00:00:00 2014 GMT</code>
-** exit <code>0</code>
-* no:
-** exit <code>1</code>
-
 === Trusted Time Sources ===
 Hidden Services is the preferred method to thwart SSL MITM: Proposal <ref>https://phabricator.whonix.org/T131</ref>. These are reliable and trustworthy sites. The sources are listed here to keep track of pool candidates:
 
@@ -596,6 +529,72 @@ Development discussion:
 * https://www.whonix.org/forum/index.php/topic,1301.0.html
 
 = anondate =
+===== anondate =====
+====== special exit codes ======
+* exit <code>3</code>: <code>$TOR_LOG</code> not readable.
+* exit <code>4</code>: <code>$consensus</code> not readable.
+
+====== /usr/lib/anon-shared-helper-scripts/anondate --has-consensus ======
+
+* yes:
+** exit <code>0</code>
+* no:
+** exit <code>1</code>
+
+====== /usr/lib/anon-shared-helper-scripts/anondate --current-time-in-valid-range ======
+
+* yes:
+** exit <code>0</code>
+* no:
+** exit <code>1</code>
+
+====== /usr/lib/anon-shared-helper-scripts/anondate --show-valid-after ======
+
+* yes:
+** output: <code>2015-08-15 22:00:00</code>
+** exit <code>0</code>
+* no:
+** exit <code>1</code>
+
+====== /usr/lib/anon-shared-helper-scripts/anondate --show-valid-until  ======
+
+* yes:
+** output: <code>2015-08-16 01:00:00</code>
+** exit <code>0</code>
+* no:
+** exit <code>1</code>
+
+====== /usr/lib/anon-shared-helper-scripts/anondate --show-middle-range ======
+
+* yes:
+** output: <code>2015-08-15 23:30:00</code>
+** exit <code>0</code>
+* no:
+** exit <code>1</code>
+
+====== /usr/lib/anon-shared-helper-scripts/anondate --tor-cert-lifetime-invalid ======
+When this exits <code>0</code>, this is actually a bad sign. Example Tor log:
+
+<pre>
+Sep 03 10:32:59.000 [warn] Certificate already expired. Either their clock is set wrong, or your clock is wrong.
+Sep 03 10:32:59.000 [warn] (certificate lifetime runs from Aug 16 00:00:00 2014 GMT through Jul 29 23:59:59 2015 GMT. Your time is Sep 03 10:32:59 2015 UTC.)
+</pre>
+
+When clock is several months or years fast or slow, Tor cannot even download Tor consensus.
+(In this case, Tails is using this probably unverified(?) date and restarts Tor. We probably won't do this. Not sure the date is any useful, but the info, that clock is way off is useful.)
+
+* yes:
+** output: <code>Sep 03 10:34:00.000 [warn] Certificate already expired. Either their clock is set wrong, or your clock is wrong.</code>
+** exit <code>0</code>
+* no:
+** exit <code>1</code>
+
+====== /usr/lib/anon-shared-helper-scripts/anondate --tor-cert-valid-after ======
+* yes:
+** output: <code>Jun 16 00:00:00 2014 GMT</code>
+** exit <code>0</code>
+* no:
+** exit <code>1</code>
 
 = See Also =
 == Other ==
