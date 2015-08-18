@@ -1749,6 +1749,21 @@ Add a functional keyerver at the bottom. In Whonix 9 we will be using the follow
 keyserver hkp://qdigse2yzvuglcix.onion
 </pre>
 
+=== libtorsocks Warning ===
+During running apt-get dist-upgrade, you may see a warning similar to the following one.
+
+<pre>
+15:36:37 libtorsocks(12225): sendmsg: Connection is a UDP or ICMP stream, may be a DNS request or other form of leak: rejecting.
+Cannot talk to rtnetlink: No such file or directory
+acpid: error talking to the kernel via netlink
+</pre>
+
+Sounds scary, but is of no concern. See footnote for technical explanation. <ref>
+This is because in order to implement [[Stream Isolation]], Whonix's apt-get [https://github.com/Whonix/uwt uwt] wrapper forces apt-get through torsocks. Unfortunately, not only apt-get is forced through Tor, but also sysvinit and subsequently all daemons sysvinit is restarting. acpi_fakekey daemon uses local connections. Those will be rejected by torsocks. The worst that can happen is that acpi_fakekey won't operate until manually restarted. This is a bigger issue for web servers and alike, because those may not function until manually restarted.
+
+This will likely be fixed as soon Whonix will be based on Debian jessie, because that uses systemd, that is not affected by this as well as torsocks 2.0 may solve this.
+</ref>
+
 = Upgrade from Testers repository =
 Whonix's testers-only repository contains a fix. If you like to volunteer as a tester, see [[Whonix-APT-Repository]] on how to [[Whonix-APT-Repository#Change_Whonix_APT_Repository|enable]] it, so this change can move soon into Whonix's stable repository. After enabling it, [[Security_Guide#Updates|upgrade]].
 
