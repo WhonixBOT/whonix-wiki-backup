@@ -68,7 +68,45 @@ Whonix does not yet include a wizard that guides you through the process of sett
 
 ({{Code|Private}}) Ordinary, {{Code|obfs2}}, {{Code|obfs3}} and {{Code|obfs4}} bridges can currently be configured on Whonix-Gateway the same way they would be configured when not using Whonix, i.e. just like on a server without graphical user interface. This is done by editing /etc/tor/torrc within the Whonix-Gateway.  See [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/tor/torrc example for editing /etc/tor/torrc]
 
-If you are using a graphical Whonix-Gateway, for more documentation and examples, see:
+'''If you are using Qubes-Whonix''', complete the following steps to add obfuscated bridges:
+<pre>
+Qubes App Launcher (blue/grey "Q") --> Whonix-Gateway (commonly named whonix-gw) --> Terminal
+</pre>
+
+Edit {{Code2|/etc/tor/torrc}}
+<pre>
+sudo nano /etc/tor/torrc
+</pre>
+
+Once inside {{Code2|/etc/tor/torrc}}, scoll all the way to the bottom, and copy-paste the following text:
+<pre>
+UseBridges 1
+ClientTransportPlugin obfs2,obfs3 exec /usr/bin/obfsproxy managed
+ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy managed
+</pre>
+
+Now you must add the IP addresses for your bridges. If you don't know a private bridge, get a [https://bridges.torproject.org/bridges?transport=obfs3 list of obf3 obfuscated bridges from The Tor Project]. The obf3 protocol is currently recommended by Tor. [https://www.torproject.org/docs/bridges.html.en#5a%29] However, if you want a more exhaustive list of public obfuscated bridges, go to [https://bridges.torproject.org/options The Tor Project Bridge Database]
+
+Copy-paste the IP addresses at the bottom of {{Code2|/etc/tor/torrc}}.  Now make sure to manually add the text "bridge" at the beginning of each line entry.
+
+Example of text to add to {{Code2|/etc/tor/torrc}}. '''Note:''' do not copy-paste this list; these IP's will not work. [https://bridges.torproject.org/bridges?transport=obfs3 Get your own IP's from Tor]):
+<pre>
+bridge obfs3 109.195.132.77:22321
+bridge obfs3 55.32.27.22:38123 
+bridge obfs3 192.24.131.513:62389 
+</pre>
+
+Now save and exit{{Code2|/etc/tor/torrc}}
+<pre>
+<Ctrl-X> --> press Y --> <Enter>
+</pre>
+
+Reload Tor so your changes take effect.
+<pre>
+sudo service tor reload
+</pre>
+
+'''If you are using a graphical Whonix-Gateway''', for more documentation and examples, see:
 
 <pre>
 Start Menu -> Applications -> Settings -> /etc/tor/torrc.examples
@@ -86,7 +124,7 @@ After editing your {{Code2|/etc/tor/torrc}} you must reload Tor so your changes 
 Start Menu -> Applications -> Settings -> Reload Tor
 </pre>
 
-If you are using a terminal-only Whonix-Gateway, click on expand on the right side.
+'''If you are using a terminal-only Whonix-Gateway''', click on expand on the right side.
 <div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
 <div class="mw-collapsible-content">
 For more documentation and examples, see:
