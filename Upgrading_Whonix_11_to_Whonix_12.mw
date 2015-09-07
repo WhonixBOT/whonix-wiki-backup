@@ -205,43 +205,15 @@ Enable Whonix's {{Code2|jessie}} repository. Don't use the {{Code2|testers}} rep
 whonix_repository --enable --codename jessie
 </pre>
 
-Now we have to edit a few apt sources. The following three {{Code2|sed}} commands will do that for you. (But if you cannot or are not comfortable with using copy and paste, and you know what you are doing, you could also manually open an editor and make the described changes.)
-
-Switch Debian sources from {{Code2|wheezy}} to {{Code2|jessie}} in {{Code2|/etc/apt/sources.list.d/debian.list}}.
-
-<pre>
-sed -i "s/wheezy/jessie/g" /etc/apt/sources.list.d/debian.list
-</pre>
-
-Switch Torproject sources from {{Code2|wheezy}} to {{Code2|jessie}} in {{Code2|/etc/apt/sources.list.d/debian.list}}.
-
-<pre>
-sed -i "s/wheezy/jessie/g" /etc/apt/sources.list.d/torproject.list
-</pre>
-
 As a [[Qubes]] user, note that upgrades are currently only possible using Qubes' testing repository. Otherwise you run into grave issues. <ref name=qubes-grave-issues /> Switch Qubes' sources from {{Code2|wheezy}} to {{Code2|jessie-testing}} in {{Code2|/etc/apt/sources.list.d/qubes-r3.list}}. (Non-Qubes users should skip Qubes specific steps.) <ref>
 Once the fixed packages migrate into stable we can drop the "-testing".
 <pre>
 sed -i "s/wheezy/jessie/g" /etc/apt/sources.list.d/qubes-r3.list
 </pre>
-</ref> One [https://github.com/QubesOS/qubes-issues/issues/1095 the related bug] has been fixed, consider removing the "-testing" from /etc/apt/sources.list.d/qubes-r3.list.
+</ref> Once [https://github.com/QubesOS/qubes-issues/issues/1095 the related bug] has been fixed, consider removing the "-testing" from /etc/apt/sources.list.d/qubes-r3.list.
 
 <pre>
 sed -i "s/wheezy/jessie-testing/g" /etc/apt/sources.list.d/qubes-r3.list
-</pre>
-
-As a [[Qubes]] user, remove the {{Code2|wheezy-backports}} repository from {{Code2|/etc/apt/sources.list.d/debian.list}}. <ref>
-The following line.
-
-<pre>
-deb http://ftp.us.debian.org/debian/ wheezy-backports main
-</pre>
-
-Needs to be removed from {{Code2|/etc/apt/sources.list}} because fortunately, Qubes no longer needs it.
-</ref>
-
-<pre>
-sed -i "s#deb http://ftp.us.debian.org/debian/ wheezy-backports main##g" /etc/apt/sources.list
 </pre>
 
 Make the upgrade process less interactive. Optional. (Mostly Qubes specific unless you installed apt-listchanges.)
@@ -256,78 +228,16 @@ Enable extensive debugging so reporting eventual bugs becomes easier.
 export DEBDEBUG=1
 </pre>
 
-Set environment variable TORSOCKS_LOG_LEVEL=1 to reduce unnecessary torsocks warnings. <ref>
-Disable torsocks warning spam such as.<br />
-[May 20 11:45:27] WARNING torsocks[2645]: [syscall] Unsupported syscall number 224. Denying the call (in tsocks_syscall() at syscall.c:165)<br />
-https://phabricator.whonix.org/T317
-</ref>
-<pre>
-export TORSOCKS_LOG_LEVEL=1
-</pre>
-
 Update your package lists.
 
 <pre>
 apt-get update
 </pre>
 
-Let's first upgrade torsocks and uwt, so we see fewer torsocks warning later on. <ref>Due to transition from torsocks 1.x to torsocks 2.x.</ref>
-<pre>
-apt-get install torsocks uwt
-</pre>
-
-Qubes specific fix.
-
-<pre>
-localedef -f UTF-8 -i en_US -c en_US.UTF-8
-</pre>
-
-Qubes specific fix.
-
-<pre>
-update-locale LC_ALL=en_US.UTF-8
-</pre>
-
 Upgrade.
 
 <pre>
 apt-get dist-upgrade || apt-get -f install || apt-get dist-upgrade
-</pre>
-
-Make sure the packages ntp, ntpdate and chrony are not installed. Trying to remove them is enough. Specifically important for Qubes users.<ref>https://github.com/QubesOS/qubes-issues/issues/1102</ref>
-
-<pre>
-apt-get purge ntp ntpdate chrony
-</pre>
-
-If you are not a user of KVM, you can optionally remove the spice-vdagent package. KVM users are probably better of keeping it.
-
-<pre>
-apt-get purge spice-vdagent
-</pre>
-
-Qubes only. Whonix-Gateway only. Move old qubes-whonix-control-port-filter-python.service out of the way.
-
-<pre>
-sudo mv /etc/systemd/system/qubes-whonix-control-port-filter-python.service ~/
-</pre>
-
-Qubes only. Whonix-Gateway only. Move old /etc/init.d/control-port-filter-python out of the way.
-
-<pre>
-sudo mv /etc/init.d/control-port-filter-python ~/
-</pre>
-
-Qubes only. Whonix-Gateway only. Enable control-port-filter-python.
-
-<pre>
-sudo systemctl enable control-port-filter-python
-</pre>
-
-Qubes only. Whonix-Workstation only. Move old /etc/tmpfiles.d/tor.conf out of the way. <ref>Otherwise systemd service systemd-tmpfiles-setup would enter a failed state.</ref>
-
-<pre>
-sudo mv /etc/tmpfiles.d/tor.conf ~/
 </pre>
 
 It is recommended to have the {{Code2|whonix-gateway}} / {{Code2|whonix-workstation}} package installed to make sure nothing is broken. (If you like to uninstall it later as per [[Whonix Debian Packages]], you're free to do so. Still, it is recommended to re-install it before removal to make sure you're as close to official package selection as possible.)
