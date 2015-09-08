@@ -73,19 +73,30 @@ As of August 2015, according to The Tor Project, "obfs3 is currently the recomme
 = How to use bridges in Whonix =
 == Using obfuscated, (private) and/or ordinary bridges ==
 
-TODO:
-
-* Now the "click on expand on the right" text at the bottom of this chapter is superfluous, confusing. Needs to be merged.
-
 Whonix does not yet include a wizard that guides you through the process of setting up bridges before connecting to Tor. You must add bridges manually to {{Code2|/etc/tor/torrc}}. 
 
 ({{Code|Private}}) Ordinary, {{Code|obfs2}}, {{Code|obfs3}} and {{Code|obfs4}} bridges can currently be configured on Whonix-Gateway the same way they would be configured when not using Whonix, i.e. just like on a server without graphical user interface. This is done by editing /etc/tor/torrc within the Whonix-Gateway.  See [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/tor/torrc example for editing /etc/tor/torrc]
 
-'''If you are using Qubes-Whonix''', complete the following steps to add obfuscated bridges:
+In order to get bridges to work with Whonix , complete the following steps:
+
+=== Access {{Code2|/etc/tor/torrc}} to add bridges ===
+
+'''If you are using Qubes-Whonix''', complete the following steps:
 <pre>
-Qubes App Launcher (blue/grey "Q") --> Whonix-Gateway (commonly named whonix-gw) --> Torrc
+Qubes App Launcher (blue/grey "Q") --> Whonix-Gateway (commonly named whonix-gw) --> Tor User Config (Torrc)
 </pre>
 
+'''If you are using a graphical Whonix-Gateway''', complete the following steps:
+<pre>
+Start Menu -> Applications -> Settings -> /etc/tor/torrc
+</pre>
+
+'''If you are using a terminal-only Whonix-Gateway''', complete the following steps:
+<pre>
+sudo nano /etc/tor/torrc
+</pre>
+
+=== Edit {{Code2|/etc/tor/torrc}} (for all Whonix platforms) ===
 Once inside {{Code2|/etc/tor/torrc}}, scoll all the way to the bottom, and copy-paste the following text:
 <pre>
 UseBridges 1
@@ -93,87 +104,50 @@ ClientTransportPlugin obfs2,obfs3 exec /usr/bin/obfsproxy managed
 ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy managed
 </pre>
 
-Now you must add the IP addresses for your bridges. If you don't know a private bridge, get a [https://bridges.torproject.org/bridges?transport=obfs3 list of obf3 obfuscated bridges from The Tor Project]. The obf3 protocol is currently recommended by Tor. [https://www.torproject.org/docs/bridges.html.en#5a%29] However, if you want a more exhaustive list of public obfuscated bridges, go to [https://bridges.torproject.org/options The Tor Project Bridge Database]
+Now you must add the IP addresses for your bridges. If you don't know a private bridge, get a [https://bridges.torproject.org/bridges?transport=obfs3 list of obf3 obfuscated bridges from The Tor Project]. As of August 2015, the obfs3 protocol is currently recommended by Tor. [https://www.torproject.org/docs/bridges.html.en#5a%29] However, as time goes on and more obfs4 bridge operators go online and obfs4 is increasingly being utilized by Tor users, it may be preferable to use obfs4. [https://blog.torproject.org/blog/recent-and-upcoming-developments-pluggable-transports See Tor statements under headings "obfs2 deprecation" and  "obfs4 and ScrambleSuit"]. If you want a more exhaustive list of public obfuscated bridges, go to [https://bridges.torproject.org/options The Tor Project Bridge Database].
 
 Copy-paste the IP addresses at the bottom of {{Code2|/etc/tor/torrc}}.  Now make sure to manually add the text "bridge" at the beginning of each line entry.
 
 Example of text to add to {{Code2|/etc/tor/torrc}}. '''Note:''' do not copy-paste this list; these IP's will not work. [https://bridges.torproject.org/bridges?transport=obfs3 Get your own IP's from Tor]:
 <pre>
-bridge obfs3 109.195.132.77:22321
-bridge obfs3 55.32.27.22:38123 
-bridge obfs3 192.24.131.513:62389 
+bridge obfs3 109.195.132.77:22321 4352e58420e68f5e40bf7c74faddccd9d1349413
+bridge obfs3 55.32.27.22:38123  4352e58420e68f5e40bf7c74faddccd9d1349413
+bridge obfs3 192.24.131.513:62389 4352e58420e68f5e40bf7c74faddccd9d1349413
 </pre>
 
-Whonix-Gateway and any dependent AppVMs now must be shutdown and restarted for the changes to take effect. 
-
-
-'''If you are using a graphical Whonix-Gateway''', for more documentation and examples, see:
-
-<pre>
-Start Menu -> Applications -> Settings -> /etc/tor/torrc.examples
-</pre>
-
-To edit your {{Code2|/etc/tor/torrc}}.
-
-<pre>
-Start Menu -> Applications -> Settings -> /etc/tor/torrc
-</pre>
-
-After editing your {{Code2|/etc/tor/torrc}} you must reload Tor so your changes take effect.
-
-<pre>
-Start Menu -> Applications -> Settings -> Reload Tor
-</pre>
-
-=== terminal-only Whonix-Gateway ===
-'''If you are using a terminal-only Whonix-Gateway''', click on expand on the right side.
-<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
-<div class="mw-collapsible-content">
-For more documentation and examples, see:
-
-<pre>
-nano /etc/tor/torrc.examples
-</pre>
-
-To edit your {{Code2|/etc/tor/torrc}}.
-
-<pre>
-sudo nano /etc/tor/torrc
-</pre>
-
-Now save and exit{{Code2|/etc/tor/torrc}}.
-
+Once you have completed editing {{Code2|/etc/tor/torrc}}, now save and exit.
 <pre>
 <Ctrl-X> --> press Y --> <Enter>
 </pre>
 
-After editing your {{Code2|/etc/tor/torrc}} you must reload Tor so your changes take effect.
+=== Make changes to {{Code2|/etc/tor/torrc}} take effect ===
+After editing {{Code2|/etc/tor/torrc}} you must reload Tor so your changes take effect. ('''Note:''' if after completing all these steps and you are not able to connect to Tor, you have most likely done something wrong. Go back and check your {{Code2|/etc/tor/torrc}} and redo the steps outlined in the sections above.  If your are able to connect to Tor, then you have completed your changes correctly.)
 
+'''For Qubes-Whonix'''
+
+The Whonix-Gateway and any dependent AppVMs now must be shutdown and restarted for the changes to take effect. 
+
+'''For graphical Whonix-Gateway'''
+<pre>
+Start Menu -> Applications -> Settings -> Reload Tor
+</pre>
+
+'''For terminal-only Whonix-Gateway'''
 <pre>
 sudo service tor reload
 </pre>
 
-</div>
-</div>
-
 === obfs3 ===
-If you would like to see an example using {{Code|obfs3}} bridges, click on expand on the right.
-<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
-<div class="mw-collapsible-content">
+Example of using {{Code|obfs3}} bridges:
 You cannot use the example bridge {{Code2|141.201.27.48:420}} below, because it's only an example. You still need to find your own bridges as explained in {{Code2|[https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/tor/torrc.examples /etc/tor/torrc.examples]}}.
 <pre>
 UseBridges 1
 ClientTransportPlugin obfs2,obfs3 exec /usr/bin/obfsproxy managed
 bridge obfs3 141.201.27.48:420 4352e58420e68f5e40bf7c74faddccd9d1349413
 </pre>
-</div>
-</div>
 
 === obfs4 ===
-If you would like to see an example using {{Code|obfs4}} bridges, click on expand on the right.
-<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
-<div class="mw-collapsible-content">
-Requires Whonix 11 or higher.
+Example using {{Code|obfs4}} bridges (Note: '''Requires Whonix 11 or higher''').
 
 You cannot use the example bridge {{Code2|141.201.27.48:420}} below, because it's only an example. You still need to find your own bridges as explained in {{Code2|[https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/tor/torrc.examples /etc/tor/torrc.examples]}}.
 <pre>
@@ -181,20 +155,18 @@ UseBridges 1
 ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy managed
 Bridge obfs4 141.201.27.48:420 gibberish cert=more-gibberish iat-mode=0
 </pre>
-</div>
-</div>
 
 === scramblesuit ===
-{{Code|scramblesuit}}: In short, forget about it. Use the above {{Code|obfs4}}. More more information, click on expand on the right.
-<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
-<div class="mw-collapsible-content">
+{{Code|scramblesuit}}: In short, forget about it. Use the above {{Code|obfs4}}.
 [https://labs.riseup.net/code/issues/7909#note-8 Quote intrigeri] (Tails developer):
 <blockquote>
 On tor-talk we've been told "You shouldn't prioritise ScrambleSuit because it's superseded by obfs4", and there are now pressing plans in the Tor Project to deprecate obfs2 and obfs3 in favour of obfs4. Hence rejecting this ticket, and focusing on #7980 instead.
 </blockquote>
 
+[https://blog.torproject.org/blog/recent-and-upcoming-developments-pluggable-transports Also see Tor Announcement under heading "obfs4 and scramblesuit"] 
 
-AppArmor issue. Probably not been reported anywhere yet.
+
+=== AppArmor issue. Probably not been reported anywhere yet. ===
 <pre>
 audit: type=1400 audit(1439818522.818:9): apparmor="DENIED" operation="mkdir" profile="/usr/bin/obfsproxy" name="/var/lib/tor/pt_state/scramblesuit/" pid=11163 comm="obfsproxy" requested_mask="c" denied_mask="c" fsuid=106 ouid=106
 </pre>
@@ -203,8 +175,6 @@ audit: type=1400 audit(1439818522.818:9): apparmor="DENIED" operation="mkdir" pr
 ClientTransportPlugin obfs2,obfs3,scramblesuit exec /usr/bin/obfsproxy managed
 Bridge scramblesuit 141.201.27.48:420 gliberish password=more-gliberish
 </pre>
-</div>
-</div>
 
 = Flash Proxy Bridges =
 <div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
