@@ -74,10 +74,10 @@ As time goes on and more obfs4 bridge operators go online, it may be preferable 
 
 = How to use bridges in Whonix =
 == Using obfuscated, (private) and/or ordinary bridges ==
-=== Introduction ===
-Whonix does not include a wizard that guides you through the process of setting up bridges before connecting to Tor. The graphical [[Tor_Browser#tor-launcher_vs_torbrowser-launcher|tor-launcher]] ([[Dev/tor-launcher|screenshots]]) that you might now from {{Code2|The Tor Project}}'s {{Code2|Tor Browser Bundle}} ({{Code2|TBB}}) cannot be used in Whonix yet. ([[#Using_Tor_.2F_Pluggable_Transports_from_the_Tor_Browser_Bundle|TODO]]) You must add bridges manually to {{Code2|/etc/tor/torrc}}.
 
-({{Code2|Private}}) Ordinary, {{Code2|obfs2}}, {{Code2|obfs3}} and {{Code2|obfs4}} bridges can currently be configured on Whonix-Gateway the same way they would be configured when not using Whonix, i.e. as if you were using Debian, because [[About#Based_on_Debian|Whonix is based on Debian]]. This is done by editing {{Code2|/etc/tor/torrc}} within the Whonix-Gateway.
+Whonix does not yet include a wizard that guides you through the process of setting up bridges before connecting to Tor. You must add bridges manually to {{Code2|/etc/tor/torrc}}. 
+
+({{Code|Private}}) Ordinary, {{Code|obfs2}}, {{Code|obfs3}} and {{Code|obfs4}} bridges can currently be configured on Whonix-Gateway the same way they would be configured when not using Whonix, i.e. just like on a server without graphical user interface. This is done by editing /etc/tor/torrc within the Whonix-Gateway.  See [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/tor/torrc example for editing /etc/tor/torrc]
 
 In order to get bridges to work with Whonix, complete the following steps:
 
@@ -85,7 +85,7 @@ In order to get bridges to work with Whonix, complete the following steps:
 
 '''If you are using Qubes-Whonix''', complete the following steps:
 <pre>
-Qubes App Launcher (blue/grey "Q") --> Whonix-Gateway (commonly named whonix-gw) --> Tor User Config (Torrc)
+Qubes App Launcher (blue/grey "Q") -> Whonix-Gateway (commonly named whonix-gw) -> Tor User Config (Torrc)
 </pre>
 
 '''If you are using a graphical Whonix-Gateway''', complete the following steps:
@@ -106,15 +106,18 @@ ClientTransportPlugin obfs2,obfs3 exec /usr/bin/obfsproxy managed
 ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy managed
 </pre>
 
-Now you must add the IP addresses for your bridges. The following example is for adding obfs3 bridges. If you don't know a private bridge, get a [https://bridges.torproject.org/bridges?transport=obfs3 list of obf3 obfuscated bridges from The Tor Project]. As of August 2015, obfs3 protocol is currently recommended by Tor. [https://www.torproject.org/docs/bridges.html.en#5a%29] However, as time goes on obf4 may become preferable . (See section above, titled "Finding a bridge and choosing the right protocol").
+Now you must add IP addresses for your bridges. For finding IP addresses, '''See section above, titled "Finding a bridge and choosing the right protocol'''.
 
-Copy-paste the IP addresses at the bottom of {{Code2|/etc/tor/torrc}}.  Now make sure to manually add the text "bridge" at the beginning of each line entry.
+Copy-paste the IP addresses at the bottom of {{Code2|/etc/tor/torrc}}.  Make sure to manually add the text "bridge" at the beginning of each line entry. For obfs4, after the IP address, add the following: gibberish cert=more-gibberish iat-mode=0
 
-Example of text to add to {{Code2|/etc/tor/torrc}}. (Note: '''do not copy-paste this list'''; these IP's will not work.) [https://bridges.torproject.org/bridges?transport=obfs3 Get your own IP's from Tor]:
+Example of text to add to {{Code2|/etc/tor/torrc}}. ('''Note: do not copy-paste this list'''; these IP's will not work.) Get your own [https://bridges.torproject.org/bridges?transport=obfs3 obfs3 bridges] and [https://bridges.torproject.org/bridges?transport=obfs4 obfs4 bridges] from Tor:
 <pre>
 bridge obfs3 109.195.132.77:22321 4352e58420e68f5e40bf7c74faddccd9d1349413
 bridge obfs3 55.32.27.22:38123  4352e58420e68f5e40bf7c74faddccd9d1349413
 bridge obfs3 192.24.131.513:62389 4352e58420e68f5e40bf7c74faddccd9d1349413
+bridge obfs4 192.32.27.50:51883 gibberish cert=more-gibberish iat-mode=0
+bridge obfs4 191.235.207.198:17520 gibberish cert=more-gibberish iat-mode=0
+bridge obfs4 191.210.192.101:47038 gibberish cert=more-gibberish iat-mode=0
 </pre>
 
 Once you have completed editing {{Code2|/etc/tor/torrc}}, now save and exit.
@@ -140,8 +143,8 @@ sudo service tor reload
 </pre>
 
 === obfs3 ===
-Example of using {{Code2|obfs3}} bridges:
-You cannot use the example bridge {{Code2|141.201.27.48:420}} below, because it's only an example. You still need to find your own bridges as explained in {{Code2|[https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/tor/torrc.examples /etc/tor/torrc.examples]}}.
+Example of using {{Code|obfs3}} bridges:
+You cannot use the example bridge {{Code2|141.201.27.48:420}} below, because it's only an example. You still need to find your own bridges as explained in the section above, titled Finding a bridge and choosing the right protocol.
 <pre>
 UseBridges 1
 ClientTransportPlugin obfs2,obfs3 exec /usr/bin/obfsproxy managed
@@ -149,9 +152,9 @@ bridge obfs3 141.201.27.48:420 4352e58420e68f5e40bf7c74faddccd9d1349413
 </pre>
 
 === obfs4 ===
-Example using {{Code2|obfs4}} bridges (Note: '''Requires Whonix 11 or higher''').
+Example using {{Code|obfs4}} bridges (Note: '''Requires Whonix 11 or higher''').
 
-You cannot use the example bridge {{Code2|141.201.27.48:420}} below, because it's only an example. You still need to find your own bridges as explained in {{Code2|[https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/tor/torrc.examples /etc/tor/torrc.examples]}}.
+You cannot use the example bridge {{Code2|141.201.27.48:420}} below, because it's only an example. You still need to find your own bridges as explained in the section above, titled Finding a bridge and choosing the right protocol.
 <pre>
 UseBridges 1
 ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy managed
@@ -159,22 +162,23 @@ Bridge obfs4 141.201.27.48:420 gibberish cert=more-gibberish iat-mode=0
 </pre>
 
 === scramblesuit ===
-{{Code2|scramblesuit}}: In short, forget about it. Use the above {{Code2|obfs4}}.
+{{Code|scramblesuit}}: In short, forget about it. Use the above {{Code|obfs4}}.
 [https://labs.riseup.net/code/issues/7909#note-8 Quote intrigeri] (Tails developer):
 <blockquote>
-On tor-talk we've been told "You shouldn't prioritise ScrambleSuit because it's superseded by obfs4", and there are now pressing plans in the Tor Project to deprecate obfs2 and obfs3 in favour of obfs4. Hence rejecting this ticket, and focusing on [https://labs.riseup.net/code/issues/7980 #7980] [obfs4 support] instead.
+On tor-talk we've been told "You shouldn't prioritise ScrambleSuit because it's superseded by obfs4", and there are now pressing plans in the Tor Project to deprecate obfs2 and obfs3 in favour of obfs4. Hence rejecting this ticket, and focusing on #7980 instead.
 </blockquote>
 
-[https://blog.torproject.org/blog/recent-and-upcoming-developments-pluggable-transports Also see Tor Announcement under heading "obfs4 and scramblesuit"]
+[https://blog.torproject.org/blog/recent-and-upcoming-developments-pluggable-transports Also see Tor Announcement under heading "obfs4 and scramblesuit"] 
+
+
+=== AppArmor issue. Probably not been reported anywhere yet. ===
+<pre>
+audit: type=1400 audit(1439818522.818:9): apparmor="DENIED" operation="mkdir" profile="/usr/bin/obfsproxy" name="/var/lib/tor/pt_state/scramblesuit/" pid=11163 comm="obfsproxy" requested_mask="c" denied_mask="c" fsuid=106 ouid=106
+</pre>
 
 <pre>
 ClientTransportPlugin obfs2,obfs3,scramblesuit exec /usr/bin/obfsproxy managed
 Bridge scramblesuit 141.201.27.48:420 gliberish password=more-gliberish
-</pre>
-
-AppArmor issue. Probably not been reported anywhere yet.
-<pre>
-audit: type=1400 audit(1439818522.818:9): apparmor="DENIED" operation="mkdir" profile="/usr/bin/obfsproxy" name="/var/lib/tor/pt_state/scramblesuit/" pid=11163 comm="obfsproxy" requested_mask="c" denied_mask="c" fsuid=106 ouid=106
 </pre>
 
 = Flash Proxy Bridges =
