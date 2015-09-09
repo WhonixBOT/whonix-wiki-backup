@@ -32,15 +32,27 @@ There are many different VPN protocols (too many for this guide). However, OpenV
 === Setting up VPN before Tor (User -> VPN -> Tor -> Internet) ===
 If you are forced to use a VPN server or if you are already using a VPN server, you most likely know how you can connect to it. When your VPN is properly set up, all your connections are forced through the VPN first. If you start Tor on top of that, you will now connecting to the VPN, then to Tor, then to the Internet. In other words, your connection will be the following: (User -> VPN -> Tor -> Internet).
 
-There are two ways of setting up the VPN:
-1. You can either add the VPN on the host, in which Whonix-Gateway will be tunneled through it.
+There are two ways of setting up the VPN:<br />
+1. You can either add the VPN on the host, in which Whonix-Gateway will be tunneled through it.<br />
 2. Or you can add the VPN into Whonix-Gateway.
 
 See also [[FAQ#What.27s_the_difference_of_installing_a_VPN_on_the_host_versus_installing_on_Whonix-Gateway.3F|What's the difference of installing a VPN on the host versus installing on Whonix-Gateway?]]
 
 See also [[#Examples_of_setting_up_VPNs_to_work_with_Whonix|examples of setting up VPNs to work with Whonix]].
 
-'''How to add the VPN in Whonix-Gateway'''
+==== Use a Fail Closed Mechanism ====
+A general problem with VPNs is that during a connection, they often fail to remain open (meaning that the VPN connection becomes closed, in which the user is now directly connected to the Internet without tunneling through the VPN). This is not a Whonix specific problem. VPN servers and VPN software can occasionally break down without announcement. This means, if the VPN is unreachable, the connection breaks down for whatever reason, which in most cases you continue to connect to the internet without the VPN.
+
+One of the benefits of Whonix is that when a VPN connection breaks down, you still have the protections provided by Tor. In such an event where the VPN connection breaks down, Whonix-Workstation will seamlessly continue to make "direct" connections through Tor. If you are using the VPN only to circumvent the censorship of Tor, you may not care so much. On the other hand, if you believe a VPN improves your security, you should make sure that when the VPN connection breaks down, all connections with the outside world and your computer cease.
+
+If you want to enforce, that the VPN always gets used:
+* Whonix-Gateway: Already includes a fail closed (firewall settings {{Code|VPN_FIREWALL}} setting) mechanism, which is documented below.
+* Other operating systems: See [[VPN-Firewall]].
+
+==== How to add the on the host ====
+Just as you would if you were not using Whonix. (Consider the security precautions and links to examples discussed above.)
+
+==== How to add the VPN in Whonix-Gateway ====
 
 After installing Whonix-Gateway, do the following steps before activating Tor in {{Code|whonixsetup}}.
 
@@ -159,15 +171,6 @@ sudo update-rc.d tor defaults
 * Only tested with OpenVPN. Most other VPN's have deficiencies anyway.
 * DNS (IP address) of VPN server has to be manually resolved. There is technically no way to automatically resolve DNS without making the setup much more complex. The VPN server's IP address should not be resolved over Tor, because that's what you wanted to hide in the first place. Since outside observers will know, that you are connecting to the VPN IP anyway, it is probably save to resolve the DNS over clearnet or by asking the VPN provider if they don't already document their IPs on their website anyway.
 * No support for IPv6 yet.
-
-===== Use a Fail Closed Mechanism =====
-A general problem with VPNs is that during a connection, they often fail to remain open (meaning that the VPN connection becomes closed, in which the user is now directly connected to the Internet without tunneling through the VPN). This is not a Whonix specific problem. VPN servers and VPN software can occasionally break down without announcement. This means, if the VPN is unreachable, the connection breaks down for whatever reason, which in most cases you continue to connect to the internet without the VPN.
-
-One of the benefits of Whonix is that when a VPN connection breaks down, you still have the protections provided by Tor. In such an event where the VPN connection breaks down, Whonix-Workstation will seamlessly continue to make "direct" connections through Tor. If you are using the VPN only to circumvent the censorship of Tor, you may not care so much. On the other hand, if you believe a VPN improves your security, you should make sure that when the VPN connection breaks down, all connections with the outside world and your computer cease.
-
-If you want to enforce, that the VPN always gets used:
-* Whonix-Gateway: Already includes a fail closed (firewall settings {{Code|VPN_FIREWALL}} setting) mechanism, which is documented below.
-* Other operating systems: See [[VPN-Firewall]].
 
 ====Troubleshooting VPN -> Tor====
 *If not connecting, see above to manually restart Tor
