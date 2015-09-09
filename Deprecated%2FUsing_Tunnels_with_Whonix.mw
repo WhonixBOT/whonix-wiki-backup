@@ -35,72 +35,34 @@ In determining whether to use a tunnel-link before Tor, the question basically i
 == Using a VPN before Tor (User -> VPN -> Tor -> Internet) ==
 There are many different VPN protocols (too many for this guide). However, OpenVPN, which is open-source and free software, has been vetted by multiple Tor users and is the recommended VPN protocol to use (not pptp).
 
-'''When to use a VPN'''
-* you are are forced to use a VPN by your ISP
-* you want to add an additional layer of protection
-* you want hide the fact that you are using Tor (Note: if this is the case, make sure you read [[Hide Tor and Whonix from your ISP]]
-
-=== Use a Fail Closed Mechanism ===
-A general problem with VPNs is that during a connection, they often fail to remain open (meaning that the VPN connection becomes closed, in which the user is now directly connected to the Internet without tunneling through the VPN). This is not a Whonix specific problem. VPN servers and VPN software can occasionally break down without announcement. This means, if the VPN is unreachable, the connection breaks down for whatever reason, which in most cases you continue to connect to the internet without the VPN.
-
-One of the benefits of Whonix is that when a VPN connection breaks down, you still have the protections provided by Tor. In such an event where the VPN connection breaks down, Whonix-Workstation will seamlessly continue to make "direct" connections through Tor. If you are using the VPN only to circumvent the censorship of Tor, you may not care so much. On the other hand, if you believe a VPN improves your security, you should make sure that when the VPN connection breaks down, all connections with the outside world and your computer cease.
-
-If you want to enforce, that the VPN always gets used:
-* Whonix-Gateway: Already includes a fail closed (firewall settings {{Code|VPN_FIREWALL}} setting) mechanism, which is documented below.
-* Other operating systems: See [[VPN-Firewall]].
-
 === Setting up VPN before Tor (User -> VPN -> Tor -> Internet) ===
-If you are forced to use a VPN server or if you are already using a VPN server, you most likely know how you can connect to it. 
+If you are forced to use a VPN server or if you are already using a VPN server, you most likely know how you can connect to it. When your VPN is properly set up, all your connections are forced through the VPN first. If you start Tor on top of that, you will now connecting to the VPN, then to Tor, then to the Internet. In other words, your connection will be the following: (User -> VPN -> Tor -> Internet).
+
 There are two ways of setting up the VPN:
 1. You can either add the VPN on the host, in which Whonix-Gateway will be tunneled through it.
 2. Or you can add the VPN into Whonix-Gateway.
-
-When your VPN is properly set up, all your connections are forced through the VPN first. If you start Tor on top of that, you will now connecting to the VPN, then to Tor, then to the Internet (VPN -> Tor -> Internet).
 
 See also [[TestVPN|Free example VPNs working with Whonix for testing purposes]].
 
 See also [[FAQ#What.27s_the_difference_of_installing_a_VPN_on_the_host_versus_installing_on_Whonix-Gateway.3F|What's the difference of installing a VPN on the host versus installing on Whonix-Gateway?]]
 
-==== VPN on the Host ====
-Besides what has been written above already, nothing special is required.
-
-==== VPN on Whonix-Gateway ====
-
-If you want to hide Tor by using a VPN, after install Whonix-Gateway, do the following steps before activating Tor in {{Code|whonixsetup}}.
-
-Have a look at {{Code|/etc/whonix_firewall.d/30_default}}. To open.
-<pre>
-Start menu -> Applications -> System -> Whonix Default Firewall Settings
-</pre>
-
-If you are using a terminal-only Whonix-Gateway, use.
-<pre>
-nano /etc/whonix_firewall.d/30_default
-</pre>
-
-It contains default settings, settings you can use as template (copy and paste) and an interesting comment.
-<pre>
-## Please use "/etc/whonix_firewall.d/50_user" for your custom configuration,
-## which will override the defaults found here. When Whonix is updated, this
-## file may be overwritten.
-</pre>
-
-Create a file  {{Code|/etc/whonix_firewall.d/50_user}}. If you are using a graphical Whonix-Gateway, use.
+'''How to add the VPN in Whonix-Gateway'''
+After installing Whonix-Gateway, do the following steps before activating Tor in {{Code|whonixsetup}}.
+1. Create and enter a file {{Code|/etc/whonix_firewall.d/50_user}}.
+If you are using a graphical Whonix-Gateway, use.
 <pre>
 Start menu -> Applications -> System -> Whonix User Firewall Settings
 </pre>
-
 If you are using a terminal-only Whonix-Gateway, use.
 <pre>
 sudo nano /etc/whonix_firewall.d/50_user
 </pre>
 
-Add the following settings. You can skip comments (starting with {{Code|#}}). Unless you are using {{Code|seattle.vpn.riseup.net}} as your VPN service, which we use as an example, you have to adjust the {{Code|VPN_SERVERS}} variable in your config.
+2. Add the following settings. You can skip comments (starting with {{Code|#}}). Note: make sure to adjust the {{Code|VPN_SERVERS}} variable in your config (unless you are using {{Code|seattle.vpn.riseup.net}} as your VPN service).
 <pre>
 ###########################
 ## VPN-Firewall Settings ##
 ###########################
-
 ## Make sure Tor always connects through the VPN.
 ## Enable: 1
 ## Disable: 0
@@ -122,13 +84,16 @@ VPN_INTERFACE=tun0
 LOCAL_NET="192.168.1.0/24 192.168.0.0/24 127.0.0.0/8 10.152.152.0/24 10.0.2.2/24"
 </pre>
 
-Reload Whonix's Firewall.
+3. Exit and save the file.
+<pre>
+<CTRL-X> --> Press Y --> <ENTER>
+</pre>
 
+4. Reload Whonix's Firewall.
 If you are using a graphical Whonix-Gateway, use.
 <pre>
 Start Menu -> Applications -> System -> Reload Whonix Firewall
 </pre>
-
 If you are using a terminal-only Whonix-Gateway, use.
 <pre>
 sudo whonix_firewall
@@ -136,34 +101,41 @@ sudo whonix_firewall
 
 Now setup OpenVPN. It should be able to connect. You find some help on setting up OpenVPN on the [[TestVPN]] page.
 
-Enable Tor using whonixsetup.
-
+5. Enable Tor using whonixsetup.
 {{whonixsetup}}
 
-The VPN may not be ready when Tor is attempting to connect, because the VPN connection initialization takes too long. Due to a bug in Tor, it won't keep trying to connect. You may have to manually restart Tor after boot, if whonixcheck reports, that Tor is not fully bootstrapped. The same may be necessary if your VPN software or connection temporarily broke down.
+==== Additional Tweaks / Recommendations / Troubleshooting====
 
+'''If having problems with the connection / Tor is not fully bootstrapped'''
+You have may have to manually restart Tor. This is because the VPN may not be ready when Tor is attempting to connect, because the VPN connection initialization takes too long. Due to a bug in Tor, it won't keep trying to connect. To fix this, you may have to manually restart Tor after boot, if whonixcheck reports that Tor is not fully bootstrapped. The same may be necessary if your VPN software or connection temporarily broke down.
+
+'''To Manually restart Tor:'''
+If using graphical Whonix-Gateway:
 <pre>
 Start Menu -> Applications -> System -> Restart Tor
-
-Or.
-
+</pre>
+If you are using a terminal-only Whonix-Gateway:
+<pre>
 sudo service tor restart
 </pre>
 
-===== Let Tor wait for OpenVPN =====
+'''Leak Tests'''
+When you shut down the VPN, neither Tor, nor Whonix-Gateway's whonixcheck/apt-get/etc. nor Whonix-Workstation should be able to connect anywhere anymore.
+
+===== Force Tor to wait for OpenVPN'' =====
 To improve this situation, if you are using OpenVPN and Debian's init script to automatically start it, add an insserv override to wait for openvpn being started.
 
-Create a new file {{Code|/etc/insserv/overrides/tor}}. If using a graphical Whonix-Gateway.
+1. Create a new file {{Code|/etc/insserv/overrides/tor}}. 
+If using a graphical Whonix-Gateway:
 <pre>
 kdesudo kwrite /etc/insserv/overrides/tor
 </pre>
-
-Or if using the terminal-only version.
+If using the terminal-only version:
 <pre>
 sudo nano /etc/insserv/overrides/tor
 </pre>
 
-Add the following content.
+2. Add the following content.
 <pre>
 ### BEGIN INIT INFO
 # Provides:          tor
@@ -180,43 +152,44 @@ Add the following content.
 ### END INIT INFO
 </pre>
 
-Then apply these changes by running.
+3. Then apply these changes by running.
 <pre>
 sudo update-rc.d tor defaults
 </pre>
 
-===== Limitations =====
-
+'''Limitations'''
 * Only tested with OpenVPN. Most other VPN's have deficiencies anyway.
 * DNS (IP address) of VPN server has to be manually resolved. There is technically no way to automatically resolve DNS without making the setup much more complex. The VPN server's IP address should not be resolved over Tor, because that's what you wanted to hide in the first place. Since outside observers will know, that you are connecting to the VPN IP anyway, it is probably save to resolve the DNS over clearnet or by asking the VPN provider if they don't already document their IPs on their website anyway.
 * No support for IPv6 yet.
 
-=====  Troubleshooting =====
-====== VPN Logs ======
-Check your VPN software's logs.
+===== Use a Fail Closed Mechanism =====
+A general problem with VPNs is that during a connection, they often fail to remain open (meaning that the VPN connection becomes closed, in which the user is now directly connected to the Internet without tunneling through the VPN). This is not a Whonix specific problem. VPN servers and VPN software can occasionally break down without announcement. This means, if the VPN is unreachable, the connection breaks down for whatever reason, which in most cases you continue to connect to the internet without the VPN.
 
-====== VPN Connectivity Test ======
-Test if you are able to connect using your VPN.
+One of the benefits of Whonix is that when a VPN connection breaks down, you still have the protections provided by Tor. In such an event where the VPN connection breaks down, Whonix-Workstation will seamlessly continue to make "direct" connections through Tor. If you are using the VPN only to circumvent the censorship of Tor, you may not care so much. On the other hand, if you believe a VPN improves your security, you should make sure that when the VPN connection breaks down, all connections with the outside world and your computer cease.
 
-Login as user {{Code|clearnet}}.
+If you want to enforce, that the VPN always gets used:
+* Whonix-Gateway: Already includes a fail closed (firewall settings {{Code|VPN_FIREWALL}} setting) mechanism, which is documented below.
+* Other operating systems: See [[VPN-Firewall]].
+
+====Troubleshooting ====
+*If not connecting, see above to manually restart Tor
+*Check your VPN software's logs.
+*Test if you are able to connect using your VPN
+1. Login as user {{Code|clearnet}}.
 <pre>
 sudo su clearnet
 </pre>
 
-Try connecting to check.tpo. Note, at time of writing, it looked like, that usaip free trial is probably blocking SSL, therefore it might not work.
+2. Try connecting to check.tpo. Note, at time of writing, it looked like usaip free trial is probably blocking SSL, therefore it might not work.
 <pre>
 curl.anondist-orig --tlsv1 --proto =https -H 'Host: check.torproject.org' -k https://38.229.72.22 | grep IP
 </pre>
 
-Should show something along "Welcome to sergii". Unfortunately won't echo IP, but will show, that connectivity is functional.
-
+3. Should show something along "Welcome to sergii". Unfortunately won't echo IP, but will show, that connectivity is functional.
 Get back to normal user.
 <pre>
 exit
 </pre>
-
-======  Leak Tests ======
-When you shut down the VPN, neither Tor, nor Whonix-Gateway's whonixcheck/apt-get/etc. nor Whonix-Workstation should be able to connect anywhere anymore.
 
 == Using a proxy before Tor (User -> proxy -> Tor -> Internet) ==
 
