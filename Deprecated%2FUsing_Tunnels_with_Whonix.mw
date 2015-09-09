@@ -112,7 +112,6 @@ sudo whonix_firewall
 {{whonixsetup}}
 
 ==== Additional Tweaks / Recommendations / Troubleshooting====
-
 '''If having problems with the connection / Tor is not fully bootstrapped'''
 
 You have may have to manually restart Tor. This is because the VPN may not be ready when Tor is attempting to connect, because the VPN connection initialization takes too long. Due to a bug in Tor, it won't keep trying to connect. To fix this, you may have to manually restart Tor after boot, if whonixcheck reports that Tor is not fully bootstrapped. The same may be necessary if your VPN software or connection temporarily broke down.
@@ -120,10 +119,12 @@ You have may have to manually restart Tor. This is because the VPN may not be re
 '''To Manually restart Tor:'''
 
 If using graphical Whonix-Gateway:
+
 <pre>
 Start Menu -> Applications -> System -> Restart Tor
 </pre>
 If you are using a terminal-only Whonix-Gateway:
+
 <pre>
 sudo service tor restart
 </pre>
@@ -134,19 +135,24 @@ When you shut down the VPN, neither Tor, nor Whonix-Gateway's whonixcheck/apt-ge
 
 ''' Force Tor to wait for OpenVPN '''
 
+sysvinit: (Legacy. Prefer the systemd method below.) <ref>
 To improve this situation, if you are using OpenVPN and Debian's init script to automatically start it, add an insserv override to wait for openvpn being started.
 
 1. Create a new file {{Code|/etc/insserv/overrides/tor}}. 
+
 If using a graphical Whonix-Gateway:
+
 <pre>
 kdesudo kwrite /etc/insserv/overrides/tor
 </pre>
 If using the terminal-only version:
+
 <pre>
 sudo nano /etc/insserv/overrides/tor
 </pre>
 
 2. Add the following content.
+
 <pre>
 ### BEGIN INIT INFO
 # Provides:          tor
@@ -164,8 +170,37 @@ sudo nano /etc/insserv/overrides/tor
 </pre>
 
 3. Then apply these changes by running.
+
 <pre>
 sudo update-rc.d tor defaults
+</pre>
+</ref>
+
+systemd (Whonix 11 and above):
+
+Create a folder /etc/systemd/system/tor.service.d.
+
+<pre>
+sudo mkdir /etc/systemd/system/tor.service.d
+</pre>
+
+Create a file /etc/systemd/system/tor.service.d/50_user.conf.
+
+<pre>
+sudo nano /etc/systemd/system/tor.service.d/50_user.conf
+</pre>
+
+With the following content.
+
+<pre>
+[Unit]
+After=openvpn.service
+</pre>
+
+Reload systemd.
+
+<pre>
+sudo systemctl daemon-reload
 </pre>
 
 '''Limitations'''
