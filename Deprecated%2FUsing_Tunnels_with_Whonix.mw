@@ -20,133 +20,14 @@ Read first:
 '''DESCRIPTION: (USER -> PROXY/VPN/SSH -> TOR -> INTERNET)'''
 
 '''Why use a tunnel-link before Tor'''
-
 Sometimes you have to use a tunnel-link to make outgoing connections to the internet because some ISP's censor your ability to access the full internet (e.g. the Great Firewall of China), or you are linked within a LAN (such as in an educational or corporate environment).
 
 A proxy, VPN or SSH can also be possibly
+* used to circumvent Tor blocks or to
+* hide the fact you are using Tor, in that case make sure you have read [[Hide Tor and Whonix from your ISP]].
 
-* '''used to circumvent Tor blocks''' or to
-* '''hide the fact you are using Tor''', in that case make sure you have read [[Hide Tor and Whonix from your ISP]].
-
-VPN and SSH are preferred choice, as they support encryption between you and the server. In determining whether to use a VPN or SSH, the question basically on how much you can trust the server. The server will be able to see that you are using Tor, but thanks to Tor, they won't see what you are doing. However, note that when connecting directly to a tunnel-link before connecting to Tor, the server (for example the VPN hosting service) will know and *may* log your IP Address. Still, if it is incredibly unsafe for your ISP to see that you are using Tor in any way and you use your own server in a safe country, while you are in a dangerous country, using a tunnel-link before Tor may be your best bet. Note: not many people seem to use a tunnel before they connect to Tor, therefore it's not very well tested. *Do not rely on this too much to protect your anonymity*
-
-If nothing above applies for you, skip this section.
-
-== Using a proxy before Tor (User -> proxy -> Tor -> Internet) ==
-
-=== Proxy Warning ===
-{{mbox
-| image   = [[File:Ambox_warning_pn.svg.png|40px|alt=Whonix first time users warning]]
-| text       = '''<u>Warning!</u>'''
-There are issues you should be aware of when using standard, common http(s)/socks4(a)/5 proxies. (Anonymizers that only use http(s)/socks4(a)/5 as an interface<ref>Such as the Tor, [[JonDonym]] or [[I2P]] software.</ref> are exempt.)
-* Most problems with these proxies are not caused by Whonix.
-* ISP-level adversaries can still determine that the user is connecting to the Tor network.
-* Be especially careful with http(s) proxies. Some of them send the "[https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN#VPNSSHversusProxy http forwarded for]" header which discloses your IP. Http(s) proxies that do not send this header are sometimes called "elite" or "anonymous" proxies.
-* When using "http forwarded for" http(s) proxies, Tor entry guards and Tor [[Bridges|bridges]] can determine your IP.
-See also: [[Comparison_Of_Tor_with_CGI_Proxies,_Proxy_Chains,_and_VPN_Services|Comparison Of Tor with CGI Proxies, Proxy Chains, and VPN_Services]].
-}}
-
-=== How to setup proxy before Tor (User -> proxy -> Tor -> Internet) ===
-Tor natively supports proxy settings.
-
-'''On Whonix-Gateway:'''
-Open your {{Code2|/etc/tor/torrc}}.
-<pre>
-sudo nano /etc/tor/torrc
-</pre>
-
-Depending on your proxy configuration, add the settings you'll need to your {{Code2|/etc/tor/torrc}}. For more information on these settings, have a look in the [https://www.torproject.org/docs/tor-manual.html.en Tor manual] and read the [https://trac.torproject.org/projects/tor/wiki/doc/TorFAQ#MyInternetconnectionrequiresanHTTPorSOCKSproxy. FAQ].
-
-<pre>
-HTTPProxy host[:port]
-HTTPProxyAuthenticator username:password
-HTTPSProxy host[:port]
-HTTPSProxyAuthenticator username:password
-
-Socks4Proxy host[:port]
-
-Socks5Proxy host[:port]
-Socks5ProxyUsername username
-Socks5ProxyPassword password
-
-FascistFirewall 0|1 
-
-ReachableAddresses ADDR[/MASK][:PORT]… 
-ReachableDirAddresses ADDR[/MASK][:PORT]… 
-ReachableORAddresses ADDR[/MASK][:PORT]… 
-</pre>
-
-'''Note:''' You need to use the IP instead of the hostname (proxy.example.com). If you don't know the IP of your proxy, please run {{Code|nslookup proxy.example.com}} (replace proxy.example.com with the hostname of your actual proxy) in a terminal (Konsole) on your host operating system. Using IP instead of hostname might cause subtle fingerprinting issues, see <ref>https://github.com/Whonix/Whonix/issues/94</ref> for more information.
-
-=== Footnotes ===
-<references />
-
-{{Footer}}
-
-[[Category:Documentation]]
-
-== Using SSH before Tor (User -> SSH -> Tor -> Internet) ==
-
-'''This chapter is not fully tested/complete. Please give feedback if it worked for you.''' This doesn't seem to be very popular, no one ever asked about it in over one year.
-
-Setting up the SSH tunnel could be either done on the host or inside Whonix-Gateway.
-
-1. First we have to install the ssh client.
-<pre>
-sudo apt-get update
-sudo apt-get install ssh</pre>
-
-2. Then be sure that your SSH connection itself is working well. SSH to your ssh server using.
-<pre>ssh yourusername@your.ssh.server</pre>
-
-3. It's recommended to set up public key authentication.
-(TODO: how to create a private and public key)
-<pre>
-cd /home/yourusername
-mkdir .ssh
-nano authorized_keys
-</pre>
-Paste line beginning with {{Code|ssh-rsa ...}} (your public key) (TODO: how to create that line).
-
-4.
-Terminate SSH connection.
-<pre>exit</pre>
-
-Login again using public key authentication. (TODO: how to do that)
-
-5. When that is working install your favorite text mode browser, for example.
-<pre>apt-get install lynx</pre>
-
-And test if the shell's external internet connection is working. Try
-<pre>lynx check.torproject.org</pre>
-
-You're done with the per-requisets. Exit your shell.
-<pre>exit</pre>
-
-6. Now we will tell the SSH client to start a socks5 proxy server listening on localhost 127.0.0.1 port 1080. The following command has to be run in background (TODO: add line how to do that) on each start up, before Tor starts (TODO: to which file, to do that). It would be wise to activate public key authentication (TODO: how to add private key to use public key authentication).
-<pre>
-ssh -D 1080 your.ssh.server
-</pre>
-
-Now we have to tell Tor to use the new local ssh server.
-
-Open your {{Code2|/etc/tor/torrc}}.
-<pre>
-sudo nano /etc/tor/torrc
-</pre>
-
-And add.
-<pre>
-## In case SSH tunnel has been setup from Whonix-Gateway.
-Socks5Proxy 127.0.0.1:1080
-## In case SSH tunnel has been setup on the host.
-#Socks5Proxy IP:PORT
-</pre>
-
-7. (TODO: if running inside Whonix-Gateway, probably new firewall rules are required.)
-
-8. We are done, from now on, Tor will connect through the SSH server.
-
+'''Safety issues to consider when using a tunnel-link before Tor''' 
+In determining whether to use a tunnel-link before Tor, the question basically is how much you can trust the server / connecting tunnel-link provider (a VPN host being an example). The server will be able to see that you are using Tor, but thanks to Tor, they won't see what you are doing. However, note that when connecting directly to a tunnel-link before connecting to Tor, the server (for example the VPN hosting service) will know and *may* log your IP Address, the times when you log on, etc. If you have paid for the tunnel-link provider's service (thereby establishing a "money trail") this could be of additional concern and more easily enable a third-party (the government for example) to specifically identify you. For these reasons alone, it may be ill advised to use a tunnel-link before connecting to Tor. Still, if it is incredibly unsafe for your ISP to see that you are using Tor in any way and you use your own server in a safe country, while you are in a dangerous country, using a tunnel-link before Tor may be your best bet. Note: not many people seem to use a tunnel before they connect to Tor, therefore it's safety in providing anonymity and privacy have not been fully tested. *Do not rely on this too much to protect your anonymity*
 
 == Using a VPN before Tor (User -> VPN -> Tor -> Internet) ==
 There are many different VPN protocols (too many for this guide). However, OpenVPN, which is open-source and free software, has been vetted by multiple Tor users and is the recommended VPN protocol to use (not pptp).
@@ -334,6 +215,120 @@ exit
 ======  Leak Tests ======
 When you shut down the VPN, neither Tor, nor Whonix-Gateway's whonixcheck/apt-get/etc. nor Whonix-Workstation should be able to connect anywhere anymore.
 
+== Using a proxy before Tor (User -> proxy -> Tor -> Internet) ==
+
+=== Proxy Warning ===
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px|alt=Whonix first time users warning]]
+| text       = '''<u>Warning!</u>'''
+There are issues you should be aware of when using standard, common http(s)/socks4(a)/5 proxies. (Anonymizers that only use http(s)/socks4(a)/5 as an interface<ref>Such as the Tor, [[JonDonym]] or [[I2P]] software.</ref> are exempt.)
+* Most problems with these proxies are not caused by Whonix.
+* ISP-level adversaries can still determine that the user is connecting to the Tor network.
+* Be especially careful with http(s) proxies. Some of them send the "[https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN#VPNSSHversusProxy http forwarded for]" header which discloses your IP. Http(s) proxies that do not send this header are sometimes called "elite" or "anonymous" proxies.
+* When using "http forwarded for" http(s) proxies, Tor entry guards and Tor [[Bridges|bridges]] can determine your IP.
+See also: [[Comparison_Of_Tor_with_CGI_Proxies,_Proxy_Chains,_and_VPN_Services|Comparison Of Tor with CGI Proxies, Proxy Chains, and VPN_Services]].
+}}
+
+=== How to setup proxy before Tor (User -> proxy -> Tor -> Internet) ===
+Tor natively supports proxy settings.
+
+'''On Whonix-Gateway:'''
+Open your {{Code2|/etc/tor/torrc}}.
+<pre>
+sudo nano /etc/tor/torrc
+</pre>
+
+Depending on your proxy configuration, add the settings you'll need to your {{Code2|/etc/tor/torrc}}. For more information on these settings, have a look in the [https://www.torproject.org/docs/tor-manual.html.en Tor manual] and read the [https://trac.torproject.org/projects/tor/wiki/doc/TorFAQ#MyInternetconnectionrequiresanHTTPorSOCKSproxy. FAQ].
+
+<pre>
+HTTPProxy host[:port]
+HTTPProxyAuthenticator username:password
+HTTPSProxy host[:port]
+HTTPSProxyAuthenticator username:password
+
+Socks4Proxy host[:port]
+
+Socks5Proxy host[:port]
+Socks5ProxyUsername username
+Socks5ProxyPassword password
+
+FascistFirewall 0|1 
+
+ReachableAddresses ADDR[/MASK][:PORT]… 
+ReachableDirAddresses ADDR[/MASK][:PORT]… 
+ReachableORAddresses ADDR[/MASK][:PORT]… 
+</pre>
+
+'''Note:''' You need to use the IP instead of the hostname (proxy.example.com). If you don't know the IP of your proxy, please run {{Code|nslookup proxy.example.com}} (replace proxy.example.com with the hostname of your actual proxy) in a terminal (Konsole) on your host operating system. Using IP instead of hostname might cause subtle fingerprinting issues, see <ref>https://github.com/Whonix/Whonix/issues/94</ref> for more information.
+
+=== Footnotes ===
+<references />
+
+{{Footer}}
+
+[[Category:Documentation]]
+
+== Using SSH before Tor (User -> SSH -> Tor -> Internet) ==
+
+'''This chapter is not fully tested/complete. Please give feedback if it worked for you.''' This doesn't seem to be very popular, no one ever asked about it in over one year.
+
+Setting up the SSH tunnel could be either done on the host or inside Whonix-Gateway.
+
+1. First we have to install the ssh client.
+<pre>
+sudo apt-get update
+sudo apt-get install ssh</pre>
+
+2. Then be sure that your SSH connection itself is working well. SSH to your ssh server using.
+<pre>ssh yourusername@your.ssh.server</pre>
+
+3. It's recommended to set up public key authentication.
+(TODO: how to create a private and public key)
+<pre>
+cd /home/yourusername
+mkdir .ssh
+nano authorized_keys
+</pre>
+Paste line beginning with {{Code|ssh-rsa ...}} (your public key) (TODO: how to create that line).
+
+4.
+Terminate SSH connection.
+<pre>exit</pre>
+
+Login again using public key authentication. (TODO: how to do that)
+
+5. When that is working install your favorite text mode browser, for example.
+<pre>apt-get install lynx</pre>
+
+And test if the shell's external internet connection is working. Try
+<pre>lynx check.torproject.org</pre>
+
+You're done with the per-requisets. Exit your shell.
+<pre>exit</pre>
+
+6. Now we will tell the SSH client to start a socks5 proxy server listening on localhost 127.0.0.1 port 1080. The following command has to be run in background (TODO: add line how to do that) on each start up, before Tor starts (TODO: to which file, to do that). It would be wise to activate public key authentication (TODO: how to add private key to use public key authentication).
+<pre>
+ssh -D 1080 your.ssh.server
+</pre>
+
+Now we have to tell Tor to use the new local ssh server.
+
+Open your {{Code2|/etc/tor/torrc}}.
+<pre>
+sudo nano /etc/tor/torrc
+</pre>
+
+And add.
+<pre>
+## In case SSH tunnel has been setup from Whonix-Gateway.
+Socks5Proxy 127.0.0.1:1080
+## In case SSH tunnel has been setup on the host.
+#Socks5Proxy IP:PORT
+</pre>
+
+7. (TODO: if running inside Whonix-Gateway, probably new firewall rules are required.)
+
+8. We are done, from now on, Tor will connect through the SSH server.
 
 ****************************************************************************************************************************************************************************************
 
