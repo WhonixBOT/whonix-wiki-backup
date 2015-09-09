@@ -14,24 +14,23 @@ Read first: [https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN Tor Pl
 |description=Connection Schema: user -> proxy/VPN/SSH -> Tor
 }}
 
-{{VPN Documentation}}
-== Using  ==
+= Using a tunnel-link (proxy/VPN/SSH) before Tor =
+'''DESCRIPTION: (USER -> PROXY/VPN/SSH -> TOR -> INTERNET)'''
 
-'''user -> proxy/VPN/SSH -> Tor'''
+'''Why use a tunnel-link before Tor'''
 
-Sometimes you are '''forced to use a proxy or VPN''' to make outgoing connections, some ISP's force you, or you are in a LAN with a proxy (router), or in a corporate environment.
+Sometimes you have to use a tunnel-link to make outgoing connections to the internet because some ISP's censor your ability to access the full internet (e.g. the Great Firewall of China), or you are linked within a LAN (such as in an educational or corporate environment).
 
 A proxy, VPN or SSH can also be possibly
 
 * '''used to circumvent Tor blocks''' or to
 * '''hide the fact you are using Tor''', in that case make sure you have read [[Hide Tor and Whonix from your ISP]].
 
-VPN and SSH are preferred choice, as they support secure encryption between you and them. It's a question, how much you can trust the server, they'll see, that you are using Tor, but thanks to Tor, they won't see what you are doing. If you use your own server in a safe country, while you are in a dangerous country, that's probably your best bet. Anyway, not so many people seem to do use a tunnel before they connect to Tor, therefore it's not so well tested, do not rely on it too much.
+VPN and SSH are preferred choice, as they support encryption between you and the server. In determining whether to use a VPN or SSH, the question basically on how much you can trust the server. The server will be able to see that you are using Tor, but thanks to Tor, they won't see what you are doing. However, note that when connecting directly to a tunnel-link before connecting to Tor, the server (for example the VPN hosting service) will know and *may* log your IP Address. Still, if it is incredibly unsafe for your ISP to see that you are using Tor in any way and you use your own server in a safe country, while you are in a dangerous country, using a tunnel-link before Tor may be your best bet. Note: not many people seem to use a tunnel before they connect to Tor, therefore it's not very well tested. *Do not rely on this too much to protect your anonymity*
 
 If nothing above applies for you, skip this section.
 
-== Tunnel Tor through proxy ==
-'''user -> proxy -> Tor'''
+== Using a proxy before Tor (User -> proxy -> Tor -> Internet) ==
 
 === Proxy Warning ===
 {{mbox
@@ -45,13 +44,11 @@ There are issues you should be aware of when using standard, common http(s)/sock
 See also: [[Comparison_Of_Tor_with_CGI_Proxies,_Proxy_Chains,_and_VPN_Services|Comparison Of Tor with CGI Proxies, Proxy Chains, and VPN_Services]].
 }}
 
-=== How ===
+=== How to setup proxy before Tor (User -> proxy -> Tor -> Internet) ===
 Tor natively supports proxy settings.
 
-On Whonix-Gateway:
-
+'''On Whonix-Gateway:'''
 Open your {{Code2|/etc/tor/torrc}}.
-
 <pre>
 sudo nano /etc/tor/torrc
 </pre>
@@ -79,60 +76,45 @@ ReachableORAddresses ADDR[/MASK][:PORT]…
 
 '''Note:''' You need to use the IP instead of the hostname (proxy.example.com). If you don't know the IP of your proxy, please run {{Code|nslookup proxy.example.com}} (replace proxy.example.com with the hostname of your actual proxy) in a terminal (Konsole) on your host operating system. Using IP instead of hostname might cause subtle fingerprinting issues, see <ref>https://github.com/Whonix/Whonix/issues/94</ref> for more information.
 
-== Tunnel Tor through SSH ==
-'''user -> SSH -> Tor'''
+== Using SSH before Tor (User -> SSH -> Tor -> Internet) ==
 
-'''The chapter "Tunnel Tor through SSH" is not fully tested/complete. Please give feedback if it worked for you.''' This doesn't seem to be very popular, no one ever asked about it in over one year.
+'''This chapter is not fully tested/complete. Please give feedback if it worked for you.''' This doesn't seem to be very popular, no one ever asked about it in over one year.
 
-This chapter is about tunneling Tor through a SSH tunnel.
-
-Setting up the VPN tunnel could be either done on the host or inside Whonix-Gateway.
+Setting up the SSH tunnel could be either done on the host or inside Whonix-Gateway.
 
 1. First we have to install the ssh client.
-
 <pre>
 sudo apt-get update
 sudo apt-get install ssh</pre>
 
 2. Then be sure that your SSH connection itself is working well. SSH to your ssh server using.
-
 <pre>ssh yourusername@your.ssh.server</pre>
 
 3. It's recommended to set up public key authentication.
-
 (TODO: how to create a private and public key)
-
-<pre>cd /home/yourusername</pre>
-
-<pre>mkdir .ssh</pre>
-
-<pre>nano authorized_keys</pre>
-
+<pre>
+cd /home/yourusername
+mkdir .ssh
+nano authorized_keys
+</pre>
 Paste line beginning with {{Code|ssh-rsa ...}} (your public key) (TODO: how to create that line).
 
 4.
 Terminate SSH connection.
-
 <pre>exit</pre>
 
 Login again using public key authentication. (TODO: how to do that)
 
 5. When that is working install your favorite text mode browser, for example.
-
 <pre>apt-get install lynx</pre>
 
 And test if the shell's external internet connection is working. Try
-
 <pre>lynx check.torproject.org</pre>
 
-You're done with the per-requriements.
-
-Exit your shell.
-
+You're done with the per-requisets. Exit your shell.
 <pre>exit</pre>
 
 6. Now we will tell the SSH client to start a socks5 proxy server listening on localhost 127.0.0.1 port 1080. The following command has to be run in background (TODO: add line how to do that) on each start up, before Tor starts (TODO: to which file, to do that). It would be wise to activate public key authentication (TODO: how to add private key to use public key authentication).
-
 <pre>
 ssh -D 1080 your.ssh.server
 </pre>
@@ -140,17 +122,14 @@ ssh -D 1080 your.ssh.server
 Now we have to tell Tor to use the new local ssh server.
 
 Open your {{Code2|/etc/tor/torrc}}.
-
 <pre>
 sudo nano /etc/tor/torrc
 </pre>
 
 And add.
-
 <pre>
 ## In case SSH tunnel has been setup from Whonix-Gateway.
 Socks5Proxy 127.0.0.1:1080
-
 ## In case SSH tunnel has been setup on the host.
 #Socks5Proxy IP:PORT
 </pre>
@@ -159,33 +138,25 @@ Socks5Proxy 127.0.0.1:1080
 
 8. We are done, from now on, Tor will connect through the SSH server.
 
-== Tunnel Tor through VPN ==
-=== Introduction ===
-'''user -> VPN -> Tor'''
 
-There are too many different VPN protocols. Too many to add all of them to this guide. However, at least the OpenVPN, that is Libre Software has been documented.
+== Using a VPN before Tor (User -> VPN -> Tor -> Internet) ==
+There are many different VPN protocols (too many for this guide). However, OpenVPN, which is open-source and free software, has been vetted by multiple Tor users and is the recommended VPN protocol to use (not pptp).
 
-If you are using VPN not,
-
-* '''because you are forced to use VPN by your ISP''', but
-* want to '''add an additional layer of protection''', or
-* to '''hide the fact that you are using Tor''', in that case make sure you have read [[Hide Tor and Whonix from your ISP]]
-
-then be sure, that your VPN software is secure (ex: use OpenVPN, not pptp).
+'''When to use a VPN'''
+* you are are forced to use a VPN by your ISP
+* you want to add an additional layer of protection
+* you want hide the fact that you are using Tor (Note: if this is the case, make sure you read [[Hide Tor and Whonix from your ISP]]
 
 === Use a Fail Closed Mechanism ===
+A general problem with VPNs is that during a connection, they often fail to remain open (meaning that the VPN connection becomes closed, in which the user is now directly connected to the Internet without tunneling through the VPN). This is not a Whonix specific problem. VPN servers and VPN software can occasionally break down without announcement. This means, if the VPN is unreachable, the connection breaks down for whatever reason, which in most cases you continue to connect to the internet without the VPN.
 
-This is not a Whonix specific problem. It is a general problem with VPNs. Most users are simply not aware of it. VPN's generally fail open. VPN servers and VPN software can occasionally break down without announcement. This means, if the VPN is unreachable, connections breaks down for whatever reasons and so on, in most cases, you can continue to connect to the internet without the VPN.
+One of the benefits of Whonix is that when a VPN connection breaks down, you still have the protections provided by Tor. In such an event where the VPN connection breaks down, Whonix-Workstation will seamlessly continue to make "direct" connections through Tor. If you are using the VPN only to circumvent the censorship of Tor, you may not care so much. On the other hand, if you believe a VPN improves your security, you should make sure that when the VPN connection breaks down, all connections with the outside world and your computer cease.
 
-In case of Whonix you would be left to the protections provided by Tor. Whonix-Workstation will seamlessly continue to make "direct" connections through Tor once the VPN breaks down. If you are using the VPN only to circumvent the censorship of Tor, you may not care so much. On the other hand, if you believe a VPN improves your security, it would be rational to make sure, the VPN is always used instead only most of the time.
-
-If you want to enforce, that the VPN gets always used:
-
+If you want to enforce, that the VPN always gets used:
 * Whonix-Gateway: Already includes a fail closed (firewall settings {{Code|VPN_FIREWALL}} setting) mechanism, which is documented below.
 * Other operating systems: See [[VPN-Firewall]].
 
-=== How ===
-==== Introduction ====
+=== Setting up VPN before Tor (User -> VPN -> Tor -> Internet) ===
 If you are forced to use a VPN server or if you are already using a VPN server, you most likely know how you can connect to it.
 
 You can either add the VPN on the host. Whonix-Gateway will be tunneled through it.
