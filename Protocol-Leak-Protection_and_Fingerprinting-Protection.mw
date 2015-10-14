@@ -133,9 +133,11 @@ sudo lsusb
 
 and then comparing with your host.
 </ref>
-* CPU model and capabilities are hidden by VirtualBox "Synthetic CPU" option.
-** Unfortunately, the clock speed of your host CPU is visible to all code (applications or malware) inside Whonix-Workstation.<ref>
-This is due to the design of virtualization platforms (VirtualBox, VMware, etc.). Most virtualization platforms leak CPU model, capabilities and clock speed. VirtualBox (4.1+ if not earlier) can mask at least the model and capabilities of the CPU with the "Synthetic CPU" option. This option is activated by default on Whonix 0.2.1 and above. Check 
+* CPU model and capabilities.
+** Qubes: Not hidden.
+** VirtualBox: <s>Are hidden by VirtualBox "Synthetic CPU" option.</s> (Broken. [https://phabricator.whonix.org/T408 TODO]) <s>Unfortunately, the clock speed of your host CPU is visible to all code (applications or malware) inside Whonix-Workstation.</s>
+<ref>
+This is due to the design of virtualization platforms (VirtualBox, VMware, etc.). Most virtualization platforms leak CPU model, capabilities and clock speed. Check.
 
 <pre>
 cat /proc/cpuinfo
@@ -143,13 +145,19 @@ cat /proc/cpuinfo
 
 If that is a still problem for you another workaround could be to use an emulator, such as QEMU (port available, documented, see [[QEMU]]) or [http://bochs.sourceforge.net/ bochs] (no one has created a port yet, undocumented). Unfortunately such emulators are slow and there might be other limitations. (Does Bochs support internal networking?)
 </ref>
-* RAM is set to 768 MB.
+* RAM.
+** Qubes: Dynamically assigned.
+** VirtualBox / KVM: is set to 768 MB.
 * Sensor information (cpu temperature, hdd temperature, [https://en.wikipedia.org/wiki/S.M.A.R.T. S.M.A.R.T.]) are hidden. <ref>
 You can check the sensor information using: 
 
 <pre>
 sudo apt-get install hddtemp
 
+## Qubes
+sudo hddtemp /dev/xvda
+
+## VirtualBox
 sudo hddtemp /dev/sda
 </pre>
 
@@ -159,8 +167,8 @@ sudo hddtemp /dev/sda
 sudo apt-get install lm-sensors
 sudo sensors-detect
 </pre>
-</ref> Fortunately VirtualBox does hide them from the guest Virtual Machine by not implementing them.
-* Battery information is unfortunately not hidden by VirtualBox. <ref>
+</ref> Fortunately virtualizers hide them from the guest Virtual Machine by not implementing them.
+* Battery information. <ref>
 You can check the battery information using: 
 
 <pre>
@@ -169,19 +177,34 @@ sudo apt-get install acpi
 acpi -V
 </pre>
 </ref>
-* BIOS DMI information is hidden by VirtualBox. <ref name=biosdmi>
+** Qubes: Hidden.
+** VirtualBox: Not hidden.
+
+* BIOS DMI information. 
+** Qubes: Hidden.
+** VirtualBox: Hidden.
+<ref name=biosdmi>
 You can check the BIOS DMI information using: 
 
 <pre>
 sudo dmidecode
 </pre>
 </ref>
-* Virtual BIOS DMI information and Virtual HDD and CD serial numbers are implemented by VirtualBox. <ref name=biosdmi /> <ref>
-You can disk ids using: 
+* Virtual BIOS DMI information and Virtual HDD and CD serial numbers.
+** Qubes: virtual ones.
+** VirtualBox: virtual ones.
+<ref name=biosdmi /> <ref>
+You can see disk ids using: 
 
 <pre>
 sudo ls -la /dev/disk/by-id/
 </pre>
+
+<pre>
+sudo ls -la /dev/disk/by-uuid/
+</pre>
+
+Then compare with the host.
 </ref>
 * VM UUID, as in explained in [http://www.virtualbox.org/manual/ch08.html#vboxmanage-modifyvdi VBoxManage modifyhd] has no relation to your host by default. <ref>
 You can check the VM UUID using:
@@ -190,19 +213,26 @@ You can check the VM UUID using:
 sudo dmidecode
 </pre>
 </ref>
-* [https://msdn.microsoft.com/en-us/library/windows/hardware/hh673514.aspx SLIC table] is empty by default inside VirtualBox. <ref>
+* [https://msdn.microsoft.com/en-us/library/windows/hardware/hh673514.aspx SLIC table]:
+** Qubes: not implemented.
+** VirtualBox: is empty by default.
+<ref>
 You can check the SILC table using: 
 
 <pre>
 sudo cat /sys/firmware/acpi/tables/SLIC
 </pre>
 
-inside VirtualBox and on your host. On your host there may or may be not be a SLIC table. If there is none, it can't leak into VirtualBox. If there is one, you'll see, that it's not mirrored in VirtualBox, which is fine.
+inside your virtualizer and on your host. On your host there may or may be not be a SLIC table. If there is none, it can't leak into your virtualizer. If there is one, you'll see, that it is not mirrored in VirtualBox, which is fine.
 </ref>
 * HDD UUIDs are different from your host. <ref>
 You can check the HDD UUID using: 
 
 <pre>
+## Qubes
+sudo hdparm -i /dev/xvda
+
+## VirtualBox
 sudo hdparm -i /dev/sda
 </pre>
 </ref>
@@ -214,11 +244,12 @@ udisks --show-info /dev/cdrom
 </pre>
 </ref>
 * All Whonix users have by default the same set of software packages installed. - If you install software packages yourself, you give up that advantage. See also [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Softwareupdaters Software updaters].
-* Disk uuids of the real hardware are hidden through VirtualBox.
+* Disk uuids of the real hardware are hidden through the virtualizer.
 * [https://en.wikipedia.org/wiki/Extended_display_identification_data EDID] is hidden by virtualizer, see [[Higher Screen Resolution#Technical_Stuff]].
-* Related VirtualBox tickets:
-** [https://www.virtualbox.org/ticket/10976 document all virtual hardware serial numbers implemented by VirtualBox]
-** [https://www.virtualbox.org/ticket/10975 document which information from the host are visible to VMs]
+* Related tickets:
+** VirtualBox:
+*** [https://www.virtualbox.org/ticket/10976 document all virtual hardware serial numbers implemented by VirtualBox]
+*** [https://www.virtualbox.org/ticket/10975 document which information from the host are visible to VMs]
 
 = Footnotes =
 <references />
