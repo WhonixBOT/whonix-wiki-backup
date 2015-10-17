@@ -231,61 +231,111 @@ chmod 700 /etc/openvpn/static.key
 }}
 <pre>
 # create server configuration
+</pre>
+{{CodeSelect|code=
 echo "
+}}
+{{CodeSelect|code=
 user nobody
+}}
+{{CodeSelect|code=
 group nogroup
+}}
+{{CodeSelect|code=
 daemon
+}}
+{{CodeSelect|code=
 dev tun
+}}
+{{CodeSelect|code=
 ifconfig 10.8.0.1 10.8.0.2
+}}
+{{CodeSelect|code=
 secret /etc/openvpn/static.key" > /etc/openvpn/server.conf
-
+}}
+{{CodeSelect|code=
 service openvpn restart
-
+}}
 # Edit torrc
 # TODO: only selectively change listening addresses. TransPort and optionally other SocksPorts have to remain available,
 #       if unauthenticated workstations are to be used.
 # NOTE: we are using a hardcoded default IP here, if you are using non standard settings this will have to be edited.
+{{CodeSelect|code=
 ed -s /etc/tor/torrc <<< $',s/10.152.152.10/10.8.0.1/g\nw'
-
+}}
+<pre>
 # Edit /usr/local/bin/whonix_firewall
 # TODO: Put this automatically where it actually belongs
 echo '
 # Allow openvpn in on port 1194
 iptables -A INPUT -i $INT_IF -p udp --dport 1194 -j ACCEPT' >> /usr/local/bin/whonix_firewall
 # TODO: replace hardcoded "eth1" with a wildcard
-ed -s /usr/local/bin/whonix_firewall<<< $',s/INT_TIF=eth1/INT_TIF=tun0/g\nw'
-
-/usr/local/bin/whonix_firewall
 </pre>
+{{CodeSelect|code=
+ed -s /usr/local/bin/whonix_firewall<<< $',s/INT_TIF=eth1/INT_TIF=tun0/g\nw'
+}}
+{{CodeSelect|code=
+/usr/local/bin/whonix_firewall
+}}
 
 On the Workstation(s):
 
 TODO: Disable/tweak the new firewall
 
-<pre>
+{{CodeSelect|code=
 sudo -i
-
+}}
+{{CodeSelect|code=
 mv /home/user/static.key /etc/openvpn/static.key
+}}
+{{CodeSelect|code=
 chown root:root /etc/openvpn/static.key
+}}
+{{CodeSelect|code=
 chmod 700 /etc/openvpn/static.key
-
+}}
+<pre>
 # should be in the default installation
-apt-get --yes install --no-install-recommends torsocks
-
-echo "
-user nobody
-group nogroup
-daemon
-remote 10.152.152.10
-dev tun
-ifconfig 10.8.0.2 10.8.0.1
-secret /etc/openvpn/static.key" > /etc/openvpn/server.conf
-
-# Edit resolv.conf
-chattr -i /etc/resolv.conf
-echo "nameserver 10.8.0.1" > /etc/resolv.conf
-chattr +i /etc/resolv.conf
 </pre>
+{{CodeSelect|code=
+apt-get --yes install --no-install-recommends torsocks
+}}
+{{CodeSelect|code=
+echo "
+}}
+{{CodeSelect|code=
+user nobody
+}}
+{{CodeSelect|code=
+group nogroup
+}}
+{{CodeSelect|code=
+daemon
+}}
+{{CodeSelect|code=
+remote 10.152.152.10
+}}
+{{CodeSelect|code=
+dev tun
+}}
+{{CodeSelect|code=
+ifconfig 10.8.0.2 10.8.0.1
+}}
+{{CodeSelect|code=
+secret /etc/openvpn/static.key" > /etc/openvpn/server.conf
+}}
+<pre>
+# Edit resolv.conf
+</pre>
+{{CodeSelect|code=
+chattr -i /etc/resolv.conf
+}}
+{{CodeSelect|code=
+echo "nameserver 10.8.0.1" > /etc/resolv.conf
+}}
+{{CodeSelect|code=
+chattr +i /etc/resolv.conf
+}}
 
 = See Also =
 * [[Whonix-Workstation_Firewall|Whonix-Workstation Firewall]]
