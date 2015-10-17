@@ -45,11 +45,15 @@ Everything inside your Whonix-Workstation.
 
 Install [https://unbound.net/ unbound] and [http://www.dest-unreach.org/socat/ socat].
 
-<pre>sudo apt-get install unbound socat</pre>
+{{CodeSelect|code=
+sudo apt-get install unbound socat
+}}
 
 Open ''/etc/unbound/unbound.conf''.
 
-<pre>sudo nano /etc/unbound/unbound.conf</pre>
+{{CodeSelect|code=
+sudo nano /etc/unbound/unbound.conf
+}}
 
 ''Add'' the following lines.
 
@@ -67,17 +71,23 @@ forward-zone:
 
 Open a terminal and start socat.
 
-<pre>socat TCP4-LISTEN:5353,bind=localhost,reuseaddr,fork SOCKS4A:10.152.152.10:217.31.204.130:53,socksport=9150</pre>
+{{CodeSelect|code=
+socat TCP4-LISTEN:5353,bind=localhost,reuseaddr,fork SOCKS4A:10.152.152.10:217.31.204.130:53,socksport=9150
+}}
 
 Open another terminal tab and restart unbound.
 
-<pre>sudo service unbound restart</pre>
+{{CodeSelect|code=
+sudo service unbound restart
+}}
 
 ===== Using =====
 
 Test with dig.
 
-<pre>dig +dnssec nic.cz @localhost</pre>
+{{CodeSelect|code=
+dig +dnssec nic.cz @localhost
+}}
 
 Please refer to upstream documentation on how to interpret the DNSSEC test results.
 
@@ -105,9 +115,9 @@ These instructions completely replace Tor's DNS resolver with a dnscrypt-enabled
 
 (2). Start dnscrypt-proxy. <ref>''--tcp-only'' is required since Tor does not support UDP. The UDP DNS request will immediately get truncated reply and a RFC-compliant resolver should repeat same query via TCP in this case. This is the case for Ubuntu's default DNS resolver. You can get some more information on UDP/TCP/DNS on the unrelated [http://darkk.net.ru/redsocks/ redsocks] website.</ref> <ref>To start it later in background (after debugging) add ''--daemonize''.</ref> <ref>''--help'' to see all options.</ref> <ref>Start up takes a few seconds "INFO Generating a new key pair", this is normal, wait. Until it's done, DNS will not work.</ref> <ref>''--user=username'' can and should be used to start the dnscrypt-proxy under a specific user account.</ref> <ref>Since this instructions completely replace Tor's DNS resolver with opendns's dnscrypt for all users and the whole system, you could add ''--local-port=5800'' to let dnscrypt-proxy listen on port 5800. You would be able to add iptables rules to redirect only the DNS requests of a specific user account to the dnscrypt resolver, you can get some hints how to do that in the ''httpsdnsd by JonDos'' chapter below, which would be a very similar setup.</ref>
 
-<pre>
+{{CodeSelect|code=
 sudo dnscrypt-proxy --tcp-only
-</pre>
+}}
 
 (3). Edit your /etc/resolv.conf ''nano /etc/resolv.conf'', comment out everything and add ''nameserver 127.0.0.1''.
 
@@ -125,11 +135,15 @@ Everything inside your Whonix-Workstation.
 
 Install dependencies.
 
-<pre>sudo apt-get install libnet-ssleay-perl libnet-server-perl libnet-dns-perl libxml-simple-perl liblog-log4perl-perl</pre>
+{{CodeSelect|code=
+sudo apt-get install libnet-ssleay-perl libnet-server-perl libnet-dns-perl libxml-simple-perl liblog-log4perl-perl
+}}
 
 Download httpsdnsd. (See source above in case download link changed.)
 
-<pre>wget https://anonymous-proxy-servers.net/downloads/httpsdnsd.tar.bz2</pre>
+{{CodeSelect|code=
+wget https://anonymous-proxy-servers.net/downloads/httpsdnsd.tar.bz2
+}}
 
 Unpack.
 
@@ -137,21 +151,29 @@ Unpack.
 
 Go into the httpsdnsd folder.
 
-<pre>cd httpsdnsd</pre>
+{{CodeSelect|code=
+cd httpsdnsd
+}}
 
 Install httpsdnsd. <ref>It contains also a uninstall.sh, if you want to uninstall it later.</ref>
 
-<pre>sudo install.sh</pre>
+{{CodeSelect|code=
+sudo install.sh
+}}
 
 Add a new user for httpsdnsd.
 
-<pre>sudo adduser --system --disabled-password --group httpsdns_daemon</pre>
+{{CodeSelect|code=
+sudo adduser --system --disabled-password --group httpsdns_daemon
+}}
 
 Editing /etc/resolv.conf is not required. (You still could out comment everything against DNS leaks.)
 
 Create a firewall script.
 
-<pre>nano dns-fw.sh</pre>
+{{CodeSelect|code=
+nano dns-fw.sh
+}}
 
 Insert these firewall rules.
 
@@ -173,11 +195,15 @@ iptables -t filter -A OUTPUT ! -o lo -m owner --uid-owner anonuser -j REJECT
 
 Install Privoxy. <ref>[https://trac.torproject.org/projects/tor/wiki/doc/TorBOX/OptionalConfigurations?version=95#httpsdnsdbyJonDos torproject.org Wiki Version 95] of this site contains a working example using Polipo. Changed later to Privoxy, because Privoxy can be useful for other tasks as well. (Incoming: TransPort, http proxy; forwarding: http and socks.)</ref>
 
-<pre>sudo apt-get install privoxy</pre>
+{{CodeSelect|code=
+sudo apt-get install privoxy
+}}
 
 Open the privoxy configuration file.
 
-<pre>nano /etc/privoxy/config</pre>
+{{CodeSelect|code=
+nano /etc/privoxy/config
+}}
 
 Add the following to your privoxy configuration file.
 
@@ -198,7 +224,9 @@ forward-socks5 / 10.152.152.10:9112 .
 
 Restart privoxy to enable the changes.
 
-<pre>sudo /etc/init.d/privoxy restart</pre>
+{{CodeSelect|code=
+sudo /etc/init.d/privoxy restart
+}}
 
 Privoxy is now listening on 127.0.0.1:8118. <ref>For debugging you can enter this IP/port into Tor Browser as http proxy and try if you can still reach check.torproject.org. Deactivate after testing.</ref>
 
@@ -206,21 +234,29 @@ Privoxy is now listening on 127.0.0.1:8118. <ref>For debugging you can enter thi
 
 Run httpsdnsd. <ref>For debugging, kill httpsdnsd and drop the ''--runasdaemon''.</ref> <ref>Run ''httpsdnsd --help'' or ''man httpsdnsd'' for help.</ref> <ref>Httpsdnsd will by default listen on localhost port 4053 for DNS queries.</ref> <ref>''--https_proxy_port=8118'' will redirect traffic to port 8118, where Privoxy is listening. This is necessary because Tor offers a socks proxy and httpsdnsd requires a http proxy. Privoxy translates from http to socks.</ref>
 
-<pre>sudo httpsdnsd --https_proxy_port=8118 --runasdaemon</pre>
+{{CodeSelect|code=
+sudo httpsdnsd --https_proxy_port=8118 --runasdaemon
+}}
 
 Activate the firewall. Shouldn't show any errors.
 
-<pre>sudo ./dns-fw.sh</pre>
+{{CodeSelect|code=
+sudo ./dns-fw.sh
+}}
 
 ==== Using ====
 
 Open a console and switch to anonuser.
 
-<pre>su anonuser</pre>
+{{CodeSelect|code=
+su anonuser
+}}
 
 Resolve DNS.
 
-<pre>nslookup check.torproject.org</pre>
+{{CodeSelect|code=
+nslookup check.torproject.org
+}}
 
 = Footnotes =
 <references />
