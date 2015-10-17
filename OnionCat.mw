@@ -135,12 +135,13 @@ Many programs do not support IPv6 and so to use IPv4 with Onioncat, IPv4 will ne
 
 Most operating systems should support IP-IP6 tunneling. IPv6 supports encapsulation of IPv4 or IPv6, hence, tunneling is not a big deal. An IP-IP6 tunnel is a point-to-point tunnel between two IPv6 nodes. The tunnel endpoints are virtual network interfaces. IP addresses are assigned to them and routing has to be set up as usual (as if those interfaces where ethernets). Before configuring a tunnel you need to know the two IPv6 addresses of the IPv6 nodes. Those will be the IPv6 OnionCat addresses. There are a few steps necessary on Linux. First insert the IPv6 tunneling kernel module, then setup the tunnel interface by connecting it to the two IPv6 addresses. Next configure the IPv4 addresses to the tunnel endpoints, bring them up and add the necessary routes (... and don't forget to update your firewall rules - but this is not needed with Whonix Workstation's default settings).
 
-<pre>
-# modprobe ip6_tunnel
-# ip -6 tunnel add iptun0 mode ipip6 local fd87:d87e:eb43:1f53:c75:3b27:7adc:c9a5 remote fd87:d87e:eb43:8733:3338:21f6:a2b8:eebf
-# ifconfig iptun0 192.168.100.1 up
-# route add -net 192.168.100.0/24 dev iptun0
-</pre>
+{{CodeSelect|code=
+sudo su
+modprobe ip6_tunnel
+ip -6 tunnel add iptun0 mode ipip6 local fd87:d87e:eb43:1f53:c75:3b27:7adc:c9a5 remote fd87:d87e:eb43:8733:3338:21f6:a2b8:eebf
+ifconfig iptun0 192.168.100.1 up
+route add -net 192.168.100.0/24 dev iptun0
+}}
 
 On the other end do the same thing except that you have to swap the two IPv6 addresses and use another IP address on the tunnel endpoint, e.g. 192.168.100.2. If Tor, OnionCat, and the tunnel is up on both ends you should be able to ping the remote end.
 
