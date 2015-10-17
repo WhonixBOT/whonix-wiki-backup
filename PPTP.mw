@@ -38,11 +38,15 @@ We use VPN here for its “tunnel” capabilities, so that others that you allow
 
 From your Whonix-Gateway:
 
-<pre>apt-get install pptpd</pre>
+{{CodeSelect|code=
+apt-get install pptpd
+}}
 
 This will install and start the <code>pptpd</code> daemon on your Whonix-Gateway. Verify its running:
 
-<pre>ps aux | grep pptpd</pre>
+{{CodeSelect|code=
+ps aux | grep pptpd
+}}
 
 Should show something similar to:
 
@@ -58,7 +62,9 @@ Stop it for the time being, while we configure it.
 
 Configure PPTP settings:
 
-<pre>nano /etc/pptpd.conf</pre>
+{{CodeSelect|code=
+nano /etc/pptpd.conf
+}}
 
 Setup your <code>localip</code> and <code>remoteip</code> settings:
 
@@ -83,7 +89,9 @@ See the [http://poptop.sourceforge.net/dox/qna.html#19 FAQ here for information]
 
 (Whonix-Gateway)
 
-<pre>nano /etc/ppp/pptpd-options</pre>
+{{CodeSelect|code=
+nano /etc/ppp/pptpd-options
+}}
 
 Verify the following settings are configured as shown:
 
@@ -104,7 +112,9 @@ ms-dns <eth1 address></pre>
 
 The <code>ip-up</code> script is called on each connection by a PPTP client, so we can put special firewall rules here to help with Torifying the traffic through this interface.
 
-<pre>nano /etc/ppp/ip-up</pre>
+{{CodeSelect|code=
+nano /etc/ppp/ip-up
+}}
 
 Add to the end:
 
@@ -119,7 +129,9 @@ The variable “$PPP_IFACE” is defined in the script (see the documentation at
 
 Similarly the <code>ip-down</code> script is called when tearing down the connection. To prevent your iptables from getting polluted with redundant rules, we remove the previously configured rules here:
 
-<pre>nano /etc/ppp/ip-down</pre>
+{{CodeSelect|code=
+nano /etc/ppp/ip-down
+}}
 
 Add to the end:
 
@@ -141,7 +153,9 @@ Notice the addition of the '''-D''' instead of '''-A''' to the rule definitions.
 
 Start up your PPTP server:
 
-<pre>/etc/init.d/pptpd start</pre>
+{{CodeSelect|code=
+/etc/init.d/pptpd start
+}}
 
 (Client)
 
@@ -153,7 +167,9 @@ Instructions for a variety of clients:
 
 Now verify the connection on the gateway, after successfully connecting: (Whonix-Gateway)
 
-<pre>ifconfig</pre>
+{{CodeSelect|code=
+ifconfig
+}}
 
 Should show something like:
 
@@ -167,7 +183,9 @@ Should show something like:
 
 .
 
-<pre>iptables -vnL -t nat</pre>
+{{CodeSelect|code=
+iptables -vnL -t nat
+}}
 
 Should show:
 
@@ -186,8 +204,14 @@ On the client you should then be able to connect via Tor.
 
 Next disconnect from the VPN. On the server you should see several changes: (Whonix-Gateway)
 
-* <code>ifconfig</code> should no longer show any ppp interfaces
-* <code>iptables -vnL -t nat</code> should show no rules that involve any ppp interfaces
+* {{CodeSelect|code=
+ifconfig
+}}
+should no longer show any ppp interfaces
+*{{CodeSelect|code=
+iptables -vnL -t nat
+}}
+should show no rules that involve any ppp interfaces
 
 You can in fact test several client connections in this way. Each should get a new IP address (192.168.0.201, 192.168.0.202, etc), create a new virtual adapter (ppp1, ppp2, etc) and route through Tor via the Iptables commands (as above).
 
