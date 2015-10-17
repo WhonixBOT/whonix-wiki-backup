@@ -71,9 +71,9 @@ On Whonix-Workstation in an additional isolated network.
 
 Open /etc/network/interfaces.
 
-<pre>
+{{CodeSelect|code=
 kdesudo kwrite /etc/network/interfaces
-</pre>
+}}
 
 Use these settings.
 
@@ -87,9 +87,9 @@ On Whonix-Gateway.
 
 Open /etc/network/interfaces.
 
-<pre>
+{{CodeSelect|code=
 kdesudo kwrite /etc/network/interfaces
-</pre>
+}}
 
 Add this.
 
@@ -102,9 +102,9 @@ iface eth2 inet static
 
 You need a newer version of Whonix's Firewall. Open the existing one.
 
-<pre>
+{{CodeSelect|code=
 kdesudo kwrite /usr/bin/whonix_firewall
-</pre>
+}}
 
 Overwrite it with the one you can find on github:<br/>
 https://github.com/Whonix/whonix-gw-firewall/blob/master/usr/bin/whonix_firewall
@@ -120,9 +120,9 @@ git log --show-signature HEAD~1..
 
 Create a new config file /etc/whonix_firewall.d/50_user.
 
-<pre>
+{{CodeSelect|code=
 kdesudo kwrite /etc/whonix_firewall.d/50_user
-</pre>
+}}
 
 And add additional interfaces.
 
@@ -136,23 +136,23 @@ INT_TIF="$INT_IF"
 
 Reload Whonix's firewall (or reboot).
 
-<pre>
+{{CodeSelect|code=
 sudo whonix_firewall
-</pre>
+}}
 
 Restart networking.
 
-<pre>
+{{CodeSelect|code=
 sudo service networking restart
-</pre>
+}}
 
 Perhaps NetworkManager is interfering and must be disabled.
 
 Also the file /usr/share/tor/tor-service-defaults-torrc needs some changes. Tor needs to listen on the additional interfaces.
 
-<pre>
+{{CodeSelect|code=
 kdesudo kwrite /usr/share/tor/tor-service-defaults-torrc
-</pre>
+}}
 
 Use this file:<br/>
 https://github.com/Whonix/anon-gw-anonymizer-config/blob/tor_listen_on_all_interfaces/usr/share/tor/tor-service-defaults-torrc.anondist
@@ -161,9 +161,9 @@ https://github.com/Whonix/anon-gw-anonymizer-config/blob/tor_listen_on_all_inter
 
 Restart Tor.
 
-<pre>
+{{CodeSelect|code=
 sudo service tor restart
-</pre>
+}}
 
 It will now loudly complain, that Tor is listening on all IPs that that may not be what you want. You can ignore this, because the external network interface is firewalled.
 
@@ -202,19 +202,34 @@ On the gateway:
 
 {{Old-Stable-0.5.6}}
 
-<pre>sudo -i
+{{CodeSelect|code=
+sudo -i
+}}
+{{CodeSelect|code=
 apt-get -y install openvpn
-
+}}
+<pre>
 # create a new symmetric key
+</pre>
+{{CodeSelect|code=
 sudo -u user openvpn --genkey --secret /home/user/static.key
-
+}}
+<pre>
 # copy key to workstation (Firewall needs to be disabled and openssh-server installed on Whonix-Workstation for this to work)
+</pre>
+{{CodeSelect|code=
 sudo -u user scp /home/user/static.key user@10.152.152.10:/home/user/static.key
-
+}}
+{{CodeSelect|code=
 mv /home/user/static.key /etc/openvpn/static.key
+}}
+{{CodeSelect|code=
 chown root:root /etc/openvpn/static.key
+}}
+{{CodeSelect|code=
 chmod 700 /etc/openvpn/static.key
-
+}}
+<pre>
 # create server configuration
 echo "
 user nobody
