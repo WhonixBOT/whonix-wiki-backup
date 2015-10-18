@@ -20,32 +20,32 @@ Running a mirror for Whonix can be immensely helpful, but takes some knowledge, 
 == Install Apache ==
 
 # Install Apache:
-<pre>
+{{CodeSelect|code=
 sudo apt-get install apache2
-</pre>
+}}
 
 This will create the directory structure where we will put our mirrored copy of Whonix, as well as install Apache which will serve the mirrored content.
 
 == Getting Whonix ==
 
 Install rsync:
-<pre>
+{{CodeSelect|code=
 sudo apt-get install rsync
-</pre>
+}}
 
 and get Whonix from the rsync master:
-<pre>
+{{CodeSelect|code=
 sudo rsync -rtvp --delete rsync://rsync.whonix.org/whonix /var/www/whonix
-</pre>
+}}
 
 This will put the contents of http://rsync.whonix.org/ in your server's directory /var/www/whonix.
 
 == Automating updates from master ==
 
 So your mirror will be up to date whenever a new version of Whonix is released, we will add an entry to the crontab to check for updates every hour:
-<pre>
+{{CodeSelect|code=
 sudo crontab -e
-</pre>
+}}
 
 You will see the crontab opened in nano (at least on Wheezy 7.3). Hit "Page Down" or the down cursor key until you are on the last line (below "m h  dom mon dow   command") and enter:
 <pre>
@@ -70,39 +70,39 @@ Paste this into /etc/apache2/sites-available/mirror.whonix.de.conf:
 </VirtualHost>
 </pre>Modified from <ref>http://www.debian-administration.org/articles/412</ref>
 Make the directory for the new logs:
-<pre>
+{{CodeSelect|code=
 sudo mkdir /var/log/apache2/whonix
-</pre>
+}}
 Once you filled in your contact email (it will throw errors otherwise), enable the site:
-<pre>
+{{CodeSelect|code=
 sudo a2ensite mirror.whonix.de.conf
-</pre>
+}}
 You will be prompted to reload apache:
-<pre>
+{{CodeSelect|code=
 sudo service apache2 reload
-</pre>
+}}
 
 == Stripping User IPs ==
 
 While the config file above does not have an access log, user IPs can still be logged in error.log. It is therefore recommended to install mod-removeip to make Apache "blind" to the IP addresses of users. Install it:
-<pre>
+{{CodeSelect|code=
 sudo apt-get install libapache2-mod-removeip
-</pre>
+}}
 Activate it:
-<pre>
+{{CodeSelect|code=
 sudo a2enmod removeip
-</pre>
+}}
 and reload Apache
-<pre>
+{{CodeSelect|code=
 sudo service apache2 restart
-</pre>
+}}
 
 == Test Your Mirror ==
 Replace {{Code2|109.230.212.54}} with the IP of your server.
 
-<pre>
+{{CodeSelect|code=
 curl -H "Host: mirror.whonix.de" 109.230.212.54
-</pre>
+}}
 
 Should look similar to this.
 
