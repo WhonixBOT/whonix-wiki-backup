@@ -41,15 +41,15 @@ If you are using Debian {{Code2|stable}} (currently: {{Code2|jessie}}), click on
 <div class="mw-collapsible-content">
 Update package lists.
 
-<pre>
+{{CodeSelect|code=
 sudo apt-get update
-</pre>
+}}
 
 Install.
 
-<pre>
+{{CodeSelect|code=
 sudo apt-get install qemu-kvm libvirt-bin virt-manager
-</pre>
+}}
 
 </div>
 </div>
@@ -92,29 +92,35 @@ If you are running Debian Stable (Jessie) you will run into a libvirt bug that c
 
 To fix it run:
 
-<pre>
+{{CodeSelect|code=
 sudo ln -s /etc/apparmor.d/libvirt/TEMPLATE.qemu /etc/apparmor.d/libvirt/TEMPLATE.kvm
-</pre>
+}}
 
 == Addgroup ==
 
 In order to be able to manage virtual machines as regular (non-root) user, you need to add that user to the {{Code|libvirt}} and the {{Code|kvm}} group. Assuming the simple use case, that you wish to use KVM with the user you are currently logged in, and assuming you are using Debian, simply use the following command.
 
-<pre>
+{{CodeSelect|code=
 sudo addgroup "$(whoami)" libvirt
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 sudo addgroup "$(whoami)" kvm
-</pre>
+}}
 
 === Standard Debian ===
 
 By default Debian doesn't use sudo so you can add the groups with usermod. If your user is "foo" you would do:
 
- usermod -a -G libvirt foo
-and
- usermod -a -G kvm foo
+{{CodeSelect|code=
+sudo usermod -a -G libvirt foo
+}}
+
+And.
+
+{{CodeSelect|code=
+sudo usermod -a -G kvm foo
+}}
 
 === Other distributions ===
 
@@ -123,20 +129,20 @@ If you are using other distributions, have a look at your distribution's manual.
 == Reboot ==
 After installation of kvm, reboot is required! After adding users to groups, reboot is required!
 
-<pre>
+{{CodeSelect|code=
 sudo reboot
-</pre>
+}}
 
 == Network Start ==
 Make sure KVM's / QEMU's default networking is enabled and started.<ref>https://www.whonix.org/forum/index.php/topic,690</ref> <ref>https://wiki.debian.org/KVM#Troubleshooting</ref>
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-autostart default
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-start default
-</pre>
+}}
 
 == Download and Extract ==
 === Introduction ===
@@ -159,26 +165,26 @@ For simplicity, so you can copy and paste the following commands without changes
 === Decompress ===
 Use {{Code2|tar}} to decompress the archive.
 
-<pre>
+{{CodeSelect|code=
 tar -xvf Whonix-Gateway*.libvirt.xz
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 tar -xvf Whonix-Workstation*.libvirt.xz
-</pre>
+}}
 
 Do not use {{Code2|unxz}}! Extract the images using {{Code2|tar}}.
 
 == XML Modification (OPTIONAL) ==
 Modifying a machine's XML file gives more fine grained control over its settings than what is exposed through the virt-manager GUI. Unless you know what you are doing, editing configuration defaults is neither recommended nor necessary.
 
-<pre>
+{{CodeSelect|code=
 nano Whonix-Gateway*.xml
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 nano Whonix-Workstation*.xml
-</pre>
+}}
 
 You could always edit the XML files later too, if needed as explained in the [[#Editing an imported Machine's XML Configuration]] chapter.
 
@@ -187,29 +193,29 @@ The supplied XML files serve as a description for libvirt, that tell it what pro
 
 1. First we will start with Whonix-Gateway:
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system define Whonix-Gateway*.xml
-</pre>
+}}
 
 2. Followed by the Whonix isolated internal network (XML also in the same folder as Whonix Gateway):
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-define Whonix_network*.xml
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-autostart Whonix
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-start Whonix
-</pre>
+}}
 
 3. Lastly the Whonix-Workstation:
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system define Whonix-Workstation*.xml
-</pre>
+}}
 
 == Manipulating QCOW2 Images ==
 
@@ -224,54 +230,57 @@ Note: It is highly recommended you use this default path for storing the images 
 
 It is recommended to move the image files instead of copying them:
 
-<pre>
+{{CodeSelect|code=
 sudo mv Whonix-Gateway*.qcow2 /var/lib/libvirt/images/Whonix-Gateway.qcow2
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 sudo mv Whonix-Workstation*.qcow2 /var/lib/libvirt/images/Whonix-Workstation.qcow2
-</pre>
+}}
 
 Whonix disk images are [[sparse files]], meaning they expand when filled rather than allocating their entire size, 100GB outright. These are known as sparse files and need special commands when copying them to ensure they don't lose this property, leading them to occupy all the actual space. We are copying to a privileged location in the system, so we have run with higher privileges (sudo):
 
-<pre>
+{{CodeSelect|code=
 sudo cp --sparse=always Whonix-Gateway*.qcow2 /var/lib/libvirt/images/Whonix-Gateway.qcow2
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 sudo cp --sparse=always Whonix-Workstation*.qcow2 /var/lib/libvirt/images/Whonix-Workstation.qcow2
-</pre>
+}}
 
 == Cleanup ==
 After importing Whonix, you are advised to delete the archives ({{Code2|.libvirt.xz}} files) and the temporarily extracted folders or to move them into a custom location. This is useful to avoid conflicts and confusion should you later download a new version of Whonix.
 
 To delete them.
 
-<pre>
+{{CodeSelect|code=
 rm Whonix-Gateway*.libvirt.xz
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 rm Whonix-Workstation*.libvirt.xz
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 rm -r Whonix-Gateway*
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 rm -r Whonix-Workstation*
-</pre>
+}}
 
 == Start ==
 If you know Virtual Machine Manager, there is nothing special about starting Whonix VMs compared to starting other VMs. First start Whonix-Gateway, then start Whonix-Workstation.
+
 === Graphical User Interface (GUI) ===
 Start Virtual Machine Manager.
+
 <pre>
 Start Menu -> Applications -> System -> Virtual Machine Manager
 </pre>
 
 Start Whonix-Gateway.
+
 <pre>
 click on Whonix-Gateway -> click open -> click the play symbol
 </pre>
@@ -280,13 +289,17 @@ Repeat the same for Whonix-Workstation.
 
 === Command Line Interface (CLI) ===
 Use 
-<pre>
+
+{{CodeSelect|code=
 virsh -c qemu:///system start Whonix-Gateway
-</pre>
+}}
+
 To start Whonix-gateway. Respectively
-<pre>
+
+{{CodeSelect|code=
 virsh -c qemu:///system start Whonix-Workstation
-</pre>
+}}
+
 To start workstation
 
 == After installing ==
@@ -299,45 +312,45 @@ If you want to remove Whonix KVM VMs, Whonix network and Whonix images, click on
 <div class="mw-collapsible-content">
 1. Make sure you powered off the VM you want to shut down. You can also make sure you have shut down the VM using command line.
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system destroy Whonix-Gateway
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system destroy Whonix-Workstation
-</pre>
+}}
 
 2. Remove KVM VM settings.
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system undefine Whonix-Gateway
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system undefine Whonix-Workstation
-</pre>
+}}
 
 3. Shut down KVM Network {{Code2|Whonix}}.
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-destroy Whonix
-</pre>
+}}
 
 4. Remove Network {{Code2|Whonix}}.
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-undefine Whonix
-</pre>
+}}
 
 5. Delete the images. (All data will be lost unless you made a backup of your valued data.)
 
-<pre>
+{{CodeSelect|code=
 sudo rm /var/lib/libvirt/images/Whonix-Gateway.qcow2
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 sudo rm /var/lib/libvirt/images/Whonix-Workstation.qcow2
-</pre>
+}}
 
 </div>
 </div>
@@ -357,9 +370,7 @@ First, move your data out of the VM via shared folders and perform the [[#Cleanu
 
 = Optional =
 == Multiple side-by-side Whonix Setups ==
-
 To run multiple, separate Whonix instances you will need to clone existing machines. These steps assume Whonix has already been imported.
-
 
 1. Create clones of the Gateway and Workstation VMs rolled back to clean snapshots:
 
@@ -369,22 +380,21 @@ In Virtual Machine Manager:
 Highlight VM -> Open -> Virtual Machine -> Clone... -> Clone
 </pre>
 
-
 2. Export Whonix's internal network settings:
 
-<pre>
+{{CodeSelect|code=
 sudo virsh net-dumpxml Whonix > Whonix.xml
-</pre>
+}}
 
 
 3. Edit the network configuration to make it unique. Change the '''name''' and '''bridge name'''. Delete the '''mac address''' and '''uuid''' parameters. Alternatively, replace the configuration with the example below:
 
-<pre>
+{{CodeSelect|code=
 <network>
   <name>Whonix-11</name>
   <bridge name='virbr2' stp='on' delay='0'/>
 </network>
-</pre>
+}}
 
 Save and exit:
 
@@ -398,17 +408,17 @@ Note that virbr0 is assigned to the '''default''' network (NAT NIC), and virbr1 
 
 4. Import and start the new network:
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-define Whonix.xml
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-autostart Whonix2
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-start Whonix2
-</pre>
+}}
 
 5. Attach the Gateway and Workstation VM NICs to the new network. Its important you pay attention and match internal network interfaces to the newer ones and not switch to a NIC that connects outside. To edit the VM virtual NIC settings:
 
@@ -434,16 +444,16 @@ On the host.
 
 Run the following command in terminal (Start Menu -> Applications -> System -> Terminal).
 
-<pre>
+{{CodeSelect|code=
 sudo mkdir /mnt/shared
-</pre>
+}}
 
 
 You must adjust permissions on the host to allow read and write access to the folder with chmod:
 
-<pre>
+{{CodeSelect|code=
 sudo chmod 777 /mnt/shared
-</pre>
+}}
 
 
 Enable shared folders in VirtManager:
@@ -471,29 +481,29 @@ In the VM.
 
 Run the following command in terminal (Start Menu -> Applications -> System -> Terminal).
 
-<pre>
+{{CodeSelect|code=
 sudo mount -t 9p -o trans=virtio shared /mnt/shared -oversion=9p2000.L
-</pre>
+}}
 
 To automatically mount this every time at boot, open {{Code2|/etc/fstab}}.
 
 If you are using a graphical virtual machine.
 
-<pre>
+{{CodeSelect|code=
 kdesudo kwrite /etc/fstab
-</pre>
+}}
 
 Or if you are using a terminal-only virtual machine.
 
-<pre>
+{{CodeSelect|code=
 sudo nano /etc/fstab
-</pre>
+}}
 
 Add.
 
-<pre>
+{{CodeSelect|code=
 shared /mnt/shared    9p  trans=virtio,version=9p2000.L,rw    0   0
-</pre>
+}}
 
 Save.
 
@@ -504,32 +514,32 @@ Tests with Apparmor has shown it to operate transparently with shared folders wi
 
 Applying chown to the shared folder's contents is needed however to access the files:
 
-<pre>
+{{CodeSelect|code=
 chown -R yourusername /mnt/shared
-</pre>
+}}
 
 
 If you are using commandline instead of virt-manager to edit your vm's device settings, add this next section to the xml. 
 
-<pre>
+{{CodeSelect|code=
 <filesystem type='mount' accessmode='mapped'>
     <source dir='/mnt/shared'/>
     <target dir='shared'/>
 </filesystem>
-</pre>
+}}
 
 == Editing an imported Machine's XML Configuration ==
 Eventually configure your faviorite editor to make changes. Set visual to your favorite editor (must be installed, examples are kwrite, leafpad, kate, vi, nano, vim, etc.).
 
-<pre>
+{{CodeSelect|code=
 export VISUAL=kwrite
-</pre>
+}}
 
 Edit.
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system edit Whonix-Gateway
-</pre>
+}}
 
 
 == Disable Microphone Input ==
@@ -555,21 +565,21 @@ They are not enabled by default in Linux because the amount of memory to be allo
 
 On the host you need to activate the nr_hugepages setting in the proc filesystem:
 
-<pre>
+{{CodeSelect|code=
 echo 1054 > /proc/sys/vm/nr_hugepages
-</pre>
+}
 
 NOTE: To make the above value persistent, you'd need to set:
 
-<pre>
+{{CodeSelect|code=
 echo "vm.nr_hugepages=1054" > /etc/sysctl.d/50_hugepages
-</pre>
+}}
 
 Then, `grep` for the HugePages_Total:
 
-<pre>
+{{CodeSelect|code=
 grep -i HugePages_Total /proc/meminfo 
-</pre>
+}}
 
 Should show.
 
@@ -583,7 +593,7 @@ The total system RAM allocated as hugepages can be calculated as:
 
 Then, boot a libvirt virtual machine with 2 GB memory with appropriate XML setting as noted in the example below:
 
-<pre>
+{{CodeSelect|code=
   <memory unit='KiB'>2000896</memory>
   <currentMemory unit='KiB'>2000000</currentMemory>
   <memoryBacking>
@@ -592,22 +602,22 @@ Then, boot a libvirt virtual machine with 2 GB memory with appropriate XML setti
     </hugepages>
   </memoryBacking>
   <vcpu placement='static'>8</vcpu>
-</pre>
+}}
 
 == Enabling Clipboard Sharing ==
 SPICE allows accelerated graphics and clipboard sharing. The clipboard is disabled by default for security reasons <ref>So you don't accidentally copy for example a link to a website you visited anonymously to your non-anonymous host browser or vice versa.</ref> but could be enabled.
 
 When [[KVM#Editing_an_imported_Machine.27s_XML_Configuration|editing using xml]], search for.
 
-<pre>
+{{CodeSelect|code=
 <clipboard copypaste='no'/>
-</pre>
+}}
 
 And change to.
 
-<pre>
+{{CodeSelect|code=
 <clipboard copypaste='yes'/>
-</pre>
+}}
 
 == Creating Multiple Internal Networks ==
 Open Whonix's network XML file and change the name attribute to something different than the internal network you are currently running, for example 'Whonix2' 'Whonix3' and so on. The default name used is 'Whonix'.
@@ -623,7 +633,9 @@ Situation... User is in terminal in a VM... No X is running ("sudo service kdm s
 
 The emulated tablet device handles this by not allowing the mouse to be captured by the guest. Its still possible though:
 
-<pre>press Ctrl_L & Alt_L</pre>
+<pre>
+press Ctrl_L & Alt_L
+</pre>
 
 == KSM ==
 KSM is a kernel feature that allows de-deuplication of anonymous memory pages belonging to multiple instances of the same process. Only software that is designed to explicitly take advantage of it can use it such as KVM. It is usually not enabled by default. KSM only kicks in when a certain low memory threshold is reached on the host.
@@ -654,53 +666,55 @@ This disclosure attack is dangerous because it detects a page view even if the n
 == Setting up gdb to work with qemu-kvm via libvirt ==
 If you want to be able to debug a Linux kernel that’s running as a KVM guest, you need to specify the ‘-s’ parameter for the command line of qemu-kvm. The problem is, there’s no (easy) way to do this when you’re using libvirt and virt-manager to manager your virtual machines, instead of using KVM directly. What you need to do is change the XML configuration of the virtual machine so that the ‘-s’ parameter is passed on to qemu-kvm
 
-<pre>
+{{CodeSelect|code=
 virsh edit guestvm
-</pre>
+}}
 
 Here, guestvm is the name of the VM that is managed via virt-manager. This will bring up the XML configuration of the VM in your editor. The first line of the XML file should be:
 
-<pre>
+{{CodeSelect|code=
 <domain type='kvm'>
-</pre>
+}}
 
 This has to be changed to
 
-<pre>
+{{CodeSelect|code=
 <domain type='kvm' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
-</pre>
+}}
 
 and you also need to add:
 
-<pre>
+{{CodeSelect|code=
 <qemu:commandline>
 <qemu:arg value='-s'/>
 </qemu:commandline>
-</pre>
+}}
 
 under the {{Code2|<domain>}} level of the XML. After you save and quit the editor, the new configuration will come into effect. When you start the virtual machine, there will be a local TCP port (1234 by default) that can be used as a remote debugging port from gdb. You can connect to this port by using the command
 
-<pre>
+{{CodeSelect|code=
 target remote localhost:1234
-</pre>
+}}
 
 from gdb running on the host machine.
 
-Source: <ref>https://gymnasmata.wordpress.com/2010/12/02/setting-up-gdb-to-work-with-qemu-kvm-via-libvirt/</ref>
+Source: <ref>
+https://gymnasmata.wordpress.com/2010/12/02/setting-up-gdb-to-work-with-qemu-kvm-via-libvirt/
+</ref>
 
 
 == Wiping the storage used by a guest domain ==
 A volume used by a domain can contain confidential data, hence it is necessary to wipe it before removal. Libvirt offers a helping hand for such cases:
 
-<pre>
+{{CodeSelect|code=
 virsh vol-wipe <volume>
-</pre>
+}}
 
 which truncates and extends the volume to its original size. This in fact fills the file with zeroes. This ensures that data previously stored on volume is not accessible to reads anymore. After this, you can remove volume :
 
-<pre>
+{{CodeSelect|code=
 virsh vol-delete <volume>
-</pre>
+}}
 
 Source <ref>http://wiki.libvirt.org/page/VM_lifecycle#Wiping_the_storage_used_by_a_guest_domain</ref>
 
@@ -741,9 +755,9 @@ Verify that:
 
 Check your KVM installation.
 
-<pre>
+{{CodeSelect|code=
 sudo service qemu-system-x86 restart ; echo $? ; sudo service libvirt-bin restart ; echo $? ; sudo service libvirt-guests restart ; echo $?
-</pre>
+}}
 
 Should show.
 
@@ -763,20 +777,21 @@ Maybe you are a member of the {{Code|libvirt}} group, but not have the {{Code|lk
 
 Maybe changing
 
-<pre>
+{{CodeSelect|code=
     <sound model='ich6'>
-</pre>
+}}
 
 to
 
-<pre>
+{{CodeSelect|code=
     <sound model='ac97'>
-</pre>
+}}
 
 will help.
 
 == process exited while connecting to monitor: ioctl(KVM_CREATE_VM) failed ==
 If you get the following error.
+
 <pre>
 Error starting domain: internal error: process exited while connecting to monitor: ioctl(KVM_CREATE_VM) failed: 16 Device or resource busy
 failed to initialize KVM: Device or resource busy
@@ -785,16 +800,16 @@ failed to initialize KVM: Device or resource busy
 Maybe you have other non-KVM VMs, such as VirtualBox VMs already running? This is not possible. Running two hypervisors at the same time is not supported by KVM / VirtualBox.
 
 == Permissions ==
-<pre>
+{{CodeSelect|code=
 ls -la /var/run/libvirt/libvirt-sock
-</pre>
+}}
 
 == Add Version Numbers to Support Request ==
 Having issues, make sure you add what versions of libvirt-bin, qemu-kvm and virt-manager you are using. If you are using Debian, you can use the following command to determine them.
 
-<pre>
+{{CodeSelect|code=
 dpkg-query --show --showformat='${Package} ${Version} \n' libvirt-bin qemu-kvm virt-manager
-</pre>
+}}
 
 == User Help Forum ==
 [https://www.whonix.org/forum/index.php/board,15.0.html Whonix KVM User Help Forum]
