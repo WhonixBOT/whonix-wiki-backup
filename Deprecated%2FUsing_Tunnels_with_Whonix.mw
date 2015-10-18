@@ -99,17 +99,11 @@ Just as you would if you were not using Whonix. (Consider the security precautio
 
 After installing Whonix-Gateway, do the following steps before activating Tor in {{Code|Whonix Setup Wizard}}.
 
-1. Create and enter a file {{Code|/etc/whonix_firewall.d/50_user}}. If you are using a graphical Whonix-Gateway, use.
-<pre>
-Start menu -> Applications -> System -> Whonix User Firewall Settings
-</pre>
-If you are using a terminal-only Whonix-Gateway, use.
-<pre>
-sudo nano /etc/whonix_firewall.d/50_user
-</pre>
+1. {{Firewall Settings}}
 
 2. Add the following settings. You can skip comments (starting with {{Code|#}}). Note: make sure to adjust the {{Code|VPN_SERVERS}} variable in your config (unless you are using {{Code|seattle.vpn.riseup.net}} as your VPN service).
-<pre>
+
+{{CodeSelect|code=
 ###########################
 ## VPN-Firewall Settings ##
 ###########################
@@ -132,9 +126,10 @@ VPN_INTERFACE=tun0
 ## Destinations you don not want routed through the VPN.
 ## 10.0.2.2/24: VirtualBox DHCP
 LOCAL_NET="192.168.1.0/24 192.168.0.0/24 127.0.0.0/8 10.152.152.0/24 10.0.2.2/24"
-</pre>
+}}
 
 3. Exit and save the file.
+
 <pre>
 <CTRL-X> --> Press Y --> <ENTER>
 </pre>
@@ -144,6 +139,7 @@ LOCAL_NET="192.168.1.0/24 192.168.0.0/24 127.0.0.0/8 10.152.152.0/24 10.0.2.2/24
 5. Now setup OpenVPN. It should be able to connect. You find some help in chapter [[#Examples_of_setting_up_VPNs_to_work_with_Whonix]].
 
 6. Enable Tor using Whonix Setup Wizard.
+
 {{whonixsetup}}
 
 ==== Additional Tweaks / Recommendations / Troubleshooting====
@@ -153,16 +149,7 @@ You have may have to manually restart Tor. This is because the VPN may not be re
 
 '''To Manually restart Tor:'''
 
-If using graphical Whonix-Gateway:
-
-<pre>
-Start Menu -> Applications -> System -> Restart Tor
-</pre>
-If you are using a terminal-only Whonix-Gateway:
-
-<pre>
-sudo service tor restart
-</pre>
+{{Reload Tor}}
 
 '''Leak Tests'''
 
@@ -175,20 +162,13 @@ To improve this situation, if you are using OpenVPN and Debian's init script to 
 
 1. Create a new file {{Code|/etc/insserv/overrides/tor}}. 
 
-If using a graphical Whonix-Gateway:
-
-<pre>
-kdesudo kwrite /etc/insserv/overrides/tor
-</pre>
-If using the terminal-only version:
-
-<pre>
-sudo nano /etc/insserv/overrides/tor
-</pre>
+{{Open with root rights|filename=
+/etc/insserv/overrides/tor
+}}
 
 2. Add the following content.
 
-<pre>
+{{CodeSelect|code=
 ### BEGIN INIT INFO
 # Provides:          tor
 # Required-Start:    $local_fs $remote_fs $network $named $time
@@ -202,52 +182,52 @@ sudo nano /etc/insserv/overrides/tor
 #                    network client that provides anonymous
 #                    transport.
 ### END INIT INFO
-</pre>
+}}
 
 3. Then apply these changes by running.
 
-<pre>
+{{CodeSelect|code=
 sudo update-rc.d tor defaults
-</pre>
+}}
 </ref>
 
 systemd (Whonix 11 and above):
 
 Create a folder /etc/systemd/system/tor.service.d.
 
-<pre>
+{{CodeSelect|code=
 sudo mkdir /etc/systemd/system/tor.service.d
-</pre>
+}}
 
 Create a file /etc/systemd/system/tor.service.d/50_user.conf.
 
-<pre>
+{{Open with root rights|filename=
 sudo nano /etc/systemd/system/tor.service.d/50_user.conf
-</pre>
+}}
 
 With the following content.
 
-<pre>
+{{CodeSelect|code=
 [Unit]
 After=openvpn.service
-</pre>
+}}
 
 At next boot, the Tor daemon will be started after the OpenVPN daemon.
 
 Debugging: <ref>
 Reload systemd.
 
-<pre>
+{{CodeSelect|code=
 sudo systemctl daemon-reload
-</pre>
+}}
 
 Check Tor service status.
 
-<pre>
+{{CodeSelect|code=
 sudo service tor status
-</pre>
+}}
 
-It should list the drop-in file /etc/systemd/system/tor.service.d/50_user.conf.
+It should list the drop-in file {{Code2|/etc/systemd/system/tor.service.d/50_user.conf}}.
 </ref>
 
 '''Limitations'''
@@ -264,23 +244,23 @@ It should list the drop-in file /etc/systemd/system/tor.service.d/50_user.conf.
 
 1. Login as user {{Code|clearnet}}.
 
-<pre>
+{{CodeSelect|code=
 sudo su clearnet
-</pre>
+}}
 
 2. Try connecting to check.tpo. Note, at time of writing, it looked like usaip free trial is probably blocking SSL, therefore it might not work.
 
-<pre>
+{{CodeSelect|code=
 curl.anondist-orig --silent --tlsv1 --proto =https -H 'Host: check.torproject.org' -k https://38.229.72.22 | grep IP
-</pre>
+}}
 
 Should show something along: {{Code2|Your IP address appears to be: xxx.xxx.xxx.xxx}}
 
 3. Get back to normal user.
 
-<pre>
+{{CodeSelect|code=
 exit
-</pre>
+}}
 
 == Connecting to a proxy before Tor (User -> proxy -> Tor -> Internet) ==
 
@@ -300,14 +280,12 @@ See also: [[Comparison_Of_Tor_with_CGI_Proxies,_Proxy_Chains,_and_VPN_Services|C
 Tor natively supports proxy settings.
 
 '''On Whonix-Gateway:'''
-Open your {{Code2|/etc/tor/torrc}}.
-<pre>
-sudo nano /etc/tor/torrc
-</pre>
+
+{{Open /etc/tor/torrc}}
 
 Depending on your proxy configuration, add the settings you'll need to your {{Code2|/etc/tor/torrc}}. For more information on these settings, have a look in the [https://www.torproject.org/docs/tor-manual.html.en Tor manual] and read the [https://trac.torproject.org/projects/tor/wiki/doc/TorFAQ#MyInternetconnectionrequiresanHTTPorSOCKSproxy. FAQ].
 
-<pre>
+{{CodeSelect|code=
 HTTPProxy host[:port]
 HTTPProxyAuthenticator username:password
 HTTPSProxy host[:port]
@@ -324,7 +302,7 @@ FascistFirewall 0|1
 ReachableAddresses ADDR[/MASK][:PORT]… 
 ReachableDirAddresses ADDR[/MASK][:PORT]… 
 ReachableORAddresses ADDR[/MASK][:PORT]… 
-</pre>
+}}
 
 '''Note:''' You need to use the IP instead of the hostname (proxy.example.com). If you don't know the IP of your proxy, please run {{Code|nslookup proxy.example.com}} (replace proxy.example.com with the hostname of your actual proxy) in a terminal (Konsole) on your host operating system. Using IP instead of hostname might cause subtle fingerprinting issues, see <ref>https://github.com/Whonix/Whonix/issues/94</ref> for more information.
 
@@ -335,56 +313,80 @@ ReachableORAddresses ADDR[/MASK][:PORT]…
 Setting up the SSH tunnel could be either done on the host or inside Whonix-Gateway.
 
 1. First we have to install the ssh client.
-<pre>
+
+{{CodeSelect|code=
 sudo apt-get update
-sudo apt-get install ssh</pre>
+sudo apt-get install ssh
+}}
 
 2. Then be sure that your SSH connection itself is working well. SSH to your ssh server using.
-<pre>ssh yourusername@your.ssh.server</pre>
+
+{{CodeSelect|code=
+ssh yourusername@your.ssh.server
+}}
 
 3. It's recommended to set up public key authentication.
 (TODO: how to create a private and public key)
-<pre>
+
+{{CodeSelect|code=
 cd /home/yourusername
+}}
+
+{{CodeSelect|code=
 mkdir .ssh
+}}
+
+{{CodeSelect|code=
 nano authorized_keys
-</pre>
+}}
+
 Paste line beginning with {{Code|ssh-rsa ...}} (your public key) (TODO: how to create that line).
 
 4.
 Terminate SSH connection.
-<pre>exit</pre>
+
+{{CodeSelect|code=
+exit
+}}
 
 Login again using public key authentication. (TODO: how to do that)
 
 5. When that is working install your favorite text mode browser, for example.
-<pre>apt-get install lynx</pre>
 
-And test if the shell's external internet connection is working. Try
-<pre>lynx check.torproject.org</pre>
+{{CodeSelect|code=
+apt-get install lynx
+}}
+
+And test if the shell's external internet connection is working. Try.
+
+{{CodeSelect|code=
+lynx check.torproject.org
+}}
 
 You're done with the per-requisets. Exit your shell.
-<pre>exit</pre>
+
+{{CodeSelect|code=
+exit
+}}
 
 6. Now we will tell the SSH client to start a socks5 proxy server listening on localhost 127.0.0.1 port 1080. The following command has to be run in background (TODO: add line how to do that) on each start up, before Tor starts (TODO: to which file, to do that). It would be wise to activate public key authentication (TODO: how to add private key to use public key authentication).
-<pre>
+
+{{CodeSelect|code=
 ssh -D 1080 your.ssh.server
-</pre>
+}}
 
 Now we have to tell Tor to use the new local ssh server.
 
-Open your {{Code2|/etc/tor/torrc}}.
-<pre>
-sudo nano /etc/tor/torrc
-</pre>
+{{Open /etc/tor/torrc}}
 
 And add.
-<pre>
+
+{{CodeSelect|code=
 ## In case SSH tunnel has been setup from Whonix-Gateway.
 Socks5Proxy 127.0.0.1:1080
 ## In case SSH tunnel has been setup on the host.
 #Socks5Proxy IP:PORT
-</pre>
+}}
 
 7. (TODO: if running inside Whonix-Gateway, probably new firewall rules are required.)
 
@@ -496,51 +498,66 @@ uwt uses {{Code2|torsocks}}. While the name ''tor''socks implies it's Tor specif
 
 '''uwt - wget Example'''
 
-<pre>
-## For Tor stream isolation #1
+Tor Tor stream isolation #1
+
+{{CodeSelect|code=
 uwt -t 5 -i 10.152.152.10 -p 9153 /usr/bin/wget.anondist-orig -c https://check.torproject.org
+}}
 
-## For Tor stream isolation #2
+For Tor stream isolation #2
+
+{{CodeSelect|code=
 uwt -t 5 -i 10.152.152.10 -p 9154 /usr/bin/wget.anondist-orig -c https://check.torproject.org
+}}
 
-## For Tor stream isolation #3
-## Requires deactivated wget uwt wrapper!
+For Tor stream isolation #3</br>
+Requires deactivated wget uwt wrapper!
+
+{{CodeSelect|code=
 uwt -t 5 -i 10.152.152.10 -p 9155 /usr/bin/wget -c https://check.torproject.org
+}}
 
-## Proxy #1
+Proxy #1
+
+{{CodeSelect|code=
 uwt -t 5 -i x.x.x.x -p xxxx /usr/bin/wget.anondist-orig -c https://check.torproject.org
+}}
 
-## Proxy #2
-## Requires deactivated wget uwt wrapper!
+Proxy #2<br />
+Requires deactivated wget uwt wrapper!
+
+{{CodeSelect|code=
 uwt -t 5 -i x.x.x.x -p xxxx /usr/bin/wget -c https://check.torproject.org
-</pre>
+}}
 
 <ref>Using .anondist-orig, i.e. /usr/bin/wget.anondist-orig will circumvent the wget uwt wrapper.</ref>
 
 For testing, if you didn't disable the wget uwt wrapper, the following command will most likely get another IP, because still using Stream Isolation.
 
-<pre>
-## Using Tor's TransPort
-## (/usr/bin/wget.anondist-orig original non-uwt-wrapped version)
+Using Tor's TransPort.<br />
+(/usr/bin/wget.anondist-orig original non-uwt-wrapped version)
+{{CodeSelect|code=
 wget.anondist-orig https://check.torproject.org
-</pre>
+}}
 
 If you [[Stream_Isolation#Deactivate_uwt_Stream_Isolation_Wrapper|disabled]] wget's uwt wrapper, you could use.
 
-<pre>
-## Using Tor's TransPort
-## Requires deactivated wget uwt wrapper!
+Using Tor's TransPort.<br />
+Requires deactivated wget uwt wrapper!
+
+{{CodeSelect|code=
 wget https://check.torproject.org
-</pre>
+}}
 
 '''uwt - Tor Browser Example'''
 
 Do not forget to [[Tor_Browser#Change.2FRemove_Proxy_Settings|Remove Proxy Settings]] from Tor Browser.
 
 Then try this command. (Untested! Please leave feedback if it worked for you!)
-<pre>
+
+{{CodeSelect|code=
 uwt -t 5 -i 10.152.152.10 -p 9153 ~/tor-browser_en-US/App/Firefox/firefox --profile ~/tor-browser_en-US/Data/profile
-</pre>
+}}
 
 See also the wget example above for more information and usage examples.
 
@@ -558,17 +575,21 @@ Might be also interesting:
 ====== General ======
 Install proxychains.
 
-<pre>sudo apt-get install proxychains</pre>
+{{CodeSelect|code=
+sudo apt-get install proxychains
+}}
 
 Note the uwt and Tor Browser notice above first. After you have done so it's quite simple.
 
 Open proxychains configuration file.
 
-<pre>kdesudo kwrite /etc/proxychains.conf</pre>
+{{Open with root rights|filename=
+/etc/proxychains.conf
+}}
 
 Go to the bottom of the settings file. Comment out "{{Code2|socks4 127.0.0.1 9050}}" and add for example "{{Code2|socks5 10.152.152.10 9152}}" (for Tor stream isolation) or "{{Code2|socks5 ip port}}" with an IP and port of your choice to set the proxy settings.
 
-<pre>
+{{CodeSelect|code=
 [ProxyList]
 ## add proxy here ...
 ## meanwhile
@@ -576,10 +597,11 @@ Go to the bottom of the settings file. Comment out "{{Code2|socks4 127.0.0.1 905
 #socks4 127.0.0.1 9050
 socks5 10.152.152.10 9152
 # socks5 x.x.x.x xxxx
-</pre>
+}}
 
 Advanced. Recommendation: Why not use Tor stream isolation for the proxychains connection?
-<pre>
+
+{{CodeSelect|code=
 [ProxyList]
 ## add proxy here ...
 ## meanwhile
@@ -587,21 +609,25 @@ Advanced. Recommendation: Why not use Tor stream isolation for the proxychains c
 #socks4 127.0.0.1 9050
 socks5 10.152.152.10 9152
 socks5 x.x.x.x xxxx
-</pre>
-Safe the configuration file. Test afterwards.
+{{CodeSelect|code=
+
+Save the configuration file. Test afterwards.
 
 ====== test uwt wrapped application ======
 For example:
-<pre>
+
+{{CodeSelect|code=
 proxychains /usr/bin/wget.anondist-orig https://check.torproject.org
-</pre>
+}}
 
 For testing, if you didn't disable the wget uwt wrapper, the following command will most likely get another IP. (Stream Isolation)
-<pre>
-## Using Tor's TransPort
-## (/usr/bin/wget.anondist-orig original non-uwt-wrapped version)
+
+Using Tor's TransPort.<br />
+(/usr/bin/wget.anondist-orig original non-uwt-wrapped version)
+
+{{CodeSelect|code=
 wget.anondist-orig https://check.torproject.org
-</pre>
+}}
 
 ====== Tor Browser ======
 The combination of proxychains and Tor Browser does currently not work. Someone needs to [[Contribute]] by figuring this out. Otherwise this will not be possible for a very long time. [https://www.whonix.org/forum/index.php/topic,858 See forum discussion].
@@ -610,9 +636,9 @@ Do not forget to [[Tor_Browser#Change.2FRemove_Proxy_Settings|Remove Proxy Setti
 
 Then try this command.
 
-<pre>
+{{CodeSelect|code=
 proxychains ~/tor-browser_en-US/start-tor-browser
-</pre>
+}}
 
 Might be also interesting:
 
@@ -664,44 +690,60 @@ Read the [[Secondary DNS Resolver|DNS related warnings]].
 Get a working proxy and test if it works reliable.
 
 1. Install redsocks.
-<pre>
+
+{{CodeSelect|code=
 sudo apt-get install redsocks
-</pre>
+}}
 
-Edit {{Code|/etc/default/redsocks}}. Look for.
-<pre>
+{{Open with root rights|filename=
+/etc/default/redsocks
+}}
+
+Look for.
+
+{{CodeSelect|code=
 START=no
-</pre>
+}}
 
-And replace it with
-<pre>
+And replace it with.
+
+{{CodeSelect|code=
 START=yes
-</pre>
+}}
 
 2. Configure redsocks by editing {{Code|/etc/redsocks.conf}} to your needs.
 
+{{Open with root rights|filename=
+/etc/redsocks.conf
+}}
+
 Under.
-<pre>
+
+{{CodeSelect|code=
 redsocks {
-</pre>
+}}
 
 You have to edit.
-<pre>
+
+{{CodeSelect|code=
         ip = 127.0.0.1;
         port = 1080;
         type = socks5
-</pre>
+}}
 
 To your needs.
 
 3. Start redsocks.
-<pre>
+
+{{CodeSelect|code=
 sudo service redsocks start
-</pre>
+}}
 
-4. Create a {{Code|fw.bsh}} and use this firewall rules.
+4. Create a file {{Code|fw.bsh}}.
 
-<pre>
+5. And use the following firewall rules.
+
+{{CodeSelect|code=
 #!/bin/bash
 ## These iptables rules redirect the traffic for all users,
 ## including root, with the exception of the user redsocks,
@@ -760,13 +802,19 @@ iptables -A OUTPUT -j LOG --log-level 4 --log-prefix "iptables: "
 
 ## Reject all other traffic.
 iptables -A OUTPUT -j REJECT
-</pre>
+}}
 
 5. Make the firewall script executable.
-<pre>sudo chmod +x fw.bsh</pre>
+
+{{CodeSelect|code=
+sudo chmod +x fw.bsh
+}}
 
 6. Apply the firewall rules.
-<pre>sudo fw.bsh</pre>
+
+{{CodeSelect|code=
+sudo fw.bsh
+}}
 
 == Connecting to Tor before a SSH (User -> Tor -> SSH -> Internet) ==
 This chapter is not about connecting to a SSH server as a client (see Whonix in general and the Torify HOWTO). It is about adding an extra SSH tunnel after Tor.
@@ -815,12 +863,15 @@ Known to support TCP, UDP, SSL.<br />
 (3) Go to https://user.riseup.net/users/riseupusername/vpn to obtain your VPN secret. (VPN password) (Replace "riseupusername" with your actual riseup user name.) (Or just got to https://user.riseup.net, login and click on "VPN".)<br />
 (4) Look inside the [https://help.riseup.net/vpn riseup VPN help page] for [https://help.riseup.net/en/riseup-ca <code>RiseupCA.pem</code>] and (right click) [https://help.riseup.net/en/security/network-security/riseup-ca/RiseupCA.pem download] it.<br />
 (5) Create a file auth.txt inside the same folder.
-<pre>
+
+{{CodeSelect|code=
 riseupusername
 vpnsecret
-</pre>
+}}
+
 (6) Create a file riseup.conf inside the same folder.
-<pre>
+
+{{CodeSelect|code=
 client
 dev tun
 auth-user-pass auth.txt
@@ -834,56 +885,68 @@ script-security 1
 #group nobody
 proto tcp
 #log /var/log/openvpn.log
-</pre>
+}}
+
 (7) Start OpenVPN.
-<code>
+
+{{CodeSelect|code=
 sudo openvpn riseup.conf
-</code><br />
+}}
+
 (8) For DNS, see [[#Riseup DNS]] below.
 
 === Riseup DNS ===
 ==== Setup ====
-Open ''/etc/resolv.conf''.
-<pre>
-kdesudo kwrite /etc/resolv.conf
-</pre>
+{{Open with root rights|filename=
+/etc/resolv.conf
+}}
 
 Comment out.
-<pre>
+
+{{CodeSelect|code=
 #nameserver 10.152.152.10
-</pre>
+}}
 
 Add.
-<pre>
+
+{{CodeSelect|code=
 ## Riseup.net OpenVPN DNS server
 nameserver 172.27.100.1
-</pre>
+}}
 
 If you want to be sure, that ''/etc/resolv.conf'' does not get overwritten by other packages. (Such as DHCP or resolvconf.)
-<pre>
+
+{{CodeSelect|code=
 sudo chattr +i /etc/resolv.conf
-</pre>
+}}
 
 If you ever want to remove it, use ''-i''.
 
 ==== Testing ====
-
 When using "''nameserver 10.152.152.10''"...
-<pre>nslookup idnxcnkne4qt76tg.onion</pre>
+
+{{CodeSelect|code=
+nslookup idnxcnkne4qt76tg.onion
+}}
 
 Will show.
-<pre>
+
+{{CodeSelect|code=
 Server:         10.152.152.10
 Address:        10.152.152.10#53
 Non-authoritative answer:
 Name:   idnxcnkne4qt76tg.onion
 Address: 10.192.0.1
-</pre>
+}}
 
 When using "''nameserver 172.27.100.1''"...
-<pre>nslookup idnxcnkne4qt76tg.onion</pre>
+
+{{CodeSelect|code=
+nslookup idnxcnkne4qt76tg.onion
+}}
 
 Will show.
+
 <pre>
 Server:         172.27.100.1
 Address:        172.27.100.1#53
@@ -893,9 +956,13 @@ Address:        172.27.100.1#53
 Because you can not access .onion domains when a VPN has be chained. (user -> Tor -> VPN -> Internet)
 
 Resolving clearnet DNS should work.
-<pre>nslookup riseup.net</pre>
+
+{{CodeSelect|code=
+nslookup riseup.net
+}}
 
 Should show.
+
 <pre>
 Server:         172.27.100.1
 Address:        172.27.100.1#53
@@ -908,20 +975,20 @@ Address: 198.252.153.35
 Unfortunately securityKISS.com drops many TCP and UDP ports besides ports 80 and 443. That limits its usefulness for testing purposes, such as [[Tunnel UDP over Tor]]. If you know a less restrictive free VPN provider, we'd be thankful for a comment.
 
 Install openvpn.
-<pre>
+
+{{CodeSelect|code=
 sudo apt-get install openvpn
-</pre>
+}}
 
 Register at securitykiss.com, login and download their OpenVPN package to {{Code|/home/user}}. Unpack. The folder contains contains {{Code|ca.cert}}, {{Code|client.cert}}, {{Code|client.key}}, {{Code|README.txt}} (with list of their servers and ports). Rename the folder to securitykiss. Structure should be like {{Code|/home/user/securitykiss/ca.cert}} etc.
 
-<pre>
-kdesudo kwrite /etc/openvpn/client.conf
-sudo nano /etc/openvpn/client.conf
-</pre>
+{{Open with root rights|filename=
+/etc/openvpn/client.conf
+}}
 
 Paste the following content.
 
-<pre>
+{{CodeSelect|code=
 ##############################################
 # Sample client-side OpenVPN 2.0 config file #
 # for connecting to multi-client server.     #
@@ -1045,7 +1112,7 @@ verb 3
 
 # Silence repeating messages
 ;mute 20
-</pre>
+}}
 
 Edit server IP and port and paste it. (It's almost only the default openvpn {{Code|client.conf}} with minor changes.)
 
@@ -1053,22 +1120,25 @@ Save.
 
 To initially start the VPN type:
 
-<pre>
+{{CodeSelect|code=
 sudo service openvpn start
-</pre>
+}}
 
 After rebooting the VPN will be automatically started.
 
 If you do not wish to start the VPN automatically for some reason:
 
-<pre>
-kdesudo kwrite /etc/default/openvpn
-sudo nano /etc/default/openvpn
-</pre>
+{{Open with root rights|filename=
+/etc/default/openvpn
+}}
 
-<pre>
+Add.
+
+{{CodeSelect|code=
 AUTOSTART=="none"
-</pre>
+}}
+
+Save.
 
 DNS settings have not been considered for this securitykiss.com chapter.
 
@@ -1078,19 +1148,23 @@ For testing purposes, in past, [https://www.usaip.eu/ usaip.eu] was used. They h
 
 '''Note, at time of writing, it looked like, that usaip is probably blocking SSL, therefore'''
 
-<code>
+{{CodeSelect|code=
 /usr/bin/curl.anondist-orig --tlsv1 --proto =https https://check.torproject.org
-</code>
+}}
 
 '''will probably not work.'''
 
 Install OpenVPN.
 
-<pre>sudo apt-get install openvpn</pre>
+{{CodeSelect|code=
+sudo apt-get install openvpn
+}}
 
 Go to [http://usaip.eu/en/index.php usaip.eu] and click on free demo. Download the ''usaip.zip''. It contains the OpenVPN configuration files. Unpack. Open a shell and get into the folder ''cd usaip''. List all files ''dir''. Connect to a VPN, for example:
 
-<pre>sudo openvpn /home/user/usaip/eu-luxemburg.ovpn</pre>
+{{CodeSelect|code=
+sudo openvpn /home/user/usaip/eu-luxemburg.ovpn
+}}
 
 At time of writing, the page stated, the password was ''demo'', password also ''demo''. Wait until it's connected. When success, it will show "Initialization Sequence Completed". It might happen, that the connection will not succeed for some unknown reason. In this case try replacing the eu-luxemburg.ovpn from the example above with another <country>.ovpn from the usaip folder.
 
@@ -1102,7 +1176,10 @@ DNS settings have not been considered for this usaip.eu chapter.
 
 If you want to install the KDE Network Manager.
 
-<pre>sudo apt-get install network-manager-kde</pre>
+{{CodeSelect|code=
+sudo apt-get install network-manager-kde
+}}
+
 Start menu -> System Settings -> Network Settings
 
 At time of writing the [https://www.riseup.net/en/openvpn-linux#kde riseup.net OpenVPN instructions for KDE] where not finished. Perhaps you'll find out yourself, use another guide for KDE Network Manager or use the command line based examples above.
@@ -1117,39 +1194,57 @@ In case of GNOME Network Manager it just requires some more fiddling because ups
 
 If you want to install the GNOME Network Manager.
 
-<pre>sudo apt-get install network-manager-gnome network-manager-openvpn-gnome</pre>
+{{CodeSelect|code=
+sudo apt-get install network-manager-gnome network-manager-openvpn-gnome
+}}
 
 If you want to autostart GNOME Network Manager, open /etc/xdg/autostart/nm-applet.desktop with root rights.
 
-<pre>kdesudo kwrite /etc/xdg/autostart/nm-applet.desktop</pre>
+{{Open with root rights|filename=
+/etc/xdg/autostart/nm-applet.desktop
+}}
 
 And comment out.
 
-<pre>NotShowIn=KDE;</pre>
+{{CodeSelect|code=
+NotShowIn=KDE;
+}}
 
 If you want to make the nm-applet start menu entries visible and to start it manually, open /usr/share/applications/nm-applet.desktop.
 
-<pre>kdesudo kwrite /usr/share/applications/nm-applet.desktop</pre>
+{{Open with root rights|filename=
+/usr/share/applications/nm-applet.desktop
+}}
 
 And comment out.
 
-<pre>NotShowIn=KDE;</pre>
+{{CodeSelect|code=
+NotShowIn=KDE;
+}}
 
 And add.
 
-<pre>Categories=GNOME;GTK;Settings;X-GNOME-NetworkSettings;</pre>
+{{CodeSelect|code=
+Categories=GNOME;GTK;Settings;X-GNOME-NetworkSettings;
+}}
 
 If you want to make the nm-connection-editor start menu entries visible and to start it manually, open nm-connection-editor.
 
-<pre>kdesudo kwrite /usr/share/applications/nm-connection-editor.desktop</pre>
+{{Open with root rights|filename=
+/usr/share/applications/nm-connection-editor.desktop
+}}
 
 And comment out.
 
-<pre>NotShowIn=KDE;</pre>
+{{CodeSelect|code=
+NotShowIn=KDE;
+}}
 
 Then you could open the settings.
 
-<pre>Applications -> Settings -> Network Connections </pre>
+<pre>
+Applications -> Settings -> Network Connections
+</pre>
 
 You could try the [https://www.riseup.net/en/openvpn-linux#gnome riseup.net OpenVPN instructions for GNOME].
 
