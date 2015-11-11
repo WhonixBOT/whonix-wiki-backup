@@ -47,203 +47,47 @@ In February 2014, audio and video calls as well as conferences were still being 
 ===== Install How-To =====
 {{Third_Party_Repository}}
 
-<b>1.Install qTox from the Tox.chat repository (debian-whonix users)</b>
+1. Before adding the repo<ref>https://wiki.tox.chat/binaries</ref>, fetch the key and verify fingerprints.  '''Always check the fingerprint for yourself.''' The output at the moment is:
 
-A- First way to install qTox:-(shortest)
+<pre>
+pub  2048R/0x4B111B5D7DF12B85 2014-12-20 Tox RELENG (Tox build system) <build@tox.im>
+      Key fingerprint = DBDC 8C5F D3C7 0CA6 846E  348B 4B11 1B5D 7DF1 2B85
+</pre>
+
+Download key with scurl to home folder.
 
 {{CodeSelect|code=
-echo "deb https://pkg.tox.chat/debian nightly release" | sudo tee /etc/apt/sources.list.d/tox.list
-}}
-{{CodeSelect|code=
-wget -qO - https://pkg.tox.chat/debian/pkg.gpg.key | sudo apt-key add -
-}}
-{{CodeSelect|code=
-sudo apt-get install apt-transport-https
-}}
-{{CodeSelect|code=
-sudo apt-get update
+scurl -o tox-pubkey.asc https://repo.tox.im/pubkey.gpg
 }}
 
-The Tox Repository has now been installed.
-
-You can now install qtox, utox, toxic, ratox and tox-bootstrapd.
-
-To see which one fits your needs please take a look at this table:- [https://en.wikipedia.org/wiki/Tox_%28protocol%29#Clients Clients] or [https://wiki.tox.chat/clients/qtox#features Features]
-
-To install for example qTox:-
+Check fingerprints/owners without importing anything.
 
 {{CodeSelect|code=
-sudo apt-get install qtox
+gpg --with-fingerprint tox-pubkey.asc
 }}
 
-To start qTox just type in the terminal:-
-{{CodeSelect|code=
-qtox
-}}
+If it looks good import into trusted.gpg.d.
 
-Then hit enter.
-
-B- Second way to install qTox:-(short)
 {{CodeSelect|code=
-sudo sh -c 'echo "deb https://pkg.tox.chat/debian/ nightly release" > /etc/apt/sources.list.d/tox.list'
+sudo cp tox-pubkey.asc /etc/apt/trusted.gpg.d/
 }}
 {{CodeSelect|code=
-wget -qO - https://pkg.tox.chat/debian/pkg.gpg.key | sudo apt-key add - 
-}}
-{{CodeSelect|code=
-sudo apt-get install apt-transport-https
+sudo sh -c 'echo "deb https://repo.tox.im/ nightly main" > /etc/apt/sources.list.d/tox.list'
 }}
 {{CodeSelect|code=
 sudo apt-get update -qq
 }}
-{{CodeSelect|code=
-echo "qTox Repository Installed."
-}}
-{{CodeSelect|code=
-sudo apt-get install qtox
-}}
-{{CodeSelect|code=
-echo "qTox Installed."
-}}
-{{CodeSelect|code=
-qtox
-}}
 
-C- Third way to install qTox:- (long)
+The Tox Repository has now been installed.
 
-In order to clone the qTox repository you need Git.
-{{CodeSelect|code=
-sudo apt-get install git
-}}
+You can now install utox, qtox, toxic, ratox and tox-bootstrapd.
 
-add backports to your sources.list for FFmpeg and others.
+2. For info about clients see [https://en.wikipedia.org/wiki/Tox_%28protocol%29#Clients this page] then install your client of choice.
 
-{{CodeSelect|code=
-sudo nano /etc/apt/sources.list 
-}}
-
-add this link , then exit&save
-
-{{CodeSelect|code=
-deb http://http.debian.net/debian jessie-backports main
-}}
-
-go to terminal and type
-
-{{CodeSelect|code=
-apt-get -t jessie-backports install "package"
-}}
-
-then install GCC, Qt, FFmpeg, OpanAL Soft and qrencode using
-
-{{CodeSelect|code=
-sudo apt-get install build-essential qt5-qmake qt5-default qttools5-dev-tools libqt5opengl5-dev libqt5svg5-dev libopenal-dev libxss-dev qrencode libqrencode-dev libglib2.0-dev libgdk-pixbuf2.0-dev libgtk2.0-dev ffmpeg
-}}
-
-from this point you have two ways to try either easy or hard one.
-
-The easy one:- (is not guaranteed to work)
-
-{{CodeSelect|code=
-git clone https://github.com/tux3/qTox.git
-}}
-{{CodeSelect|code=
-cd qTox
-}}
-{{CodeSelect|code=
-./simple_make.sh
-}}
-
-The the hard one:-
-
-install  all of the toxcore dependencies
-
-{{CodeSelect|code=
-sudo apt-get install libtool autotools-dev automake checkinstall check libopus-dev libvpx-dev libsodium-dev libavdevice-dev
-}}
-
-install filter_audio manually
-
-{{CodeSelect|code=
-git clone https://github.com/irungentoo/filter_audio
-}}
-{{CodeSelect|code=
-cd filter_audio
-}}
-{{CodeSelect|code=
-make -j$(nproc)
-}}
-{{CodeSelect|code=
-sudo make install
-}}
-
-now toxcore compiling dependencies
-
-{{CodeSelect|code=
-git clone https://github.com/irungentoo/toxcore.git
-}}
-{{CodeSelect|code=
-cd toxcore
-}}
-{{CodeSelect|code=
-autoreconf -if
-}}
-{{CodeSelect|code=
-./configure
-}}
-{{CodeSelect|code=
-make -j$(nproc)
-}}
-{{CodeSelect|code=
-sudo make install
-}}
-{{CodeSelect|code=
-echo '/usr/local/lib/' | sudo tee -a /etc/ld.so.conf.d/locallib.conf
-}}
-{{CodeSelect|code=
-sudo ldconfig
-}}
-
-Run in qTox directory to compile
-
-{{CodeSelect|code=
-qmake
-}}
-{{CodeSelect|code=
-make
-}}
-
-Now you can start compiled qTox with
-
-{{CodeSelect|code=
-./qtox
-}}
-
-Note:- If the compiling process stops with a missing dependency like: ... libswscale/swscale.h missing try
-
-{{CodeSelect|code=
-apt-file search libswscale/swscale.h
-}}
-
-Then install the missing dependency. you can do this step for any missing dependency name.
-
-<b>2.how to use it in Whonix</b>
-
-Since Whonix based on debian and all their traffics are torified then it wont be much different from [https://wiki.tox.chat/users/tox_over_tor_tot ToT]
-
-After installing qTox go to terminal and type
-
-{{CodeSelect|code=
-qTox
-}}
-
-Make new profile or load an old one, then go to:-
-
-<pre>
-Settings -> General -> scroll down to the bottom -> uncheck "Enable IPV6" and "Enable UDP" -> then choose from SOCKS5 from Proxy type -> then add in the Address field "127.0.0.1" with port "9050" -> click on reconnect or restart qTox
-</pre>
+On the desktop your choices are to install '''utox''', '''qtox''', '''toxic''' or '''ratox''' with ''sudo apt-get install''.
 
 TODO:
+* Add instructions on how to use it in Whonix.
 * Add instructions on how to use it with [[Stream Isolation]] without Tor over Tor.
 
 ==== linphone ====
