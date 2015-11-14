@@ -221,6 +221,43 @@ Please also run {{Code|[[whonixcheck]]}} on Whonix-Gateway and Whonix-Workstatio
 
 A similar project published another leak test. Read [https://github.com/ra--/Tor-gateway/wiki/Faq How can I test if there is a leak in the setup respectively all traffic goes through Tor?]. Has not been tested with Whonix yet. If you do it, please share your results.
 
+= Qubes specific =
+== TemplateVM Update Proxy Leak Test ==
+Start a your Whonix-Gateway TemplateVM (commonly called {{Code2|whonix-gw}}). <ref>
+Those are assumed to be torified, i.e. having their NetVM set to sys-whonix.
+</ref>
+
+In your TempalteVM.
+
+Start downloading some big<ref>With a small package you would not have a chance to easily and quickly disable Tor while it's downloading.</ref> package. Example.
+
+{{CodeSelect|code=
+apt-get download iceweasel
+}}
+
+Now switch to your Whonix-Gateway ProxyVM (commonly called {{Code2|sys-whonix}}) and stop Tor.
+
+{{CodeSelect|code=
+sudo service tor stop
+}}
+
+The expected result in the TemplateVM a functional download, that stops as soon as Tor is stopped.
+
+<pre>
+Get:1 http://security.debian.org/ jessie/updates/main iceweasel amd64 38.4.0esr-1~deb8u1 [39.3 MB]
+Err http://security.debian.org/ jessie/updates/main iceweasel amd64 38.4.0esr-1~deb8u1
+  500  Unable to connect
+E: Failed to fetch http://security.debian.org/pool/updates/main/i/iceweasel/iceweasel_38.4.0esr-1~deb8u1_amd64.deb  500  Unable to connect
+</pre>
+
+You can now start Tor in your Whonix-Gateway ProxyVM again. 
+
+{{CodeSelect|code=
+sudo service tor start
+}}
+
+Repeat this test with your Whonix-Workstation TemplateVM (commonly called {{Code2|whonix-ws}}.
+
 = See Also =
 
 * [[Test]]
