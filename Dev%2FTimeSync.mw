@@ -664,7 +664,61 @@ Similar to above, but less output.
 * [https://tails.boum.org/todo/bridge_mode_vs_tordate_timeouts/ Tails Todo: bridge mode vs tordate timeouts]
 * [https://tails.boum.org/todo/when_htp_fails_the_user_should_be_prompted/ Tails Todo: when htp fails the user should be prompted]
 
-== Misc ==
+== VM Clock ==
+=== Attack ===
+prerequisite knowledge:
+
+* Whonix-Gateway ProxyVMs and Whonix-Workstation AppVM's system time cannot not be obtained by watching traffic at ISP level.
+* This chapter is not about tracking a single VM across its different Tor exit relays.
+* The context is anonymity. The significance is deanonymization.
+* In anonymity we don't just care about about correlations. Also about estimations. Anonymity set reduction. Partitioning users is already a success. Because it may be combined with other guesses. No direct proof is required. From some countries, there are just a few 100 users or less. If there is already a lead by country, then combined with these time related issues, things begin to really matter.
+* clocksource 'xen' doesn't prevent Whonix from using sdwdate.
+* clocksource 'xen' doesn't prevent each VM having slightly different system time (used by all the applications), so no direct leaks here.
+* dom0 host time and VM times a very, very similar. At most one second difference. Or less. In dom0, see:
+<pre>
+date ; qvm-run --pass-io sys-net date
+</pre>
+
+Attack:
+
+* 1) requires a) compromise a Whonix-Workstation VM and b) observing the ISP network the user is using
+* 2) read dom0 time using clocksource 'xen' or possibly the wall clock interface
+* 3) dom0 time will be very similar to NetVM's time
+* 4) correlate Whonix-Workstation VM with NetVM's time
+* 5) anonymity set reduction done
+
+Notes:
+
+No need to compromise multiple VMs. Only one VM, a Whonix-Workstation VM needs to be compromised. NetVM does not have to be compromised, it leaks in most cases - hard to avoid all cases - any passive ISP level adversary watching traffic can read the clients local clock. It's leaked on many levels, see [[#Local Clock Leaks]].
+
+Threat Model:
+
+* Whonix-Workstation AppVM gets compromised up to local root code execution. Then the attacker uses the local exploit, reads clocksource 'xen'.
+
+=== Defense ===
+We need to make sure that all of Whonix-Gateway, Whonix-Workstation, host/dom0 and NetVM uses slightly different time. Even if Whonix-Workstation would be compromised, and the attacker gets access to dom0 time and sniff NetVM time, it
+
+dom0 and non-anonymous VM's clocks should be as synced, correct and secure as those can be.
+
+But those should differ from the clocks within Whonix VMs.
+
+=== wallclock ===
+> The other interface ("wallclock interface") would provide such time, though. And it isn't configurable. But not sure if it is used anywhere in Linux by default (probably besides initial system time set).
+
+Yes. Must be so. Otherwise with "ticks" alone the VM had no chance to figure out the current time. And this is a roblem, because we don't want the VM to know dom0's time.
+
+=== Development ===
+Rather than modifying dom0's clock, we could perhaps spoof the initial virtual hardware clock offset. It's possible for KVM, as per: https://libvirt.org/formatdomain.html#elementsTime
+
+Something like this:
+<pre>
+<clock offset='variable' adjustment='123456' basis='utc'>
+</pre>
+
+Reading clocksource xen as a [root] user is not easily possible.
+source: http://lists.xen.org/archives/html/xen-users/2015-08/msg00020.html
+
+Would probably require writing a kernel module.
 
 == Deprecated ==
 Hardware clock: Set to UTC. OpenSSL (used by Tor) leaks it <ref name=tlsleakone />; <ref name=tlsleaktwo />, but that is of no concern. Tor is running on Linux and Linux is expected to be run in UTC. Therefore there is no point to set it to the local time zone of the user.
