@@ -674,7 +674,7 @@ prerequisite knowledge:
 * In anonymity we don't just care about about correlations. Also about estimations. Anonymity set reduction. Partitioning users is already a success. Because it may be combined with other guesses. No direct proof is required. From some countries, there are just a few 100 users or less. If there is already a lead by country, then combined with these time related issues, things begin to really matter.
 * clocksource 'xen' / 'kvmclock' doesn't prevent Whonix from using sdwdate.
 * clocksource 'xen' / 'kvmclock' doesn't prevent each VM having slightly different system time (used by all the applications), so no direct leaks here.
-* dom0 host time and VM times a very, very similar. At most one second difference. Or less. In dom0, see:
+* [host | dom0] host time and VM times a very, very similar. At most one second difference. Or less. In [host | dom0], see:
 <pre>
 date ; qvm-run --pass-io sys-net date
 </pre>
@@ -682,8 +682,8 @@ date ; qvm-run --pass-io sys-net date
 Attack:
 
 * 1) requires a) compromise a Whonix-Workstation VM and b) observing the ISP network the user is using
-* 2) read dom0 time using clocksource 'xen' / 'kvmclock' or possibly the wall clock interface
-* 3) dom0 time will be very similar to NetVM's time
+* 2) read [host | dom0] time using clocksource 'xen' / 'kvmclock' or possibly the wall clock interface
+* 3) [host | dom0] time will be very similar to NetVM's time (the system where external network connections are made)
 * 4) correlate Whonix-Workstation VM with NetVM's time
 * 5) anonymity set reduction done
 
@@ -696,19 +696,19 @@ Threat Model:
 * Whonix-Workstation AppVM gets compromised up to local root code execution. Then the attacker uses the local exploit, reads clocksource 'xen' / 'kvmclock'.
 
 === Defense ===
-We need to make sure that all of Whonix-Gateway, Whonix-Workstation, and NetVM uses slightly different time. Even if Whonix-Workstation would be compromised, and the attacker gets access to dom0 time and sniff NetVM time, it would hinder correlation.
+We need to make sure that all of Whonix-Gateway, Whonix-Workstation, and NetVM uses slightly different time. Even if Whonix-Workstation would be compromised, and the attacker gets access to [host | dom0] time and sniff NetVM time, it would hinder correlation.
 
-dom0 and non-anonymous VM's clocks should be as synced, correct and secure as those can be.
+[host | dom0] and non-anonymous VM's clocks should be as synced, correct and secure as those can be.
 
 But those should differ from the clocks within Whonix VMs.
 
 === wallclock ===
 > The other interface ("wallclock interface") would provide such time, though. And it isn't configurable. But not sure if it is used anywhere in Linux by default (probably besides initial system time set).
 
-Yes. Must be so. Otherwise with "ticks" alone the VM had no chance to figure out the current time. And this is a roblem, because we don't want the VM to know dom0's time.
+Yes. Must be so. Otherwise with "ticks" alone the VM had no chance to figure out the current time. And this is a roblem, because we don't want the VM to know [host | dom0]'s time.
 
 === Development ===
-Rather than modifying dom0's clock, we could perhaps spoof the initial virtual hardware clock offset. It's possible for KVM, as per: https://libvirt.org/formatdomain.html#elementsTime
+Rather than modifying [host | dom0]'s clock, we could perhaps spoof the initial virtual hardware clock offset. It's possible for KVM, as per: https://libvirt.org/formatdomain.html#elementsTime
 
 Something like this:
 <pre>
