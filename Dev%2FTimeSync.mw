@@ -672,8 +672,8 @@ prerequisite knowledge:
 * This chapter is not about tracking a single VM across its different Tor exit relays.
 * The context is anonymity. The significance is deanonymization.
 * In anonymity we don't just care about about correlations. Also about estimations. Anonymity set reduction. Partitioning users is already a success. Because it may be combined with other guesses. No direct proof is required. From some countries, there are just a few 100 users or less. If there is already a lead by country, then combined with these time related issues, things begin to really matter.
-* clocksource 'xen' doesn't prevent Whonix from using sdwdate.
-* clocksource 'xen' doesn't prevent each VM having slightly different system time (used by all the applications), so no direct leaks here.
+* clocksource 'xen' / 'kvmclock' doesn't prevent Whonix from using sdwdate.
+* clocksource 'xen' / 'kvmclock' doesn't prevent each VM having slightly different system time (used by all the applications), so no direct leaks here.
 * dom0 host time and VM times a very, very similar. At most one second difference. Or less. In dom0, see:
 <pre>
 date ; qvm-run --pass-io sys-net date
@@ -682,7 +682,7 @@ date ; qvm-run --pass-io sys-net date
 Attack:
 
 * 1) requires a) compromise a Whonix-Workstation VM and b) observing the ISP network the user is using
-* 2) read dom0 time using clocksource 'xen' or possibly the wall clock interface
+* 2) read dom0 time using clocksource 'xen' / 'kvmclock' or possibly the wall clock interface
 * 3) dom0 time will be very similar to NetVM's time
 * 4) correlate Whonix-Workstation VM with NetVM's time
 * 5) anonymity set reduction done
@@ -693,7 +693,7 @@ No need to compromise multiple VMs. Only one VM, a Whonix-Workstation VM needs t
 
 Threat Model:
 
-* Whonix-Workstation AppVM gets compromised up to local root code execution. Then the attacker uses the local exploit, reads clocksource 'xen'.
+* Whonix-Workstation AppVM gets compromised up to local root code execution. Then the attacker uses the local exploit, reads clocksource 'xen' / 'kvmclock'.
 
 === Defense ===
 We need to make sure that all of Whonix-Gateway, Whonix-Workstation, and NetVM uses slightly different time. Even if Whonix-Workstation would be compromised, and the attacker gets access to dom0 time and sniff NetVM time, it would hinder correlation.
