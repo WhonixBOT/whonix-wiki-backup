@@ -5,17 +5,17 @@
 
 = Stream Isolation =
 == Introduction ==
-If you do not explicitly take action against this and install custom applications, you risk that different activities, let's say Web (Chromium or similar) or IRC (mIRC or similar) go through the same Tor circuit and exit relay. Even though you would still be anonymous, i.e. the Tor exit relay would still not know your real IP/location, they can easily correlate those activities issued by different applications to the same pseudonym.
+If you install custom applications and do not explicitly take precaution against {{Code2|identity correlation through Tor circuit sharing}}, you risk that different activities, let's say Web (Chromium or similar) or IRC (mIRC or similar) go through the same Tor circuit and exit relay. Even though you would still be anonymous, i.e. the Tor exit relay would still not know your real IP/location, they can easily correlate those activities issued by different applications to the same pseudonym.
 
-The following graphic illustrates the difference of using Tor SocksPort's compared to using Tor's TransPort. Using dedicated SocksPort's per application results in taking different routes through the Tor network per application. Not necessarily all nodes (first, second, third) get replaced by Tor. Sometimes just the first, sometimes just the second, sometimes just the third, and sometimes multiple nodes change.
+The following graphic illustrates the difference of using Tor SocksPort's compared to using Tor's TransPort. Using dedicated Tor SocksPort's per application results in taking different routes through the Tor network per application. Not necessarily all nodes (first, second, third) get replaced by Tor. Sometimes just the first, sometimes just the second, sometimes just the third, and sometimes multiple nodes change.
 
 [[Image:stream_isolation.1.0.jpg|frame|none|alt=|Stream Isolation Graphic]]
 
-Whonix implements protection against {{Code2|identity correlation through circuit sharing}}, however, for better privacy, you are still advised to understand a bit of the technical background. Since Tor version 0.2.3, different Socks,- Dns-, or TransPorts go through different circuits, therefore preventing {{Code2|identity correlation}}. Whonix configures most applications that come preinstalled with Whonix to use different SocksPort, thus no {{Code2|identity correlation}} is at risk. Whonix uses either socks proxy settings to direct various applications to different SocksPorts or [https://github.com/Whonix/uwt uwt] (more information below).
+Whonix implements protection against {{Code2|identity correlation through Tor circuit sharing}} for preinstalled applications, however, for better privacy, you are still advised to understand a bit of the technical background. Since Tor version 0.2.3, different Socks,- Dns-, or TransPorts go through different Tor circuits, therefore preventing {{Code2|identity correlation}}. Whonix configures most applications that come preinstalled with Whonix to use different SocksPort, thus no {{Code2|identity correlation}} is at risk. Whonix uses either socks proxy settings to direct various applications to different SocksPorts or [https://github.com/Whonix/uwt uwt] (more information below).
 
 Any other traffic (i.e. custom installed applications, misc applications, such as {{Code2|nslookup}}, go through Tor's Dns-, and/or TransPort (can be optionally disabled, see below).
 
-Applications in Whonix are configured to prevent {{Code2|identity correlation through circuit sharing}}:
+Applications in Whonix are configured to prevent {{Code2|identity correlation through Tor circuit sharing}}:
 
 {| class="wikitable" style="text-align: center; background-color: #fff"
 !style="height:27px"|application
@@ -188,12 +188,12 @@ Applications in Whonix are configured to prevent {{Code2|identity correlation th
 |-
 |}
 
-The required socks proxy settings were setup by various Whonix configuration packages. uwt wrappers are set up on Whonix-Gateway and on Whonix-Workstation . [https://trac.torproject.org/projects/tor/wiki/doc/torsocks uwt] is a wrapper around torsocks, which is also already installed to {{Code|/usr/bin/uwt}}.
+The required socks proxy settings are setup by various Whonix configuration packages or uwt wrappers, which are set up on Whonix-Gateway and on Whonix-Workstation. [https://trac.torproject.org/projects/tor/wiki/doc/torsocks uwt] is a wrapper around torsocks, which is also already installed to {{Code|/usr/bin/uwt}}.
 
-* Example, each time you run a uwt wrapped application, i.e. simply type {{Code2|apt-get}} in console, the uwt wrapper {{Code|/usr/bin/apt-get}} will run. It adds uwt before apt-get. For curiosity check {{Code|nano /usr/bin/apt-get}}. The uwt wrapper then runs {{Code|/usr/bin/uwt /usr/bin/apt-get.anondist-orig}}. That is also the case for all other uwt wrapped applications.
+* Example, each time you run a uwt wrapped application, i.e. simply type {{Code2|apt-get}} in console, the uwt wrapper {{Code|/usr/bin/apt-get}} will run. It adds uwt before apt-get. For curiosity check {{Code|nano /usr/bin/apt-get}}. Essentially, the uwt wrapper then runs {{Code|/usr/bin/uwt /usr/bin/apt-get.anondist-orig}}. That is also the case for all other uwt wrapped applications.
 * If you ever want or must run a uwt wrapped application without uwt, do not run for example {{Code|apt-get}} in console, do run {{Code|apt-get.anondist-orig}}. Use cases could be if you want to connect to localhost. If you know what you are doing, you should also be able to deactivate any uwt wrappers you dislike, see [[#Deactivate_uwt_Stream_Isolation_Wrapper]].
-* When running {{Code2|/usr/bin/apt-get.anondist-orig}} directly it goes through Tor's DnsPort and through Tor's TransPort and not through its own SocksPort.
-* uwt looks if the command contains the words {{Code2|localhost}} or {{Code2|127.0.0.1}}, if that is the case, uwt will not be used. The command will be run without uwt. Thus, if a localhost connection is falsely detected it will leak, but only through Tor's DnsPort and through Tor's TransPort, which should be ok.
+* When running {{Code2|/usr/bin/apt-get.anondist-orig}} it directly goes through Tor's DnsPort and through Tor's TransPort and not through its own SocksPort.
+* uwt looks if the command contains the words {{Code2|localhost}} or {{Code2|127.0.0.1}}, if that is the case, uwt will not be used. The command will be run without uwt. Thus, if a localhost connection is falsely detected it will leak, but only through Tor's DnsPort and through Tor's TransPort, which should be acceptable.
 
 Isolate by destination address: Let's assume SSH goes over port 22 and you want to connect to different SSH servers and do not want an observer to be able to correlate that activity to the same pseudonym. If the SSH servers run on different IP's isolate by destination address might help.
 
@@ -207,17 +207,15 @@ For more information about stream isolation refer to the Tor manual.
 * [https://www.torproject.org/docs/tor-manual-dev.html.en Tor alpha manual]
 
 === Tor Browser ===
-Different tabs and websites in Tor Browser are isolated by since Tor Browser version 4.5-alpha-1. <ref>https://trac.torproject.org/projects/tor/ticket/3455</ref>
+Different tabs and websites in Tor Browser are isolated by since Tor Browser version {{Code2|4.5-alpha-1}}. <ref>https://trac.torproject.org/projects/tor/ticket/3455</ref>
 
 === Custom Software ===
-
-If you install custom software on Whonix-Workstation, and want to prevent {{Code2|identity correlation through circuit sharing}} (which you should do), you have to manually configure them. This is not a Whonix specific problem. <ref>If you used to use only one SocksPort with the [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO common torification methods], the [https://lists.torproject.org/pipermail/tor-talk/2012-March/023535.html same thing happened].</ref>
+If you install custom software on Whonix-Workstation, and want to prevent {{Code2|identity correlation through Tor circuit sharing}} (which you should do), you have to manually configure them. This is not a Whonix specific problem. <ref>If you used to use only one SocksPort with the [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO common torification methods], the [https://lists.torproject.org/pipermail/tor-talk/2012-March/023535.html same thing happened].</ref>
 
 Read also [[Install Software|Software installation on Whonix-Workstation]].
 
 === Hidden Services ===
-
-Hidden services are automatically separated from each other.<ref>https://lists.torproject.org/pipermail/tor-talk/2012-September/025432.html</ref>
+Different Tor [[hidden services]] are automatically stream isolated. <ref>https://lists.torproject.org/pipermail/tor-talk/2012-September/025432.html</ref>
 
 === Footnotes ===
 <references />
