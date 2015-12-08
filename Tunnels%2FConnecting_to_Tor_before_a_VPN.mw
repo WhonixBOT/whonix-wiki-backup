@@ -1,0 +1,29 @@
+Before combining Tor with other tunnels, [[Tunnels/Introduction | make sure you read and understand the introduction]].
+
+==== Important things to consider when connecting to Tor before a VPN ====
+'''Loss of stream isolation'''
+
+While you are connecting to Tor before a VPN, you probably will not be able to make use of the stream isolation feature <ref>[https://trac.torproject.org/projects/tor/ticket/3455 Bug #3455: Tor Browser should set SOCKS username for a request based on referer]</ref>, which is planned for Tor Browser. This is because Tor Browser would not talk to Tor directly anymore. Tor Browser would connect to the VPN instead.
+
+'''Possible increased threat of identity correlation'''
+
+By design, a VPN routes all your applications (those without any proxy settings, as explained above) through the VPN. You may not want this, as explained above ([[Stream Isolation]]). To circumvent that, you should use this Whonix-Workstation only for the particular application you want to route through the VPN. You are advised to read [[Multiple Whonix-Workstations]].
+
+==== How to setup connecting to Tor before a VPN (User -> Tor -> VPN -> Internet) ====
+
+Note: that you have to choose TCP transport, because Tor does not support UDP.
+
+Just use general instructions on doing so and of course do it inside Whonix-Workstation. Don't forget to read all the notes above. Since everything is routed through Tor, the VPN can be easily tunneled through Tor.
+
+See also section at the bottom of this page [[#Examples_of_setting_up_VPNs_to_work_with_Whonix]].
+
+==== Using TransPort instead of SocksPort is required for Tor -> VPN ====
+For applications configured to use SocksPort, instead of TransPort, which is the default setting for most Whonix default applications, such as [[Tor Browser]].
+
+SocksPort is configured for [[Stream Isolation]]. As [https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN Tor Plus VPN or proxy] explains, you have to keep in mind, a VPN behind Tor adds a permanent exit relay.
+
+Rather, all applications, which are configured to use SocksPort, will not be tunneled through the VPN. They will be "only" tunneled through Tor. This is because, the VPN will not touch connections to {{Code2|10.152.152.10}}, which is the Whonix-Gateway. For example, if you wish to tunnel Tor Browser through Tor -> VPN, you have to remove all proxy settings from Tor Browser, see [[Tor_Browser#Change.2FRemove_Proxy_Settings|Change/Remove Proxy Settings]]. Check.torproject.org will tell you then "{{Code2|You are not using Tor.}}" and you'll see your VPN's IP. In fact your VPN was tunneled through Tor first. (Because Whonix-Workstation can not make any non-Tor connections by design, everything is tunneled over Tor.) When you stop your VPN for test reasons ({{Code2|sudo /etc/init.d/openvpn stop}}), it will show "{{Code2|You are using Tor.}}" again.
+
+==== Use a Fail Closed Mechanism ====
+
+{{Fail_Closed_Mechanism}}
