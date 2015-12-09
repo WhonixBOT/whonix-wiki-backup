@@ -4,58 +4,56 @@
 }}
 == Introduction ==
 
-'''This chapter is only important, if you do <u>not</u> use the Default/Download (host + VM + VM) version.''' You should read it if you are using Physical Isolation or for any kind of custom, non-stock configurations.
+'''This chapter is only important, if you do <u>not</u> use the Default/Download (host + VM + VM) version.'''<br />
+You should read it if you are using Physical Isolation, or for any custom, non-stock, configurations.
 
 === Basics ===
 
-By Whonix default, it is assumed, that Whonix-Gateway and Whonix-Workstation are connected by (virtual) LAN cable. Wireless technologies are recommended against, because a malware compromised Whonix-Workstation could jump to other wireless access point and subsequently connect without Tor. Using a (virtual) cable enforces, that Whonix-Workstation can only connect through Whonix-Gateway. For the same reason connections to Whonix-Gateway over internet are recommended against as well.
+By default, Whonix assumes that Whonix-Gateway and Whonix-Workstation are connected by (virtual) LAN cable. Wireless technologies are not recommended as a malware compromised Whonix-Workstation could access (other) wireless access points and subsequently connect without Tor. Using a (virtual) cable enforces that Whonix-Workstation can only connect through Whonix-Gateway. For the same reason, connections to Whonix-Gateway over the internet are also not recommended.
 
-By Whonix default, connections between Whonix-Workstation and Whonix-Gateway are not authenticated/encrypted. This is because of the assumption above. The connection between Whonix-Workstation and Whonix-Gateway is assumed to be secure. <ref>Secure means, you assume that no one on your (virtual) LAN is going to MITM </ref> Adding authentication/encryption by default would also greatly increase complexity of Whonix, which is what we want to avoid in the first place for reasons explained in earlier chapters.
-
-In case you want to run multiple Whonix-Workstations at the same time inside the same (virtual) isolated LAN, you should add authentication:
+By default, connections between Whonix-Workstation and Whonix-Gateway are neither authenticated nor encrypted. The above (virtual) LAN connection between Whonix-Workstation and Whonix-Gateway is assumed to be secure.<ref>Here, secure is an assumption that nothing within your (virtual) LAN will MITM attack anything else.</ref> Adding authentication and/or encryption by default would further increase the complexity of Whonix, which is to be avoided as explained in earlier chapters.
+<br /><br />
+If you want to run multiple Whonix-Workstations at the same time inside the same (virtual) isolated LAN, authentication should be added:
 
 * Inside virtual LANs:
 ** Authentication is enough.
-** No encryption is required.
-*** When no machines can be impersonanted, no MITM is possible inside the virtual LAN.
-* Inside real LANs:
-** You only need encryption if in your threat model includes the possibility for a MITM.
+** Encryption is not required. (When machines cannot be impersonated, MITM attacks are not possible from within the virtual LAN.)
+* Inside physical LANs:
+** If your threat model includes the possibility of a MITM attack, encryption is needed .
+<br />
+If you want to connect to a Whonix-Gateway over insecure, untrusted, or unknown foreign networks (internet):
+* Both authentication and encryption should be added.
+** Encryption is required to deny MITM eavesdropping.
+** Authentication validates the identity of the connecting machine.
+*** Encryption solutions such as OpenVPN and ssh also provide authentication.
+<br />
 
-In case you want to connect to Whonix-Gateway over insecure networks (internet):
+=== Motivation for secure Whonix-Gateway / Whonix-Workstation connections ===
 
-* You should add encryption and authentication.
-** Encryption is required, because otherwise a MITM could eavesdrop.
-** Authentication ensures, you're connecting to the right machine.
-*** Most encryption solutions, such as OpenVPN or ssh also provide authentication.
+'''Only applies to ''non-stock'' configurations''': If you run multiple Whonix-Workstations simultaneously or want to connect to Whonix-Gateways over insecure or untrusted networks (internet):
 
-=== Motivation for secure connections between Whonix-Gateway and Whonix-Workstation ===
-
-'''Only applies to non-stock configurations''': if you run multiple Whonix-Workstations at the same time or if you want to connect to Whonix-Workstation over insecure networks (internet):
-
-A compromised Whonix-Workstation can impersonate Whonix-Gateway or any other Whonix-Workstation inside the same (virtual) LAN, perform active MITM attacks or passively eavesdrop.
+A compromised Whonix-Workstation can impersonate the Whonix-Gateway, or any other Whonix-Workstation, within the same (virtual) LAN, perform active MITM attacks, or passively eavesdrop.
 
 === OpenVPN vs SSH ===
 
-Adding encryption can be done using OpenVPN or SSH. Using SSH and not OpenVPN, has the advantage, that you can later, still easily tunnel a VPN through Tor. If you don't plan to do this, using OpenVPN is probably easier. The disadvantage of using SSH is, that it's complicated to setup for this use case. You are probably better off using OpenVPN.
+Encryption can be added using OpenVPN or SSH. SSH, but not OpenVPN, has the advantage of being able to still easily tunnel a VPN through Tor, later. If you don't plan to do so, OpenVPN is probably easier. SSH has the disadvantage of increased setup complexity in this use case - you are probably better off using OpenVPN.
 
 == Authenticated connections between Whonix-Gateway and Whonix-Workstation ==
 
 === ARP spoofing defense ===
 
-This is only been quickly researched. After reading the [https://en.wikipedia.org/wiki/ARP_spoofing wikipedia article about ARP spoofing], it looks like ''Static ARP entries'' could be used for authenticated connections between Whonix-Gateway and Whonix-Workstation.
+This has only been quickly researched: From the [https://en.wikipedia.org/wiki/ARP_spoofing Wikipedia article about ARP spoofing], it appears that ''Static ARP entries'' could be used to authenticate connections between Whonix-Gateway and Whonix-Workstation.
 
 === Using additional (isolated) network interfaces ===
 ==== Theoretical ====
-(This chapter is actually not authentication, solves the threat nonetheless.)
-
-A workaround, when using VirtualBox and running everything on the same host:
-
-* One can also enable Virtual Network Adapter 3 and 4 and use uniquely named internal networks, for up to 3 Whonix-Workstations, which are isolated against each other.
-
-A workaround, for Whonix with Physical Isolation, where all machines in the same trusted place:
-
-* That Whonix-Gateway already requires two network interfaces is a though requirement. (External and internal interface.) You could theoretically also add additional interfaces for additional internal LAN interfaces.
-
+''(This chapter is actually not authentication, but solves the threat nonetheless.)''
+<br /><br />
+A workaround, when running all vm's on the same VirtualBox host:
+* One can enable additional Virtual Network Adapters with uniquely named internal virtual networks, inherently isolating up to 7 Whonix-Workstations per Whonix-Gateway, <ref>"[https://www.virtualbox.org/manual/ch06.html Four of the network cards can be configured in the "Network" section of the settings dialog in the graphical user interface of VirtualBox. You can configure all eight network cards on the command line via VBoxManage modifyvm]"</ref>
+<br />
+A workaround, for Whonix with Physical Isolation, where ''all'' possible connecting machines are trusted:
+* Whonix-Gateway inherently requires two network interfaces - external and internal. Additional physical and/or virtual LAN interfaces could be added. ''(Ensure no bridging takes place.)''
+<br />
 ==== Instructions ====
 <div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
 '''DRAFT! UNFINISHED!'''
@@ -148,16 +146,18 @@ Whonix-Workstation's TransPort access should be functional though. I.e. nslookup
 Whonix-Custom-Workstations should work.
 </div>
 </div>
+<br />
 
 == Encrypted and authenticated connections between Whonix-Gateway and Whonix-Workstation ==
 
 === Using SSH (not tested/recommended) ===
 
-You must not allow [http://serverfault.com/questions/56566/ssh-tunneling-only-access ssh login].
+&#42; DO NOT ALLOW SSH LOGINS!<ref>See: [http://serverfault.com/questions/56566/ssh-tunneling-only-access ssh login]</ref>
 
-Each Whonix-Workstation probably needs its own SSH account, with public key authentication and the SSH private key distributed to each T-W. Whonix-Gateway and all Whonix-Workstations need the correct SSH commands. Whonix-Gateway has to autostart SSH and to continuously listening for connections. And Whonix-Workstation has to autostart SSH as well and continuously reconnect (in case Whonix-Workstation started before Whonix-Gateway or Whonix-Gateway restarted) (perhaps using autossh or something similar). All Whonix-Workstations need to use the tunnel IP, to connect to the Whonix-Gateway. And the Whonix-Gateway should reject unencrypted gateway requests, and only accept forwarding to Tor over the SSH tunnel. And also answer only over the SSH tunnel. All Whonix-Workstations must use the SSH tunnel as gateway (redirect network level to socks using tranSOCKS_ev or similar). Perhaps also changes in the Whonix-Gateway firewall are required. Taking all the into account, it looks like, it's not impossible to use SSH for this task, but it's quite complicated.
+Each Gateway and Workstation should have its own SSH account and certificate distributed to each machine to which it will connect.<ref>Internet search How to set up ssh keys, for example, for instructions.</ref>  Each Gateway and Workstations will need  ssh installed and the service started. Workstations need to be configured to automatically reconnect - in case Whonix-Workstation starts before the Gateway, or restarts.<ref>Consider: autossh</ref> Workstations need to use the tunnel IP to connect to the Gateway. The Whonix-Gateway should only accept certificate authentication, and only forward or answer to Tor over the SSH tunnel. All Workstations must use the established SSH tunnel to the Gateway, redirect such network access to socks via tranSOCKS_ev or similar. The Whonix-Gateway firewall may need corresponding changes. Not impossible to use SSH for this - but intricate.
 
-You are probably better off using OpenVPN.
+You may be better off using OpenVPN. ''However - OpenVPN is a full machine to machine connection, while ssh is easily port restricted.''
+<br />
 
 === Using OpenVPN ===
 <div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
