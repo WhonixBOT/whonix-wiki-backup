@@ -75,3 +75,125 @@ LOCAL_NET="192.168.1.0/24 192.168.0.0/24 127.0.0.0/8 10.152.152.0/24 10.0.2.2/24
 6. Enable Tor using Whonix Setup Wizard.
 
 {{whonixsetup}}
+
+==== Additional Tweaks / Recommendations / Troubleshooting ====
+'''If having problems with the connection / Tor is not fully bootstrapped'''
+
+You have may have to manually restart Tor. This is because the VPN may not be ready when Tor is attempting to connect, because the VPN connection initialization takes too long. Due to a bug in Tor, it won't keep trying to connect. To fix this, you may have to manually restart Tor after boot, if whonixcheck reports that Tor is not fully bootstrapped. The same may be necessary if your VPN software or connection temporarily broke down.
+
+'''To Manually restart Tor:'''
+
+{{Reload Tor}}
+
+'''Leak Tests'''
+
+When you shut down the VPN, neither Tor, nor Whonix-Gateway's whonixcheck/apt-get/etc. nor Whonix-Workstation should be able to connect anywhere anymore.
+
+''' Force Tor to wait for OpenVPN '''
+
+sysvinit: (Legacy. Prefer the systemd method below.) <ref>
+To improve this situation, if you are using OpenVPN and Debian's init script to automatically start it, add an insserv override to wait for openvpn being started.
+
+1. Create a new file {{Code|/etc/insserv/overrides/tor}}. 
+
+{{Open with root rights|filename=
+/etc/insserv/overrides/tor
+}}
+
+2. Add the following content.
+
+<pre>
+### BEGIN INIT INFO
+# Provides:          tor
+# Required-Start:    $local_fs $remote_fs $network $named $time
+# Required-Stop:     $local_fs $remote_fs $network $named $time
+# Should-Start:      $syslog openvpn
+# Should-Stop:       $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Starts The Onion Router daemon processes
+# Description:       Start The Onion Router, a TCP overlay
+#                    network client that provides anonymous
+#                    transport.
+### END INIT INFO
+</pre>
+
+3. Then apply these changes by running.
+
+{{CodeSelect2|code=
+sudo update-rc.d tor defaults
+}}
+</ref>
+
+systemd (Whonix 11 and above):
+
+Create a folder /etc/systemd/system/tor.service.d.
+
+{{CodeSelect2|code=
+sudo mkdir /etc/systemd/system/tor.service.d
+}}
+
+Create a file /etc/systemd/system/tor.service.d/50_user.conf.
+
+{{Open with root rights|filename=
+/etc/systemd/system/tor.service.d/50_user.conf
+}}
+
+Add the following content.
+
+{{CodeSelect2|code=
+[Unit]
+After=openvpn.service
+}}
+
+Save.
+
+At next boot, the Tor daemon will be started after the OpenVPN daemon.
+
+Debugging: <ref>
+Reload systemd.
+
+{{CodeSelect2|code=
+sudo systemctl daemon-reload
+}}
+
+Check Tor service status.
+
+{{CodeSelect2|code=
+sudo service tor status
+}}
+
+It should list the drop-in file {{Code2|/etc/systemd/system/tor.service.d/50_user.conf}}.
+</ref>
+
+'''Limitations'''
+* Only tested with OpenVPN. Most other VPN's have deficiencies anyway.
+* DNS (IP address) of VPN server has to be manually resolved. There is technically no way to automatically resolve DNS without making the setup much more complex. The VPN server's IP address should not be resolved over Tor, because that's what you wanted to hide in the first place. Since outside observers will know, that you are connecting to the VPN IP anyway, it is probably save to resolve the DNS over clearnet or by asking the VPN provider if they don't already document their IPs on their website anyway.
+* No support for IPv6 yet.
+
+'''Troubleshooting VPN -> Tor'''
+
+*If not connecting, see above to manually restart Tor
+*Check your VPN software's logs.
+
+*'''Test if you are able to connect using your VPN'''
+
+1. Login as user {{Code|clearnet}}.
+
+{{CodeSelect2|code=
+sudo su clearnet
+}}
+
+2. Try connecting to check.tpo. Note, at time of writing, it looked like usaip free trial is probably blocking SSL, therefore it might not work.
+
+{{CodeSelect2|code=
+curl.anondist-orig --silent --tlsv1 --proto =https -H 'Host: check.torproject.org' -k https://38.229.72.22 | grep IP
+}}
+
+Should show something along: {{Code2|Your IP address appears to be: xxx.xxx.xxx.xxx}}
+
+3. Get back to normal user.
+
+{{CodeSelect2|code=
+exit
+}}
