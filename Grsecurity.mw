@@ -1,0 +1,177 @@
+= Grsecurity + Pax =
+
+== Introduction ==
+
+Grsecurity is a GPL licensed, extensive security enhancement to the Linux kernel that defends against a wide range of security threats through intelligent access control, memory corruption-based exploit prevention, and a host of other system hardening that generally require no configuration. It has been actively developed and maintained for the past 14 years. Commercial support for Grsecurity is available through Open Source Security, Inc.
+
+Instead of chasing and fixing individual bugs, Grsecurity and PaX end exploitation of entire bug classes and provide kernel self-protection against zero-days.
+
+== Custom Kernel How-To ==
+
+This guide is to get you up and running with the latest Grsecurity kernel inside a KVM Whonix guest or Host. The instructions here are inspired by the [https://en.wikibooks.org/wiki/Grsecurity official Grsecurity guide] but adapted for the commandline an includes helpful information not mentioned in the original. It will cover downloading, verifying, configuring, compiling and installing the hardened kernel and how to install and use its admin tools. With minimal changes you can compile another architecture. There are many attempts to automate this and get them in upstream Debian but a solution is yet to exist.
+
+The kernel should be anonymously compiled in Whonix-Workstation. Be sure to add more CPUs to speed up the compilation process before starting.
+
+{{CodeSelect|code=
+scurl -o spender-gpg-key.asc https://grsecurity.net/spender-gpg-key.asc
+}}
+
+{{CodeSelect|code=
+gpg --with-fingerprint spender-gpg-key.asc
+}}
+
+Fetch the key and verify the fingerprints. Always check the fingerprint for yourself. The output at the moment is: 
+<pre>
+pub  4096R/0x44D1C0F82525FE49 2013-11-10 Bradley Spengler (spender) <spender@grsecurity.net>
+      Key fingerprint = DE94 52CE 46F4 2094 907F  108B 44D1 C0F8 2525 FE49
+</pre>
+
+{{CodeSelect|code=
+gpg --import spender-gpg-key.asc
+}}
+
+Import and verify kernel developer keys:
+{{CodeSelect|code=
+gpg --keyserver hkp://qdigse2yzvuglcix.onion --recv-keys 0x38DBBDC86092693E
+}}
+
+{{CodeSelect|code=
+gpg --list-keys --fingerprint 0x38DBBDC86092693E
+}}
+
+Fetch the key and verify the fingerprints. Always check the fingerprint for yourself. The output at the moment is: 
+<pre>
+pub   4096R/0x38DBBDC86092693E 2011-09-23
+      Key fingerprint = 647F 2865 4894 E3BD 4571  99BE 38DB BDC8 6092 693E
+</pre>
+
+
+
+By the time you read this the file names may be outdated despite best efforts to keep this guide current so you may have to adjust file names accordingly.
+
+Download the latest components for your chosen hardware architecture (Only the Testing branch is freely available) and their matching signatures: <ref>https://grsecurity.net/download.php</ref> <ref>https://superuser.com/questions/301044/how-to-wget-a-file-with-correct-name-when-redirected</ref>
+
+
+{{CodeSelect|code=
+scurl -J -O https://grsecurity.net/test/grsecurity-3.1-4.2.7-201512092320.patch
+scurl -J -O https://grsecurity.net/test/grsecurity-3.1-4.2.7-201512092320.patch.sig
+scurl -J -O https://grsecurity.net/stable/gradm-3.1-201507191652.tar.gz
+scurl -J -O https://grsecurity.net/stable/gradm-3.1-201507191652.tar.gz.sig
+scurl -J -O https://grsecurity.net/stable/grsecurity-2.2.0-iptables.patch
+scurl -J -O https://grsecurity.net/stable/grsecurity-2.2.0-iptables.patch.sig
+scurl -J -O https://grsecurity.net/paxctld/paxctld_1.0-3_i386.deb
+scurl -J -O https://grsecurity.net/paxctld/paxctld_1.0-3_i386.deb.sig
+}}
+
+Look at the matching kernel version number in the patch name grsecurity-3.1-'''4.2.7'''-201512092320.patch and fetch the tarball from kernel.org:
+
+{{CodeSelect|code=
+scurl -J -O https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.2.7.tar.xz
+scurl -J -O https://cdn.kernel.org/pub/linux/kernel/v4.x/linux-4.2.7.tar.sign
+}}
+
+
+The command will verify everything just downloaded in the home directory. Look for file names that passed the check in this part of the output: assuming signed data in `paxctld_1.0-3_i386.deb'. You should see '''Good signature from "Bradley Spengler (spender) <spender@grsecurity.net>''' for each component.
+
+{{CodeSelect|code=
+gpg --verify --multifile grsecurity* gradm* paxctld* 
+}}
+
+The signature is made against the uncompressed version of the archive. This is done so there is only one signature required for .gz, .bz2 and .xz compressed versions of the release. Start by uncompressing the archive, using unxz. You should see '''Good signature from "Greg Kroah-Hartman''':
+
+{{CodeSelect|code=
+unxz linux*.tar.xz
+cd linux*.tar.xz | gpg --verify linux*.tar.sign
+}}
+
+In this document the kernel source archive linux*.tar and the matching grsecurity patch grsecurity*.patch are both files are in the same directory.  
+
+
+{{CodeSelect|code=
+tar -xf linux*.tar
+cd linux*
+sudo patch -p1 < ../grsecurity-*-*-*.patch
+}}
+
+Install the build tools:
+
+{{CodeSelect|code=
+sudo apt-get install libncurses5-dev fakeroot gcc-4.9-plugin-dev libgmp-dev libmpfr-dev libmpc-dev build-essential
+}}
+
+See what version of GCC you have installed and instal the matching plugin-dev packages for it.<ref>https://forums.grsecurity.net/viewtopic.php?f=3&t=3484</ref>
+
+{{CodeSelect|code=
+gcc -v
+}}
+
+To open the kernel configuration menu run:
+
+{{CodeSelect|code=
+sudo make menuconfig
+}}
+
+Grsecurity is endlessly customizable and if you have different security requirements feel free to dive in the documentation<ref>https://en.wikibooks.org/wiki/Grsecurity/Appendix/Grsecurity_and_PaX_Configuration_Options</ref><ref>https://en.wikibooks.org/wiki/Grsecurity/Runtime_Configuration</ref> but be advised very high security settings usually break Xorg server and common packages like Iceweasel and OpenJDK. However for the purposes of compiling a kernel suitable for normal desktop use the Automatic configuration comes with sane defaults. Same for the other usage profiles provided. To have a bootable desktop you will need to disable PaX mprotect at first<ref.>http://www.insanitybit.com/2012/05/31/compile-and-patch-your-own-secure-linux-kernel-with-pax-and-grsecurity/</ref> It can be re-enabled later when an exception list is loaded.
+
+The configuration should look like this. A lack of mention means leave as default:
+
+<pre>
+Security options -> Grsecurity -> Configuration Method -> Automatic
+			       -> Usage Type -> Desktop
+			       -> Virtualization Type -> Guest
+			       -> Virtualization Software -> KVM			       
+			       -> Customize Configuration -> PaX -> Non-executable pages -> Deselect: Restrict mprotect
+</pre>
+    
+To save time you can compile one kernel for both the guest and host . NB This only works if you compiled a custom Whonix x64. A x64 Linux Host/Guest configuration would look like:
+
+<pre>
+64-bit kernel
+Security options -> Grsecurity -> Configuration Method -> Automatic
+			       -> Usage Type -> Desktop
+			       -> Virtualization Type -> Host
+			       -> Virtualization Software -> KVM
+			       -> Customize Configuration -> PaX -> Non-executable pages -> Deselect: Restrict mprotect
+</pre>
+
+Once you are done select save and keep the .config name then exit out of all menus.
+
+
+Compile while specifying the number of cores after the '''-j''' option. This will result in a huge speed up during compilation and reduce compilation time drastically.
+
+{{CodeSelect|code=
+sudo fakeroot make -j 4 deb-pkg
+}}
+
+Now sit tight. Go make yourself a cup of coffee or read a book until its finished.
+
+To install your new packages inclufing Pax's configuration utility in the guest run:
+
+{{CodeSelect|code=
+cd ..
+sudo dpkg -i linux-image-*-grsec_*-*_*.deb
+sudo dpkg -i linux-firmware*.deb
+sudo dpkg -i linux-headers*.deb
+sudo dpkg -i linux-libc*.deb
+sudo dpkg -i paxctld*.deb
+}}
+
+Move the package to the host via a shared folder and install with dpkg from there.
+
+{{CodeSelect|code=
+mv linux-image-*-grsec_*-*_*.deb /mnt/shared
+mv linux-firmware*.deb /mnt/shared
+mv linux-headers*.deb /mnt/shared
+mv linux-libc*.deb /mnt/shared
+}}
+
+Done. After installation the system should automatically boot up with the Grsecurity kernel. To inspect the kernel version type:
+
+{{CodeSelect|code=
+uname -r
+}}
+
+
+=== Gradm ===
+
+In progress.
