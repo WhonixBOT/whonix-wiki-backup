@@ -7,8 +7,8 @@
 
 '''User -> Tor -> proxy -> Internet'''
 
-=== Introduction ===
-==== Proxy Warning ====
+= Introduction =
+== Proxy Warning ==
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px|alt=Whonix first time users warning]]
 | text       = '''<u>Warning!</u>'''
@@ -20,35 +20,35 @@ There are issues you should be aware of when using standard, common http(s)/sock
 See also: [[Comparison_Of_Tor_with_CGI_Proxies,_Proxy_Chains,_and_VPN_Services|Comparison Of Tor with CGI Proxies, Proxy Chains, and VPN_Services]].
 }}
 
-==== Generally ====
+== Generally ==
 There are three different methods.
 
 * [[#Proxy Settings Method]]
 * [[#Proxifier Method]]
 * [[#Transparent Proxying Method]]
 
-==== Tor Browser Proxy Configuration ====
+== Tor Browser Proxy Configuration ==
 {{Template:TorBrowser Proxy Configuration}}
 
-=== Proxy Settings Method ===
+= Proxy Settings Method =
 You could use an application's native proxy settings to configure applications in Whonix to use an extra proxy. After understanding the [[#Introduction]], there is no difference from using proxy settings in an ordinary way, other than that it's running inside Whonix-Workstation. If proxy settings are honored by an application or not is another question and out of scope, see [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO TorifyHOWTO].
 
-=== Proxyfier Method ===
-==== General ====
+= Proxyfier Method =
+== General ==
 There is no difference from using a Proxyfier in an ordinary way, other than that it's running inside Whonix-Workstation.
 
 If the Proxifier is leak free or in worst case leaks through Tor alone (thanks to Whonix), is another question and not in Whonix's power, see [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO TorifyHOWTO].
 
-==== uwt ====
-===== Introduction =====
+== uwt ==
+=== Introduction ===
 uwt uses {{Code2|torsocks}}. While the name ''tor''socks implies it's Tor specific, it's not. You can point it to any socks proxy.
 
-===== uwt wrapped application example =====
+=== uwt wrapped application example ===
 {{CodeSelect2|code=
 uwt -t 5 -i 10.152.152.10 -p 9153 /usr/bin/wget.anondist-orig -c https://check.torproject.org
 }}
 
-===== regular application example =====
+=== regular application example ===
 Requires [[Stream_Isolation#Deactivate_uwt_Stream_Isolation_Wrapper|deactivated]] wget uwt wrapper!
 
 {{CodeSelect2|code=
@@ -74,7 +74,7 @@ wget https://check.torproject.org
 }}
 </ref>
 
-===== Tor Browser Example =====
+=== Tor Browser Example ===
 (Untested! Please leave feedback if it worked for you!)
 
 First, you must remove Tor Browser proxy settings before you can combine it with a proxifier.
@@ -89,13 +89,13 @@ uwt -t 5 -i 10.152.152.10 -p 9153 ~/tor-browser_en-US/App/Firefox/firefox --prof
 
 <ref>Might be also interesting: [[Advanced Security Guide#More than one Tor Browser in Whonix]]</ref>
 
-==== proxychains ====
-===== Warnings =====
+== proxychains ==
+=== Warnings ===
 
 * We don't know how well proxychains works. For example <code>torsocks has a IPv6 leak bug</code><ref>https://trac.torproject.org/projects/tor/wiki/doc/torsocks#WorkaroundforIPv6leakbug</ref>. We don't know if proxychains forces everything through the proxies. Whonix only ensures, should their be leaks, they go only through Tor.
 * There are at least three different versions of proxychains. The old/original/unmaintained version on sourceforge.net and two forks on github. We don't know about that status of any of them and haven't heard of anyone looking if they do really work as expected. The two authors argue with each other and we weren't motivated to understand the conflict and to determine which version is better. However, any leaks not going through the proxy(chain) will go through Tor.
 
-===== Setup =====
+=== Setup ===
 Install proxychains.
 
 {{CodeSelect2|code=
@@ -135,7 +135,7 @@ socks5 x.x.x.x xxxx
 
 Save the configuration file. Test afterwards.
 
-===== example uwt wrapped application =====
+=== example uwt wrapped application ===
 {{CodeSelect2|code=
 proxychains /usr/bin/wget.anondist-orig https://check.torproject.org
 }}
@@ -150,14 +150,14 @@ wget.anondist-orig https://check.torproject.org
 }}
 </ref>
 
-===== example regular application =====
+=== example regular application ===
 Requires [[Stream_Isolation#Deactivate_uwt_Stream_Isolation_Wrapper|deactivated]] wget uwt wrapper!
 
 {{CodeSelect2|code=
 proxychains /usr/bin/wget https://check.torproject.org
 }}
 
-===== Tor Browser =====
+=== Tor Browser ===
 The combination of proxychains and Tor Browser does currently not work. Someone needs to [[Contribute]] by figuring this out. Otherwise this will not be possible for a very long time. [https://forums.whonix.org/t/proxychains-tor-help-needed See forum discussion].
 
 First, you must remove Tor Browser proxy settings before you can combine it with a proxifier.
@@ -174,8 +174,8 @@ Might be also interesting:
 
 * [[Advanced Security Guide#More than one Tor Browser in Whonix]]
 
-=== Transparent Proxying  Method ===
-==== Introduction ====
+= Transparent Proxying  Method =
+== Introduction ==
 '''Advanced users only!'''
 
 To make clear, what this is about. Whonix-Gateway is already serving as a Transparent Proxy <ref>anonymizing middlebox</ref>, which means, that all applications not explicitly configured <ref>by uwt socksifier or proxy settings</ref> to use a SocksPort, can connect through Tor without any settings. This section is about configuring Whonix-Workstation also to act as a Transparent Proxy <ref>local redirection</ref>. Use case: a user wants to ensure all traffic goes through Tor (by using Whonix-Gateway) and want to additionally ensure, all traffic goes through a proxy choosen by the user after the Tor link, i.e. user -> Tor -> proxy -> internet.
@@ -193,13 +193,13 @@ Required reading:
 * <translate>[[<tvar|A>Comparison_Of_Tor_with_CGI_Proxies,_Proxy_Chains,_and_VPN_Services|</>Comparison Of Tor with CGI Proxies, Proxy Chains, and VPN Services]]</translate>
 * [https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN Tor Plus VPN or proxy]
 
-===== Tools =====
+=== Tools ===
 
 Tor is a socks proxy and also has a TransPort. Unfortunately, Tor can not be directly used as a http proxy. You must also keep in mind, that Tor does not support UDP, although it offers a DnsPort.
 
 [http://darkk.net.ru/redsocks/ redsocks] can also accept "Trans data streams" and can forward them to http'''s''', socks4 and socks5 proxies. If you were to use a http proxy (no https, without connect-method, see [[Comparison_Of_Tor_with_CGI_Proxies,_Proxy_Chains,_and_VPN_Services|proxy article]]), you could access only http sites, no https sites. Rather redsocks can convert UDP DNS queries to TCP DNS queries.
 
-===== DNS resolution =====
+=== DNS resolution ===
 
 The complication (and also advantage/feature) with transparent proxying is, that the internet application (browser, etc.) is not aware of the proxy. Therefore the internet application will attempt to do the DNS resolution itself using the system, not using the proxy. The DNS requests also must be considered. Since Tor does not support UDP, we have to transmit DNS queries via TCP.
 
@@ -215,7 +215,7 @@ All DNS resolvers <ref>https://en.wikipedia.org/wiki/Comparison_of_DNS_server_so
 
 Read the [[Secondary DNS Resolver|DNS related warnings]].
 
-==== How to setup proxy tunnel-link after Tor (User->Tor->Proxy->Internet) ====
+== How to setup proxy tunnel-link after Tor (User->Tor->Proxy->Internet) ==
 '''Unfinished!''' <br />
 '''Advanced users only!'''
 
