@@ -92,15 +92,12 @@ uwt -t 5 -i 10.152.152.10 -p 9153 ~/tor-browser_en-US/App/Firefox/firefox --prof
 * We don't know how well proxychains works. For example <code>torsocks has a IPv6 leak bug</code><ref>https://trac.torproject.org/projects/tor/wiki/doc/torsocks#WorkaroundforIPv6leakbug</ref>. We don't know if proxychains forces everything through the proxies. Whonix only ensures, should their be leaks, they go only through Tor.
 * There are at least three different versions of proxychains. The old/original/unmaintained version on sourceforge.net and two forks on github. We don't know about that status of any of them and haven't heard of anyone looking if they do really work as expected. The two authors argue with each other and we weren't motivated to understand the conflict and to determine which version is better. However, any leaks not going through the proxy(chain) will go through Tor.
 
-===== Instructions =====
-====== General ======
+===== Setup =====
 Install proxychains.
 
 {{CodeSelect2|code=
 sudo apt-get install proxychains
 }}
-
-Note the uwt and Tor Browser notice above first. After you have done so it's quite simple.
 
 Open proxychains configuration file.
 
@@ -120,7 +117,7 @@ socks5 10.152.152.10 9152
 # socks5 x.x.x.x xxxx
 </pre>
 
-Advanced. Recommendation: Why not use Tor stream isolation for the proxychains connection?
+<ref>Advanced. Recommendation: Why not use Tor stream isolation for the proxychains connection?
 
 <pre>
 [ProxyList]
@@ -131,26 +128,33 @@ Advanced. Recommendation: Why not use Tor stream isolation for the proxychains c
 socks5 10.152.152.10 9152
 socks5 x.x.x.x xxxx
 </pre>
+</ref>
 
 Save the configuration file. Test afterwards.
 
-====== test uwt wrapped application ======
-For example:
-
+===== example uwt wrapped application =====
 {{CodeSelect2|code=
 proxychains /usr/bin/wget.anondist-orig https://check.torproject.org
 }}
 
-For testing, if you didn't disable the wget uwt wrapper, the following command will most likely get another IP. (Stream Isolation)
+<ref>
+For testing, you could compare the IP shown by the above command with the next one. If you didn't disable the wget uwt wrapper, the following command will most likely fetch another IP, because still using Stream Isolation. Using Tor's TransPort.
 
-Using Tor's TransPort.<br />
 (/usr/bin/wget.anondist-orig original non-uwt-wrapped version)
 
 {{CodeSelect2|code=
 wget.anondist-orig https://check.torproject.org
 }}
+</ref>
 
-====== Tor Browser ======
+===== example regular application =====
+Requires [[Stream_Isolation#Deactivate_uwt_Stream_Isolation_Wrapper|deactivated]] wget uwt wrapper!
+
+{{CodeSelect2|code=
+proxychains /usr/bin/wget https://check.torproject.org
+}}
+
+===== Tor Browser =====
 The combination of proxychains and Tor Browser does currently not work. Someone needs to [[Contribute]] by figuring this out. Otherwise this will not be possible for a very long time. [https://forums.whonix.org/t/proxychains-tor-help-needed See forum discussion].
 
 Do not forget to [[Tor_Browser#Remove_Proxy_Settings|Remove Proxy Settings]] from Tor Browser.
