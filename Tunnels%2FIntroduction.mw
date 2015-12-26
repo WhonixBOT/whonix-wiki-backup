@@ -5,67 +5,11 @@ title=Combining Tunnels with Tor
 |description=Instructions on how to combine tunnels (VPN, SSH, proxy) with Tor. (User -> Tor -> proxy/VPN/SSH -> Internet) (User -> proxy/VPN/SSH -> Tor -> Internet)
 }}
 
+= Introduction =
 '''User -> Tor -> proxy/VPN/SSH -> Internet'''<br />
 '''User -> proxy/VPN/SSH -> Tor -> Internet'''
 
 It is possible to combine Tor with tunnels like VPNs, proxies and SSH. Your traffic can be sent through both Tor and the second tunnel, in either order. However, this is an advanced topic and appropriate only for special cases. Adding a second connection does not automatically add security, but will add significant complexity. Eventual positive or negative effects on anonymity are being [https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN controversy discussed]. The Whonix project stays technologically neutral in that discussion. Improper combination of Tor and another service may decrease your security and anonymity. This such a setup difficult, and for advanced users only, for almost all users of Whonix, using Tor alone – without a VPN or proxy – is the right choice.
-
-=== Connecting to a tunnel-link (proxy/VPN/SSH) before Tor ===
-
-'''User -> proxy/VPN/SSH -> Tor -> Internet'''
-
-In this case, your internet traffic will (1) pass through your ISP as proxy/VPN/SSH traffic; (2) exit your proxy/VPN/SSH server as encrypted Tor traffic; (3) enter to the Tor network; (4) exit the Tor network at a Tor exit node as normal internet traffic (encrypted or unencrypted).
-
-''' Possible uses: '''
-* You must connect to your VPN or proxy to access the internet.
-* Your ISP blocks Tor and Tor bridges but doesn’t block the tunnel-link.
-* Fear of de-anonymizing attacks against the Tor network; belief that your VPN or proxy is able to protect your identity in such case.
-
-''' Warnings: '''
-* Note, the following warnings are not Whonix specific issues. Those are general issues with combining Tor with tunnel-links.
-* A VPN or proxy that knows your identity and/or location may be more willing and able to compromise your privacy than your ISP.
-* If your software configuration doesn’t block all traffic when your connection to your VPN suddenly disconnects, your encrypted Tor traffic will go through your ISP without warning. This is the default nature of most VPN configurations and not an issue specific to Whonix. Workarounds described [in links] below.
-* If the use of Tor is dangerous in your area, VPNs or SSH may not provide enough protection (due to software misconfiguration or sophisticated packet inspection). Proxies do not provide encryption and should not be used to hide Tor use.
-
-
-[[Tunnels/Connecting to a VPN before Tor | How to connect to a VPN before Tor]] (User -> VPN -> Tor -> Internet)
-
-[[Tunnels/Connecting to a proxy before Tor | How to connect to a proxy before Tor]] (User -> proxy -> Tor -> Internet)
-
-[[Tunnels/Connecting to SSH before Tor | How to connect to SSH before Tor]] (User -> SSH -> Tor -> Internet)
-
-=== Connecting to Tor before a tunnel-link (proxy/VPN/SSH) ===
-'''User -> Tor -> proxy/VPN/SSH -> Internet'''
-
-In this case, your internet traffic will (1) pass through your ISP as encrypted Tor traffic; (2) exit the Tor network at a Tor exit node as proxy/VPN/SSH traffic; (3) exit your proxy/VPN/SSH as normal internet traffic (encrypted or unencrypted).
-
-''' Possible uses: '''
-* As one part of using a VPN or proxy anonymously for some specific reason.
-* You must use Tor, but need to connect to an internet server who bans Tor exit nodes.
-* Fear of de-anonymizing attacks against the Tor network; belief that your VPN or proxy is able to protect your identity in such case.
-
-''' Warnings: '''
-* Note, the following warnings are not Whonix specific issues. Those are general issues with combining Tor with tunnel-links.
-* Even though Tor will hide your IP address from your VPN or proxy, you can still be located with your payment method, usage logs, or other identifying information the tunnel-link service knows about you.
-* You will not be able to access Tor hidden services.<ref>
-When using User -> Tor -> proxy/VPN/SSH -> Internet, i.e. if the last server is not a Tor relay, you will be no longer able to connect to [[Hidden Services]]. (Unless you would run another Tor client on top, but this would lead to [[DoNot#Prevent_Tor_over_Tor_scenarios.|Tor over Tor, which is discouraged for security reasons]].
-</ref>
-* Malware on Whonix-Workstation can't bypass Tor but can ignore your VPN or proxy.
-* It is not simple to configure VPNs, SSH or proxies in a foolproof, leak free manner. However, in case of Whonix, it is impossible for traffic to bybass Tor, even if the VPN or proxy is misconfigured.<ref>
-If setting up socksifier, proxy settings, transparent proxy with local redirection, SSH tunnel or a VPN in a leak free manner were easy, this means while ensuring nothing will bypass the VPN, SSH or proxy, there would have been no reason to develop Whonix in the first place.
-
-The methods described in the tunnel documentation are all tested and should all more or less work. Should there be any misconfiguration or leak bug, you are left to the protections by Whonix and Tor. This means, the leak will still go through Whonix-Gateway and therefore forced through Tor. The methods in the tunnel documentation are not as safe as a Whonix-Gateway. There were development discussions and some progress (see [[Dev/Inspiration]]), about chaining multiple Gateways, VPNBOX, JonDoBOX, I2PBOX, FreenetBOX and ProxyBOX, but nothing was finished due to the lack of community interest, support and developers.
-</ref>
-* Most the pre-installed software on Whonix-Workstation, including [[Tor Browser]], is configured take advantage of [[Stream Isolation]]. As a side effect, this software will ignore the VPN by default. You must reconfigure this software to disable stream isolation.
-* When using a browser, while you are connecting to Tor before a tunnel link, you probably will not be able to make use of the browser tab stream isolation feature of Tor Browser. <ref>[https://trac.torproject.org/projects/tor/ticket/3455 Bug #3455: Tor Browser should set SOCKS username for a request based on referer]</ref> This is because Tor Browser would not talk to Tor directly anymore. Tor Browser would connect to the tunnel-link instead.
-* When using a browser, worsens [[Fingerprint#web_fingerprint|web fingerprint]]. It is unknown how anonymous it is to use user -> (proxy/VPN/SSH ->) Tor -> Proxy/VPN/SSH -> Tor Browser -> website. How many people show up with a proxy, VPN or SSH IP using Tor Browser? This setup is so special that probably only very few people are doing it. For this reason, recommend against. On the other hand, due to browser fingerprinting, it can't be recommend using any browser other than Tor Browser either.
-
-
-[[Tunnels/Connecting to Tor before a VPN| How to connect to Tor before a VPN]] (User -> Tor -> VPN -> Internet)
-
-[[Tunnels/Connecting to Tor before a proxy | How to connect to Tor before a proxy]] (User -> Tor -> proxy -> Internet)
-
-[[Tunnels/Connecting to Tor before SSH | How to connect to Tor before SSH]] (User -> Tor -> SSH -> Internet)
 
 = Comparison Table =
 {| class="wikitable" style="background-color: #fff;text-align: center"
@@ -149,6 +93,63 @@ The methods described in the tunnel documentation are all tested and should all 
 VPN: [[Tunnel_UDP_over_Tor#VPN_method_.28WORKING.29|<span style="background:{{Yellow}}">if supported by the VPN, yes]]<br />
 ssh: [[Tunnel_UDP_over_Tor#SSH_method_.28NOT_DOCUMENTED.29|<span style="background:{{Yellow}}">undocumented]]
 |}
+
+= Connecting to a tunnel-link (proxy/VPN/SSH) before Tor =
+
+'''User -> proxy/VPN/SSH -> Tor -> Internet'''
+
+In this case, your internet traffic will (1) pass through your ISP as proxy/VPN/SSH traffic; (2) exit your proxy/VPN/SSH server as encrypted Tor traffic; (3) enter to the Tor network; (4) exit the Tor network at a Tor exit node as normal internet traffic (encrypted or unencrypted).
+
+''' Possible uses: '''
+* You must connect to your VPN or proxy to access the internet.
+* Your ISP blocks Tor and Tor bridges but doesn’t block the tunnel-link.
+* Fear of de-anonymizing attacks against the Tor network; belief that your VPN or proxy is able to protect your identity in such case.
+
+''' Warnings: '''
+* Note, the following warnings are not Whonix specific issues. Those are general issues with combining Tor with tunnel-links.
+* A VPN or proxy that knows your identity and/or location may be more willing and able to compromise your privacy than your ISP.
+* If your software configuration doesn’t block all traffic when your connection to your VPN suddenly disconnects, your encrypted Tor traffic will go through your ISP without warning. This is the default nature of most VPN configurations and not an issue specific to Whonix. Workarounds described [in links] below.
+* If the use of Tor is dangerous in your area, VPNs or SSH may not provide enough protection (due to software misconfiguration or sophisticated packet inspection). Proxies do not provide encryption and should not be used to hide Tor use.
+
+
+[[Tunnels/Connecting to a VPN before Tor | How to connect to a VPN before Tor]] (User -> VPN -> Tor -> Internet)
+
+[[Tunnels/Connecting to a proxy before Tor | How to connect to a proxy before Tor]] (User -> proxy -> Tor -> Internet)
+
+[[Tunnels/Connecting to SSH before Tor | How to connect to SSH before Tor]] (User -> SSH -> Tor -> Internet)
+
+= Connecting to Tor before a tunnel-link (proxy/VPN/SSH) =
+'''User -> Tor -> proxy/VPN/SSH -> Internet'''
+
+In this case, your internet traffic will (1) pass through your ISP as encrypted Tor traffic; (2) exit the Tor network at a Tor exit node as proxy/VPN/SSH traffic; (3) exit your proxy/VPN/SSH as normal internet traffic (encrypted or unencrypted).
+
+''' Possible uses: '''
+* As one part of using a VPN or proxy anonymously for some specific reason.
+* You must use Tor, but need to connect to an internet server who bans Tor exit nodes.
+* Fear of de-anonymizing attacks against the Tor network; belief that your VPN or proxy is able to protect your identity in such case.
+
+''' Warnings: '''
+* Note, the following warnings are not Whonix specific issues. Those are general issues with combining Tor with tunnel-links.
+* Even though Tor will hide your IP address from your VPN or proxy, you can still be located with your payment method, usage logs, or other identifying information the tunnel-link service knows about you.
+* You will not be able to access Tor hidden services.<ref>
+When using User -> Tor -> proxy/VPN/SSH -> Internet, i.e. if the last server is not a Tor relay, you will be no longer able to connect to [[Hidden Services]]. (Unless you would run another Tor client on top, but this would lead to [[DoNot#Prevent_Tor_over_Tor_scenarios.|Tor over Tor, which is discouraged for security reasons]].
+</ref>
+* Malware on Whonix-Workstation can't bypass Tor but can ignore your VPN or proxy.
+* It is not simple to configure VPNs, SSH or proxies in a foolproof, leak free manner. However, in case of Whonix, it is impossible for traffic to bybass Tor, even if the VPN or proxy is misconfigured.<ref>
+If setting up socksifier, proxy settings, transparent proxy with local redirection, SSH tunnel or a VPN in a leak free manner were easy, this means while ensuring nothing will bypass the VPN, SSH or proxy, there would have been no reason to develop Whonix in the first place.
+
+The methods described in the tunnel documentation are all tested and should all more or less work. Should there be any misconfiguration or leak bug, you are left to the protections by Whonix and Tor. This means, the leak will still go through Whonix-Gateway and therefore forced through Tor. The methods in the tunnel documentation are not as safe as a Whonix-Gateway. There were development discussions and some progress (see [[Dev/Inspiration]]), about chaining multiple Gateways, VPNBOX, JonDoBOX, I2PBOX, FreenetBOX and ProxyBOX, but nothing was finished due to the lack of community interest, support and developers.
+</ref>
+* Most the pre-installed software on Whonix-Workstation, including [[Tor Browser]], is configured take advantage of [[Stream Isolation]]. As a side effect, this software will ignore the VPN by default. You must reconfigure this software to disable stream isolation.
+* When using a browser, while you are connecting to Tor before a tunnel link, you probably will not be able to make use of the browser tab stream isolation feature of Tor Browser. <ref>[https://trac.torproject.org/projects/tor/ticket/3455 Bug #3455: Tor Browser should set SOCKS username for a request based on referer]</ref> This is because Tor Browser would not talk to Tor directly anymore. Tor Browser would connect to the tunnel-link instead.
+* When using a browser, worsens [[Fingerprint#web_fingerprint|web fingerprint]]. It is unknown how anonymous it is to use user -> (proxy/VPN/SSH ->) Tor -> Proxy/VPN/SSH -> Tor Browser -> website. How many people show up with a proxy, VPN or SSH IP using Tor Browser? This setup is so special that probably only very few people are doing it. For this reason, recommend against. On the other hand, due to browser fingerprinting, it can't be recommend using any browser other than Tor Browser either.
+
+
+[[Tunnels/Connecting to Tor before a VPN| How to connect to Tor before a VPN]] (User -> Tor -> VPN -> Internet)
+
+[[Tunnels/Connecting to Tor before a proxy | How to connect to Tor before a proxy]] (User -> Tor -> proxy -> Internet)
+
+[[Tunnels/Connecting to Tor before SSH | How to connect to Tor before SSH]] (User -> Tor -> SSH -> Internet)
 
 = See Also =
 * [[Comparison Of Tor with CGI Proxies, Proxy Chains, and VPN Services|Comparison Of Tor with CGI, Proxies, Proxy Chains, and VPN Services]]
