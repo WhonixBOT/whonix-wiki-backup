@@ -457,6 +457,44 @@ Download the test images from latest folder listed [http://http://mirror.whonix.
 
 3. Import the images by following the installation steps [[#Importing_Whonix_VM_Templates]] but keep in mind you must use the full name of the new images. Do not import the Network templates.
 
+== Snaphot Migration ==
+
+If the VM has snapshots that you want to preserve, you should dump the snapshot xml-files of the source VM with:<ref>https://serverfault.com/a/648871</ref>
+
+List snapshot names of the VM:
+
+<pre>
+virsh snapshot-list --name $dom
+</pre>
+
+Dump each snapshot you want to back-up:
+
+<pre>
+virsh snapshot-dumpxml $dom $name > file.xml 
+</pref>
+
+
+
+Then for restoring snapshots at the destination use:
+
+<pre>
+virsh snapshot-create --redefine $dom file.xml
+</pre>
+
+
+If you also care about which snapshot is the current one, then additionally do on the source VM:
+
+<pre>
+virsh snapshot-current --name $dom
+</pre>
+
+
+and on the destination:
+
+<pre>
+virsh snapshot-current $dom $name
+</pre>
+
 == Compressing Disk Images ==
 You may find it easier to move the sparse image files when they are compressed in a tarball. 
 
