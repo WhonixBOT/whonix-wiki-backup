@@ -113,7 +113,7 @@ To open the kernel configuration menu run:
 sudo make menuconfig
 }}
 
-Grsecurity is endlessly customizable and if you have different security requirements feel free to dive in the documentation<ref>https://en.wikibooks.org/wiki/Grsecurity/Appendix/Grsecurity_and_PaX_Configuration_Options</ref><ref>https://en.wikibooks.org/wiki/Grsecurity/Runtime_Configuration</ref> but be advised very high security settings usually break Xorg server and common packages like Iceweasel and OpenJDK. However for the purposes of compiling a kernel suitable for normal desktop use the Automatic configuration comes with sane defaults. Same for the other usage profiles provided. To have a bootable desktop you will need to disable PaX mprotect at first<ref.>http://www.insanitybit.com/2012/05/31/compile-and-patch-your-own-secure-linux-kernel-with-pax-and-grsecurity/</ref> It can be re-enabled later when an exception list is loaded.
+Grsecurity is endlessly customizable and if you have different security requirements feel free to dive in the documentation<ref>https://en.wikibooks.org/wiki/Grsecurity/Appendix/Grsecurity_and_PaX_Configuration_Options</ref><ref>https://en.wikibooks.org/wiki/Grsecurity/Runtime_Configuration</ref> but be advised very high security settings usually break Xorg server and common packages like Iceweasel and OpenJDK. However for the purposes of compiling a kernel suitable for normal desktop use the Automatic configuration comes with sane defaults. Same for the other usage profiles provided. To have a bootable desktop you will need to disable PaX mprotect at first<ref>http://www.insanitybit.com/2012/05/31/compile-and-patch-your-own-secure-linux-kernel-with-pax-and-grsecurity/</ref> It can be re-enabled later when an exception list is loaded.
 
 The configuration should look like this. A lack of mention means leave as default:
 
@@ -128,6 +128,7 @@ Security options -> Grsecurity -> Configuration Method -> Automatic
 			       -> Customize Configuration -> PaX -> Non-executable pages -> Deselect: Restrict mprotect
                                -> Customize Configurations -> Memory Protections -> Disable privileged I/O
                                -> Customize Configurations -> Role Based Access Control Options -> Hide kernel processes
+                               -> Customize Configuration -> Sysctl Support -> Deselect: Sysctl support 
 </pre>
     
 To save time you can compile one kernel for both the guest and host . NB This only works if you compiled a custom Whonix x64. A x64 Linux Host/Guest configuration would look like:
@@ -144,6 +145,7 @@ Security options -> Grsecurity -> Configuration Method -> Automatic
 			       -> Customize Configuration -> PaX -> Non-executable pages -> Deselect: Restrict mprotect
                                -> Customize Configurations -> Memory Protections -> Disable privileged I/O
                                -> Customize Configurations -> Role Based Access Control Options -> Hide kernel processes
+                               -> Customize Configuration -> Sysctl Support -> Deselect: Sysctl support 
 </pre>
 
 Once you are done select save and keep the .config name then exit out of all menus.
@@ -183,32 +185,6 @@ Done. After installation the system should automatically boot up with the Grsecu
 uname -r
 }}
 
-=== Sysctl Configuration ===
-
-Grsecurity's sysctl support allows changing of the kernel's user-facing settings without need for recompilation. This is usually unnecessary and discouraged unless you know what you are doing. For more information about the available settings check the [https://en.wikibooks.org/wiki/Grsecurity/Appendix/Grsecurity_and_PaX_Configuration_Options official documentation]. For example to create the file with the very first toggled setting type:
-
-{{CodeSelect|code=
-sudo su -c "echo -e 'kernel.grsecurity.tpe = 1' > /etc/sysctl.d/05-grsecurity.conf"
-}}
-
-Subsequent commands should be formatted:
-
-{{CodeSelect|code=
-sudo su -c "echo -e 'deny_new_usb = 1' >> /etc/sysctl.d/05-grsecurity.conf"
-}}
-
-
-To edit the file:
-
-{{CodeSelect|code=
-sudo nano edit /etc/sysctl.d/05-grsecurity.conf
-}}
-
-To apply the settings reboot or run:
-
-{{CodeSelect|code=
-sudo sysctl -p
-}}
 
 === Gradm ===
 
