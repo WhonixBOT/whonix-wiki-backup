@@ -199,9 +199,38 @@ PIN_TPO_CERT="true"
 </pre>
 
 = VPN before Tor =
-'''Whonix 13 Changes'''
-
 VPN_SERVERS was abolished for better security. <ref>https://phabricator.whonix.org/T460</ref>
+
+After installing Whonix-Gateway, do the following steps before activating Tor in {{Code|Whonix Setup Wizard}}.
+
+{{Firewall Settings}}
+
+Add the following settings. You can skip comments (starting with {{Code|#}}). Don't use {{Code|;}} for comments. <ref>That config file is a bash fragment.</ref> Likely you do not need to either uncomment (removing the {{Code|#}} in front) or modify {{Code|VPN_INTERFACE}} / {{Code|LOCAL_NET}}.
+
+<pre>
+## Make sure Tor always connects through the VPN.
+## Enable: 1
+## Disable: 0
+## DISABELD BY DEFAULT, because it requires a VPN provider.
+VPN_FIREWALL=1
+
+## For OpenVPN.
+#VPN_INTERFACE=tun0
+
+## Destinations you don not want routed through the VPN.
+## 10.0.2.2-10.0.2.24: VirtualBox DHCP
+#      LOCAL_NET="\
+#         127.0.0.0-127.0.0.24 \
+#         192.168.0.0-192.168.0.24 \
+#         192.168.1.0-192.168.1.24 \
+#         10.152.152.0-10.152.152.24 \
+#         10.0.2.2-10.0.2.24 \
+#      "
+</pre>
+
+Save.
+
+{{Reload Firewall}}
 
 {{Open with root rights|filename=
 /etc/sudoers.d/tunnel_unpriv
@@ -213,6 +242,8 @@ In the following example we are using the free RiseUp VPN, because it is known t
 
 Look inside the [https://help.riseup.net/vpn riseup VPN help page] for [https://help.riseup.net/en/riseup-ca <code>RiseupCA.pem</code>] and (right click) [https://help.riseup.net/security/network-security/riseup-ca/RiseupCA.pem download] it. Store it in {{Code2|/etc/openvpn/RiseupCA.pem}}.
 
+TODO: won't work without Tor being enabled
+
 <pre>
 scurl https://help.riseup.net/security/network-security/riseup-ca/RiseupCA.pem | sudo tee /etc/openvpn/RiseupCA.pem
 </pre>
@@ -223,7 +254,7 @@ You need a riseup.net account. You need to know your riseup account name. Go to 
 /etc/openvpn/auth.txt 
 }}
 
-Add.
+Add. (Add your actual user name and password.)
 
 <pre>
 riseupusername
@@ -234,11 +265,19 @@ Save.
 
 <ref>We must run OpenVPN as user 'tunnel', because that is the only user besides user {{Code2|clearnet}} that will be allowed to establish connections.</ref>
 
+Note, you must use IP addresses. You cannot use DNS hostnames. For example, you could not use {{Code2|vpn.riseup.net}}. You have to use IP addresses such as for example {{Code2|198.252.153.226}}. You find out the IP from your provider or by using nslookup on the host. Example. (You need to use your actual DNS hostname, not {{Code2|vpn.riseup.net}}.
+
+<pre>
+nslookup vpn.riseup.net
+</pre>
+
 {{Open with root rights|filename=
 /etc/openvpn/openvpn.conf
 }}
 
 Add.
+
+Note: make sure to adjust the {{Code|remote 198.252.153.226 80}} variable in your config (unless you are using {{Code|nyc.vpn.riseup.net}} as your VPN service). Replace the IP ({{Code|198.252.153.226}}) and port ({{Code|80}}) to match your VPN service.
 
 <pre>
 client
@@ -299,6 +338,10 @@ sudo service openvpn@openvpn status
 TODO:
 
 Make sure /var/run/openvpn is writable by user tunnel.
+
+7. Enable Tor using Whonix Setup Wizard.
+
+{{whonixsetup}}
 
 = Footnotes =
 <references/>
