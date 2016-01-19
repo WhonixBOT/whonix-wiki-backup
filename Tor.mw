@@ -4,6 +4,36 @@
 |og:image=https://www.whonix.org/w/images/3/32/Menger-702837640.jpg
 }}
 
+= Log Analysis =
+== Non-Issues ==
+{| class="wikitable" style="background-color: #fff;text-align: center"
+
+! message / question
+! answer
+
+|-
+| <u>{{Code2|Am I compromised? Does Tor's log report leaks?}}
+| Tor's output is conceptually not a tool to find out about serious issues such as compromise or leaks.</u>
+
+|-
+| {{Code2|[WARN] Socks version 71 not recognized. (Tor is not an http proxy.)}}
+| 
+This is caused by [[whonixcheck]] (by function {{Code2|check_tor_socks_port_reachability}}). It checks if a Tor SocksPort is reachable by trying to fetch it using curl. <ref>
+{{CodeSelect|code=
+curl.anondist-orig 10.152.152.10:9100
+}}
+</ref> It will not report anything if it worked, but would complain if it failed.
+
+|-
+| {{Code2|[NOTICE] You configured a non-loopback address '10.152.152.10:9179' for SocksPort. This allows everybody on your local network to use your machine as a proxy. Make sure this is what you wanted. [1 duplicate hidden]}} (Or other port number or DnsPort or TransPort.)
+| This is not of concern. Tor really listens on that IP/port. It is Whonix-Gateway's network interface, that is only available to Whonix-Workstations, because it is an internal network with Whonix-Workstation and because Whonix-Gateway is firewalled (see ''{{WhonixFirewall}}'' or in Whonix source code).
+
+|-
+| {{Code2|[NOTICE] New control connection opened. [2 duplicates hidden]}} (Or more duplicates.)
+| This is not of concern. This is caused by [[whonixcheck]]'s Tor Bootstrap Status Test, which uses Tor's ControlPort or [[Dev/CPFP|CPFP]].
+
+|}
+
 = See Also =
 <translate>
 * [[<tvar|36>Why_does_Whonix_use_Tor|</> Why does Whonix use Tor?]]
