@@ -90,6 +90,44 @@ None.
 
 = Done =
 
+== Biometric Fingerprinting ==
+
+This problem is related to all hypervisors and noted here to keep track. New info added not in mail list message:
+
+https://lists.nongnu.org/archive/html/qemu-discuss/2016-03/msg00023.html
+
+Testing sites listed here:
+https://forums.whonix.org/t/help-wanted-kvm-users-biometrics-fingerprinting-testing/2233
+
+Virtualization is useful in presenting an identical environment and set of "hardware" for each user which goes a long way in creating an anonymity set of systems. That way a system attacker, advertisers and online trackers would not be able to fingeprint a user or their hardware.
+
+The problem: Tracking techniques have become more sophisticated with time. They advanced from simple cookies to browser/device fingerprinting (which Tor Browser focuses on defeating) to user behavior fingerprinting. The latter is about profiling how a user types on a keyboard or uses a mouse [2]. 
+
+Keystroke dynamics is a super creepy way to track users based on how long they press keys (dwell time) and the time between key presses (gap time). This is extremely accurate at identifying individuals because of how unique these measurements are. Advertising networks  (Google, Facebook...) that fingeprprint users on both the clearnet and Tor can deanonymize users. This technique is already actively used in the wild [6][7].
+
+
+Potential Solutions:
+
+Since input devices are all emulated its a great opportunity to stop this profiling technique. 
+
+* A security researcher designed a proof of concept plugin for Chrome browser that mitigates this. Implementing something like the PoC addon in [1] known as KeyBoardPrivacy. Some random delay in milliseconds in a 50 millisecond range for dwell and gap times for the emulated keyboards is enough to skew the values to render this attack useless while not affecting performance.
+
+
+* The changes made to Tor Borwser to make JS timers more coarse grained but constant (250ms for keyboard events) were not enough to stop keystroke dynamics fingerprinting because a malicious script can evict the cache and allow extrapolation of true timing events within 1-5ms accuracy .[3][5] Their goal is to instead add jitter to the timers [4]. A similar solution proposed in [4] can be implemented in all QEMU-KVM timers to mitigate both attacks.
+
+EDIT: Second solution not the way to go. High precision timers in virtualizers have bad security implications. They enable sidechannel attacks on crypto operations running on other VMs as well as aid in biometric fingerprinting. A multi hypervisor study on timer accuracy shows most have high accuracy[8] by necessity. Increasing coarseness in the hypervisor's code can lead to guest slow downs or instability. This varies by hypervisor. CPU load does NOT affect timer accuracy [in KVM] however IO does.
+
+
+[1] https://paul.reviews/behavioral-profiling-the-password-you-cant-change/
+[2] http://jcarlosnorte.com/security/2016/03/06/advanced-tor-browser-fingerprinting.html
+[3] https://www.lightbluetouchpaper.org/2015/07/30/double-bill-password-hashing-competition-keyboardprivacy/#comment-1288166
+[4] https://trac.torproject.org/projects/tor/ticket/16110
+[5] https://trac.torproject.org/projects/tor/ticket/1517
+[6] http://scraping.pro/no-captcha-recaptcha-challenge/
+[7] https://nakedsecurity.sophos.com/2013/11/01/facebook-to-silent-track-users-cursor-movements-to-see-which-ads-we-like-best/
+[8] https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4503740/
+
+
 == CPU Masking ==
 
 KVM cpus support a baseline of features by default. You can mask out the problematic ones and don't have to worry about the extra ones it doesn't support because it will be masked out anyhow (because it was never supported in the first place).
