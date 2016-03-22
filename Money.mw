@@ -189,48 +189,37 @@ To enable Stream Isolation in the official Bitcoin client (bitcoin-qt) the user 
 
 ==== Electrum ====
 
-The nonofficial thin client [https://electrum.org/ Electrum.org] (not yet tested by adrelanos) however looks very well and appears to be well designed. It does not need to download/verify the blockchain.
+The nonofficial thin client [https://electrum.org/ Electrum.org] appears to be well designed. It does not need to download/verify the blockchain and does not trust third-party servers with your keys.
 
 ===== Installation =====
-To install Electrum in your Whonix-Workstation you can use apt or install it from [https://electrum.org/#download Electrum.org] .
-As the version found in the Debian repository is pretty outdated (1.9.8-4 vs. 2.6.2) i will describe the installation process using the official sources: 
+It is recommended to install Electrum  from backports because the version in stable is obsolete.
 
-What about electrum from Debian backports? https://packages.debian.org/jessie-backports/electrum
+Add Debian Jessie Backports to repos sources lists.
 
-{{Install_Backport|package=
-electrum
+{{CodeSelect|code=
+sudo su -c "echo -e 'deb http://http.debian.net/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
 }}
 
-First, go to [https://electrum.org/#download Electrum.org] and download the the tar.gz source package of Electrum (at the time of writing this was Electrum-2.6.2.tar.gz) AND the signature file (you find it right next to the download link). 
 
-Now open a terminal, you need to install a few dependencies first (at the time of this writing, the installation of just python-qt4 and python-pip as mentioned on the Electrum.org page was NOT enough): 
-<pre>
-user@host:~$ sudo apt-get install python-qt4 python-pip python-slowaes python-ecdsa
-</pre>
-To verify the signature first change to the directory you downloaded Electrum to - if you used the standard Tor-Browser Download directory use:
-<pre>
-user@host:~$ cd .tb/tor-browser/Browser/Downloads/
-</pre>
-Now import the appropriate public key from the author of Electrum to your gpg keyring and verify the signature:
+{{Template:Apt-Pinning}}
 
-The following is not save. Use full gpg key fingerprints. See instructions for i2p as boilerplate. https://www.whonix.org/wiki/I2P#Installing_I2P_inside_Whonix-Workstation_.28I2P_over_Tor.29
-<pre>
-user@host:~/.tb/tor-browser/Browser/Downloads$ gpg --recv-keys 2bd5824b7f9470e6 && gpg --verify Electrum-2.6.2.tar.gz.asc
-</pre>
+Install Electrum and its dependencies.
 
-Finally, install Electrum by using: 
-<pre>
-user@host:~/.tb/tor-browser/Browser/Downloads$ sudo pip install Electrum-2.6.2.tar.gz
-</pre>
-Electrum can be found in the KDE Applications Menu under the "Internet" category. 
+{{CodeSelect|code=
+sudo apt-get update
+sudo apt-get -t jessie-backports install electrum
+}}
+
+
+Electrum can now be found in the KDE Applications Menu under the "Internet" category. 
 
 For usage instructions of Electrum or more advanced topics like Cold Storage of your private keys, please refer to the official Documentation at [http://docs.electrum.org docs.electrum.org] . 
 
 ===== Stream Isolation in Electrum: =====
 To enable [[Stream Isolation]] in Electrum at first start:
-# create a wallet with a strong passwod! 
-# after wallet creation is complete and Electrum asks you "How do you want to connect to a server", choose "Select server manually" and press <Next>. 
-# Now re-enable the "Select server automatically" checkbox and change the Proxy setting to SOCKS5 with host: 10.152.152.10 and port: 9111. Press <Next> and you should be good to go. 
+# Create a wallet with a strong password! 
+# After wallet creation is complete and Electrum asks you "How do you want to connect to a server", choose "Select server manually" and press <Next>. 
+# Now re-enable the "Select server automatically" check-box and change the Proxy setting to SOCKS5 with host: 10.152.152.10 and port: 9111. Press <Next> and you should be good to go. 
 
 If you already have Electrum set up but forgot to enable Stream Isolation, you can always go to Tools -> Network in Electrum to bring up the server and proxy settings. 
 
