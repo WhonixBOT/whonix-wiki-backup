@@ -3,8 +3,8 @@
 {{#seo:
 |description=How to refactor Whonix's firewall.
 }}
-
-~/iptables-dump script.
+<hr>
+<u>'''~/iptables-dump script.'''</u>
 
 inspired by: http://unix.stackexchange.com/a/206057/49297
 
@@ -49,7 +49,62 @@ diff a b
 </pre>
 
 There should be no diff.
+<br>
+* "''whonixcheck (which is somewhat a replacement for the lack of test suite) could indeed be useful to check if the loaded iptables rules match a hardcoded iptables dump. Yes, with additional firewalll add-ons that would be hard. Then these firewall add-ons could ship a dump that also gets verified. (iptables-dumps.d folder checked by whonixcheck or so.) But then multiple firewall add-ons gets hard. Mutliple firewall add-ons and dumping, that kind of flexibility might be stretching what the Whonix project may be able to implement.''" (From [https://forums.whonix.org/t/bolt-on-for-whonix-firewall-best-place-to-put-files/2222 (Forum)  Bolt on for whonix_firewall - best place to put files?] )
+** whonixcheck could use this iptables diff facility to warn the user of non-standard / unexpected rules present. And, just like unwanted packages, could ask the user to run ''e.g. iptables-save-whonix'' to establish a new baseline. whonixcheck would then pass, unless something else had changed things user unexpectedly, at which point whonixcheck would again warn.
+<hr>
+'''<u>Reference</u>: [https://forums.whonix.org/t/bolt-on-for-whonix-firewall-best-place-to-put-files/2222 (Forum)  Bolt on for whonix_firewall - best place to put files?]'''
 
+''From Patrick:''<br>
+" I have been wondering for some time now if the firewall script should be split. A lot sections are being used by multiple packages, whonix-gw-firewall, whonix-ws-firewall and vpn-firewall. Eventually further in future (corridor-gateway to be created one day)...
+
+* error_handler
+* source config folder
+* IPv4 DEFAULTS
+* IPv4 PREPARATIONS
+* IPv4 DROP INVALID INCOMING PACKAGES
+* IPv4 FORWARD
+* IPv6
+* more minor stuff (iptables_cmd, ip6tables_cmd)
+<br>
+Converted to shell functions. And added to anon-shared-helper-scripts.
+
+The risk of changing firewall rules while refactoring is minimal because it can be verified:
+
+However, the goal is to make the firewall scripts easier to read. Not more difficult to audit. I am not sure which style (all in one file vs split) makes it simpler at this point. "
+<br>
+* Early files in /etc/whonix_firewall.d could contain bash scripting of the form:
+<pre>
+ function ScriptFuncPreloadElement1() { script lines, e.g. $iptables_cmd ''blah''}
+</pre>
+** Optionally followed, for inline / immediate execution rather than hooking in later within whonix_firewall, with: 
+<pre>
+ScriptFuncPreloadElement1
+# (Within the same file == calling main().)
+</pre>
+** This separates code definition from code execution.
+* "''The other question with firewall code injection, pre/post hooks is when to dispatch them? When you want to dispatch them depends on what you actually want to implement.''"
+* e.g.
+<pre>
+if [ "$(type -t whonix_firewall_input_hook_end)" = "function" ]; then
+   whonix_firewall_input_hook_end
+fi
+</pre>
+** However, such would only allow a single call per hook. (User would have to chain all calls within whonix_firewall.d) Perhaps array variables instead. Code would then be something like ScriptFuncPreloadElement1() as above, then 
+<pre>
+whonix_firewall_input_hook_end[${#whonix_firewall_input_hook_end[@]}]=ScriptFuncPreloadElement1
+</pre>
+*** ''It would be up to the user to appropriately manage the array ordering.''
+** Hooks within whonix_firewall would then walk the appropriate array at the appropriate time.
+<hr>
+'''<u>Reference</u>: [https://forums.whonix.org/t/whonix-torrents-and-being-a-good-tor-citizen/1766 (Forum)  whonix, torrents, and being a good tor citizen]'''
+<br>
+<u>''Solution, part b''</u> demonstrates an example sample set of iptables rules that could be injected, within whonix_firewall. (''Proof of concept, only.'')
+<hr>
+'''<u>Reference</u>: [https://forums.whonix.org/t/favourite-whonix-bash-script-boilerplate-template/2235/2 (Forum)  Favourite (whonix?) bash script boilerplate template?]'''
+<br>
+* (begins) a corralling of a standard scripting framework.
+<hr>
 {{Footer}}
 
 [[Category:Development]]
