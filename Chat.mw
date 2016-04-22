@@ -104,6 +104,132 @@ RetroShare reports Right click -> DHT Details: NET WARNING No DHT; Behind NAT UN
 
 There still may be some privacy caveats left with RetroShare trying to communicate outside of Tor, but that doesn't matter if Whonix makes any non-Tor traffic impossible.
 
+== Installation and Setup ==
+
+{{Third_Party_Repository}}
+
+
+
+''Retroshare is currently available on Debian 7.0 Wheezy and 6.0 Squeeze for armel, armhf, i386 and amd64 architectures and for 8.0 Jessie.''
+
+
+1. Before adding the repo<ref>http://retroshare.sourceforge.net/downloads.html</ref>, fetch the key and verify<ref>http://download.opensuse.org/repositories/home:/AsamK:/RetroShare/Debian_8.0/Release.gpg</ref> fingerprints. Always check the fingerprint for yourself. The output at the moment is:
+
+<pre>
+pub  1024D/0x9418A47921691F91 2011-08-16 home:AsamK OBS Project <home:AsamK@build.opensuse.org>
+      Key fingerprint = E2CE 3677 C801 5772 D097  B0AA 9418 A479 2169 1F91
+</pre>
+
+Download key with curl to home folder.
+
+{{CodeSelect|code=
+curl -o retroshare-pubkey.asc http://download.opensuse.org/repositories/home:/AsamK:/RetroShare/Debian_8.0/Release.key
+}}
+
+Check fingerprints/owners without importing anything.
+
+{{CodeSelect|code=
+gpg --with-fingerprint retroshare-pubkey.asc
+}}
+
+If it looks good import into trusted.gpg.d.<ref>To import asc key files into trusted.gpg.d they must be converted into a .gpg keychain file first.</ref>
+
+{{CodeSelect|code=
+gpg --no-default-keyring --keyring ./retroshare-pubkey.gpg --import retroshare-pubkey.asc
+sudo cp retroshare-pubkey.gpg /etc/apt/trusted.gpg.d/retroshare-pubkey.gpg
+}}
+
+For stable builds:
+
+{{CodeSelect|code=
+sudo su -c "echo -e 'deb http://download.opensuse.org/repositories/home:/AsamK:/RetroShare/Debian_8.0/ /' > /etc/apt/sources.list.d/retroshare06.list"
+}}
+
+For nightly builds:
+
+{{CodeSelect|code=
+sudo su -c "echo -e 'deb http://download.opensuse.org/repositories/home:/AsamK:/RetroShare/Debian_8.0/ /' > /etc/apt/retroshare06-git.list"
+}}
+
+
+[[Update]] your package lists.
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+Install Retroshare.
+
+{{CodeSelect|code=
+sudo apt-get install retroshare06
+}}
+
+
+For the latest nightly package name install <code>retroshare06-git</code> instead.
+
+<ref>
+[http://retroshare.sourceforge.net/downloads.html Retroshare .deb Packages installation instructions from Retroshare's third party repository]
+</ref>
+
+
+== Configure ==
+
+=== I2P ===
+
+1. [https://www.whonix.org/wiki/I2p#Installing_I2P_inside_Whonix-Workstation_.28I2P_over_Tor.29 Setup I2P in Whonix-Workstation]
+
+2. Start-up Retroshare 
+
+** Pick a pseudonym and password. Don't use real name or location obviously. Move your mouse to generate enough entropy.
+
+** Check ''Advanced Options'' -> ''Create a hidden node''
+
+** Change key-length to 4096 bits for adequate security then generate the new profile.
+
+3. Go to Options -> Network -> Hidden Service Configuration -> Look at the randomly assigned port number for Local Address under Incoming Service Connections
+
+4. Setup I2P Socks Proxy: see http://127.0.0.1:7657/i2ptunnelmgr for setting up a client tunnel:
+Tunnel Wizard -> Client Tunnel -> Standard -> enter a name -> enter Local Address port (see step above) -> check 'Auto Start' -> Save Tunnel
+
+5. Copy your the newly created tunnel's I2P Base32 Address to the Service Address field in the Retroshare window. Click OK.
+
+6. Exchange keys with others out-of-band. To compartmentalize pseudonyms its safer to run a different instance in another snapshot.
+
+
+== Tor ==
+
+'''INCOMPLETE - Depends on unimplemented features for Whonix'''
+
+<u>On your Whonix-Gateway.</u>
+
+If you want to read an introduction about hidden services and to learn about about hidden service security, see [[Hidden Services]].
+
+If you also want to run a hidden web server on the same .onion domain (nice for testing and learning Hidden Services basics), see [[Hidden Services]].
+
+{{Open /etc/tor/torrc}}
+
+Add. <ref>Arbitrary choice of port to avoid conflicts with custom Retroshare setups.</ref>
+
+{{CodeSelect|code=
+HiddenServiceDir /var/lib/tor/retroshare/
+HiddenServicePort 7812 10.152.152.11:<Local Address port>
+}}
+
+Save.56405
+
+{{Reload Tor}}
+
+Reminder: To get your hidden service url.
+
+{{CodeSelect|code=
+sudo cat /var/lib/tor/retroshare/hostname
+}}
+
+{{
+Backups_Tor_Hidden_Service_private_key
+|private_key_file=/var/lib/tor/retroshare/private_key
+}}
+
 = Pidgin =
 For instant messaging in Whonix you can install the Pidgin<ref>http://pidgin.im/</ref> Instant Messenger. It is a multi-protocol client, so you could run MSN, ICQ, IRC, AIM, XMPP/Jabber and many other protocols at the same time, even with several instances of the same protocol.
 
