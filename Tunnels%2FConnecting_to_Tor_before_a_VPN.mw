@@ -247,10 +247,28 @@ whonixcheck cannot work in this configuration out of the box. To unbreak it.
 
 <pre>
 whonixcheck_skip_functions+=" check_tor_bootstrap "
+whonixcheck_skip_functions+=" check_tor_socks_port_reachability "
 whonixcheck_skip_functions+=" check_tor_socks_port "
+whonixcheck_skip_functions+=" check_tor_trans_port "
 whonixcheck_skip_functions+=" check_stream_isolation "
-CHECK_TOR_RESULT_SOCKS_PORT=0
-CURL_PROXY_WHONIX_NEWS="--fail"
+whonixcheck_skip_functions+=" download_whonix_news "
+
+## {{ Alternative to disabling check_tor_trans_port.
+
+## Make the Tor TransPort test work by simulating the Tor SocksPort test succeeded.
+#CHECK_TOR_RESULT_SOCKS_PORT=0
+
+## Do not warn if Tor was not detected. (Will be the VPN.)
+#WHONIXCHECK_NO_EXIT_ON_TRANS_PORT_DETECTION_FAILURE=1
+
+## }}
+
+## {{ Alternative to download_whonix_news.
+
+## Download news through system default.
+#CURL_PROXY_WHONIX_NEWS="--fail"
+
+## }}
 </pre>
 
 Save.
@@ -290,6 +308,13 @@ TODO: Does not work yet. Files need to exist first.
 Test ping to IP.
 
 Test DNS.
+
+<pre>
+whonixcheck_skip_functions="" \
+CHECK_TOR_RESULT_SOCKS_PORT=0 \
+WHONIXCHECK_NO_EXIT_ON_TRANS_PORT_DETECTION_FAILURE=1 \
+whonixcheck --function check_tor_trans_port
+</pre>
 
 ===== Done =====
 Done.
