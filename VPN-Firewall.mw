@@ -12,6 +12,260 @@ If you want to enforce, that the VPN always gets used:
 * Whonix-Gateway: Already includes a fail closed (below firewall settings [[Tunnels/Connecting_to_a_VPN_before_Tor#VPN_Software_on_Whonix-Gateway|VPN_FIREWALL setting]]) mechanism.
 * Other operating systems: see: https://github.com/adrelanos/VPN-Firewall
 
+= VPN-Firewall =
+Use VPN-Firewall outside of Whonix only!
+
+===== Preparation =====
+Since setting up OpenVPN on Whonix including a secure, leak preventing fail closed mechanism is challenging, it is highly recommend to learn how to set up OpenVPN on Debian stable (currently: jessie). Get a Debian stable VM. Install the Debian openvpn package. (sudo apt-get install openvpn) Figure out how to set up your VPN using OpenVPN in the command line. Only proceed if you succeeded setting that up. Do not post support requests regarding these instructions before you succeeded with that basic exercise. You find some help with general VPN setup in the [[#VPN Setup]] chapter or on the [[TestVPN]] page. There however are ways to get [[Support|help]] from various sources for that basic exercise, also your VPN provider may be of assistance.
+
+Existing users who upgrade may remember variable VPN_SERVERS. Don't wonder. That variable was abolished for better security. <ref>https://phabricator.whonix.org/T460</ref>
+
+===== VPN Setup =====
+====== Introduction ======
+In the following example we are using the free Riseup VPN, because it is known to support TCP, UDP, SSL. You can use any VPN you like.
+
+Update: Riseup "legacy" VPN may have been discontinued. It did not work anymore for the author of these instructions. The riseup replacement service bitmask has not been tested.
+
+====== Get VPN Certificate ======
+Look inside the [https://help.riseup.net/vpn riseup VPN help page] for [https://help.riseup.net/en/riseup-ca <code>RiseupCA.pem</code>] and (right click) [https://help.riseup.net/security/network-security/riseup-ca/RiseupCA.pem download] it. Store it in {{Code2|/etc/openvpn/RiseupCA.pem}}.
+
+<pre>
+scurl https://help.riseup.net/security/network-security/riseup-ca/RiseupCA.pem | sudo tee /etc/openvpn/RiseupCA.pem
+</pre>
+
+====== VPN Credentials ======
+You need a riseup.net account. You need to know your riseup account name. Go to https://user.riseup.net/users/riseupusername/vpn to obtain your VPN secret. (VPN password) (Replace "riseupusername" with your actual riseup user name.) (Or just got to https://user.riseup.net, login and click on "VPN".) 
+
+{{Open with root rights|filename=
+/etc/openvpn/auth.txt 
+}}
+
+Add. (Add your actual user name and password.)
+
+<pre>
+riseupusername
+vpnsecret
+</pre>
+
+Save.
+
+====== VPN IP Address ======
+Note, you must use IP addresses. You cannot use DNS hostnames. For example, you could not use {{Code2|vpn.riseup.net}}. You have to use IP addresses such as for example {{Code2|198.252.153.226}}. You find out the IP from your provider or by using nslookup on the host. Example. (You need to use your actual DNS hostname, not {{Code2|vpn.riseup.net}}.)
+
+<pre>
+nslookup vpn.riseup.net
+</pre>
+
+====== VPN Configuration File ======
+{{Open with root rights|filename=
+/etc/openvpn/openvpn.conf
+}}
+
+Add.
+
+Note: make sure to adjust the {{Code|remote 198.252.153.226 80}} variable in your config (unless you are using {{Code|nyc.vpn.riseup.net}} as your VPN service). Replace the IP ({{Code|198.252.153.226}}) and port ({{Code|80}}) to match your VPN service.
+
+<pre>
+client
+
+auth-user-pass auth.txt
+
+## using nyc.vpn.riseup.net 80
+remote 198.252.153.226 80
+
+ca RiseupCA.pem
+remote-cert-tls server
+script-security 1
+
+user tunnel
+iproute /usr/bin/ip-unpriv
+
+dev tun0
+persist-tun
+persist-key
+</pre>
+
+Save.
+
+====== DNS Configuration ======
+Currently only manual.
+
+{{Open with root rights|filename=
+/etc/resolv.conf
+}}
+
+Comment out.
+
+<pre>
+#nameserver 10.152.152.10
+</pre>
+
+Add.
+
+<pre>
+## Riseup.net OpenVPN DNS server
+nameserver 172.27.100.1
+</pre>
+
+If you are not using riseup, you need to replace 172.27.100.1 and enter the virtual LAN IP address of your VPN providers DNS server. You might be able to obtain it from your VPN provider. You can also try to infer it after successfully connecting to the VPN from running "sudo route". The first destination default gateway should function as DNS server also.
+
+Save.
+
+If you want to be sure, that ''/etc/resolv.conf'' does not get overwritten by other packages. (Such as DHCP or resolvconf.)
+
+{{CodeSelect2|code=
+sudo chattr +i /etc/resolv.conf
+}}
+
+If you ever want to remove it, use ''-i''.
+
+(A more usable way is TODO research, help welcome. As possible starting point, see footnote. <ref>
+Possibly Install Packages. But would have to happen much earlier before changing Whonix firewall rules. (Because then Tor-only apt will no longer work.)
+
+[[Update]] package lists.
+<pre>
+sudo apt-get update
+</pre>
+
+Install resolvconf. Since this is used by /etc/openvpn/update-resolv-conf. We probably better should not install it by default since it is not needed for Whonix generally but may introduce new issues.
+
+<pre>
+sudo apt-get install resolvconf
+</pre>
+
+Possibly /etc/openvpn/openvpn.conf changes.
+
+<pre>
+up "/usr/bin/sudo script_type=up dev=tun0 /etc/openvpn/update-resolv-conf"
+down "/usr/bin/sudo script_type=down dev=tun0 /etc/openvpn/update-resolv-conf"
+</pre>
+
+Possibly /etc/sudoers.d/tunnel-unpriv additions.
+
+<pre>
+tunnel ALL=(ALL) NOPASSWD: /etc/openvpn/update-resolv-conf *
+Defaults:tunnel env_keep += script_type
+Defaults:tunnel env_keep += dev
+</pre>
+</ref>)
+
+==== Setup ====
+====== Configuration Folder Permissions ======
+Since we will be running OpenVPN under user tunnel, that user requires read access to folder /etc/openvpn.
+
+<pre>
+sudo chown -R tunnel:tunnel /etc/openvpn
+</pre>
+
+===== systemd setup =====
+Create the OpenVPN systemd service file.
+
+<pre>
+sudo cp /lib/systemd/system/openvpn@.service /lib/systemd/system/openvpn@openvpn.service
+</pre>
+
+Enable the OpenVPN systemd service file.
+
+<pre>
+sudo systemctl enable openvpn@openvpn
+</pre>
+
+Start the OpenVPN systemd service.
+
+<pre>
+sudo service openvpn@openvpn start
+</pre>
+
+Check the OpenVPN systemd service status.
+
+<pre>
+sudo service openvpn@openvpn status
+</pre>
+
+===== Qubes specific =====
+When using a TemplateBasedVM, to persist these changes use the Qubes bind dirs mechanism.
+
+<pre>
+sudo mkdir /rw/config/qubes-bind-dirs.d
+</pre>
+
+{{Open with root rights|filename=
+/rw/config/qubes-bind-dirs.d/50_user.conf
+}}
+
+<pre>
+binds+=( '/etc/openvpn' )
+binds+=( '/lib/systemd/system/openvpn@openvpn.service' )
+binds+=( '/etc/systemd/system/multi-user.target.wants/openvpn@openvpn.service' )
+</pre>
+
+TODO: Does not work yet. Files need to exist first.
+
+<pre>
+/usr/lib/qubes/bind-dirs.sh umount
+</pre>
+
+<pre>
+/usr/lib/qubes/bind-dirs.sh
+</pre>
+
+===== Test =====
+Test ping to IP. Ping some IP. Ping google's DNS server or maybe better some server of your choice.
+
+<pre>
+ping 8.8.8.8
+</pre>
+
+Test DNS and output IP address.
+
+<pre>
+TODO
+</pre>
+
+===== Done =====
+Done.
+
+===== Troubleshooting =====
+You can skip this troubleshooting chapter unless you notice any issues.
+
+Permission issue.
+<pre>
+Options error: --status fails with '/run/openvpn/openvpn.status': Permission denied
+</pre>
+
+Do not start openvpn as root. Do not use "sudo openvpn". This would lead to permission issues. Files in /run/openvpn folder owned by root. So they cannot be overwritten by user tunnel.
+
+Debug start in command line.
+
+<pre>
+cd /etc/openvpn/
+sudo -u tunnel openvpn /etc/openvpn/openvpn.conf
+</pre>
+
+Ip link set issue.
+
+<pre>
+Linux ip link set failed: external program exited with error status: 2
+</pre>
+
+Use ip-unpriv as documented above.
+
+Dev tun mismatch.
+
+In openvpn.conf do not use.
+
+<pre>
+dev tun
+</pre>
+
+Use.
+
+<pre>
+dev tun0
+</pre>
+</div>
+</div>
+
 {{Footer}}
 
 [[Category:Documentation]]
