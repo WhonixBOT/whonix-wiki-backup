@@ -23,7 +23,7 @@ It’s much safer when it fails closed, i.e. when the VPN connection breaks down
 
 = What does it NOT do =
 
-* Care about DNS leaks. Consult your VPN software’s/provider’s documentation and configure /etc/resolv.conf to use the DNS server of your VPN server.
+* Care about DNS leaks. If you want to ensure that no plaintext nameserver request packets are being leaked over the course of your VPN session then you will need to analyze the packets leaving your hardware NIC.
 * Block WebRTC leaks. [1]
 * Defend against [https://blog.torproject.org/blog/bittorrent-over-tor-isnt-good-idea IP leaks]. If a locally installed application uses trickery to obtain the the users real IP and sends it somewhere though the VPN. [1]
 * Defend against adversaries, which are in position to run code locally, i.e. manipulate the firewall rules.
@@ -167,7 +167,9 @@ remote 198.252.153.226 80
 
 ca RiseupCA.pem
 remote-cert-tls server
-script-security 1
+script-security 2
+up "/etc/openvpn/update-resolv-conf script_type=up dev=tun0"
+down "/etc/openvpn/update-resolv-conf script_type=down dev=tun0"
 
 user tunnel
 iproute /usr/bin/ip-unpriv
@@ -179,69 +181,34 @@ persist-key
 
 Save.
 
-====== DNS Configuration ======
-Currently only manual.
-
-{{Open with root rights|filename=
-/etc/resolv.conf
-}}
-
-Comment out.
+You will need to install resolvconf in order for the lines beginning with ''script-security'', ''up'', and ''down'' to function properly. If you do not wish to install resolvconf then modify this
 
 <pre>
-#nameserver 10.152.152.10
+script-security 2
+up "/etc/openvpn/update-resolv-conf script_type=up dev=tun0"
+down "/etc/openvpn/update-resolv-conf script_type=down dev=tun0"
 </pre>
 
-Add.
+to this (i.e. remove the lines beginning with "up" and "down" and change the 2 to a 1)
 
 <pre>
-## Riseup.net OpenVPN DNS server
-nameserver 172.27.100.1
+script-security 1
 </pre>
 
-If you are not using riseup, you need to replace 172.27.100.1 and enter the virtual LAN IP address of your VPN providers DNS server. You might be able to obtain it from your VPN provider. You can also try to infer it after successfully connecting to the VPN from running "sudo route". The first destination default gateway should function as DNS server also.
-
-Save.
-
-If you want to be sure, that ''/etc/resolv.conf'' does not get overwritten by other packages. (Such as DHCP or resolvconf.)
-
-{{CodeSelect2|code=
-sudo chattr +i /etc/resolv.conf
-}}
-
-If you ever want to remove it, use ''-i''.
-
-(A more usable way is TODO research, help welcome. As possible starting point, see footnote. <ref>
-Possibly Install Packages. But would have to happen much earlier before changing Whonix firewall rules. (Because then Tor-only apt will no longer work.)
+If installing resolvconf . . .
 
 [[Update]] package lists.
 <pre>
 sudo apt-get update
 </pre>
 
-Install resolvconf. Since this is used by /etc/openvpn/update-resolv-conf. We probably better should not install it by default since it is not needed for Whonix generally but may introduce new issues.
+Then install resolvconf since this is used by /etc/openvpn/update-resolv-conf. If you are running Whonix you may not want to install resolvconf as it may introduce new issues. <ref>Possibly Install Packages. But would have to happen much earlier before changing Whonix firewall rules. (Because then Tor-only apt will no longer work.)</ref>
 
 <pre>
 sudo apt-get install resolvconf
 </pre>
 
-Possibly /etc/openvpn/openvpn.conf changes.
-
-<pre>
-up "/usr/bin/sudo script_type=up dev=tun0 /etc/openvpn/update-resolv-conf"
-down "/usr/bin/sudo script_type=down dev=tun0 /etc/openvpn/update-resolv-conf"
-</pre>
-
-Possibly /etc/sudoers.d/tunnel-unpriv additions.
-
-<pre>
-tunnel ALL=(ALL) NOPASSWD: /etc/openvpn/update-resolv-conf *
-Defaults:tunnel env_keep += script_type
-Defaults:tunnel env_keep += dev
-</pre>
-</ref>)
-
-====== Configuration Folder Permissions ======
+====== Configure Folder Permissions ======
 <pre>
 sudo adduser tunnel
 </pre>
@@ -256,7 +223,7 @@ sudo chown -R tunnel:tunnel /etc/openvpn
 sudo chown -R tunnel:tunnel /var/run/openvpn
 </pre>
 
-===== systemd setup =====
+====== systemd setup ======
 Create the OpenVPN systemd service file.
 
 <pre>
@@ -281,7 +248,7 @@ Check the OpenVPN systemd service status.
 sudo service openvpn@openvpn status
 </pre>
 
-===== Test the VPN =====
+====== Test the VPN ======
 Ping test. Ping some IP. In the example below, we ping google's DNS server. Maybe better use some server of your choice.
 
 <pre>
@@ -300,13 +267,13 @@ DNS Test.
 nslookup google.com
 </pre>
 
-Test DNS and output IP address.
+Test DNS and output IP address. Remember these results so you can compare it to what you get later after VPN-Firewall is installed and running.
 
 <pre>
 wget myip.is
 </pre>
 
-===== Install VPN-Firewall =====
+====== Install VPN-Firewall ======
 <pre>
 sudo apt-get install netfilter-persistent git faketime config-package-dev ruby-ronn
 </pre>
@@ -325,7 +292,29 @@ Signed git tags and commits available. TODO: document how to verify, use some wi
 make deb-icup
 </pre>
 
-===== Forwarding =====
+====== DNS Configuration ======
+
+After VPN-Firewall is installed, you may need to manually change permissions on two directories if they are not automatically applied. Check to see if changes are necessary by running the following command:
+
+<pre>
+ls -al /run/resolvconf
+</pre>
+
+If the output lists tunnel as having read/write/execute permissions for both ''/run/resolvconf'' and ''/run/resolvconf/interface'' then you will not need to modify anything. If tunnel is not listed as group for one or both of these directories then you will need to change the permissions, like so:
+
+<pre>
+sudo chown root:tunnel /run/resolvconf /run/resolvconf/interface
+</pre>
+
+then you will need to set the permissions bits
+
+<pre>
+sudo chmod 775 /run/resolvconf /run/resolvconf/interface
+</pre>
+
+In ''/run/resolvconf'', resolv.conf may or may not be owned by tunnel depending on whether the VPN-Firewall service has started already or not. There is no need to modify permissions on this file, as its permissions will change when the service starts.
+
+====== Forwarding ======
 If you want to forward traffic for virtual machines (or other computers on the LAN), it can be enabled through an option.
 
 '''Experimental!''' (The forwarding feature has not yet been tested for leaks!)
@@ -407,7 +396,7 @@ At next boot, VPN-Firewall should be automatically starting. It would not hurt t
 
 1) Have VPN-Firewall set up as per above instructions.
 
-2) Test if it works. Check whatismyipaddress.com if you your external IP is from the VPN.
+2) Test if it works. Check whatismyipaddress.com to see if you your external IP is from the VPN. Check your DNS using dnsleaktest.com as well and compare these results to the results you had earlier. If your nameserver is the same as before or does not match your VPN's DNS then there is a problem and you will need to troubleshoot.
 
 3) Kill the VPN client.
 
