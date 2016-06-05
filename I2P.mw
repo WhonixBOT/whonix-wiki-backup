@@ -124,16 +124,16 @@ sudo apt-get update
 Install I2P and dependencies.
 
 {{CodeSelect|code=
-sudo apt-get install openjdk-7-jre-headless i2p i2p-keyring
+sudo apt-get install i2p i2p-keyring
 }}<ref>
 [https://www.i2p2.de/debian.html I2P .deb Packages installation instructions from I2P's third party repository]
 </ref>
 
 
-2. Launch I2P as non-root:
+2. Configure I2P as a service that automatically runs when your system boots, set the amount of Ram to your needs and leave the User as i2psvc
 
 {{CodeSelect|code=
-i2prouter start
+sudo dpkg-reconfigure i2p
 }}
 
 
@@ -143,11 +143,37 @@ i2prouter start
 4. Adjust I2P Settings:
 
 * I2P Tunnels Settings
+
+Set the Inbound and Outbound Tunnel Length to 0:
 {{CodeSelect|code=
 sudo sed -i "s/\(.*outbound.length=\).*/\10/g;s/\(.*inbound.length=\).*/\10/g" "/var/lib/i2p/i2p-config/i2ptunnel.config"
 }}<ref>It's faster and less connection interrupts. Anonymity is already provided by Tor. No need to leech from Tor/I2P.</ref>
 
 * I2P Router Configuration
+(Explanation in order)
+<ref>
+*change router identity and UDP port when IP changes \n   
+*Enable NTCP https://geti2p.net/en/docs/transport/ntcp   
+*Disable automatic IP fetching # We dont want/need to publish the Exit-Node IP
+*Disable Ipv6 for the NTCP #Unsupported by Tor so we dont need it
+*Number of concurrent NTCP connections # Reduced Connections so we dont overload the Tor node with connection attempts
+*Disable Udp #Unsupported by Tor
+*Sets the source of IP detection
+*We dont want/need to publish the Exit-Node IP
+*Disable Ipv6 for Udp
+*toggles UPNP off # No need for Upnp
+*Don't save your IP in the netDB and publish to other I2P routers( https://trac.i2p2.de/ticket/1314#comment:3)
+*Sets the bandwidth that is max used by particiapting tunnels # We dont participate in Traffic so no need to share
+*Disable In-network Updates # We use apt for that
+*Disable time comparisation in I2P router
+*Set ntp timesource to localhost
+</ref>
+more Options 
+<ref>
+http://www.ugha.i2p.xyz/AdvancedConfigurationOptions , http://echelon.i2p.re/docs/advanced.options.txt and https://trac.i2p2.de/ticket/1677 
+</ref>
+
+
 {{CodeSelect|code=
 sudo su -c "cat > "/var/lib/i2p/i2p-config/router.config" << EOF
 i2np.laptopMode=true
@@ -167,13 +193,29 @@ time.sntpServerList=127.0.0.1
 EOF"
 }}<ref>UDP is unsupported by Tor. Only outgoing TCP supported by Tor. If you know to use a hidden service, please add this information. Incoming connections are not possible, because [[Install_Software#Whonix-Workstation_is_firewalled|Whonix-Workstation is firewalled]].</ref><ref>Clock Skew Issues: There should be none anymore since Whonix 9 so configuring '''time.sntpServerList=localhost''' is no longer necessary. Please report if they occur. (Old clock skew documentation moved to [[Deprecated#I2P]].)</ref>
 
+5. Start/Stop the I2P service:
+
+ Start the I2P service
+{{CodeSelect|code=
+sudo systemctl start i2p
+}}
+
+ Stop the I2P service
+{{CodeSelect|code=
+sudo systemctl stop i2p
+}}
+
+ Status of the I2P service
+{{CodeSelect|code=
+sudo systemctl status i2p
+}}
 
 '''OPTIONAL'''
 
-To run I2P as a service that automatically runs when your system boots:
-
+To run I2P as User:
+*Note: The config folder changes to /home/user/.i2p/
 {{CodeSelect|code=
-sudo dpkg-reconfigure i2p
+i2prouter start
 }}
 
 
