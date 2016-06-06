@@ -171,13 +171,23 @@ If you are interested in a development discussion about JonDo(Fox) getting pre-i
 == Connecting to JonDo before Tor ==
 '''UNFINISHED!'''
 
+'''Testers only!'''
+
+It is possible to configure Tor to use JonDo as proxy to establish the following tunnel:<br />
 '''User -> JonDo -> Tor -> Internet'''
 
-Install JonDo in your JonDo-Gateway ProxyVM.
+If you want to do this, apply the following instructions.
 
-Use these instructions: https://anonymous-proxy-servers.net/en/help/firststeps2.html Installation method using chapter {{Code2|Using the repository at command line}} is recommended.
+[[Qubes]] only! [[Non-Qubes-Whonix]] is [[FAQ#What_do_you_mean_by_unsupported.3F|unsupported]].
 
-After you installed JonDo in your JonDo-Gateway ProxyVM, test if its https proxy is functional.
+No JonDo premium account required. Works with JonDo free.
+
+Create a new standalone ProxyVM called JonDo-Gateway.
+
+Install JonDo in your new JonDo-Gateway ProxyVM. To do that, the following instructions will install JonDo from JonDo's Debian APT repository:<br />
+https://anonymous-proxy-servers.net/en/help/firststeps2.html Installation method using chapter {{Code2|Using the repository at command line}} is recommended.
+
+After you installed JonDo in your JonDo-Gateway ProxyVM, test if JonDo's https proxy is functional.
 
 <pre>
 curl --tlsv1 --proto =https --proxytunnel --proxy 127.0.0.1:4001 https://check.torproject.org
@@ -191,7 +201,7 @@ curl --tlsv1.2 --proto =https --socks5-hostname socks5h://127.0.0.1:4001 https:/
 </pre>
 </ref>
 
-You must certainly configure JonDo to listen on all interfaces. You need to enable the extended view.
+You need to enable the extended view.
 
 <pre>
 Config -> user interface -> extended view.
@@ -202,9 +212,12 @@ You must make JonDo listen on all interfaces so it will be reachable from sys-wh
 
 You need to unload Qubes iptables rules in the JonDo-Gateway ProxyVM. See: [[Dev/Firewall_Unload]]
 
+IP Forwarding in the JonDo-Gateway ProxyVM could/should be disabled since it is not required.
+
 In sys-whonix. {{Open_/etc/tor/torrc}}
 
-Add.
+Add the following. 10.137.10.1 is just an example. You need to replace 10.137.10.1 with the IP of your JonDo-Gateway ProxyVM. You could run the following command within sys-whonix to find out the IP of your JonDo-Gateway ProxyVM.
+<code>qubesdb-read /qubes-gateway</code>
 
 <pre>
 HTTPSProxy 10.137.10.1:4001
@@ -219,6 +232,8 @@ In sys-whonix, test if Tor is able to the https proxy that JonDo is providing.
 <pre>
 curl.anondist-orig --tlsv1.2 --proto =https --socks5-hostname socks5h://127.0.0.1:9050 https://check.torproject.org
 </pre>
+
+Done. Tor will use JonDo as proxy.
 
 == JonDonym as Tor replacement (JonDoBOX) ==
 
