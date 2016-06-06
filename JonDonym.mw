@@ -173,39 +173,51 @@ If you are interested in a development discussion about JonDo(Fox) getting pre-i
 
 '''User -> JonDo -> Tor -> Internet'''
 
-Inside your JonDo VM...
+Install JonDo in your JonDo-Gateway ProxyVM.
 
-Http proxy test.
+Use these instructions: https://anonymous-proxy-servers.net/en/help/firststeps2.html Installation method using chapter {{Code2|Using the repository at command line}} is recommended.
+
+After you installed JonDo in your JonDo-Gateway ProxyVM, test if its https proxy is functional.
 
 <pre>
 curl --tlsv1 --proto =https --proxytunnel --proxy 127.0.0.1:4001 https://check.torproject.org
 </pre>
 
-Socks proxy test.
+<ref>
+Socks proxy test - premium only.
 
 <pre>
 curl --tlsv1.2 --proto =https --socks5-hostname socks5h://127.0.0.1:4001 https://check.torproject.org
 </pre>
+</ref>
 
-You must certainly configure JonDo to listen on all interfaces. You need the extended view. Under network, __un__check:<br />
+You must certainly configure JonDo to listen on all interfaces. You need to enable the extended view.
+
+<pre>
+Config -> user interface -> extended view.
+</pre>
+
+You must make JonDo listen on all interfaces so it will be reachable from sys-whonix. Under network, __un__check:<br />
 <code>[ ] Allow access to JAP/JonDo from localhost only (recommended)</code>
 
-You need to unload Qubes iptables rules in the JonDo ProxyVM.
+You need to unload Qubes iptables rules in the JonDo-Gateway ProxyVM. See: [[Dev/Firewall_Unload]]
 
-https://www.whonix.org/wiki/Dev/Firewall_Unload
+In sys-whonix. {{Open_/etc/tor/torrc}}
 
-In JonDo-Workstation /etc/tor/torrc.
+Add.
 
 <pre>
 HTTPSProxy 10.137.10.1:4001
 </pre>
 
-Restart Tor.
+Save.
 
-Test.
+{{Reload Tor}}
+
+In sys-whonix, test if Tor is able to the https proxy that JonDo is providing.
 
 <pre>
-curl --tlsv1.2 --proto =https --socks5-hostname socks5h://127.0.0.1:9050 https://check.torproject.org
+curl.anondist-orig --tlsv1.2 --proto =https --socks5-hostname socks5h://127.0.0.1:9050 https://check.torproject.org
 </pre>
 
 == JonDonym as Tor replacement (JonDoBOX) ==
