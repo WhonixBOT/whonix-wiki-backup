@@ -108,23 +108,32 @@ Add.
 Note: make sure to adjust the {{Code|remote 198.252.153.226 80}} variable in your config (unless you are using {{Code|nyc.vpn.riseup.net}} as your VPN service). Replace the IP ({{Code|198.252.153.226}}) and port ({{Code|80}}) to match your VPN service.
 
 <pre>
-client
-
+##############################
+## VPN provider specific settings ##
+##############################
 auth-user-pass auth.txt
 
 ## using nyc.vpn.riseup.net 80
 remote 198.252.153.226 80
 
 ca RiseupCA.pem
+
 remote-cert-tls server
-script-security 1
 
-user tunnel
-iproute /usr/bin/ip_unpriv
-
+#############################
+## VPN-Firewall specific settings ##
+#############################
+client
 dev tun0
 persist-tun
 persist-key
+
+script-security 2
+#up "/etc/openvpn/update-resolv-conf script_type=up dev=tun0"
+#down "/etc/openvpn/update-resolv-conf script_type=down dev=tun0"
+
+user tunnel
+iproute /usr/bin/ip_unpriv
 </pre>
 
 Do not worry about TCP mode on Whonix-Gateway. Using the VPN in TCP mode may be possible depending the services provides by your VPN provider, but is not required on Whonix-Gateway. The VPN in UDP mode should work just fine. <ref>
