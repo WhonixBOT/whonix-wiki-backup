@@ -2836,6 +2836,69 @@ There are two repository location URI's.
 
 To use the whonix.org location uri rather than mirror.whonix.de uri, use the following command line switch. Example.
 
+= VPN DNS Configuration =
+
+Currently only manual.
+
+{{Open with root rights|filename=
+/etc/resolv.conf
+}}
+
+Comment out.
+
+<pre>
+#nameserver 10.152.152.10
+</pre>
+
+Add.
+
+<pre>
+## Riseup.net OpenVPN DNS server
+nameserver 172.27.100.1
+</pre>
+
+If you are not using riseup, you need to replace 172.27.100.1 and enter the virtual LAN IP address of your VPN providers DNS server. You might be able to obtain it from your VPN provider. You can also try to infer it after successfully connecting to the VPN from running "sudo route". The first destination default gateway should function as DNS server also.
+
+Save.
+
+If you want to be sure, that ''/etc/resolv.conf'' does not get overwritten by other packages. (Such as DHCP or resolvconf.)
+
+{{CodeSelect2|code=
+sudo chattr +i /etc/resolv.conf
+}}
+
+If you ever want to remove it, use ''-i''.
+
+(A more usable way is TODO research, help welcome. As possible starting point, see footnote. <ref>
+Possibly Install Packages. But would have to happen much earlier before changing Whonix firewall rules. (Because then Tor-only apt will no longer work.)
+
+[[Update]] package lists.
+<pre>
+sudo apt-get update
+</pre>
+
+Install resolvconf. Since this is used by /etc/openvpn/update-resolv-conf. We probably better should not install it by default since it is not needed for Whonix generally but may introduce new issues.
+
+<pre>
+sudo apt-get install resolvconf
+</pre>
+
+Possibly /etc/openvpn/openvpn.conf changes.
+
+<pre>
+up "/usr/bin/sudo script_type=up dev=tun0 /etc/openvpn/update-resolv-conf"
+down "/usr/bin/sudo script_type=down dev=tun0 /etc/openvpn/update-resolv-conf"
+</pre>
+
+Possibly /etc/sudoers.d/tunnel_unpriv additions.
+
+<pre>
+tunnel ALL=(ALL) NOPASSWD: /etc/openvpn/update-resolv-conf *
+Defaults:tunnel env_keep += script_type
+Defaults:tunnel env_keep += dev
+</pre>
+</ref>)
+
 = Footnotes =
 <references />
 
