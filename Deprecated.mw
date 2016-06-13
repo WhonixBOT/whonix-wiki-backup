@@ -2978,6 +2978,115 @@ Defaults:tunnel env_keep += dev
 * package: https://github.com/Whonix/anon-shared-build-log-build-version
 * <s>script: https://github.com/Whonix/anon-shared-build-log-build-version/blob/master/usr/lib/anon-dist/chroot-scripts-post.d/70_log_build_version</s> (Deprecated in Whonix 13. Replaced by anon-base-files postinst.)
 
+= flashproxy =
+'''Untested!'''<br />
+Might work. In short: just forget about it. <ref>
+[https://trac.torproject.org/projects/tor/ticket/17428 Flashproxy has been removed from TBB.] Therefore it can be considered deprecated.
+</ref>
+
+Flash Proxy Bridges. This has NOTHING to do with Adobe Flash.
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+If you would like to see the unfinished documentation, please press on expand on the right.
+<div class="mw-collapsible-content">
+Should work in Whonix-Gateway as well, but require some fiddling. See also [https://sourceforge.net/p/whonix/discussion/general/thread/729ba238/ Forum topic].
+
+1. Set up a Port Forwarding from your Router to your Computer
+
+https://trac.torproject.org/projects/tor/wiki/FlashProxyHowto#Settingupportforwarding
+
+2. Enable port forwarding from your host operating system to Whonix-Gateway. Enter this command in a terminal on the host.
+
+Qubes:
+
+TODO
+
+part of the solution might be:<br />
+https://www.qubes-os.org/doc/qubes-firewall/#tocAnchor-1-1-5
+
+KVM:
+
+TODO
+
+VirtualBox:
+
+{{CodeSelect|code=
+VBoxManage modifyvm "Whonix-Gateway" --natpf1 "9000",tcp,127.0.0.1,9000,,9000
+}}
+
+3. {{Firewall Settings}}
+
+4. Add the following content.
+
+{{CodeSelect|code=
+GATEWAY_ALLOW_INCOMING_FLASHPROXY=1
+FLASHPROXY_PORT=9000
+}}
+
+5. Save.
+
+6. {{Reload Firewall}}
+
+7. Install flashproxy. <ref>
+Will be installed by default in Whonix 13 and above:<br />
+https://forums.whonix.org/t/ideas-topics-related-to-chaining-pluggable-transports/348/8
+</ref>
+
+{{CodeSelect|code=
+sudo apt-get install flashproxy-client
+}}
+
+8. {{Open_/etc/tor/torrc}}
+
+9. Add. <ref>
+Source:
+{{CodeSelect|code=
+/usr/share/doc/flashproxy-client/torrc
+}}
+</ref>
+
+{{CodeSelect|code=
+UseBridges 1
+
+# The address and port are ignored by the client transport plugin.
+Bridge flashproxy 0.0.1.0:1 4D6C0DF6DEC9398A4DEF07084F3CD395A96DD2AD
+Bridge flashproxy 0.0.1.0:2 4D6C0DF6DEC9398A4DEF07084F3CD395A96DD2AD
+Bridge flashproxy 0.0.1.0:3 4D6C0DF6DEC9398A4DEF07084F3CD395A96DD2AD
+Bridge flashproxy 0.0.1.0:4 4D6C0DF6DEC9398A4DEF07084F3CD395A96DD2AD
+Bridge flashproxy 0.0.1.0:5 4D6C0DF6DEC9398A4DEF07084F3CD395A96DD2AD
+
+# Change the second number here (9000) to the number of a port that can
+# receive connections from the Internet (the port for which you
+# configured port forwarding).
+ClientTransportPlugin flashproxy exec /usr/bin/flashproxy-client --register :0 :9000
+}}
+
+10. Save.
+
+11. {{Reload Tor}}
+
+12. Done.
+</div>
+</div>
+
+= scramblesuit =
+[https://labs.riseup.net/code/issues/7909#note-8 Quote intrigeri] (Tails developer):
+<blockquote>
+On tor-talk we've been told "You shouldn't prioritise ScrambleSuit because it's superseded by obfs4", and there are now pressing plans in the Tor Project to deprecate obfs2 and obfs3 in favour of obfs4. Hence rejecting this ticket, and focusing on [https://labs.riseup.net/code/issues/7980 #7980] [obfs4 support] instead.
+</blockquote>
+
+[https://blog.torproject.org/blog/recent-and-upcoming-developments-pluggable-transports Also see Tor Announcement under heading "obfs4 and scramblesuit"]
+
+{{CodeSelect|code=
+ClientTransportPlugin obfs2,obfs3,scramblesuit exec /usr/bin/obfsproxy managed
+Bridge scramblesuit 141.201.27.48:420 gliberish password=more-gliberish
+}}
+
+[[AppArmor]] issue. Probably not been reported anywhere yet.
+<pre>
+audit: type=1400 audit(1439818522.818:9): apparmor="DENIED" operation="mkdir" profile="/usr/bin/obfsproxy" name="/var/lib/tor/pt_state/scramblesuit/" pid=11163 comm="obfsproxy" requested_mask="c" denied_mask="c" fsuid=106 ouid=106
+</pre>
+
+
 = Footnotes =
 <references />
 
