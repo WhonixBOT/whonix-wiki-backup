@@ -314,10 +314,16 @@ Done. If you have any issues, see below chapter [[#Troubleshooting]]. Once it is
 == Introduction ==
 We want to verify, that the traffic always goes {{Code2|User -> Tor -> VPN -> Internet}} and not only {{Code2|User -> Tor -> Internet}}. Therefore we should test the Tor Browser, a uwt wrapper deactivated application as well as a regular application.
 
-== Browser IP Test ==
-You can skip this test if you do not care about using Tor Browser through the VPN.
+== regular application test ==
+Same test as above, but use {{Code2|curl.anondist-orig}} <ref>Real {{Code2|curl}} binary.</ref> rather than {{Code2|curl}} <ref>{{Code2|uwt}} wrapped version of {{Code2|curl}}.</ref>.
 
-If you did correctly configure everything, test your setup. Open https://check.torproject.org in Tor Browser. It will tell you then "{{Code2|You are not using Tor.}}" and you'll see your VPN's IP. In fact your VPN was tunneled through Tor first. (Because Whonix-Workstation can not make any non-Tor connections by design, everything is tunneled over Tor.)
+<!-- Cannot use CodeSelect becuase it does not like the pipe |. -->
+<pre>
+curl.anondist-orig --silent --tlsv1 --proto =https -H 'Host: check.torproject.org' -k https://38.229.72.22 | grep IP
+</pre>
+
+Should show something along the lines: {{Code2|Your IP address appears to be: xxx.xxx.xxx.xxx}}<br />
+Should show the IP of your VPN.
 
 == uwt wrapped application test ==
 Connect to check.tpo.
@@ -327,16 +333,10 @@ Connect to check.tpo.
 curl --silent --tlsv1 --proto =https -H 'Host: check.torproject.org' -k https://38.229.72.22 | grep IP
 </pre>
 
-Should show something along the lines: {{Code2|Your IP address appears to be: xxx.xxx.xxx.xxx}}<br />
-Should show the IP of your VPN.
+== Browser IP Test ==
+You can skip this test if you do not care about using Tor Browser through the VPN.
 
-== regular application test ==
-Same test as above, but use {{Code2|curl.anondist-orig}} <ref>Real {{Code2|curl}} binary.</ref> rather than {{Code2|curl}} <ref>{{Code2|uwt}} wrapped version of {{Code2|curl}}.</ref>.
-
-<!-- Cannot use CodeSelect becuase it does not like the pipe |. -->
-<pre>
-curl.anondist-orig --silent --tlsv1 --proto =https -H 'Host: check.torproject.org' -k https://38.229.72.22 | grep IP
-</pre>
+If you did correctly configure everything, test your setup. Open https://check.torproject.org in Tor Browser. It will tell you then "{{Code2|You are not using Tor.}}" and you'll see your VPN's IP. In fact your VPN was tunneled through Tor first. (Because Whonix-Workstation can not make any non-Tor connections by design, everything is tunneled over Tor.)
 
 = Footnotes =
 <references />
