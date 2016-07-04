@@ -1,0 +1,135 @@
+<languages />
+{{Header}}
+{{Title|
+title=Lantern - Alternative Censorship Circumvention Tool
+}}
+{{#seo:
+|description=Alternative Censorship Circumvention. Lantern over Tor. Combining Whonix with Lantern. Connecting to Lantern before Tor (User -> Lantern -> Tor -> Internet ). Alternative to Tor bridges.
+}}
+
+__forcetoc__
+
+= Introduction =
+Lantern is a censorship circumvention tool, an alternative to Tor [[bridges]]. 
+
+TODO: expand
+
+= Connecting to Lantern before Tor =
+Testers only!
+
+It is possible to configure Tor to use Lantern as proxy to establish the following tunnel:<br />
+'''User -> Lantern -> Tor -> Internet'''
+
+If you want to do this, apply the following instructions.
+
+[[Qubes-Whonix]] only! [[Non-Qubes-Whonix]] is [[unsupported]].
+
+In case you want to do that, it is recommended to read the following related wiki article: [[Tunnels/Introduction]]
+
+For current limitations, see also blog post / forum discussion:<br />
+https://www.whonix.org/blog/connecting-to-lantern-before-tor
+
+Create a new standalone ProxyVM called Lantern-Gateway based on Debian-8 template.
+
+In Lantern-Gateway ProxyVM, {{Firewall Unload Home Folder}}
+
+IP Forwarding in the Lantern-Gateway ProxyVM could/should be disabled since it is not required.
+
+<pre>
+sudo sysctl -w net.ipv4.ip_forward=0
+</pre>
+
+Install missing lantern dependency. TODO<ref>
+TODO
+
+debian/control should declare a depends. Check if lantern developers are aware of this issue and report a bug if necessary.
+</ref>
+
+<pre>
+sudo apt-get install libappindicator3-1
+</pre>
+
+Check if the downloaded deb file is still the right file. Go to https://getlantern.org/ and check for desktop, linux downloads.
+
+<pre>
+curl --tlsv1.2 --proto =https https://s3.amazonaws.com/lantern/lantern-installer-beta-64-bit.deb --output ~/lantern-installer-beta-64-bit.deb
+</pre>
+
+Install lantern. TODO<ref>
+TODO:
+
+Check if there are lantern development tickets for the following tasks. If not, create them. If these exist, link them from the footnote here.
+
+* ask lantern developers for a proper Debian deb package: https://github.com/getlantern/lantern/issues/4836
+* ask lantern developers for a Debian APT repository with lantern: https://github.com/getlantern/lantern/issues/4837
+* post a Debian lantern [https://wiki.debian.org/RFP RFP (request for packaging)]
+* ask lantern developers to add lantern to official Debian repositories: https://github.com/getlantern/lantern/issues/4837
+</ref>
+
+<pre>
+sudo dpkg -i ~/lantern-installer-beta-64-bit.deb
+</pre>
+
+Start lantern while listening on all, not just the internal, network interfaces so it gets reachable from sys-whonix.
+
+<pre>
+lantern -addr 0.0.0.0:8788
+</pre>
+
+<ref>
+In Lantern-Gateway, check if lantern's http port is functional.
+
+<pre>
+curl --tlsv1 --proto =https --proxytunnel --proxy 127.0.0.1:8788 https://check.torproject.org
+</pre>
+
+In Lantern-Gateway, check if lantern's socks port is functional.
+
+<pre>
+curl --tlsv1.2 --proto =https --socks5-hostname socks5h://127.0.0.1:8788 https://check.torproject.org
+</pre>
+</ref>
+
+Shut down sys-whonix if running. Set sys-whonix NetVM to Lantern-Gateway. Restart sys-whonix.
+
+<ref>
+In sys-whonix, test if Tor is able to the http proxy that Lantern is providing.
+
+<pre>
+curl.anondist-orig --tlsv1 --proto =https --proxytunnel --proxy 10.137.11.1:8788 https://check.torproject.org
+</pre>
+
+In sys-whonix, test if Tor is able to the socks proxy that Lantern is providing.
+
+<pre>
+curl.anondist-orig --tlsv1.2 --proto =https --socks5-hostname socks5h://10.137.11.1:8788 https://check.torproject.org
+</pre>
+</ref>
+
+In sys-whonix. {{Open_/etc/tor/torrc}}
+
+Add the following. 10.137.11.1 is just an example. You need to replace 10.137.11.1 with the IP of your Lantern-Gateway ProxyVM. You could run the following command within sys-whonix to find out the IP of your Lantern-Gateway ProxyVM.
+<code>qubesdb-read /qubes-gateway</code>
+
+<pre>
+HTTPSProxy 10.137.11.1:8788
+</pre>
+
+TODO<ref>
+TODO: make it work with socks. According to https://github.com/getlantern/lantern/issues/2075 lantern already does have socks support. Issues opened: https://github.com/getlantern/lantern/issues/4838
+
+<pre>
+Socks5Proxy 10.137.11.1:8788
+</pre>
+</ref>
+
+{{Reload_Tor}}
+
+Done. Tor will use Lantern as proxy.
+
+= Footnotes =
+<references/>
+
+{{Footer}}
+
+[[Category:Documentation]]
