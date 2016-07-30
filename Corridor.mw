@@ -171,9 +171,36 @@ Please also install the {{Code2|usability-misc}} package from Whonix repository 
 sudo apt-get install usability-misc
 }}
 
+Run {{Code2|iptables-save-deterministic}}.
+
 {{CodeSelect|code=
 sudo iptables-save-deterministic
 }}
+
+Should look like this for Qubes.
+
+<pre>
+*nat
+:PREROUTING ACCEPT [0,0]
+:INPUT ACCEPT [0,0]
+:OUTPUT ACCEPT [0,0]
+:POSTROUTING ACCEPT [0,0]
+:CORRIDOR_SNAT - [0,0]
+-A POSTROUTING -j CORRIDOR_SNAT
+-A CORRIDOR_SNAT -s 10.137.0.0/16 ! -d 10.137.0.0/16 -j MASQUERADE
+COMMIT
+*filter
+:INPUT ACCEPT [0,0]
+:FORWARD ACCEPT [0,0]
+:OUTPUT ACCEPT [0,0]
+:CORRIDOR_FILTER - [0,0]
+-A FORWARD -j CORRIDOR_FILTER
+-A CORRIDOR_FILTER -m conntrack --ctstate RELATED,ESTABLISHED -j RETURN
+-A CORRIDOR_FILTER -m set --match-set corridor_relays dst,dst -j RETURN
+-A CORRIDOR_FILTER -m set --match-set corridor_logged src -j LOG --log-prefix "corridor: reject " --log-macdecode
+-A CORRIDOR_FILTER -j REJECT --reject-with icmp-host-prohibited
+COMMIT
+</pre>
 
 = Footnotes =
 <references/>
