@@ -8,6 +8,107 @@
 
 
 
+== HugePages ==
+
+Huge memory pages improve performance for some virtualized workloads such as running databases.
+They are not enabled by default in Linux because the amount of memory to be allocated this way depends on the different needs from one user/admin to another. <ref>https://bugzilla.redhat.com/show_bug.cgi?id=1173218#c12</ref>
+
+On the host you need to activate the nr_hugepages setting in the proc filesystem:
+
+<pre>
+echo 1054 > /proc/sys/vm/nr_hugepages
+</pre>
+
+NOTE: To make the above value persistent, you'd need to set:
+
+<pre>
+echo "vm.nr_hugepages=1054" > /etc/sysctl.d/50_hugepages
+</pre>
+
+Then, `grep` for the HugePages_Total:
+
+<pre>
+grep -i HugePages_Total /proc/meminfo 
+</pre>
+
+Should show.
+
+<pre>
+HugePages_Total:    1054
+</pre>
+
+The total system RAM allocated as hugepages can be calculated as:
+
+<b>2Mb * 1054 = 2108 ≈ 2GiB</b>
+
+Then, boot a libvirt virtual machine with 2 GB memory with appropriate XML setting as noted in the example below:
+
+<pre>
+  <memory unit='KiB'>2000896</memory>
+  <currentMemory unit='KiB'>2000000</currentMemory>
+  <memoryBacking>
+    <hugepages>
+      <page size='2048' unit='KiB' nodeset='0'/>
+    </hugepages>
+  </memoryBacking>
+  <vcpu placement='static'>8</vcpu>
+</pre>
+
+
+== Clipboard Sharing ==
+SPICE allows accelerated graphics and clipboard sharing. The clipboard is disabled by default for security reasons <ref>So you don't accidentally copy for example a link to a website you visited anonymously to your non-anonymous host browser or vice versa.</ref> but could be enabled.
+
+When [[KVM#Editing_an_imported_Machine.27s_XML_Configuration|editing using xml]], search for.
+
+<pre>
+<clipboard copypaste='no'/>
+</pre>
+
+And change to.
+
+<pre>
+<clipboard copypaste='yes'/>
+</pre>
+
+
+== KSM ==
+
+The security assumptions about virtual environments is that each vm is a completely isolated instance that knows nothing about what's happening outside it. It posses a privacy problem for an isolated multi-workstation setup.
+
+In a single workstation-to-gateway scenario, KSM isn't problematic because technically, nothing going on, on the gateway, even if known would endanger privacy. However should someone run multiple workstation vms, each with the intent that they are all separated - each with its own internal network for isolation for example, then with KSM all similar activities or processes running in the other vms, would register to an attacker who has compromised one of them. For example, information that the same website has been visited in another vm too. This would allow cross-vm activity correlation.
+
+Its not really a weakness unique to KSM, but a common problem shared by using the equivalent feature on other hypervisors too (Xen's TPS - Transparent Page Sharing). <ref>http://docs.openstack.org/security-guide/content/hypervisor-selection.html</ref>
+
+Quote [https://staff.aist.go.jp/c.artho/papers/EuroSec2011-suzaki.pdf Memory Deduplication as a Threat to the Guest OS]:
+<blockquote>
+4.3 Detection of Downloaded Files
+</blockquote>
+<blockquote>
+The memory disclosure attack can also be applied to find an opened file on a victim’s VM. We have tried to detect a logo file when Firefox shows a home page.
+</blockquote>
+<blockquote>
+We confirmed that the Google logo file was detected if page caching is enabled on Firefox. When the page cache was set to 0, detection failed. If an attacker leads a victim to a malicious home page which includes an identifiable logo file, the attacker can detect the page view from the victim’s VM.
+</blockquote>
+<blockquote>
+This disclosure attack is dangerous because it detects a page view even if the network is encrypted by TLS/SSL. Especially in a multi-tenant data center, this attack is serious, because it does not violate any SLA statements on cloud computing.
+</blockquote>
+
+
+== Wiping the storage used by a guest domain ==
+A volume used by a domain can contain confidential data, hence it is necessary to wipe it before removal. Libvirt offers a helping hand for such cases:
+
+<pre>
+virsh vol-wipe <volume>
+</pre>
+
+which truncates and extends the volume to its original size. This in fact fills the file with zeroes. This ensures that data previously stored on volume is not accessible to reads anymore. After this, you can remove volume :
+
+<pre>
+virsh vol-delete <volume>
+</pre>
+
+Source <ref>http://wiki.libvirt.org/page/VM_lifecycle#Wiping_the_storage_used_by_a_guest_domain</ref>
+
 =  Template:Install Backport =
 
 {{Box|text=
