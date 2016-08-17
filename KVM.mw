@@ -636,78 +636,6 @@ virsh -c qemu:///system edit Whonix-Gateway
 
 Its not currently possible to ship a configuration file with the guest microphone input muted. If you need to have the host microphone turned on while denying access to the guest, mute the "virt-manager: record" device that shows up in the host's audio task-bar menu.
 
-== LVM as Storage ==
-
-QCOW2 virtual disk images are the recommended and default storage format for KVM.
-
-LVM  or any other storage mechanism must be avoided for security and privacy.
-
-LVM misconfiguration has serious security consequences and exposes the host filesystem to the processes running on the guest. <ref>https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Virtualization_Administration_Guide/sect-Virtualization-Adding_storage_devices_to_guests-Adding_hard_drives_and_other_block_devices_to_a_guest.html </ref>
-
-Because a virtual disk is no longer used, where the low-level view of the storage can be controlled, data created by VMs can easily be recovered and exfiltrated by malicious forensics tools run in a VM at a later time. This is extremely dangerous and can expose all kinds of information originally created in a VM of higher trust level. This leads to deanonymization, past session linking and theft of sensitive information and keys.<ref>https://github.com/fog/fog/issues/2525</ref><ref>https://news.ycombinator.com/item?id=6983097</ref>
-
-== Enabling HugePages ==
-'''''Warning: Unless you trust the VMs it is recommended to NOT use this feature because it has been used as a cross-vm side-channel attack allowing full recovery of private keys in other VMs. This applies to all hypervisors.'''''
-
-Huge memory pages improve performance for some virtualized workloads such as running databases.
-They are not enabled by default in Linux because the amount of memory to be allocated this way depends on the different needs from one user/admin to another. <ref>https://bugzilla.redhat.com/show_bug.cgi?id=1173218#c12</ref>
-
-On the host you need to activate the nr_hugepages setting in the proc filesystem:
-
-<pre>
-echo 1054 > /proc/sys/vm/nr_hugepages
-</pre>
-
-NOTE: To make the above value persistent, you'd need to set:
-
-<pre>
-echo "vm.nr_hugepages=1054" > /etc/sysctl.d/50_hugepages
-</pre>
-
-Then, `grep` for the HugePages_Total:
-
-<pre>
-grep -i HugePages_Total /proc/meminfo 
-</pre>
-
-Should show.
-
-<pre>
-HugePages_Total:    1054
-</pre>
-
-The total system RAM allocated as hugepages can be calculated as:
-
-<b>2Mb * 1054 = 2108 ≈ 2GiB</b>
-
-Then, boot a libvirt virtual machine with 2 GB memory with appropriate XML setting as noted in the example below:
-
-<pre>
-  <memory unit='KiB'>2000896</memory>
-  <currentMemory unit='KiB'>2000000</currentMemory>
-  <memoryBacking>
-    <hugepages>
-      <page size='2048' unit='KiB' nodeset='0'/>
-    </hugepages>
-  </memoryBacking>
-  <vcpu placement='static'>8</vcpu>
-</pre>
-
-== Enabling Clipboard Sharing ==
-SPICE allows accelerated graphics and clipboard sharing. The clipboard is disabled by default for security reasons <ref>So you don't accidentally copy for example a link to a website you visited anonymously to your non-anonymous host browser or vice versa.</ref> but could be enabled.
-
-When [[KVM#Editing_an_imported_Machine.27s_XML_Configuration|editing using xml]], search for.
-
-<pre>
-<clipboard copypaste='no'/>
-</pre>
-
-And change to.
-
-<pre>
-<clipboard copypaste='yes'/>
-</pre>
-
 == Creating Multiple Internal Networks ==
 Open Whonix's network XML file and change the name attribute to something different than the internal network you are currently running, for example 'Whonix2' 'Whonix3' and so on. The default name used is 'Whonix'.
 
@@ -716,39 +644,13 @@ Libvirt can support a variety of containment mechanisms. Currently supported one
 
 To use another configuration, import its XML file with virsh.
 
-==How to leave KVM when no X is running==
+== How to leave KVM when no X is running ==
 
 Situation... User is in terminal in a VM... No X is running ("sudo service kdm stop"). User wants to switch back to the host... How to do this?
 
 The emulated tablet device handles this by not allowing the mouse to be captured by the guest. Its still possible though:
 
 <pre>press Ctrl_L & Alt_L</pre>
-
-== KSM ==
-KSM is a kernel feature that allows de-deuplication of anonymous memory pages belonging to multiple instances of the same process. Only software that is designed to explicitly take advantage of it can use it such as KVM. It is usually not enabled by default. KSM only kicks in when a certain low memory threshold is reached on the host.
-
-Depending on your use case, enabling KSM may have privacy implications as per this research <ref>https://staff.aist.go.jp/c.artho/papers/EuroSec2011-suzaki.pdf</ref>.
-
-The security assumptions about virtual environments is that each vm is a completely isolated instance that knows nothing about what's happening outside it. It posses a privacy problem for an isolated multi-workstation setup.
-
-In a single workstation-to-gateway scenario, KSM isn't problematic because technically, nothing going on, on the gateway, even if known would endanger privacy. However should someone run multiple workstation vms, each with the intent that they are all separated - each with its own internal network for isolation for example, then with KSM all similar activities or processes running in the other vms, would register to an attacker who has compromised one of them. For example, information that the same website has been visited in another vm too. This would allow cross-vm activity correlation.
-
-Its not really a weakness unique to KSM, but a common problem shared by using the equivalent feature on other hypervisors too (Xen's TPS - Transparent Page Sharing). <ref>http://docs.openstack.org/security-guide/content/hypervisor-selection.html</ref>
-
-Quote [https://staff.aist.go.jp/c.artho/papers/EuroSec2011-suzaki.pdf Memory Deduplication as a Threat to the Guest OS]:
-<blockquote>
-4.3 Detection of Downloaded Files
-</blockquote>
-<blockquote>
-The memory disclosure attack can also be applied to find an opened file on a victim’s VM. We have tried to detect a logo file when Firefox shows a home page.
-</blockquote>
-<blockquote>
-We confirmed that the Google logo file was detected if page caching is enabled on Firefox. When the page cache was set to 0, detection failed. If an attacker leads a victim to a malicious home page which includes an identifiable logo file, the attacker can detect the page view from the victim’s VM.
-</blockquote>
-<blockquote>
-This disclosure attack is dangerous because it detects a page view even if the network is encrypted by TLS/SSL. Especially in a multi-tenant data center, this attack is serious, because it does not violate any SLA statements on cloud computing.
-</blockquote>
-
 
 == Setting up gdb to work with qemu-kvm via libvirt ==
 If you want to be able to debug a Linux kernel that’s running as a KVM guest, you need to specify the ‘-s’ parameter for the command line of qemu-kvm. The problem is, there’s no (easy) way to do this when you’re using libvirt and virt-manager to manager your virtual machines, instead of using KVM directly. What you need to do is change the XML configuration of the virtual machine so that the ‘-s’ parameter is passed on to qemu-kvm
@@ -787,21 +689,31 @@ from gdb running on the host machine.
 
 Source: <ref>https://gymnasmata.wordpress.com/2010/12/02/setting-up-gdb-to-work-with-qemu-kvm-via-libvirt/</ref>
 
+== Unsafe Features ==
 
-== Wiping the storage used by a guest domain ==
-A volume used by a domain can contain confidential data, hence it is necessary to wipe it before removal. Libvirt offers a helping hand for such cases:
+The features below have serious security implications and should not be used. This applies to all hypervisors in general.
 
-<pre>
-virsh vol-wipe <volume>
-</pre>
+=== LVM Storage ===
+QCOW2 virtual disk images are the recommended and default storage format for KVM.
 
-which truncates and extends the volume to its original size. This in fact fills the file with zeroes. This ensures that data previously stored on volume is not accessible to reads anymore. After this, you can remove volume :
+LVM  or any other storage mechanism must be avoided for security and privacy.
 
-<pre>
-virsh vol-delete <volume>
-</pre>
+LVM misconfiguration has serious security consequences and exposes the host filesystem to the processes running on the guest. <ref>https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Virtualization_Administration_Guide/sect-Virtualization-Adding_storage_devices_to_guests-Adding_hard_drives_and_other_block_devices_to_a_guest.html </ref>
 
-Source <ref>http://wiki.libvirt.org/page/VM_lifecycle#Wiping_the_storage_used_by_a_guest_domain</ref>
+Because a virtual disk is no longer used, where the low-level view of the storage can be controlled, data created by VMs can easily be recovered and exfiltrated by malicious forensics tools run in a VM at a later time. This is extremely dangerous and can expose all kinds of information originally created in a VM of higher trust level. This leads to deanonymization, past session linking and theft of sensitive information and keys.<ref>https://github.com/fog/fog/issues/2525</ref><ref>https://news.ycombinator.com/item?id=6983097</ref> Disabled in cloud tenancy environments.
+
+=== HugePages ===
+It is recommended to NOT use this feature because it has been used as a cross-vm side-channel attack allowing full recovery of private keys in other VMs. Disabled in cloud tenancy environments.
+
+=== Clipboard Sharing ===
+SPICE allows accelerated graphics and clipboard sharing. The clipboard is disabled by default for security reasons to prevent accidentally copying a link to a website you visited anonymously to your non-anonymous host browser or vice versa.
+
+=== KSM ===
+KSM is a memory de-deuplication feature that conserves memory by combining identical pages acorss VM RAM. It is not enabled by default. Enabling this feature is dangerous because it allows cross-VM snooping by a malicious process. It can infer what programs and what pages are being visited outside the VM. <ref>https://staff.aist.go.jp/c.artho/papers/EuroSec2011-suzaki.pdf</ref>.Disabled in cloud tenancy environments.
+
+=== Device Passthrough ===
+Both USB and PCI device passthrough would allow advanced attackers to flash the firmware of those devcies and infect the host or other VMs.
+
 
 == XML Settings ==
 TODO: Soon here xml settings will be explained here.
