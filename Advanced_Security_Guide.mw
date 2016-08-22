@@ -346,11 +346,15 @@ Physical attacks require an adversary to be physically preset, i.e. to be able t
 <!--T:321-->
 Note that as said on the warning page, Whonix is not designed as an amnesic operating system.
 
+==== Protection Against State-Level Adversaries ====
 <!--T:322-->
 <translate>
-To protect against theft or seizure, power off your machine at times when this is more likely to happen (traveling) and use FDE (Full Disk Encryption) on the host. After power off, temporarily remove your laptop battery to ensure that the RAM chips are completely powered down to allow for erasure of your encryption key. Standard advice for picking strong and unique passwords applies here. When using FDE on the host, you shouldn't keep any unencrypted files on that same physical media. It is advisable to move the /boot partition to separate USB media and install Grub, the bootloader, to it. See [<tvar|268>https://twopointfouristan.wordpress.com/2011/04/17/pwning-past-whole-disk-encryption/</> Pwning Past Whole Disk Encryption]. Never leave your computer unattended. As a rule-of-thumb you should assume that your machine is compromised after any unauthorized physical access. Do not trust or attempt to use your hardware once more even if its returned to you. A sufficiently skilled adversary will be able to infect it and none of the measures stated here will help - besides turning your machine into a powered down "brick" before its confiscated.
+To protect against theft or seizure, power off your machine at times when this is more likely to happen (traveling) and use FDE (Full Disk Encryption) on the host. After power off, temporarily remove your laptop battery to ensure that the RAM chips are completely powered down to allow for erasure of your encryption key. Standard advice for picking strong and unique passwords applies here. Never leave your computer unattended. As a rule-of-thumb you should assume that your machine is compromised after any unauthorized physical access. Do not trust or attempt to use your hardware once more even if its returned to you. A sufficiently skilled adversary will be able to infect it and none of the measures stated below will help - besides turning your machine into a powered down "brick" before it is confiscated. 
+
+This works provided that you were not already targeted for physical surveillance beforehand and won't be tortured at a black-site. The use of Tor should help prevent it from coming to this.
 </translate>
 
+==== Protection Against Lesser Adversaries ====
 The nuke patch for cryptsetup, (written by the Kali pen-testing distro team <ref>https://www.kali.org/tutorials/emergency-self-destruction-luks-kali/</ref>) adds the option to nuke all keyslots given a certain passphrase. <ref>
 https://github.com/offensive-security/cryptsetup-nuke-keys
 </ref> Note that under most emergency conditions, you won't have enough time to reboot your computer and enter the dead-man switch passphrase. Supplying this as your "real passphrase" to the interceptors of your machine is unlikely an effective strategy. It is standard forensics procedure to create multiple images of the drive beforehand.
@@ -358,11 +362,16 @@ https://github.com/offensive-security/cryptsetup-nuke-keys
 The TRESOR patch that keep the disk encryption key outside of the RAM (by storing it inside the CPU) could also be useful.<ref>
 https://en.wikipedia.org/wiki/TRESOR </ref> <ref>
 https://www1.cs.fau.de/tresor
-</ref> Limitations of TRESOR include: its x86 architecture specific and complicates software debugging by disabling DR registers for security reasons. <ref>https://security.stackexchange.com/a/119835</ref>
+</ref> Limitations of TRESOR include: its x86 architecture specific and complicates software debugging by disabling DR registers for security reasons. <ref>https://security.stackexchange.com/a/119835</ref> A specialized attacker who reverses hardware designs will be able to extract secrets held in processor caches or specialized chips like TPMs.
 
-Never storing data unencrypted in the first place is much safer than trying to wipe [or encrypt] it later. Check out [http://www.infosecisland.com/blogview/12153-Data-Remains-on-USB-and-SSDs-After-Secure-Erase.html Data Remains on USB and SSDs After Secure Erase (or full disk encryption)] and [https://en.wikipedia.org/wiki/Wear_leveling wear leveling]. 
+When using FDE on the host, you shouldn't keep any unencrypted files on that same physical media. It is advisable to move the /boot partition to separate USB media and install Grub, the bootloader, to it. See [<tvar|268>https://twopointfouristan.wordpress.com/2011/04/17/pwning-past-whole-disk-encryption/</> Pwning Past Whole Disk Encryption]. Advanced attackers have virtually limitless possibilities to infect a machine under their physical control such as flashing low-level firmware or adding physical implants.
 
-Perhaps it's possible to get plausible deniability on Linux hosts? That topic is a rabbit hole. See footnote. <ref>https://evilzone.org/operating-system/plausible-deniability-in-qubes-os/msg86174</ref>
+Perhaps it's possible to get plausible deniability on Linux hosts? That topic is a rabbit hole. See footnote. <ref>https://evilzone.org/operating-system/plausible-deniability-in-qubes-os/msg86174</ref> If physical torture is an option on the table, plausible deniability and FDE will not be of much help. 
+
+==== Special Advice for SSDs ====
+In the case of flash based storage like SSDs and USBs, never storing data unencrypted in the first place is the only solution to protecting data.
+
+Unlike HDDs overwriting data on SSDs is no longer effective in wiping the disk.<ref>http://www.infosecisland.com/blogview/12153-Data-Remains-on-USB-and-SSDs-After-Secure-Erase.html</ref><ref>http://www.theregister.co.uk/2011/02/21/flash_drive_erasing_peril/</ref> You cannot rely on wear-leveling mechanisms like TRIM because they expose data blocks to forensics.<ref>http://asalor.blogspot.com/2011/08/trim-dm-crypt-problems.html</ref> You must keep TRIM disabled (the default) during Linux LUKS-encrypted installs.
 
 === Encrypted Images ===
 Primarily, full disk encryption should be applied [[#On the Host|on the host]]. That's a much more important place where and the only one where its effective.
