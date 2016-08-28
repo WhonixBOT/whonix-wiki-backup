@@ -59,30 +59,30 @@ Name of wiki: Whonix
 
 Download LocalSettings.php, save as in your home folder as {{Code|~/LocalSettings.php}}.
 
-<pre>
+{{CodeSelect|code=
 sudo mv ~/LocalSettings.php /var/www/wiki/
-</pre>
+}}
 
 Go to http://127.0.0.1/wiki, see if you see a fresh wiki, log in, see if that works as well.
 
 Move the dummy wiki out of the way:
 
-<pre>
+{{CodeSelect|code=
 ## Maybe rm when this instructions are finished.
 sudo mv /var/www /var/www_dummy
-</pre>
+}}
 
 Replicate Whonix's {{Code|/var/www}} folder from git:
 
-<pre>
+{{CodeSelect|code=
 sudo git clone --depth=1 https://github.com/Whonix/www.git /var/www
-</pre>
+}}
 
 Create a file {{Code|/etc/apache2/wikiSecrets.php}}.
 
-<pre>
+{{CodeSelect|code=
 kdesudo kwrite /etc/apache2/wikiSecrets.php
-</pre>
+}}
 
 With the following content. Make sure you replace xxxxxx with your actual you remembered password. (You need to replace xxxxxx with your actual password 3 times, for wgDBpassword, wgSecretKey and wgUpgradeKey.)
 
@@ -125,9 +125,9 @@ foreach ( $arr as $key => $value ) {
 
 Edit {{Code|/etc/apache2/sites-enabled/000-default}}:
 
-<pre>
+{{CodeSelect|code=
 kdesudo kwrite /etc/apache2/sites-enabled/000-default
-</pre>
+}}
 
 Insert the following at the end of the file, but before </VirtualHost>:
 
@@ -147,37 +147,37 @@ RewriteRule ^/?w/images/thumb/archive/[0-9a-f]/[0-9a-f][0-9a-f]/([^/]+)/([0-9]+)
 
 Run:
 
-<pre>
+{{CodeSelect|code=
 sudo mkdir /var/www/w/cache
-</pre>
+}}
 
 Your webserver must have read/write access to your /var/www folder. Run:
 
-<pre>
+{{CodeSelect|code=
 sudo chown --recursive www-data:www-data /var/www
-</pre>
+}}
 
 Run:
 
-<pre>
+{{CodeSelect|code=
 sudo -u www-data php /var/www/wiki/maintenance/update.php --quick
 sudo -u www-data php /var/www/wiki/maintenance/importImages.php ~/WhonixWikiBackups/mediafiles/
 sudo -u www-data php /var/www/wiki/maintenance/importDump.php ~/WhonixWikiBackups/dumpContentCurrent.xml
 sudo -u www-data php /var/www/wiki/maintenance/rebuildrecentchanges.php
-</pre>
+}}
 
 Run:
 
-<pre>
+{{CodeSelect|code=
 sudo a2enmod rewrite
 sudo a2enmod removeip
-</pre>
+}}
 
 Run:
 
-<pre>
+{{CodeSelect|code=
 sudo service apache2 restart
-</pre>
+}}
 
 You should now be able to visit http://127.0.0.1 and/or http://127.0.0.1/wiki/Main_Page.
 
@@ -196,46 +196,48 @@ Perhaps not working:
 In that case, something is wrong with shorturl / rewrite.
 
 == Apache Error Log ==
-<pre>
+{{CodeSelect|code=
 tail -f /var/log/apache2/error.log
-</pre>
+}}
 
 == Mediawiki Debug Log ==
 Run.
 
-<pre>
+{{CodeSelect|code=
 ## Replace "user" with your actual operating system user name.
 touch /home/user/wgdebuglog
 chmod o+w /home/user/wgdebuglog
 chmod g+w /home/user/wgdebuglog
-</pre>
+}}
 
 Edit /var/www/wiki/LocalSettings.php.
 
-<pre>
+{{CodeSelect|code=
 kdesudo kwrite /var/www/wiki/LocalSettings.php
-</pre>
+}}
 
 And add.
 
-<pre>
+{{CodeSelect|code=
 ## Replace "user" with your actual operating system user name.
 $wgDebugLogFile = "/home/user/wgdebuglog";
-</pre>
+}}
 
 Watch the log while trying to access the wiki in iceweasel.
 
-<pre>
+{{CodeSelect|code=
 ## Replace "user" with your actual operating system user name.
 tail -f /home/user/wgdebuglog
-</pre>
+}}
 
 = Alternative Backup =
 Maybe it would be simpler if we shared a mysql backup without passwords.
 
 mediawiki irc channel:
 
+{{CodeSelect|code=
 mysqldump --ignore-table=wiki.user
+}}
 
 although it would result in a broken database if you restore it
 
