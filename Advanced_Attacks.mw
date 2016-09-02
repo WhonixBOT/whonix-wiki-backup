@@ -1,1 +1,38 @@
-.
+
+{| class="wikitable" style="text-align: center; background-color: #fff"
+|- style="background-color: #f9f9f9"
+| style="height: 35px;width: 170px"|
+| '''CPU-induced network latency'''<ref>https://phabricator.whonix.org/T530</ref>
+| '''TCP ISNs and temperature induced clock skews'''<ref>https://phabricator.whonix.org/T543</ref>
+| '''DRAMA Cross-CPU attacks'''<ref>https://phabricator.whonix.org/T541</ref>
+| '''Cross-VM CPU cache attacks'''<ref>https://phabricator.whonix.org/T539</ref>
+| '''Keyboard/Mouse input fingerprinting'''<ref>https://phabricator.whonix.org/T542</ref>
+|-
+| style="height: 27px;background-color: #f9f9f9"| Attack Type
+| Covert Channel
+| Covert Channel
+| Covert and Side Channel
+| Side Channel
+| Behavioral Tracking
+|-
+| style="height: 27px;background-color: #f9f9f9"| Attack Summary
+| CPU load induces notice-able latency in network packets.
+| CPU load skews clock crystal frequency. Changes detectable in TCP ISN field.
+| Timing shared memory bank accesses allows data leaks also snooping on keystrokes.
+| Shared CPU cache access latency leaks timing data of crypto processes.
+| Timing of/between keystrokes and mouse movement speed/angles create individually unique patterns.
+|-
+| style="height: 27px;background-color: #f9f9f9"| Mitigation
+| Queue and release packets randomly with Netfilter.
+| Rewrite TCP ISNs to conceal timer skews.
+| Block clflush and tsc instructions. Remove all timers. Avoid multi-threading VMs. Alternatively use non-interleaved NUMA with pinned vCPUs.
+| Pin vCPUs to separate pCPUs. Block tsc instructions. Remove all timers.
+| Abstract keyboard/mouse input into a network layer and inject random delays.<ref>Removing fine-grained timers helps here too.</ref>
+|-
+| style="height: 27px;background-color: #f9f9f9"| Fix Stage/Platform Availability
+| style="background-color: {{Green}}"| Near Production<ref>Available to all hypervisors on Linux hosts</ref>
+| style="background-color: {{BlueBackground}} Planning<ref>Available to all hypervisors on Linux hosts</ref>
+| style="background-color: {{Green}}"| Production<ref>Whonix-KVM only for now</ref>
+| style="background-color: {{Green}}"| Production<ref>Whonix-KVM only for now</ref>
+| style="background-color: {{BlueBackground}} Planning<ref>Available to all hypervisors on Linux hosts</ref>
+|}
