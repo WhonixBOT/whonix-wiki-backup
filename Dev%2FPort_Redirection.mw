@@ -1,0 +1,39 @@
+Install lighttpd.
+
+<pre>
+sudo apt-get install lighttpd
+</pre>
+
+It will by default listen on all interfaces. Check if that is true. Change IP to 10.152.152.11 for Non-Qubes-Whonix.
+
+<pre>
+UWT_DEV_PASSTHROUGH=1 wget 10.137.6.41
+</pre>
+
+Now make it listen on localhost only.
+
+<pre>
+echo 'server.bind = "127.0.0.1"' | sudo tee -a /etc/lighttpd/lighttpd.conf
+</pre>
+
+<pre>
+sudo service lighttpd restart
+</pre>
+
+Should no longer be reachable. Try if that is true.
+
+<pre>
+UWT_DEV_PASSTHROUGH=1 wget 10.137.6.41
+</pre>
+
+Now try to set up a redirection from 10.137.6.41 to 127.0.0.1.
+ 
+<pre>
+sudo iptables -A PREROUTING -t nat -i eth0 -p tcp --dport 80 -j DNAT --to-destination 127.0.0.1:80
+</pre>
+
+See if that works now.
+
+<pre>
+UWT_DEV_PASSTHROUGH=1 wget 10.137.6.41
+</pre>
