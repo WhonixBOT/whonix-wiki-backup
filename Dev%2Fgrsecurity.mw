@@ -1,0 +1,53 @@
+original idea:
+
+grsecurity compilation VM, so we would not decrease usability too much, by taking a lot compilation time per updated per TemplateVM. Doing it per VM, would be even worse usability wise (takes even longer to update).
+
+We would like to have a Debian source grsecurity package in offical Debian repository, that we can use to compile a grsecurity kernel. Compilation would happen on user's machines in a yet to be invented grsecurity compilation VM. The purpose of that VM is to spare the user from having to compile its kernel multiple times for multiple templates. Compiling the kernel on the user's machine provides better security due to grsecurity compile time features such as randomization. User upgrades -> new grsecurity source package upgrade found by apt-get -> grsecurity compilation VM starts -> downloads upgraded grsecurity source package -> perhaps minor automated configuration changes (Xen...) -> grsecurity kernel gets compiled -> sent to dom0 -> used after dom0 / VM restart respectively.
+
+contra:
+
+grsecurity compilation VM could be compromised:
+
+Two ways:
+
+* bug / backdoor in compilation scripts itself (unlikely, but still possible)
+* template used for that compilation VM is already compromised
+
+The later one is especially tricky. In theory you could use "the most trusted template". But in some cases there may be no such thing. For example you trust one template for some activities (like Fedora, for business stuff, where X is not your adversary), but with other activities not and use Debian/Archlinux there.
+
+Having one compilation VM means compromising one of this template will give you access to every VM.
+
+This should not be overrated. If you use the same kernel binary in all the VMs, compromised VM can learn those randomized parts and use this knowledge in attack to other VMs. Or leak this to some external attacker for future use. This still makes harder to prepare an exploit for all Qubes installation, but not as hard as for non-Qubes threat model. To get the security benefits as in non-Qubes, you'd need to compile the kernel for each VM (not only template) separately...
+
+Maybe it worth to do it for selected VMs? And for others use binary package from repository.
+
+Another idea... Perhaps rather than a grsecurity compilation VM, it
+could be a grsecurity administrator VM?
+
+- it would orchestrate starting VM by VM, one at a time
+
+- compile grsecurity kernel VM by VM inside the target VM, not inside
+the grsecurity administration VM
+
+- What in case of TemplateBasedVMs... Store the grsecurity kernel
+somewhere... - Using bind-dirs or have it stored in a per VM folder in dom0?
+
+- all automated, event based, non-blocking, and in background [to not
+block the actual update process] -> may not be great, user upgrades but
+the grsecurity kernel upgrade is not guaranteed to be installed after
+apt-get finished, but at some later point
+
+- would still result in lots of CPU [and hdd] usage over a long time
+[perhaps for 5 - 20 VMs for average users] [user wondering about
+mysterious systemd load, loud cpu fan]
+
+- somewhat a compilation farm that generates not one but many grsecurity
+kernels and put them into a savings stock for later use
+
+- shutdown-or-not of
+VM-just-automatically-started-for-grsecurity-compilation would be
+troublesome (if the user manually interacted with that VM in meanwhile),
+perhaps solvable by introducing states
+
+In summary, it sounds rather hacky and complex. Anyhow, perhaps it's
+worth something as inspiration.
