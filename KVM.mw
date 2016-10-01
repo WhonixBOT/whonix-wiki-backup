@@ -232,6 +232,8 @@ You could always edit the XML files later too, if needed as explained in the [[#
 == Importing Whonix VM Templates ==
 The supplied XML files serve as a description for libvirt, that tell it what properties a Whonix machine and networking it should have.
 
+'''Legacy instructions: applies up to Whonix 13'''
+
 1. First we will start with Whonix-Gateway:
 
 <pre>
@@ -255,6 +257,48 @@ virsh -c qemu:///system net-start Whonix
 </pre>
 
 3. Lastly the Whonix-Workstation:
+
+<pre>
+virsh -c qemu:///system define Whonix-Workstation*.xml
+</pre>
+
+
+'''New Settings for Whonix 14+'''
+
+1. Add and activate the virtual networks (settings files also in the same folder as Whonix Gateway). If the definition of the Whonix internal network fails because the virtual bridge "virbr2" already exists, edit the internal_network*.xml file and change the name to one that doesnt exist, e.g. "virbr3" (you can list all existing bridge adapters with "sudo brctl show"):
+
+<pre>
+virsh -c qemu:///system net-define external_network*.xml
+</pre>
+
+<pre>
+virsh -c qemu:///system net-define internal_network*.xml
+</pre>
+
+
+
+<pre>
+virsh -c qemu:///system net-autostart external
+</pre>
+
+<pre>
+virsh -c qemu:///system net-start external
+</pre>
+
+<pre>
+virsh -c qemu:///system net-autostart internal
+</pre>
+
+<pre>
+virsh -c qemu:///system net-start internal
+</pre>
+
+
+2. Followed by importing the Whonix Gateway and Workstation images:
+
+<pre>
+virsh -c qemu:///system define Whonix-Gateway*.xml
+</pre>
 
 <pre>
 virsh -c qemu:///system define Whonix-Workstation*.xml
