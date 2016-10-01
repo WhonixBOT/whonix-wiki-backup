@@ -484,7 +484,7 @@ Highlight VM -> Open -> Virtual Machine -> Clone... -> Clone
 2. Export Whonix's internal network settings:
 
 <pre>
-sudo virsh net-dumpxml Whonix > Whonix.xml
+sudo virsh net-dumpxml internal > internal.xml
 </pre>
 
 
@@ -492,8 +492,8 @@ sudo virsh net-dumpxml Whonix > Whonix.xml
 
 <pre>
 <network>
-  <name>Whonix2</name>
-  <bridge name='virbr2' stp='on' delay='0'/>
+  <name>internal2</name>
+  <bridge name='virbr3' stp='on' delay='0'/>
 </network>
 </pre>
 
@@ -505,26 +505,26 @@ y
 CTRL-M
 </pre>
 
-Note that virbr0 is assigned to the '''default''' network (NAT NIC), and virbr1 to the '''Whonix''' internal network (Whonix NIC), therefore, the network name was changed to '''Whonix2''' and the bridge name to '''virbr2'''.
+Note that virbr1 is assigned to the '''external''' network (NAT NIC), and virbr2 to the '''internal''' network (Whonix NIC), therefore, the network name was changed to '''internal2''' and the bridge name to '''virbr3'''.
 
 4. Import and start the new network:
 
 <pre>
-virsh -c qemu:///system net-define Whonix.xml
+virsh -c qemu:///system net-define internal.xml
 </pre>
 
 <pre>
-virsh -c qemu:///system net-autostart Whonix2
+virsh -c qemu:///system net-autostart internal2
 </pre>
 
 <pre>
-virsh -c qemu:///system net-start Whonix2
+virsh -c qemu:///system net-start internal2
 </pre>
 
 5. Attach the Gateway and Workstation VM NICs to the new network. Its important you pay attention and match internal network interfaces to the newer ones and not switch to a NIC that connects outside. To edit the VM virtual NIC settings:
 
 <pre>
-Highlight VM -> Open -> Settings -> NIC virtual hardware -> Set Network Source to: Virtual network 'Whonix2' : Isolated network, internal and host routing only
+Highlight VM -> Open -> Settings -> NIC virtual hardware -> Set Network Source to: Virtual network 'internal2' : Isolated network, internal and host routing only
 </pre>
 
 Note that the network is exclusively internal and does not communicate with the host in any way.
