@@ -6,6 +6,120 @@
 
 '''This is outdated documentation which no longer applies. Kept in case it will be required again in future.'''
 
+
+== Syncthing with OnionCat ==
+Syncthing is a libre software solution for private file synchronization.
+
+This section will cover file syncing with peers inside the Tor network.
+
+'''TO-DO: Test Syncthing without OnionCat since SOCKS support was added recently.'''<ref>These instructions for a Hidden Service do not mention OnionCat as being needed: https://sin.thecthulhu.com/library/Syncthing_instructions.txt</ref>
+
+1. Set up [[OnionCat]] on Whonix Gateway. All parties involved will need to configure a Hidden Service with OnionCat because syncing is bidirectional. Make sure you can successfully ping all OnionCat addresses before proceeding.
+
+{{Third_Party_Repository}}
+
+2. Before adding the repo<ref>apt.syncthing.net</ref>, fetch the key and verify<ref>https://syncthing.net/security.html</ref> fingerprints.  '''Always check the fingerprint for yourself.''' The output at the moment is:
+
+<pre>
+pub  2048R/0xD26E6ED000654A3E 2014-12-29 Syncthing Release Management <release@syncthing.net>
+      Key fingerprint = 37C8 4554 E7E0 A261 E4F7  6E1E D26E 6ED0 0065 4A3E
+</pre>
+
+Download key with scurl to home folder.
+
+{{CodeSelect|code=
+scurl -o syncthing-pubkey.asc https://syncthing.net/release-key.txt
+}}
+
+Check fingerprints/owners without importing anything.
+
+{{CodeSelect|code=
+gpg --with-fingerprint syncthing-pubkey.asc
+}}
+
+If it looks good import into trusted.gpg.d.
+
+{{CodeSelect|code=
+gpg --no-default-keyring --keyring ./syncthing-pubkey.gpg --import syncthing-pubkey.asc
+sudo cp syncthing-pubkey.gpg /etc/apt/trusted.gpg.d/syncthing-pubkey.gpg
+}}
+{{CodeSelect|code=
+sudo sh -c 'echo deb http://apt.syncthing.net/ syncthing release > /etc/apt/sources.list.d/syncthing-release.list'
+}}
+{{CodeSelect|code=
+sudo apt-get update -qq
+}}
+{{CodeSelect|code=
+sudo apt-get install syncthing
+}}
+
+3. Launch Syncthing:
+{{CodeSelect|code=
+syncthing
+}}
+
+Do not close the running terminal or Syncthing will shutdown.
+Answer 'No' if asked to 'Allow Anonymous Usage Reporting'.
+
+{{Template:FoxyProxy}}
+
+To open the WebGUI, open Tor Browser and paste:
+{{CodeSelect|code=
+http://127.0.0.1:8384/
+}}
+
+4. At this point Syncthing back-end should have generated your unique Device ID.
+Go to:
+<pre>
+Actions > Show ID
+</pre>
+
+Share the Device ID along with your OnionCat address. As long as one side shares this information the other can add and find them.
+
+5. Once ID information is exchanged, go to <pre>Add Device</pre> and paste the other endpoint's Device ID. Then under '''Addresses''' change ''dynamic'' to <pre>[OnionCat-address]:22000</pre> 
+
+'''Note that you MUST write the OnionCat IPv6 address within brackets for it to work.''' 
+
+Select  the ''default''  directory under '''Share Folders With Device'''.
+
+6. Syncing more than two endpoints can quickly become tedious so select at least one node to be an '''Introducer''' by selecting the option. The Introducer node will inform the new device about all nodes attached to it.
+
+7. Finally drag and drop any files you want to sync to the 'Sync' folder under your Home directory. 
+
+Done.
+
+Note: No one can connect to your swarm without you adding them but you may still want to make your virtual network more private. This is done using '''HiddenServiceAuthorizeClient''' - a Tor feature.
+
+== Torrenting over OnionCat ==
+This section will cover torrenting with anonymous peers inside the Tor network. This is a trackerless setup.
+
+'''Seeding'''
+
+1. Set up [[OnionCat]] on Whonix Gateway. All parties involved will need to configure a Hidden Service with OnionCat because torrenting is bidirectional.
+
+2. Next install qBittorrent: 
+{{CodeSelect|code=
+sudo apt-get install qbittorrent
+}}
+
+3. Create your torrent: <pre>Tools > Torrent creator</pre> Add the file/folder you want to share. Leave the Tracker information boxes empty. Insert your OnionCat IPv6 IP into the Comment section.
+
+Check ''Start seeding after creation'' then create and save the torrent file.
+
+4. Share the torrent file on your personal Onion Site blog or some other channel as you normally would.
+
+'''Downloading'''
+
+1. Add the torrent file in qBittorrent
+
+2. Select the the torrent from the list and go to the ''General tab''. Copy the OnionCat IPv6 address from the Comment section.
+
+3. Click the ''Peers'' tab and right-click into the empty tab.  Click ''Add a new peer...'' and paste the IPv6 address. Note that the default listening port for incoming connections is set to 6881 and nothing needs to be done.
+
+Done.
+
+For a private sharing environment you will need to configure Tor to use the HiddenServiceAuthorizeClient option. More on that [https://www.whonix.org/wiki/Hidden_Services#Hidden_Service_Authentication here].
+
 === Tunnel Freenet over OnionCat ===
 
 Some Freenet users have successfully experimented with connecting over [[OnionCat|OnionCat]]. Note that all communicating parties need to set this up for this to work. Follow this [https://bluishcoder.co.nz/2016/08/18/using-freenet-over-tor.html guide] to connect to other Darknet peers. No connections to the public datastore possible with this method.<ref>https://emu.freenetproject.org/pipermail/devl/2016-August/039267.html</ref>
