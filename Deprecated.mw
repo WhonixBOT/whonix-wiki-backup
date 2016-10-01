@@ -6,6 +6,193 @@
 
 '''This is outdated documentation which no longer applies. Kept in case it will be required again in future.'''
 
+==== OnionPhone ====
+OnionPhone <ref>http://www.torfone.org/onionphone</ref> is the successor to TOR Fone, improving the ciphers used among other problems<ref>https://lists.torproject.org/pipermail/tor-talk/2013-February/027215.html</ref>. Repo here <ref> https://github.com/gegel/onionphone</ref>
+
+The main improvement is that OnionPhone can now be used as a VoIP plugin that integrates it with with [https://www.whonix.org/wiki/Chat#TorChat TorChat], using the Tor network to protect and anonymize your communication in this mode. It is also the only mode that makes sense in terns of usability because otherwise its a command line utility.
+
+OnionPhone works on Linux and Windows, with Android support planned.
+
+Other modes of operation include using the Tor network as a decentralized and secure alternative for SIP signalling. The call streams are then initiated directly using either TCP or UDP (for NAT traversal). Note that metadata is not concealed in that mode. 
+
+It can be run standalone with direct connections with OnionCat.
+
+TODO: Encourage Debian Packaging
+TODO: Build, test and document usage instructions with TorChat
+
+==== linphone ====
+===== Introduction =====
+Linphone is one of the most feature-rich Free Software clients available, second only to Jitsi in that respect, but second to none is stability and performance from testing. It can also support conferencing (audio only as of 2014).<ref>http://www.linphone.org/docs/liblinphone/group__conferencing.html</ref> Additionally it has fully developed clients for all desktop and mobile operating systems.
+
+Should an Android port of Onioncat ever become a reality by the Guardian Project, Linphone can be used for anonymous VoIP between all combinations of device form factors. There is headway on that front.<ref>https://github.com/guardianproject/ChatSecureAndroid/issues/495</ref>
+
+===== Setup with Whonix =====
+Technically, only one member of the chat party needs to configure a Tor Hidden Service (be a callee). Others can run Onioncat in 'client' only mode (be ca caller). 
+
+Bidirectional communication can only be established after the client party (caller) connects to the one running a hidden service 'server' mode (callee), because the latter can accept incoming connections while the former cannot.
+
+{| class="wikitable" style="background-color:#fff;text-align:center"
+|- style="background-color: #f9f9f9"
+| || callee || caller
+|-
+| Can make outgoing calls
+| {{Yes}}
+| {{Yes}}
+|-
+| Can initially receive incoming calls
+| {{Yes}}
+| {{No}}
+|-
+| Needs to host a Tor hidden service
+| {{Yes}}
+| {{No}}
+|-
+| Difficulty setup
+| style="background-color: {{Yellow}}"| medium
+| style="background-color: {{Green}}"| easy
+|}
+
+===== Setup as Both, Callee or Caller =====
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+You only have to read this, if you want to use linphone as both, callee or caller. As a caller, you can only make outgoing calls. As a callee (that includes ability of being a caller), you can make outgoing calls and receive incoming calls. Only one of both calling parters has to follow these instructions. However, it doesn't matter if both calling partners follow these following instructions.
+If you are interested, click on Expand on the right. 
+<div class="mw-collapsible-content">
+<u>On your Whonix-Gateway.</u>
+
+If you want to read and introduction about hidden services and to learn about about hidden service security, see [[Hidden Services]].
+
+If you also want to run a hidden web server on the same .onion domain (nice for testing and learning Hidden Services basics), see [[Hidden Services]].
+
+Open your {{Code2|/etc/tor/torrc}}.
+
+{{CodeSelect|code=
+sudo nano /etc/tor/torrc
+}}
+
+Add. <ref>Arbitrary choice of port to avoid conflicts with custom onioncat setups.</ref>
+
+<pre>
+HiddenServiceDir /var/lib/tor/linphone_service/
+HiddenServicePort 64739 10.152.152.11 :64739
+</pre>
+
+Reload Tor.
+
+{{CodeSelect|code=
+sudo service tor reload
+}}
+
+Reminder: To get your hidden service url.
+
+{{CodeSelect|code=
+sudo cat /var/lib/tor/linphone_service/hostname
+}}
+
+Reminder: Backup your hidden service key, in case you want to be able to restore it, on another machine, on a newer Whonix-Gateway, after hdd failure, etc. You can find it here and need sudo to access it.
+
+<pre>
+/var/lib/tor/linphone_service/private_key
+</pre>
+
+<u>On your Whonix-Workstation.</u>
+
+Update your package lists
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+Install onioncat and linphone.
+
+{{CodeSelect|code=
+sudo apt-get install onioncat linphone
+}}
+
+Start onioncat. Replace {{Code|address.onion}} with your actual hidden service url from above.
+
+{{CodeSelect|code=
+sudo ocat address.onion -U -l 10.152.152.11 :64739
+}}
+
+As of onioncat r555 (only applies to Jessie onwards) onioncat starts in unidirection 'client' mode by default. To accept incoming connections '''-U''' must be used. Mutual authentication is also available in this newer version which is needed to ensure that the identities of all endpoints engaged in a transaction are verified. <ref>http://manpages.debian.org/cgi-bin/man.cgi?query=ocat&apropos=0&sektion=0&manpath=Debian+testing+jessie&format=html&locale=en</ref>
+
+Find out your onioncat IPv6 address.
+
+{{CodeSelect|code=
+ip addr show dev tun0 | sed -e's/^.*inet6 \([^ ]*\)\/.*$/\1/;t;d'
+}}
+
+Open Linphone settings and select IPv6. Apply and restart Linphone.
+</div>
+</div>
+
+===== Setup only as Caller =====
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+You only have to read this, if you want to use linphone caller only. As a caller, you can only make outgoing calls. Only one of both calling parters can follow these instructions. If both calling partners would follow these instructions, would not be able to call each other.
+If you are interested, click on Expand on the right. 
+<div class="mw-collapsible-content">
+<u>On your Whonix-Workstation.</u>
+
+Update your package lists
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+Install onioncat and linphone.
+
+{{CodeSelect|code=
+sudo apt-get install onioncat linphone
+}}
+
+Start onioncat.
+
+{{CodeSelect|code=
+sudo ocat -R
+}}
+
+Open Linphone settings and select IPv6. Apply and restart Linphone.
+</div>
+</div>
+
+===== Calling =====
+<u>On your Whonix-Workstation.</u>
+
+At this point you should have exchanged IPv6 addresses of the callee. To call someone put in the call box. You can keep {{Code|user}}. Must use brackets. Replace {{Code|onioncat IPv6 address}} with the actual IPv6 of your calling partner.
+
+<pre>
+user@[onioncat ipv6 address]
+</pre>
+
+===== Debugging =====
+<u>On your Whonix-Workstation.</u>
+
+To terminate onioncat you could use.
+
+{{CodeSelect|code=
+sudo kill -sigint $(pgrep ocat)
+}}
+
+===== Miscellaneous =====
+To make Onioncat to autostart with the system using the parameters listed above.
+editing its configuration file:
+{{CodeSelect|code=
+sudo nano /etc/default/onioncat
+}}
+
+Enable the autostart comment by removing '#':
+<pre>ENABLED=yes</pre>
+
+Add your settings:
+<pre>DAEMON_OPTS="Paramters go here"</pre>
+
+===== Credits =====
+Credits go to [https://www.whonix.org/old-forum/index.php?action=profile;u=87 HulaHoop] for researching how to use Linphone with Tor for sharing instructions in [https://forums.whonix.org/t/voip-jitsi-mumble Whonix User Forum].
+
+== Development Ideas ==
+=== OnionCat ===
+[[OnionCat]] could be useful if tunneling UDP and/or ICMP tunneling over Tor should be required. It should be avoided if possible, because it add complexity to the setup. Does it introduce more latency because connection always goes from hidden service to hidden service?
+
 == OpenBazaar ==
 OpenBazaar supports both TCP and UDP. The latter was added to aid those using it on the clearnet that had difficulties connecting from behind their routers. <ref>https://github.com/OpenBazaar/OpenBazaar/issues/795</ref> When using Tor you don't have to worry about that.
 
