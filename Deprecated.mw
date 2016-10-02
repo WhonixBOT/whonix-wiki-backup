@@ -6,6 +6,211 @@
 
 '''This is outdated documentation which no longer applies. Kept in case it will be required again in future.'''
 
+
+{{Header}}
+{{#seo:
+|description=OnionCat, GarliCat: Tunnel TCP, UDP, ICMP or any other protocol through Tor or I2P; IPv6, VPN-like, TAP/TUN tunneling device
+|og:image=https://www.whonix.org/w/images/8/83/Onion-161611640.png
+}}
+
+= OnionCat =
+== Introduction ==
+Introduction to OnionCat:
+
+* [https://trac.torproject.org/projects/tor/wiki/doc/OnionCat torproject wiki about OnionCat] ([http://www.webcitation.org/6EQUoe9Cs w])
+* [http://www.cypherpunk.at/onioncat cypherpunk.at/onioncat] ([http://www.webcitation.org/6EQUqZawz w])
+* [https://cryptoanarchy.org/wiki/OnionCat cryptoanarchy.org about OnionCat] ([http://web.archive.org/web/20120810015004/https://cryptoanarchy.org/wiki/OnionCat webarchive]; [http://www.webcitation.org/6EQUZky7n webcitation])
+
+== Status ==
+* OnionCat (Tor) will work with Whonix. (Tested.)
+* GarliCat (I2P) might partially work with Whonix. (Untested.)
+
+== Over Tor ==
+OnionCat transports any protocol between endpoints inside the Tor network. All involved peers need to run OnionCat. It gives IPv6 addresses to Onion Services, making many applications possible.
+
+IPv6 is currently disabled on Whonix-Gateway, because Tor doesn't support IPv6 yet (except for bridges), and because no one developed more than rudimentary IPv6 firewall rules for Whonix-Gateway yet. Whonix-Gateway's firewall blocks all IPv6 traffic including local traffic by default. Anyway, that will not be an issue. IPv6 on Whonix-Workstation, where OnionCat will be running, is enabled. Since only OnionCat's underlying operating system requires IPv6, but not the Tor process there will be no problem. OnionCat on Whonix-Workstation will translate the IPv6 requests to IPv4 to the Tor process which is running on Whonix-Gateway. Therefore no IPv6 on Whonix-Gateway is required.
+
+<u>On your Whonix-Gateway.</u>
+
+If you want to read an introduction about hidden services and to learn about about hidden service security, see [[Hidden Services]].
+
+If you also want to run a hidden web server on the same .onion domain (nice for testing and learning Hidden Services basics), see [[Hidden Services]].
+
+{{Open /etc/tor/torrc}}
+
+Add. <ref>Arbitrary choice of port to avoid conflicts with custom onioncat setups.</ref>
+
+{{CodeSelect|code=
+HiddenServiceDir /var/lib/tor/onioncat/
+HiddenServicePort 8060 10.152.152.11:8060
+}}
+
+Save.
+
+{{Reload Tor}}
+
+Reminder: To get your hidden service url.
+
+{{CodeSelect|code=
+sudo cat /var/lib/tor/onioncat/hostname
+}}
+
+{{
+Backups_Tor_Hidden_Service_private_key
+|private_key_file=/var/lib/tor/onionchat/private_key
+}}
+
+<u>On your Whonix-Workstation.</u>
+
+[[Update]] your package lists
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+Install onioncat.
+
+{{CodeSelect|code=
+sudo apt-get install onioncat
+}}
+
+Start onioncat. Replace {{Code|address.onion}} with your actual hidden service url from above.
+
+{{CodeSelect|code=
+sudo ocat address.onion -l 10.152.152.11:8060
+}}
+
+As of onioncat r555 (only applies to Jessie onwards) onioncat starts in unidirection 'client' mode by default. To accept incoming connections {{Code|-U}} must be used. Mutual authentication is also available in this newer version which is needed to ensure that the identities of all endpoints engaged in a transaction are verified. <ref>http://manpages.debian.org/cgi-bin/man.cgi?query=ocat&apropos=0&sektion=0&manpath=Debian+testing+jessie&format=html&locale=en</ref>
+
+{{CodeSelect|code=
+sudo ocat address.onion -U -l 10.152.152.11:8060
+}}
+
+Alternatively, if starting onioncat in 'client' mode run:
+{{CodeSelect|code=
+sudo ocat -R
+}}
+At least one node has to run as a 'server' with a Hidden service configured for contact to occur.
+
+To enumerate your onioncat IPv6 address run:
+{{CodeSelect|code=
+sudo ocat -i address.onion
+}}
+
+==== Notes ====
+
+===== Security =====
+There are two possible ways to authenticate and control who is allowed to connect to you Onioncat instance and the applications running on top of it.
+
+1. The simpler and more robust approach is to setup Tor to perform authentication of clients connecting to your Hidden Service. If they do not possess a certain randomly generated cryptographic secret, they cannot connect to your Hidden Service. 
+
+For information on how to do this see [[Hidden Services#Hidden Service Authentication]].
+
+2. The second approach does this process at the higher level through delegating authentication to Onioncat.
+
+For official documentation on security read the reference at the end of this sentence. <ref>https://www.cypherpunk.at/onioncat_trac/wiki/Security</ref>
+
+Onioncat Authentication Notes and Definitions:
+* Bi-directional mode is what was used for OC since the beginning. That means that one established circuit (TCP session through Tor) is being used to send AND transmit packets. Thus, it is called bi-directional.
+
+* Uni-directional mode means that there are two separate circuits: one for sending and one for receiving.
+
+So what's the implications: <br />
+Circuits are established through Tor and are identified and authenticated by the network through the onion hostname (= OC IPv6 address). But this 
+authentication is just one-ended. That means that the client (the one initiating the circuit) can authenticate the server but the server can't 
+authenticate the client. As a consequence the client could spoof its IP address. In Tor/OnionCat context, IP spoofing means to use any IPv6 address 
+but not the one which is associated to the onion ID (that's actually what {{Code|-R}} does). Although this is technically no problem there's a security risk which 
+could be that someone takes over the IPv6 address from someone else and could thereby attract (steal) packets. The risk is still very low.
+
+Uni-directional mode addresses exactly that problem. It forces the server to not reuse an incoming connection but establish a new circuit to the supposed client. Thus spoofing is defeated because it requires for the client to own the private key as well.
+
+Uni-directional mode is on by default since revision 556, but this change may be subject to change in future releases.
+
+Uni-directional mode and {{Code|-R}} (i.e. starting onioncat in 'client' mode) are incompatible! That means an OnionCat using {{Code|-R}} will not be able to communicate with an OnionCat in uni-directional mode.
+
+OnionCats with {{Code|-R}} can only talk to bi-directional OnionCats having {{Code|-U}} set as noted above.
+
+Source / Credits of this chapter: <br />
+These are Onioncat dev, Bernhard Fischer's words with modifications by the Whonix team. All credit goes to him.
+
+===== Tunneling IPv4 =====
+Many programs do not support IPv6 and so to use IPv4 with Onioncat, IPv4 will need to be tunneled over IPv6.<ref>https://www.cypherpunk.at/onioncat_trac/wiki/IPv4</ref> This option is preferred to Onioncat's native IPv4 forwarding designated by the -4 parameter, which is deprecated and could not have guaranteed the authenticity of the communicating endpoints as the tunneling method can.
+
+Most operating systems should support IP-IP6 tunneling. IPv6 supports encapsulation of IPv4 or IPv6, hence, tunneling is not a big deal. An IP-IP6 tunnel is a point-to-point tunnel between two IPv6 nodes. The tunnel endpoints are virtual network interfaces. IP addresses are assigned to them and routing has to be set up as usual (as if those interfaces where ethernets). Before configuring a tunnel you need to know the two IPv6 addresses of the IPv6 nodes. Those will be the IPv6 OnionCat addresses. There are a few steps necessary on Linux. First insert the IPv6 tunneling kernel module, then setup the tunnel interface by connecting it to the two IPv6 addresses. Next configure the IPv4 addresses to the tunnel endpoints, bring them up and add the necessary routes (... and don't forget to update your firewall rules - but this is not needed with Whonix Workstation's default settings).
+
+{{CodeSelect|code=
+sudo su
+modprobe ip6_tunnel
+ip -6 tunnel add iptun0 mode ipip6 local fd87:d87e:eb43:1f53:c75:3b27:7adc:c9a5 remote fd87:d87e:eb43:8733:3338:21f6:a2b8:eebf
+ifconfig iptun0 192.168.100.1 up
+route add -net 192.168.100.0/24 dev iptun0
+}}
+
+On the other end do the same thing except that you have to swap the two IPv6 addresses and use another IP address on the tunnel endpoint, e.g. 192.168.100.2. If Tor, OnionCat, and the tunnel is up on both ends you should be able to ping the remote end.
+
+===== Useful Commands =====
+* Check connectivity between endpoints using ping:
+{{CodeSelect|code=
+ ping6 onioncat-address
+}}
+
+* Replies should come immediately if everything is working.
+
+
+* To derive the OnionCat IPv6 address from your Hidden Service address run: 
+{{CodeSelect|code=
+ocat -i onion.address
+}}
+
+
+* Running ifconfig can show helpful information on active network interfaces: 
+{{CodeSelect|code=
+sudo ifconfig
+}}
+
+===== Debugging =====
+<u>On your Whonix-Workstation.</u>
+
+To terminate onionat you could use.
+
+{{CodeSelect|code=
+sudo kill -sigint $(pgrep ocat)
+}}
+
+===== Miscellaneous =====
+To make Onioncat to autostart with the system using the parameters listed above.
+editing its configuration file:
+{{CodeSelect|code=
+sudo nano /etc/default/onioncat
+}}
+
+Enable the autostart comment by removing '#':
+<pre>ENABLED=yes</pre>
+
+Add your settings:
+<pre>DAEMON_OPTS="Paramters go here"</pre>
+
+== Over I2P ==
+
+GarliCat over I2P might only work, if you use [[I2P|ip2 over Tor]].
+
+There was the idea to create an [[Dev/Inspiration#I2PBOX|I2PBOX]], but it never came to live due to lack of community interest, which means GarliCat directly over I2P will not be supported by Whonix.
+
+As soon as I2P over Tor is working in Whonix-Workstation, you can probably follow the instructions on [https://cryptoanarchy.org/wiki/OnionCat cryptoanarchy.org] ([http://web.archive.org/web/20120810015004/https://cryptoanarchy.org/wiki/OnionCat webarchive]; [http://www.webcitation.org/6EQUZky7n webcitation]) without modifications.
+
+= General Debugging Hints =
+* There at multiple sources for issues, you might stumble upon.
+* Therefore it's recommended, before you try using OnionCat with Whonix, if that doesn't endanger you, try first to successfully test OnionCat without Whonix.
+* As soon as you learnt that, it eliminated one source for possible issues (OnionCat) and can start learning how to use it with Whonix (which might introduce new issues, but enhanced security will be your reward).
+* You also have to learn first, how to use hidden services with Whonix, see [[Hidden Services|hosting hidden services]] for reference.
+
+= Footnotes =
+<references />
+
+{{Footer}}
+
+[[Category:Documentation]]
+
 === Tor Access ===
 
 '''These instructions break sending emails to other domains that are not riseup.'''
