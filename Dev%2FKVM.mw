@@ -123,6 +123,23 @@ None.
 ===Rate limit===
 This is necessary to prevent malicious entropy starvation of other VMs and the host.
 
+Test code for /dev/random throughput<ref>https://unix.stackexchange.com/questions/13771/dd-if-dev-random-is-randomly-bottlenecked-with-big-time-lags-but-i-have-no-i</ref>
+
+<pre>
+cp /dev/random "$HOME/dd-random.secs" 
+for ((i=100;i<=500;i++)); do
+    if   ((i<10))  ;then zi="00$i"
+    elif ((i<100)) ;then zi="0$i"
+    else                 zi="$i"
+    fi 
+    echo -ne "$zi\t" >>"$HOME/dd-random.secs"
+    exec 3>/dev/random 4>/dev/random
+        { time { dd if=/dev/random bs=1k count=1; } 1>&3 2>&4; } 2>&1 |tail -n 3|tr 'm\n' '\t' |sed -re "s/([0-9])s/\1/g" >>"$HOME/dd-random.secs" 
+    exec 3>&- 4>&-
+    echo >>"$HOME/dd-random.secs"
+done
+</pre>
+
 https://www.certdepot.net/rhel7-get-started-random-number-generator/
 
 <pre>
@@ -130,7 +147,6 @@ Note: Just after <rng model=’virtio’>, you can add a line like <rate bytes=�
 </pre>
 
 Also applied for GW since some crypto requiring operations under the control of WS processes can abuse the entropy available to it if unchecked.
-
 
 ===Haveged===
 
