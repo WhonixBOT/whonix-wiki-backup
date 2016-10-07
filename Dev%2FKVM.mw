@@ -134,19 +134,10 @@ Test code for /dev/random throughput<ref>https://unix.stackexchange.com/question
 
 <pre>dd if=/dev/random bs=1k count=1</pre>
 
+Re-reading the article it seems the choice made is OK. The limit sets the max a guest can use to be 25% of that of the host.
+
 <pre>
-cp /dev/random "$HOME/dd-random.secs" 
-for ((i=100;i<=500;i++)); do
-    if   ((i<10))  ;then zi="00$i"
-    elif ((i<100)) ;then zi="0$i"
-    else                 zi="$i"
-    fi 
-    echo -ne "$zi\t" >>"$HOME/dd-random.secs"
-    exec 3>/dev/random 4>/dev/random
-        { time { dd if=/dev/random bs=1k count=1; } 1>&3 2>&4; } 2>&1 |tail -n 3|tr 'm\n' '\t' |sed -re "s/([0-9])s/\1/g" >>"$HOME/dd-random.secs" 
-    exec 3>&- 4>&-
-    echo >>"$HOME/dd-random.secs"
-done
+/dev/random provides high quality numbers but stops when entropy is poor: the Linux kernel keeps a entropy pool of 4 KB (see /proc/sys/kernel/random/poolsize); when the pool is empty, the kernel blocks causing a delay until it can provide the requested random numbers.
 </pre>
 
 https://www.certdepot.net/rhel7-get-started-random-number-generator/
