@@ -722,7 +722,69 @@ autologin-user=user
 sudo systemctl enable lightdm
 </pre>
 
-= Temp 2 =
+= ssh into Qubes dom0 =
+In dom0. Install socat.
+
+<pre>
+sudo qubes-dom0-update socat
+</pre>
+
+In dom0. Install server software.
+
+<pre>
+sudo qubes-dom0-update openssh-server
+</pre>
+
+In dom0. Setup qrexec rpc.
+
+{{Open with root rights|
+filename=/etc/qubes-rpc/local.ssh
+}}
+
+Add.
+
+<pre>
+#!/bin/sh
+exec socat STDIO TCP-CONNECT:localhost:22
+</pre>
+
+Save.
+
+In dom0. Setup qrexec policy.
+
+{{Open with root rights|
+filename=/etc/qubes-rpc/policy/local.ssh
+}}
+
+Add.
+
+<pre>
+ssh-server dom0 allow
+</pre>
+
+Save.
+
+Start listener in server VM.
+
+{{Open with root rights|
+filename=/rw/config/rc.local
+}}
+
+Add only required when doing this in sys-net for servers that should be reachable directly from outside world.
+
+<pre>
+iptables -I INPUT -p tcp --dport 22 -j ACCEPT
+</pre>
+
+Add.
+
+<pre>
+socat TCP-LISTEN:22,fork EXEC:"qrexec-client-vm dom0 local.connect"
+</pre>
+
+Save.
+
+Done.
 
 = See Also =
 * [[Dev/Test|Dev/Test - How to "UnWhonix" - Instructions on how to remove Whonix Tor default networking for Whonix-Gateway. After applying these instructions, Whonix-Gateway will connect to clearnet.]]
