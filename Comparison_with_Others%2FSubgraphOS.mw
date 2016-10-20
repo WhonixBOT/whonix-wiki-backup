@@ -23,3 +23,34 @@ idea what these messages mean and they'll be alarmed by a massive amount of fals
 * The outgoing firewall is of questionable usefulness since an attacker with root can easily bypass that and if not, can exfiltrate via an allowed application instead.
 
 * Use the buggy and feature lacking tlsdate that is now defunct.
+
+
+*  "Oz sandbox restricts app connections to .onion servers only. Useful for @coyproject, Ricochet. Maybe "TLS Guard" wrong name"
+
+The feature description is unclear but if all onion addresses are allowed then an attacker can just setup a hidden service and connect to it.
+
+But lets assume some situations where specific addresses can be whitelisted and see if that feature is useful.
+
+(Note: Ricochet is used as an example. Its very securely coded in reality and confirmed so by an audit.)
+
+Threat models:
+
+1) (No address connection restrictions): The container/VM starts off in a clean state and is dedicated to running say Ricochet to connect to some contacts only. A contact is malicious and attacks the IM peer - is then able to extract information from the victim via itself (because it would be whitelisted).
+
+Result: This would happen under the restricted outbound traffic access model anyway.
+
+2) (With address restrictions): Ricochet is running in a shared VM with other programs running. 
+
+Result: No browsing would be possible in this VM. So no infection/exfiltration would happen but then that's the same as running a clean Ricochet VM with no restrictions and using it for that purpose only. Restrictions not useful here.
+
+3) (No address restrictions) Apparmor/container/sandbox around Ricochet and TBB. TBB is exploited and can only read limited folders that do not include the IM program.
+
+Result: Limited effect of compromise but not due to network restrictions.
+
+4) (Address restrictions) Ricochet dedicated VM. Trusted contacts but no Onion client authorization enabled. Hypothetical bug in Ricochet. Malicious HSDir sniffs address and then scans and exploits Ricochet.
+
+Result: I'm actually unsure. This may be a situation where limiting outbound can stop data pilfering. Because its an Onion service anyone can connect so inbound access is still possible. Which could establish bidirectional communication. What I saw when testing was: if a HS with client authentication connected to a non authorized client - bidirectional communication became possible even without authorization because the HS initiated contact. This is different though because outbound rather than inbound is restricted.
+
+Thought some more about 4th scenario. It seems like a situation where a user is bending backwards to get exploited then try to do damage control. Authenticated HS is the answer and would make this unnecessary.
+
+5) Kiosk access. well this only works if users are dumb. With physical access to the machine - this can easily be circumvented.
