@@ -1,0 +1,249 @@
+{{Header}}
+{{#seo:
+|description=How to Upgrade from Whonix 13.x to Whonix 14.x
+}}
+
+UNFINISHED! DO NOT USE YET!
+
+{{Stub}}
+
+= High Level Overview =
+1. Backup your data. (Ideally have a copy of your VM, so you can try again.) <br />
+2. Consider running the optional [[#Sanity Tests]]. <br />
+3. Upgrade Whonix-Workstation. <br />
+4. Power off Whonix-Workstation. <br />
+5. Upgrade Whonix-Gatway. <br />
+6. Restart Whonix-Gateway. <br />
+7. Restart Whonix-Workstation <br />
+
+= Sanity Tests =
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+These are optional, but recommended. If you want to do them, please press on expand on the right.
+<div class="mw-collapsible-content">
+<pre>
+sudo dpkg --audit ; echo $?
+</pre>
+
+Expected output.
+
+<pre>
+0
+</pre>
+
+<pre>
+sudo dpkg --configure -a ; echo $?
+</pre>
+
+Expected output:
+
+<pre>
+0
+</pre>
+
+[[Security_Guide#Updates|Get package upgrades.]]
+
+<pre>
+sudo apt-get update
+</pre>
+
+<pre>
+sudo apt-get dist-upgrade
+</pre>
+
+Test wise install python-qt4.
+
+<pre>
+sudo apt-get install python-qt4 ; echo $?
+</pre>
+
+<pre>
+## ... successful installation of python-qt4 ...
+0
+</pre>
+</div>
+</div>
+
+= Upgrading =
+(Downloading a new Whonix-Gateway / Whonix-Workstation would be probably easier than applying the following instructions for upgrading, but this upgrade should be quite smooth.)
+
+Backups are important as noted in above chapter [[#Before you start]].
+
+Consider doing the [[#Sanity Tests]] described above. They'll check if your system is affected by obvious grave issues, that you must fix before attempting to upgrade. If your package manager is broken, for example because you mixed packages from Debian stable with packages from Debian testing, then the upgrade may fail in the middle leaving your system in a difficult to resolve situation.
+
+Consider keeping the full terminal (Konsole) log. Even if everything apparently worked, there might be issues after reboot. In case of a bug report in the forums you would be asked to share the upgrading log so the issue can be investigated.
+
+If you are using Qubes R3.0 as your host operating system, you are advised to upgrade your VMs and dom0 to R3.1 before proceeding. Follow the [https://www.qubes-os.org/doc/upgrade-to-r3.1/ Qubes R3.0 > R3.1 upgrade instructions on the Qubes website].
+
+<pre>
+sudo whonix_repository --enable --repository stable
+</pre>
+
+You are late for upgrading Whonix 12 to Whonix 13. Therefore you need to upgrade Whonix singing key.
+
+Get [[Whonix_Signing_Key|Whonix signing key]].
+
+<pre>
+gpg --recv-keys "916B 8D99 C38E AF5E 8ADC  7A2A 8D66 066A 2EEA CCDA"
+</pre>
+
+Verify [[Whonix_Signing_Key|Whonix signing key]].
+
+Add to apt-key.
+
+<pre>
+gpg --export "916B 8D99 C38E AF5E 8ADC  7A2A 8D66 066A 2EEA CCDA" | sudo apt-key add -
+</pre>
+
+Become root.
+
+<pre>
+sudo su
+</pre>
+
+Do a usual [[Security_Guide#Updates|upgrade]] of your system's packages from Debian.
+
+Enable extensive debugging so reporting eventual bugs becomes easier.
+
+<pre>
+export DEBDEBUG=1
+</pre>
+
+[[Update]] your package lists.
+
+<pre>
+apt-get update
+</pre>
+
+Upgrade.
+
+<pre>
+apt-get dist-upgrade
+</pre>
+
+
+[[Update]] your package lists again. <ref>
+This is required because the repository uri of Whonix repository has been upgraded to the new location by the whonix-legacy package.
+</ref>
+
+<pre>
+apt-get update
+</pre>
+
+It is recommended to have the Whonix-Gateway or Whonix-Workstation meta package installed to make sure nothing is broken. (If you like to uninstall it later as per [[Whonix Debian Packages]], you're free to do so. Still, it is recommended to re-install it before removal to make sure you're as close to official package selection as possible.)
+
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+If you are upgrading [[Qubes-Whonix]], please press on expand on the right.
+<div class="mw-collapsible-content">
+If you are upgrading Whonix-Gateway...
+
+<pre>
+apt-get install qubes-whonix-gateway
+apt-get purge whonix-gateway
+</pre>
+
+If you are upgrading Whonix-Workstation...
+
+<pre>
+apt-get install qubes-whonix-workstation
+apt-get purge whonix-workstation
+</pre>
+</div>
+</div>
+
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+If you are upgrading [[Non-Qubes-Whonix]], please press on expand on the right.
+<div class="mw-collapsible-content">
+If you are upgrading Whonix-Gateway...
+
+<pre>
+apt-get install non-qubes-whonix-gateway
+apt-get purge whonix-gateway
+</pre>
+
+If you are upgrading Whonix-Workstation...
+
+<pre>
+apt-get install non-qubes-whonix-workstation
+apt-get purge whonix-workstation
+</pre>
+</div>
+</div>
+
+Purge packages which are deprecated in Whonix and replaced by new functionality.
+
+<pre>
+apt-get purge anon-gw-build-upgrade-tor anon-shared-build-apt-sources-tpo deb.torproject.org-keyring anon-shared-build-upgrade-torsocks timesync
+</pre>
+
+Get rid of old packages.
+
+<pre>
+apt-get autoremove
+</pre>
+
+Delete old problematic files. <ref>
+Delete apparmor profile. (timesync has been replaced by sdwdate-gui)
+
+Delete xchat shortcut. (Has been replaced with its successor hexchat.)
+</ref>
+
+<pre>
+rm -f "/etc/apparmor.d/usr.bin.timesync"
+unlink "/home/user/Desktop/xchat.desktop"
+unlink "/home/user/Desktop/anondist-torbrowser.desktop"
+unlink "/home/user/Desktop/timesync.desktop"
+</pre>
+
+If you have been using the apparmor-profiles-extra package (you would know if you did), you should reinstall it.
+
+<pre>
+sudo apt-get install --reinstall apparmor-profiles-extra
+</pre>
+
+Remember to store the terminal (Konsole) log. (File -> Save Output As)
+
+Reboot required.
+
+<pre>
+reboot
+</pre>
+
+Qubes users may wish to re-add Tor Browser to Qubes start menu. This can be done the usual Qubes way.
+
+<pre>
+Qubes start menu -> domain: anon-whonix -> add more shortcuts -> click Tor Browser (AnonDist) -> press '>' -> OK
+</pre>
+
+See also [[#Qubes specific]].
+
+Done.
+
+= Qubes specific =
+Optional.
+
+VMs based upon whonix-ws TemplateVM will not inherit the default start menu unless you upgrade the following file. Either apply the following steps or manually add Tor Browser to any new TemplateBasedVM based on whonix-ws TemplateVM. <ref>This is a native Qube - not Whonix - limitation that will not be fixed due to technical difficulties. During VM upgrades, file /var/lib/qubes/vm-templates/whonix-ws/whitelisted-appmenus.list will not be upgraded.</ref>
+
+In dom0. Open /var/lib/qubes/vm-templates/whonix-ws/whitelisted-appmenus.list with root rights.
+
+Add. <ref>https://github.com/adrelanos/qubes-template-whonix/blob/master/appmenus_wheezy_whonix-workstation/vm-whitelisted-appmenus.list</ref>
+
+<pre>
+konsole.desktop
+dolphin.desktop
+nautilus.desktop
+whonixcheck.desktop
+whonix-irc-chat-support.desktop
+janondisttorbrowser.desktop
+anondist-torbrowser_update.desktop
+</pre>
+
+Save.
+
+Done.
+
+= Footnotes =
+<references />
+
+[[Category:Documentation]]
+
+{{Footer}}
