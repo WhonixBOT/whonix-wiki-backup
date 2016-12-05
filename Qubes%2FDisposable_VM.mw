@@ -12,11 +12,9 @@ Qubes does not have a built-in snapshot capability like VirtualBox that can comp
 Qubes currently uses a two-layered approach to DisposableVMs. At the base of the system is a ''TemplateVM'' upon which a ''DisposableVM-Template'' is created. Every time a new ''DisposableVM'' is launched, it is based on the DisposableVM-Template - hence, two layers. For a standard Whonix installation, the base TemplateVM would be <code>whonix-ws</code>; the DisposableVM-Template would be called <code>whonix-ws-dvm</code>; and each new DisposableVM (<code>disp1, disp2, ...</code>) would be based on <code>whonix-ws-dvm</code>. Once a DisposableVM-Template is created, its <code>/home/user/</code> directory can be customized independently of the base TemplateVM. While it will continue to inherit changes to the base TemplateVM's root filesystem (for example, package updates), user files in <code>/home/user/</code> will continue to persist independently.
 
 ===== Disposable VM Traffic is Stream Isolated from Other VMs =====
-
 Disposable VMs work especially well with Whonix-Gateway because each VM is assigned a unique internal IP address. This ensures that all traffic from a DisposableVM is [[Stream_Isolation | stream isolated]] from all other traffic from concurrently running VMs.
 
 == Warnings ==
-
 ==== Warning: Use caution when spawning DisposableVMs from other VMs  ====
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
@@ -45,9 +43,7 @@ All changes to a DisposableVM's file system are discarded upon shutdown. However
 Additionally, it has been stated that Tor caches "DNS, HS descriptors, pre-emptive circuits, etc"<ref>source: https://lists.torproject.org/pipermail/tor-dev/2016-October/011591.html</ref> which may lead to linkability between AppVMs and DisposableVMs sharing the same gateway. The extent to which this is a threat for Whonix users is currently being investigated <ref>[https://phabricator.whonix.org/T567 Multi GW Documentation]</ref>.
 }}
 
-
 == Setup ==
-
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text       = 
@@ -59,7 +55,6 @@ These instructions are current as of Qubes 3.2. Updated documentation will be re
 ''For advanced users: These instructions assume that you will be installing TorBrowserBundle-stable. For other versions of Tor Browser, please see this footnote. <ref>todo: upon resolution of https://forums.whonix.org/t/tb-updater-experimental-alpha-beta-rc-hardened-options/781/3</ref>''
 
 ==== Creating a new DisposableVM-Template based on Whonix-Workstation ====
-
 Open a dom0 terminal.
 
 <code>
@@ -91,7 +86,6 @@ dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> VM Settings -> Net
 Your DisposableVM is now ready for use and is configured with all of the applications present in your Whonix-Workstation template, including Tor Browser.
 
 ==== Deleting a DisposableVM template ====
-
 Deleting a DisposableVM-Template is not usually necessary, since only one DisposableVM-Template is allowed (up to Qubes 3.2). Creating a new DisposableVM-Template will overwrite the existing one. However, if you've customized the template, you may need to delete the existing one to start with a fresh unmodified DisposableVM-Template.
 
 A DisposableVM-Template can be deleted in the same manner as other VMs:
@@ -153,11 +147,9 @@ qvm-create-default-dvm whonix-ws
 All of your changes to <code>/home/user/</code> in the DisposableVM-Template should now persist whenever you re-create the template.
 
 ==== Updating a DisposableVM-Template ====
-
 Changes to the underlying TemplateVM (whonix-ws) are detected automatically and the DisposableVM-Template is updated without user intervention. That means package updates that are applied to whonix-ws are also applied to the whonix-ws-dvm.
 
 ===== Updating Tor Browser =====
-
 Tor Browser presents a special situation because of the fact that it is installed in a user's home directory. As a result, the TemplateVM (whonix-ws) never updates existing Tor Browser installations.
 
 '''For non-customized DisposableVM-Templates''': The simplest method to obtain the latest Tor Browser is to use Whonix's built-in Tor Browser downloader functionality. Simply update tb-updater in whonix-ws while performing your usual maintenance via <code>apt-get dist-upgrade</code>. 
@@ -235,17 +227,14 @@ qvm-create-default-dvm whonix-ws
 </code>
 
 == Usage ==
-
 Disposable VMs lend themselves well to being used for risky, largely independent activities, like web browsing or opening untrusted files; while AppVMs might be better suited when file persistence is necessary (for example: an email client with local email storage). Qubes' VM integration tools, like secure file copy<ref>Qubes documentation: [https://www.qubes-os.org/doc/copying-files/ Copying and Moving Files Between Domains]</ref> and secure clipboard<ref>Qubes documentation: [https://www.qubes-os.org/doc/copy-paste Copying and Pasting Text Between Domains]</ref>, mean that clean, trusted files and text can be easily transferred to your trusted VMs should it be necessary and safe.
 
 ==== Tips ====
-
 * Remember that a DisposableVM is shutdown when the '''first''' user-launched process is terminated. If you create a new DisposableVM by launching Tor Browser and then proceed to compose text in an editor, all of your work will be lost if you close Tor Browser. To avoid this, you may want to launch a DisposableVM via a terminal and launch additional applications from the command line. When you are ready to destroy the DisposableVM, you can simply exit from the terminal.
 
 * In Qubes, it is never a good idea to store valuable information in an untrusted VM. This is further enforced by the fact that Tor Browser doesn't remember bookmarks or credentials. A best practice for storing this type of information is to use a password manager in an offline vaultVM. @rustybird has announced a new "split-tor-browser"<ref>[https://github.com/rustybird/qubes-split-browser Github: Split Browser]</ref> package that can retrieve urls and credentials from a trustedVM for use in a DisposableVM's web browser. (This package has not yet been tested or endorsed by Whonix.)
 
 * DisposableVMs can be created directly by launching programs from the application menu using shortcuts. ([[#Adding_shortcuts_to_application_menus.5B28.5D | See below for instructions.]]) They can also be spawned by using context-menus or CLI commands in other AppVMs. See [https://www.qubes-os.org/doc/dispvm/ Qubes dispVM documentation] for different methods. Once again, be sure to heed the [[#Warning:_Use_caution_when_spawning_DisposableVMs_from_other_VMs_.5B3.5D | relevant warning]] in the Warnings section..
-
 
 ==== Adding shortcuts to application menus ====
 <ref>Qubes feature request WIP: [https://github.com/QubesOS/qubes-issues/issues/1339 have DispVMs inherit launcher shortcuts like other TemplateBasedVMs #1339]</ref>
@@ -298,7 +287,6 @@ In the <Include> subsection add the appropriately named .desktop file.
         <Filename>dvm-torbrowser.desktop</Filename>
 
 ===== Qubes 3.1 / KDE4 =====
-
 <code>
 dom0 -> right-click Application Launcher Menu -> click `Edit Applications`
 </code>
