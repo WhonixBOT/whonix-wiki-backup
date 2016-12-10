@@ -441,77 +441,26 @@ sudo apt-get install git
 git clone https://git-tails.immerda.ch/tails
 </pre>
 
-<pre>
-cd tails
-</pre>
 
-relevant files...
 
 <pre>
-find . | grep filter
+sudo whonix_repository --baseuri https://deb.whonix.org --enable --repository developers
 </pre>
 
 <pre>
-./config/chroot_local-includes/lib/systemd/system/tor-controlport-filter.service
-./config/chroot_local-includes/usr/local/lib/tor-controlport-filter
-./config/chroot_local-includes/etc/tor-controlport-filter.d
-./config/chroot_local-includes/etc/tor-controlport-filter.d/tor-browser.yml
-./config/chroot_local-includes/etc/tor-controlport-filter.d/tor-launcher.yml
-./config/chroot_local-includes/etc/tor-controlport-filter.d/onionshare.yml
-./config/chroot_local-includes/etc/tor-controlport-filter.d/onioncircuits.yml
-./wiki/src/contribute/design/Tor_enforcement/Network_filter.mdwn
-</pre>
-
-<pre>
-sudo service control-port-filter-python stop
-sudo adduser --system --quiet --group --no-create-home tor-controlport-filter
-sudo adduser tor-controlport-filter debian-tor
-sudo mkdir /etc/tor-controlport-filter.d
-sudo apt-get install python3-psutil python3-stem python3-yaml 
-</pre>
-
-<pre>
-kdesudo kwrite /usr/bin/whonix_firewall
-</pre>
-
-Change port number from
-
-<pre>
-   [ -n "$CONTROL_PORT_FILTER_PROXY_PORT" ] || CONTROL_PORT_FILTER_PROXY_PORT="9052"
-</pre>
-to
-
-<pre>
-   [ -n "$CONTROL_PORT_FILTER_PROXY_PORT" ] || CONTROL_PORT_FILTER_PROXY_PORT="9051"
-</pre>
-
-<pre>
-sudo whonix_firewall
-</pre>
-
-<pre>
-kdesudo kwrite /usr/share/tor/tor-service-defaults-torrc
-</pre>
-
-Remove the following two entries.
-
-<pre>
-ControlPort 9051
-ControlListenAddress 127.0.0.1
-</pre>
-
-<pre>
-sudo service tor@default restart
-</pre>
-
-Adjust path.
-<pre>
-sudo ./tor-controlport-filter --listen-address 0.0.0.0 --debug
+sudo apt-get update && sudo apt-get --yes dist-upgrade
 </pre>
 
 ----
 
-Then tor-controlport-filter by Tails should be ready. On the workstation you should be able to run:
+Then tor-controlport-filter by Tails should be ready. On the gateway you should be able to run:
+
+Whonix-Gateway (for [[Non-Qubes-Whonix]])
+<pre>
+nc 10.152.152.11 9051
+</pre>
+
+(THIS IS NOT TESTED:) Then tor-controlport-filter by Tails should be ready. On the workstation you should be able to run:
 
 <pre>
 nc 127.0.0.1 9151
