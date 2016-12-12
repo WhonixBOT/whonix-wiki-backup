@@ -20,13 +20,13 @@ In future, Tor Button will likely also use something like [https://trac.torproje
 
 Therefore all requirements, Whonix-Workstation having no way of finding its own external IP address, joining Tor Browser's fingerprint for Whonix users, having no access for Whonix-Workstation to Tor's control port with Tor Buttons new requirement to have access to Tor's control port contradicted itself.
 
-Control Port Filter Proxy (CPFP or sometimes called cpfpy) has been implemented as a solution. It gives Whonix-Workstation access to a limited selection of Tor's control port commands, using white listing (not blacklisting). For example, it allows {{Code2|SIGNAL NEWNYM}} to make Tor Buttons New Identity feature available for users who use Tor Browser in Whonix-Workstation.
+Control Port Filter Proxy (cpfpy) has been implemented as a solution. It gives Whonix-Workstation access to a limited selection of Tor's control port commands, using white listing (not blacklisting). For example, it allows {{Code2|SIGNAL NEWNYM}} to make Tor Buttons New Identity feature available for users who use Tor Browser in Whonix-Workstation.
 
-Therefore when CPFP gets asked {{Code2|GETINFO net/listeners/socks}}, it lies, and answers '250-net/listeners/socks="127.0.0.1:9150"'. This makes Tor Button happy and therefore it shows a "Congratulations!" (success) welcome page on its default homepage about:tor and not the failure page, which would confuse users. Since bug [https://trac.torproject.org/projects/tor/ticket/9224 TorButton about:tor fails when using additional socks listeners] has been fixed by Tor Tor Project, it that lie wouldn't be necessary anymore. <font size=-3>We're keeping it, because it is not necessary for Tor Button get a full list of all ports Tor is listening on. If an attacker compromised Whonix-Workstation, hiding that list has an advantage. The attacker can probe what ports are available to that Whonix-Workstation, but if the user added extra ports not available to the compromised Whonix-Workstation (only available to another Whonix-Workstation listening on another IP), at least those remain secret. (This is a bit theoretical, because a compromised Whonix-Workstation can spoof it's LAN IP and most likely very few users are using ARP spoofing defenses. Should we add ARP spoofing defenses by default at some point, we at least don't have to worry about this point.)</font>
+Therefore when cpfpy gets asked {{Code2|GETINFO net/listeners/socks}}, it lies, and answers '250-net/listeners/socks="127.0.0.1:9150"'. This makes Tor Button happy and therefore it shows a "Congratulations!" (success) welcome page on its default homepage about:tor and not the failure page, which would confuse users. Since bug [https://trac.torproject.org/projects/tor/ticket/9224 TorButton about:tor fails when using additional socks listeners] has been fixed by Tor Tor Project, it that lie wouldn't be necessary anymore. <font size=-3>We're keeping it, because it is not necessary for Tor Button get a full list of all ports Tor is listening on. If an attacker compromised Whonix-Workstation, hiding that list has an advantage. The attacker can probe what ports are available to that Whonix-Workstation, but if the user added extra ports not available to the compromised Whonix-Workstation (only available to another Whonix-Workstation listening on another IP), at least those remain secret. (This is a bit theoretical, because a compromised Whonix-Workstation can spoof it's LAN IP and most likely very few users are using ARP spoofing defenses. Should we add ARP spoofing defenses by default at some point, we at least don't have to worry about this point.)</font>
 
-For eventual further Tor control port access requirements by Tor Button, the configuration file of accepted commands has to be extended. If Tor Button would ever ask for anything which violates Whonix's design (Whonix-Workstation has no way of finding out its own external IP address in particular), such as {{Code2|GETINFO address}}, for example if Tor Button wanted to ensure, that the user isn't using its own external IP address, a new lie would have to be added to the CPFP script. In case many more lies are required, lies should go into the config file as well, for now, hard coding is sufficient.
+For eventual further Tor control port access requirements by Tor Button, the configuration file of accepted commands has to be extended. If Tor Button would ever ask for anything which violates Whonix's design (Whonix-Workstation has no way of finding out its own external IP address in particular), such as {{Code2|GETINFO address}}, for example if Tor Button wanted to ensure, that the user isn't using its own external IP address, a new lie would have to be added to the cpfpy script. In case many more lies are required, lies should go into the config file as well, for now, hard coding is sufficient.
 
-[[whonixcheck]] asks CPFP {{Code2|status/bootstrap-phase}} <ref>
+[[whonixcheck]] asks cpfpy {{Code2|status/bootstrap-phase}} <ref>
 Find out what {{Code2|status/bootstrap-phase}} answers yourself in Whonix-Gateway.
 <pre>
 /usr/lib/anon-shared-helper-scripts/tor_bootstrap_check.py 127.0.0.1 9051 1
@@ -54,9 +54,9 @@ whonixcheck --function check_tor_bootstrap --verbose --debug
 </pre>
 </ref> (usability feature).
 
-CPFP limits maximum accepted command string length to 128 (configurable) (credits: <ref>[https://mailman.boum.org/pipermail/tails-dev/2014-February/005041.html As done by Tails.]</ref> <ref>Thanks to [https://www.whonix.org/old-forum/index.php?action=profile;u=87 HulaHoop] for [https://www.whonix.org/old-forum/index.php/topic,342.0.html suggesting this].</ref>) for better security.
+cpfpy limits maximum accepted command string length to 128 (configurable) (credits: <ref>[https://mailman.boum.org/pipermail/tails-dev/2014-February/005041.html As done by Tails.]</ref> <ref>Thanks to [https://www.whonix.org/old-forum/index.php?action=profile;u=87 HulaHoop] for [https://www.whonix.org/old-forum/index.php/topic,342.0.html suggesting this].</ref>) for better security.
 
-Advanced users who do not wish to use CPFP can disable it, see [[Advanced Security Guide#Disable Control Port Filter Proxy]].
+Advanced users who do not wish to use cpfpy can disable it, see [[Advanced Security Guide#Disable Control Port Filter Proxy]].
 
 == Whonix-Workstation ==
 Whonix sets appropriate environment variables for control port (9151), control port ip (127.0.0.1) and control port password "password". The latter is not really in use, its just to make Tor Button happy, because it doesn't default to some password. Tor Button sends it, but its ignored by Control Port Filter Proxy.
@@ -90,13 +90,13 @@ Quickly install files from package to system.
 sudo make install
 </pre>
 
-Restart CPFP after making changes to it.
+Restart cpfpy after making changes to it.
 
 <pre>
 sudo service control-port-filter-python restart
 </pre>
 
-Watch CPFP's log on Whonix-Gateway while using it.
+Watch cpfpy's log on Whonix-Gateway while using it.
 
 <pre>
 tail -f /var/log/control-port-filter-python.log
@@ -124,13 +124,13 @@ Watch kern.log for eventual iptables log messages, run this on Whonix-Gateway.
 tail -f /var/log/kern.log
 </pre>
 
-To see what's being send to CPFP's port, run this on Whonix-Gateway.
+To see what's being send to cpfpy's port, run this on Whonix-Gateway.
 
 <pre>
 sudo tcpdump -i eth1 -l -s0 -w - tcp dst port 9052 | strings
 </pre>
 
-Connect to CPFP from Whonix-Workstation to simulate using it.
+Connect to cpfpy from Whonix-Workstation to simulate using it.
 
 <pre>
 telnet 127.0.0.1 9051
