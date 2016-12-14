@@ -1,0 +1,266 @@
+{{Header}}
+__NOTITLE__
+{{#seo:
+|description=Complete and Comprehensive Instructions to build Whonix Virtual Machine Images from Source Code. Including build configurations, such as 64 bit builds, Terminal-Only builds and so forth.
+}}
+{{forkme}}
+
+= Build Documentation =
+== Introduction ==
+This page documents how to build Whonix VirtualBox {{Code2|.ova}} or {{Code2|.qcow2}} images (for [[KVM]]). For [[Qubes-Whonix]], see [[Dev/Qubes#Build_Qubes-Whonix_Templates]]. If you have any questions or need help, get in Contact.
+
+It documents how to build the '''stable''' of Whonix.
+
+Knowledge assumed: basic principles of Virtualization; operation of your platform; Linux knowledge: how to install Debian and basic command line knowledge.
+
+Only one prerequisite: you need a working internet connection.
+
+For discussion related to the development and build process of Whonix images get in contact.
+
+How to use the resulting images, is documented in the [[Documentation]].
+
+== Warning ==
+* <u>'''Short'''</u>: '''Don't add private files to Whonix's source code folder! [...]'''
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+<div class="mw-collapsible-content">
+''Long'': [...] Unless you know what you are doing. Technically, it would work. This is recommended against. Those files would get managed by the respective package. When you later update Whonix debian packages, your files would get deleted by the package manager. Also adding private files to Whonix's source code folder, later contributing to Whonix's development and accidentally pushing the wrong git branch would be a disaster. Better add your private files to Whonix after building Whonix. Or add a custom build step adding your files, which then get copied from a folder outside of Whonix's source folder.
+</div>
+</div>
+<br />
+* <u>'''Short'''</u>: '''Gnome user? Please disable device auto mounter and the file indexing service. You can do this by running the following commands.''' (If you don't know if you are a Gnome user or not, just run this command, it won't hurt.)
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+<div class="mw-collapsible-content">
+''Long'': <ref>Otherwise a file manager may open Whonix's chroot folder (the directory, in which the image which is currently build is mounted) while building Whonix which could lead to failing umount because the device is still busy.</ref>
+* Run the following command.
+<pre>
+gsettings set org.gnome.desktop.media-handling automount-open false
+</pre>
+* System Tools -> Settings -> System Settings -> Details -> Removable Media -> Uncheck "Never prompt or start programs on media insertion"
+* System Tools -> Settings -> System Settings -> Search and Indexing -> Uncheck "Monitor file and directory changes"
+</div>
+</div>
+<br />
+* <u>'''Short'''</u>: '''KDE user? It is recommended to disable nepomuk.You can do this by running the following command.'''
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+<div class="mw-collapsible-content">
+''Long'': <ref>Nepomuk indexing the whonix_binary folder wastes some time indexing.</ref>
+<pre>
+Start menu -> System Settings -> Desktop Search -> uncheck Enable Nepomuk Sematic Desktop -> Apply
+</pre>
+</div>
+</div>
+<br />
+* <u>'''Short'''</u>: '''Make sure there aren't any VMs in VirtualBox already called Whonix-Gateway or Whonix-Workstation!''' 
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+<div class="mw-collapsible-content">
+''Long'': <ref>Because the build script would fail, because it tries to create VMs either named Whonix-Gateway or Whonix-Workstation.</ref>
+</div>
+</div>
+<br />
+* <u>'''Short'''</u>: '''Check if the [[Dev/SourceCodeIntro#OpenPGP Keys|OpenPGP public keys]] are still up to date. If you are in luck, you never have to update the keys yourself and the Whonix maintainer will keep them updated.''' 
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+<div class="mw-collapsible-content">
+''Long'': For better security.
+</div>
+</div>
+<br />
+* <u>'''Short'''</u>: '''Do not try to build Whonix-Gateway and Whonix-Workstation at the same time!'''
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+<div class="mw-collapsible-content">
+''Long'': Building Whonix-Gateway and Whonix-Workstation at the same time is not supported due to limitations in the build script. In other words, do not try to run for example {{Code|sudo ~/Whonix/whonix_build --flavor whonix-gateway -- --build --target virtualbox}} and {{Code|sudo ~/Whonix/whonix_build --flavor whonix-workstation -- --build --target virtualbox}} at the same time. The build would probably fail.
+</div>
+</div>
+<br />
+
+* <u>'''Short'''</u>: '''Don't use images created inside Continuous Integration (CI) environments for anything besides testing!'''
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+<div class="mw-collapsible-content">
+Usually you are not using [https://en.wikipedia.org/wiki/Continuous_integration CI] environments without knowing.
+
+You can find out if you are running inside a CI environment by running.
+
+<pre>
+echo "$CI"
+</pre>
+
+If it shows nothing, i.e.
+
+<pre>
+
+</pre>
+
+Everything is fine.
+
+Otherwise, if it were to show.
+
+<pre>
+true
+</pre>
+Then don't use these images for anything besides testing.
+
+Reason:
+https://github.com/Whonix/Whonix/blob/master/build-steps.d/1100_prepare-build-machine#L577
+</div>
+</div>
+<br />
+
+== Build Anonymity ==
+While downloading the required tools for building Whonix your internet service provider could if he want notice that you want to build Whonix. This is especially interesting, if you want to redistribute Whonix, but still want to stay anonymous. The full story can be read in the chapter [[Build Anonymity]].
+
+== Build Security ==
+Especially, but not exclusively, if you want to distribute Whonix images, you should improve the security of your build environment.
+
+* Build on a dedicated build system, install security updates... ([[Security Guide]])
+* All installation medium<ref>Such as DVD or USB.</ref> and all downloaded/used code must be verified (including all software on the host).
+* Hashes, fingerprints in the scripts and the wiki is not to be trusted. Verify everything.
+* Read [[Trust]].
+
+== Host Preparation ==
+<!--
+EDITORS NOTE: The following host preparation text is duplicated on 3 pages.
+(1) [[Physical Isolation]]
+(2) [[Dev/Build Documentation]] for VM images
+(3) Whonix debian packages.
+When making changes here, please consider also making changes there.
+(Not using a template, because it would probably require a version specific template.)
+-->
+* You need to build on '''Debian <u>stable</u> (currently: jessie)'''. (How to obtain Debian safely: <ref>[[Debian|Debian ISO OpenPGP verification]]</ref>) <ref>The build scripts could be adapted to run on other {{Code2|*NIX}} systems as well but currently they assume {{Code2|apt-get}} and {{Code2|grml-debootstrap}} to be available.</ref>
+* Build dependencies and configurations get automatically applied, so you don't have to worry about that. <ref>By {{Code2|[https://github.com/Whonix/Whonix/blob/master/build-steps.d/1100_prepare-build-machine build-steps.d/1100_prepare-build-machine]}}.))</ref>
+* It is recommended to set your terminal (for example Konsole) to unlimited scrollback, so you can watch the full build log.
+* You need ~ 30 GB free disk space. When you build inside a Virtual Machine using sparse files such as VirtualBox, consider assigning 100 GB free space. (Sparse files will grow as space is actually used. Won't take up space if it's not used. Easier to have the option to use more space than growing the image later.) More info: <ref>~ 25 GB might suffice as well. We haven't messured that in detail yet. Less space required, if you only want to build either Whonix-Gateway or Whonix-Workstation. Less space for Whonix-Gateway required than for Whonix-Workstation.</ref>
+
+== Building Whonix in Whonix ==
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+'''You only have to read this, if you want to build Whonix in Whonix.''' <br />
+If you are interested, click on Expand on the right.
+<div class="mw-collapsible-content">
+
+Building Whonix in Whonix is possible as well (if the Whonix version you are using as host is also based on Debian stable (currently: wheezy)). Unfortunately, apt-cacher-ng does not like Whonix's apt repository on sourceforge.net. Patrick already reported a bug. As long as this bug isn't fixed, you need to disable Whonix's apt repository while building Whonix. You can do this using the {{Code2|whonix_repository}} tool.
+
+<pre>
+sudo whonix_repository --disable
+</pre>
+</div>
+</div>
+
+== Introduction into Whonix Source Code ==
+'''If you prefer to read and understand the source code just by reading scripts you may skip this optional chapter.'''
+
+When you like to mess with the source code, it would probably help a lot if you at least know what {{Code|.img}}, {{Code|.vdi}}, {{Code|.vmdk}} and {{Code|.ova}} are being used for. See [[Dev/Source_Code_Intro|Source Code Introduction]].
+
+== Preparation Steps ==
+'''Only required if you want to redistribute (official) Whonix builds.'''
+
+See [[Dev/Redistribution#Pre_Building|Redistribution Pre Building]].
+
+{{Build_Documentation_Get_Source_Code}}
+
+{{Build_Configuration}}
+
+== VM Creation ==
+<!--
+EDITORS NOTE:
+I am not sure it is a great idea to first tell builders how to build Whonix and later how to clean up to prepare for another build. Running the cleanup steps before the creation steps may be unnecessary when running these steps for the first time, but doesn't hurt either. An important thing this does archive is creating fewer support requests and bug reports from people running these steps for the second time without remembering they have to clean up first. If you want to discuss this, please open a new discussion in the development forums.
+-->
+
+Open a terminal (such as Konsole).
+
+The {{Code2|whonix_build}} script can invoke the {{Code2|help-steps/whonix_build_one}} help step multiple times to build multiple virtual machines at once. The syntax is.
+
+<pre>
+whonix_build <parameters for whonix_build> -- <parameters for help-steps/whonix_build_one>
+</pre>
+
+Don't worry too much about the syntax, you'll see hands-on examples below.
+
+The {{Code2|help-steps/whonix_build_one}} help step needs a parameter to know your build target. The following build targets are available.
+
+<pre>
+--target virtualbox
+--target qcow2
+--target raw
+--target root
+</pre>
+
+In context of build documentation for the current page you are reading, if you are interested in,
+
+* {{Code2|--target root}} you should look into our [[Dev/Build_Documentation/Physical_Isolation|Physical Isolation Build Documentation]] instead.
+* {{Code2|.ova}} images (most likely for [[VirtualBox]] or [[VMware]], then choose {{Code2|--target virtualbox}}
+* {{Code2|.qcow2}} images (most likely for [[KVM]] or [[QEMU]]), then choose {{Code2|--target qcow2}}
+* {{Code2|.raw}} images (most likley for [[Qubes]]), then choose {{Code2|--target raw}}
+
+{{Code2|--target virtualbox}} can be combined with {{Code2|--target qcow2}} as well as {{Code2|--target raw}}, which is useful for redistributable builds. Note, that {{Code2|--target virtualbox}} is currently the most tested option.
+
+Delete eventually already existing Whonix-Gateway virtual machine. '''Warning''': This will delete a virtual machine named Whonix-Gateway from VirtualBox!
+
+<pre>
+sudo ~/Whonix/whonix_build --flavor whonix-gateway -- --clean --virtualbox
+</pre>
+
+Delete eventually already existing Whonix-Workstation virtual machine. '''Warning''': This will delete a virtual machine named Whonix-Workstation from VirtualBox!
+
+<pre>
+sudo ~/Whonix/whonix_build --flavor whonix-workstation -- --clean --target virtualbox
+</pre>
+
+From now, you have two options. If you do not wish to use different build configurations for Whonix-Gateway and Whonix-Workstation (for example, if you do not wish to create a terminal-only Whonix-Gateway and a full Whonix-Workstation), to build both virtual machines at once, you could use.
+
+<pre>
+sudo ~/Whonix/whonix_build --flavor whonix-gateway --flavor whonix-workstation -- --build --target virtualbox
+</pre>
+
+If you wish to use different build configurations, you must build one after the other as described below.
+
+Build a Whonix-Gateway virtual machine image.
+
+<pre>
+sudo ~/Whonix/whonix_build --flavor whonix-gateway -- --build --target virtualbox
+</pre>
+
+Eventually, if you wish to use a different build configuration for Whonix-Workstation, change the contents in your {{Code2|/etc/whonix_buildconfig.d}} folder.
+
+Build a Whonix-Workstation virtual machine image.
+
+<pre>
+sudo ~/Whonix/whonix_build --flavor whonix-workstation -- --build --target virtualbox
+</pre>
+
+The resulting {{Code2|.ova}}, {{Code2|.qcow2}} and/or {{Code2|.raw}} images can be found in {{Code|~/whonix_binary}} folder.
+
+While building, you might see a few [[#Expected Build Warnings|Expected Build Warnings]].
+
+Check if all went ok.
+
+Please report back any issues!
+
+== Build Verification (Optional) ==
+{{Build Documentation Build Verification}}
+
+== Cleanup ==
+{{Build_Documentation_Cleanup}}
+
+== Debugging ==
+'''OPTIONAL''' (Only in case something goes wrong or if you want to audit or develop Whonix.)
+
+See [[Dev/Source_Code_Intro#Debugging|Debugging]].
+
+== Final Steps ==
+'''Only required if you want to redistribute (official) Whonix builds.'''
+
+See [[Dev/Redistribution#Post_Building|Redistribution Post Building]].
+
+= Source Code / Hacking / Development Tickets =
+See [[Dev/Developer_Portal|Developer Portal]].
+
+= Contact =
+[https://www.whonix.org/old-forum/index.php?board=5.0 Development Forum] | [https://www.whonix.org/cgi-bin/mailman/listinfo/whonix-devel Developer Mailing List] | [https://github.com/Whonix/Whonix/issues github] | [[Contact]]
+
+= Expected Build Warnings =
+{{Expected_Build_Warnings}}
+
+= Footnotes =
+<references/>
+
+{{Footer}}
+
+[[Category:Development]]
