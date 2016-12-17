@@ -104,10 +104,16 @@ So we want a completely isolated virtual time.
 = Whonix's Time Synchronization Mechanism =
 == Overview ==
 * Whonix leaves the host's system clock or time synchronization mechanism untouched.
-* Whonix-Gateway and Whonix-Workstation are based on VirtualBox and therefore have their own virtual hardware system clocks.
-* Most VirtualBox time synchronization features get disabled by Whonix.
-** Guest additions time synchronization gets disabled in by [https://github.com/Whonix/vbox-disable-timesync vbox-disable-timesync] at run time. See VirtualBox bug report [https://www.virtualbox.org/ticket/10828 VBoxService --disable-timesync broken]. They say it's actually not a bug. It's a missing feature, that running instances of VBoxService can not be modified in their settings. Whonix would need to edit ''/etc/init.d/vboxadd-service'' by adding ''--disable-timesync'' <ref>[https://www.virtualbox.org/ticket/2928 source]</ref>. Whonix developer Patrick Schleizer does not see a reliable way to do so. If the guest additions get automatically updated in future the option would get overwritten. That's why Whonix added a line in ''/etc/init.d/sdwdate'' to turn it off completely. Guest additions time synchronization gets disabled, but the rest of the guest additions continue to work fine. Unless you have a better idea, it's an acceptable workaround. Maybe when Whonix is based on Debian jessie / systemd, it will be easier to add the --disable-timesync to daemon options using a systemd override.
-** built in time synchronization features get disabled by ''VBoxManage setextradata "$VMNAME" "VBoxInternal/Devices/VMMDev/0/Config/GetHostTimeDisabled" "1"'' at build time.
+* Whonix-Gateway and Whonix-Workstation are commonly used inside virtualizers and therefore have their own virtual hardware system clocks.
+* Virtualizers time synchronization get disabled by Whonix.
+** Most VirtualBox time synchronization features get disabled by Whonix.
+*** Guest additions time synchronization gets disabled in by [https://github.com/Whonix/vbox-disable-timesync vbox-disable-timesync] at run time. See VirtualBox bug report [https://www.virtualbox.org/ticket/10828 VBoxService --disable-timesync broken]. They say it's actually not a bug. It's a missing feature, that running instances of VBoxService can not be modified in their settings. Whonix would need to edit ''/etc/init.d/vboxadd-service'' by adding ''--disable-timesync'' <ref>[https://www.virtualbox.org/ticket/2928 source]</ref>. Whonix developer Patrick Schleizer does not see a reliable way to do so. If the guest additions get automatically updated in future the option would get overwritten. That's why Whonix added a line in ''/etc/init.d/sdwdate'' to turn it off completely. Guest additions time synchronization gets disabled, but the rest of the guest additions continue to work fine. Unless you have a better idea, it's an acceptable workaround. Maybe when Whonix is based on Debian jessie / systemd, it will be easier to add the --disable-timesync to daemon options using a systemd override.
+*** built in time synchronization features get disabled by ''VBoxManage setextradata "$VMNAME" "VBoxInternal/Devices/VMMDev/0/Config/GetHostTimeDisabled" "1"'' at build time.
+** KVM: TODO document
+** Qubes: TODO
+*** https://phabricator.whonix.org/T389
+*** https://phabricator.whonix.org/T440
+*** https://phabricator.whonix.org/T389
 * VM Settings, Hardware Clock: set to UTC.
 * When get powered on, they still get their time from the host. The user is advised to modify the biossystemtimeoffset in Advanced Security Guide, chapter [[Advanced Security Guide#Network Time Synchronization|Network Time Synchronization]]. <ref>Developer information: If we needed or wanted to render the hardware clock unusable, we could set VirtualBox ''--biossystemtimeoffset'' several decades in past or future.</ref>
 * Time Sanity Check before [[sdwdate]] will be executed, this ensures, that the host clock is sane and not slow in 1980. User gets advised to fix its host clock in such cases.
