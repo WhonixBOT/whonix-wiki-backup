@@ -114,7 +114,7 @@ Now, ideally, once tor-controlport-filter start it would read both (or any numbe
         replacement: ''
 }}
 
-= How =
+==== How ====
 tor-controlport-filter in Whonix cannot filter per application. We won't have access to the program name talking to it. So Whonix can only have one global config. However, it would be nice if that global config could be split into multiple files.
 
 They're supposed to be processes in lexical order.
@@ -122,4 +122,85 @@ They're supposed to be processes in lexical order.
 * /etc/tor-controlport-filter.d gets processed first (lower priority)
 * /usr/local/etc/tor-controlport-filter.d gets processed second (higher priority)
 
+pseudo code in shell / bash? Like this:
+
+<pre>
+for file_name in /etc/tor-controlport-filter.d/* ; do
+   source $file_name
+done
+
+for file_name in /usr/local/etc/tor-controlport-filter.d/* ; do
+   source $file_name
+done
+</pre>
+
 https://github.com/joysn/control-port-filter-python/commit/22ce6ba6ff6513e45d9166e6004d8748fd407eb0
+
+==== Use Case ====
+Whonix by default needs to ship some default config so Whonix deployed
+in its default setup will work out of the box. 30_whonix.conf
+
+Now, sometimes users want to modify the config that Whonix is provided
+by default. Either by the user changing the setting themselves or by
+installing some package that changes the config.
+
+The problem is, we really don't want users to modify 30_whonix.conf.
+This is because, next time Whonix is updated, we might need to modify
+30_whonix.conf. If both, the user and Whonix wants to modify that file,
+it won't work. apt-get/dpkg will throw an interactive conflict
+resolution dialog, asking the user to keep its user modified version or
+the new Whonix version or to manually merge these changes. This usually
+confuses users. If they keep their old file, something might not work.
+If they install the new config by Whonix, they loose their settings. And
+merging the files is difficult during upgrading for users. Also it makes
+the upgrade process interactive rather than easy non-interactive.
+
+Also other packages who want to extend tor-controlport-filter config
+must not modify 30_whonix.conf. dpkg does not allow another package to
+modify an existing file on the system. (without hacks such as
+dpkg-divert which should be avoided due to issues) And some echo/sed
+style replacement by the new package would also throw an interactive
+dpkg confict resolution dialog when Whonix is updated.
+
+==== which .d style ====
+Different software packages such as apt vs grub all implement their '.d'
+folders a bit differently. They're most times sources in lexical order
+and the new convention is to only use configs ending with '.conf'.
+
+- For example for /etc/grub.d lets one add additional boot menu entries.
+It however does not allow (without bad hacks) to remove/modify existing
+boot menu entries.
+
+- /etc/default/grub.d lets users (and packages) change global grub
+settings. Such as /etc/default/grub.d/30_debian.conf could say
+"resolution=640x480" (made up that variable name for the sake of an
+example) and /etc/default/grub.d/50_user.conf "resolution=1024x768".
+Ultimately "resolution=1024x768" would win.
+
+- With /etc/default/grub.d it's also possible to unset changes. (I
+think.) /etc/default/grub.d/60_test.conf could say "resolution=". So
+"resolution=" would win.
+
+- /etc/bashrc.d does something like this
+for file_name in /etc/bashrc.d ; do
+   source "$file_name"
+done
+
+- For /etc/tor-controlport-filter.d which is complicated enough, I
+guess, best we can do is merging all config files.
+
+While 30_whonix.conf comes by default, Whonix user documentation will
+explain how to get onionshare, ricochet etc. to work.
+
+- For onionshare ideally we can just say "create a file
+/etc/tor-controlport-filter.d/50_onionshare.conf with the following
+content".
+- Similarly we ideally we can just say for ricochet "create a file
+/etc/tor-controlport-filter.d/50_ricochet.conf with the following content".
+
+So users who just have both 50_onionshare.conf and 50_ricochet.conf can
+use both programs.
+
+Creating files and pasting stuff is usually something that users easily
+understand. What they don't easily understand is to explain "open file
+30_whonix.conf and then inject X at that line and Y and that line etc.".
