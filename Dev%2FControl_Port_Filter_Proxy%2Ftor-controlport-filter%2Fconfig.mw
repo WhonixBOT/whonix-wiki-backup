@@ -186,3 +186,42 @@ done
 ** Similarly we ideally we can just say for ricochet "create a file /etc/tor-controlport-filter.d/50_ricochet.conf with the following content".
 ** So users who just have both 50_onionshare.conf and 50_ricochet.conf can use both programs.
 ** Creating files and pasting stuff is usually something that users easily understand. What they don't easily understand is to explain "open file 30_whonix.conf and then inject X at that line and Y and that line etc.".
+
+==== match-exe-paths ====
+<pre>
+ match-exe-paths:
+   - '*'
+</pre>
+
+This is because that information gets lost during the workstation -> gateway transfer. Hard to have it both way - Fine tuned restricted application white lists (which are great) vs Whonix workstation -> gateway split model.
+
+==== match-users ====
+<pre>
+  match-users:
+    - '*'
+</pre>
+
+Same as above.
+
+==== match-hosts ====
+<pre>
+  match-hosts:
+    - '*'
+</pre>
+
+This actually might make sense in Whonix. A user using multiple Whonix-Workstations could configure the "default" match host "*" for Tor Browser / whonixcheck. And then configure another workstation (with IP 10.152.152.12) with match-hosts '10.152.152.12'.
+
+But if that gets to complicated, just forget about it.
+
+==== comparison with Whonix legacy control-port-filter-python config parsing code ====
+If you like to look at 'legacy control-port-filter-python' (that's how I call the script that Whonix had before moving to tor-controlport-filter code by Tails due to lack of a better term)... Here is how config parsing worked back then:
+
+https://github.com/Whonix/control-port-filter-python/blob/164411fb7c8914022a5def02b5aea7118e7ca8a8/usr/sbin/cpfpd#L29-L75
+
+The whitelist was simply concatenated. A lot simpler, what? 
+
+Using plain text config files (no yaml / yml).
+
+https://github.com/Whonix/control-port-filter-python/blob/164411fb7c8914022a5def02b5aea7118e7ca8a8/etc/cpfpy.d/30_default.conf#L72-L91
+
+However, likely not possible with rewriting and whatnot.
