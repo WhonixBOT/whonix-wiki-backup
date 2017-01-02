@@ -331,10 +331,193 @@ Forum discussion:<br />
 https://forums.whonix.org/t/cannot-download-hardened-tor-browser-using-tor-browser-updater-whonix
 
 == Tor Browser Sandboxed ==
-TODO: document
 
-Forum discussion:<br />
-http://forums.whonix.org/t/tor-browser-sandbox-linux-alpha-coming-soon
+===Sandboxing Tor Browser in Non-Qubes-Whonix===
+
+Warning: These instructions are extremely alpha. They currently only work reliably with the 32-bit version of Whonix, but can be slightly modified to work in a (non-Qubes) Debian Jessie VirtualBox VM. Testers or advanced users only!
+
+====Introduction====
+
+A sandbox is a secure environment in which you can run the Tor Browser to mitigate exploit vectors which would otherwise deanonymize you or infect your computer. For instance, sandboxing reduces the opportunities for an attacker to easily identify real IP and MAC addresses, install malware, or browse your files.<ref>https://blog.torproject.org/blog/q-and-yawning-angel</ref> In simple terms, the Tor Browser is run in a limited awareness container that is prevented from interacting with the rest of your computer. The spate of recent attacks on the Tor Browser in the wild suggest this is a prudent approach for cautious users, or those facing significant risks.
+
+The Tor Browser sandbox is compatible with either the "release", "alpha" or "hardened" Tor Browser series. However, the sandboxed "hardened" Tor Browser is the least-tested combination by Tor developers.<ref>https://blog.torproject.org/blog/tor-browser-65a6-hardened-released</ref>
+
+====Sandboxing Effects on Tor Browser Functionality====
+
+While sandboxing improves security, some functionality is lost either by design or inadvertently. In addition, some functions like sound must be optionally configured. As at December 2016, broken items include:<ref>https://trac.torproject.org/projects/tor/wiki/doc/TorBrowser/Sandbox/Linux</ref>
+
+* Foreign language support;
+* The meek pluggable transport; and
+* Manual checks for Tor Browser updates.
+
+
+The Tor Browser sandbox is unlikely to ever support:
+
+* The FTE pluggable transport;
+* Hardware-accelerated 3d rendering;
+* Printing, except to a file;
+* Connections outside of the Tor network; and
+* Compatibility of the "hardened" Tor Browser with a grsec kernel (due to ASAN/Pax conflicts).
+
+
+Manual configuration changes are required for audio support, the Tor ciruit display (already disabled in Whonix), and installs/updates of Tor Browser addons. By design, users will not be able to see downloaded files, fonts are limited to a minimal set, further addons cannot be enabled without sandbox configuration changes, and plug-ins like Flash or Silverlight will not work.
+
+====Tor Browser Sandbox Dependencies====
+
+In order to install and run the sandbox, two things are required:
+
+* Several dependencies available in Debian Jessie backports; and
+* A newer (Whonix-14-developers-only) version of the control-port-filter-python for Tor cookie control protocol authentification.<ref>https://forums.whonix.org/t/tor-browser-sandbox-linux-alpha-coming-soon/3060</ref>
+
+====Installing sandboxed-tor-browser Dependencies====
+
+'''1. Boot your Whonix-Workstation TemplateVM.'''
+
+'''2. Add jessie-backports to your sources.list'''
+
+    sudo su -c "echo -e 'deb http://http.debian.net/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
+
+Or alternatively use the .onion mirror:
+
+    sudo su -c "echo -e 'deb http://vwakviie2ienjx6t.onion/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
+
+'''3. Use apt-pinning before installing dependencies.'''
+
+Note: this step allows the safe mixing and matching of packages from different Debian repository branches without breaking your base distribution.
+
+Open /etc/apt/preferences.d/debian-pinning.pref in an editor with root rights.
+
+If you are using a graphical Whonix, run:
+
+    kdesudo kwrite /etc/apt/preferences.d/debian-pinning.pref
+
+If you are using a terminal-only Whonix, run:
+
+    sudo nano /etc/apt/preferences.d/debian-pinning.pref
+
+Paste:
+
+    Package: *
+    Pin: release a=stable
+    Pin-Priority: 700
+
+    Package: *
+    Pin: release a=jessie-backports
+    Pin-Priority: 650
+
+    Package: *
+    Pin: release a=testing
+    Pin-Priority: 600
+
+    Package: *
+    Pin: release a=unstable
+    Pin-Priority: 550
+
+    Package: *
+    Pin: release a=experimental
+    Pin-Priority: 500
+
+Save and exit.
+
+'''4. Update your package lists and install sandboxed-tor-browser dependencies.'''
+
+    sudo apt-get update
+
+    sudo apt-get -t jessie-backports install golang bubblewrap libseccomp2 libseccomp-dev
+
+'''5. Install additional dependencies.'''<ref>https://trac.torproject.org/projects/tor/ticket/21048</ref>
+
+    sudo apt-get install gnome-themes-standard gnome-themes-standard-data
+
+====Installing the Whonix-14 tor-controlport-filter<ref>https://www.whonix.org/wiki/Dev/Control_Port_Filter_Proxy#tor-controlport-filter_by_Tails</ref>====
+
+Note: This process must be repeated on both the Whonix-Gateway and Whonix-Workstation.
+
+'''1. Upgrade to the Whonix-14 work in progress.'''
+
+    sudo whonix_repository --baseuri https://deb.whonix.org --enable --repository developers
+
+    sudo su
+    export DEBDEBUG=1
+    export tpo_downloader_debug=1
+
+    apt-get update
+
+    find . /var/lib/apt | grep -i inrelease | xargs cat
+
+    apt-get --yes dist-upgrade
+
+    apt-get --yes autoremove
+
+'''2. Test the tor-controlport-filter is working.'''
+
+In the Whonix-Gateway run:
+
+    nc 10.152.152.10 9051
+
+Type "something". You should see the reply:
+
+    510 Command filtered
+
+In the Whonix-Workstation run:
+
+    nc 127.0.0.1 9151
+
+Type "something". On the gateway you should see some tor-controlport-filter by Tails debug output.
+
+====Downloading the Tor Browser Sandbox====
+
+'''1. Download the sandboxed-tor-browser binaries and signing key from the Tor Project.'''<ref>https://www.torproject.org/projects/torbrowser.html.en#downloads-alpha</ref>
+
+In the Whonix-Workstation VM run:
+
+    wget https://www.torproject.org/dist/torbrowser/6.5a6/sandbox-0.0.2-linux64.zip
+
+    wget https://www.torproject.org/dist/torbrowser/6.5a6/sandbox-0.0.2-linux64.zip.asc
+
+'''2. Download the Tor Project signing key and verify the zip file.'''
+
+Run:
+
+    gpg --recv-keys "EF6E 286D DA85 EA2A 4BA7 DE68 4E2C 6E87 9329 8290"
+
+    gpg --verify sandbox-0.0.2-linux64.zip.asc
+
+'''3. Unzip the sandbox.'''
+
+Run:
+
+    unzip sandbox-0.0.2-linux64.zip.asc
+
+====Using the sandboxed-tor-browser====
+
+To start the sandbox, simply run:
+
+    ./sandboxed-tor-browser
+
+And select the Tor Browser version you are currently using in your Whonix-Workstation configuration.
+
+Important notes:
+
+* sandboxed-tor-browser is also a Tor Browser downloader similar to tb-updated / torbrowser-launcher;
+* Whonix network settings are auto-detected as system Tor and there is no need to manually configure settings; 
+* 32-bit support is being deprecated after version 0.0.2 of the sandbox. Version 0.0.3 and later will only have 64-bit binaries, which is compatible with Whonix 14 (next Whonix release); and<ref>https://lists.torproject.org/pipermail/tbb-bugs/2016-December/010256.html</ref>
+* If you wish to check the sandboxed-tor-browser is correctly using the system Tor process, in a terminal run:
+
+
+    env | grep TOR
+
+The output should show:
+
+    TOR_CONTROL_PORT=9151
+
+is set as an environment variable.
+
+===Sandboxing Tor Browser in Qubes-Whonix===
+
+The Tor Browser alpha sandbox is currently blocked in both the Qubes Debian and Qubes-Whonix Templates due to problems with bubblewrap.<ref>https://trac.torproject.org/projects/tor/ticket/21077</ref> <ref>https://github.com/QubesOS/qubes-issues/issues/2540</ref> <ref>https://github.com/projectatomic/bubblewrap/issues/134</ref> 
+
+A recommended interim solution is to use Firejail in Qubes-Whonix to better contain the Tor Browser application.<ref>https://www.whonix.org/wiki/Security_Guide#Firejail</ref>
 
 == Custom Homepage ==
 '''This is an advanced topic.'''
