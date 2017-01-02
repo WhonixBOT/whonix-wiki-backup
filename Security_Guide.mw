@@ -256,6 +256,76 @@ See [[Install Software]].
 
 See [[Install Software#How to install or update with most caution?|How to install or update with most caution?]].
 
+'''Onionizing Whonix and Debian Repositories'''
+
+When Whonix, Debian and Qubes packages are installed or updated, default settings point to repositories with a http:// URI.<ref>https://www.whonix.org/wiki/Whonix-APT-Repository#Repository_Location_URI</ref> However, experimental .onion support is already available for both Whonix and Debian packages, with Qubes .onion mirrors planned for the near-term.<ref>https://forums.whonix.org/t/onionizing-qubes-whonix-repositories/3265</ref><ref>https://www.whonix.org/wiki/Install_Software#How_to_install_or_update_with_most_caution.3F</ref>
+
+Whonix 14 will prefer .onion repositories by default, even when adding third-party resources. Until then, in order to install or update with the utmost caution, users may consider manually editing their sources.list to point to the Whonix and Debian .onion mirrors. There are several security and privacy benefits of this approach:<ref>https://blog.torproject.org/blog/tor-heart-apt-transport-tor-and-debian-onions</ref>
+
+* The user cannot be uniquely targeted for malicious updates (attackers are forced to attack everyone requesting the update);
+* The package repository, or observers watching it, can't track what programs you've installed;
+* The ISP cannot easily learn what packages you fetch; and
+* End-to-end authentication and encryption provides protection against man-in-the-middle attacks e.g. version downgrade attacks.
+
+
+To use the .onion mirrors, it is necessary to change the whonix.list and debian.list files in the /etc/apt/sources.list.d directory in both the Whonix-Workstation and Whonix-Gateway TemplateVMs. tor:// or tor:// + http:// entries are not required in Whonix because apt is uwt-wrapped.
+
+'''1. In the TemplateVM, open the Debian sources file in an editor with root rights.'''
+
+If you are using a graphical Whonix or Qubes-Whonix, run:
+
+        kdesudo kwrite /etc/apt/sources.list.d/debian.list
+
+If you are using a terminal-only Whonix, run:
+
+        sudo nano /etc/apt/sources.list.d/debian.list
+
+'''2. Cut and paste the following .onion mirrors and comment out (#) the corresponding http repositories.'''
+
+        #deb http://ftp.debian.org/debian jessie main contrib non-free
+        deb http://vwakviie2ienjx6t.onion/debian jessie main contrib non-free
+
+        # deb http://security.debian.org jessie/updates main contrib non-free
+        deb http://sgvtcaew4bxjd7ln.onion jessie/updates main contrib non-free
+
+        #Optional Backports
+        #deb http://ftp.debian.org/debian jessie-backports main contrib non-free
+        deb http://vwakviie2ienjx6t.onion/debian jessie-backports main contrib non-free
+
+Save and exit.
+
+'''3. Point to the Whonix APT Repository .onion mirror.'''
+
+        sudo whonix_repository --baseuri http://deb.kkkkkkkkkk63ava6.onion --enable --repository stable
+
+Note: Whonix users have four preferences available for packages: stable, stable-proposed-updates, testers and developers. Change the entry above to reflect this preference.<ref>https://www.whonix.org/wiki/Whonix-APT-Repository#Whonix_APT_Repository_Overview</ref>
+
+'''4. Check the .onions are correct and functional in your Whonix system.'''
+
+        sudo apt-get update && sudo apt-get dist-upgrade
+
+'''5. Repeat steps 1-4 for both the Whonix-Workstation and Whonix-Gateway TemplateVMs.'''
+
+Note: Qubes users can repeat the steps above in their Debian-8 TemplateVM to onionize future installations and updates.
+
+'''6. ''Optional'' - create an onionized torproject.list.'''
+
+If you are using a graphical Whonix or Qubes-Whonix, run:
+
+        kdesudo kwrite /etc/apt/sources.list.d/torproject.list
+
+If you are using a terminal-only Whonix, run:
+
+        sudo nano /etc/apt/sources.list.d/torproject.list
+
+Cut and paste the following text and comment out (#) the corresponding http repository:
+
+        #Tor Project Mirror
+        #deb http://deb.torproject.org/torproject.org jessie main
+        deb http://sdscoq7snqtznauu.onion/torproject.org jessie main
+
+Save and exit.
+
 = Other Anonymizing Networks over Tor UDP Tunnel =
 
 If you are [[Tunnel UDP over Tor|Tunneling UDP over Tor]] to connect to [[Other Anonymizing Networks]] you must read this chapter, otherwise you can skip this one.
