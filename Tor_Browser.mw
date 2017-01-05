@@ -1,1 +1,908 @@
+<!--
+Copyright:
 
+   Whonix Tor Browser wiki page Copyright (C) Amnesia <amnesia at boum dot org>
+   Whonix Tor Browser wiki page Copyright (C) 2012 -2014 Patrick Schleizer <adrelanos@riseup.net>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+         
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+      
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to:
+
+    Free Software Foundation, Inc. 
+    51 Franklin St, Fifth Floor
+    Boston, MA 02110-1301, USA.
+
+On Debian GNU/Linux systems, the complete text of the GNU General Public
+License can be found in the /usr/share/common-licenses' directory.
+
+The complete text of the GNU General Public License can also be found online on gnu.org <https://www.gnu.org/licenses/gpl.html>, in Whonix virtual machine images in /usr/share/common-licenses/GPL-3 file or on Github <https://github.com/Whonix/Whonix/blob/master/GPLv3>.
+-->
+<!--
+The Whonix Tor Browser wiki page is forked from the Tails Browsing the web with Iceweasel page, from this exact source <http://git.immerda.ch/?p=amnesia.git;a=blob;f=wiki/src/doc/anonymous_internet/iceweasel.mdwn;hb=c65e9614d6df9784072ac1e506e2fc83b062f2b0>.
+-->
+{{Header}}
+{{#seo:
+|description=Using Tor Browser in Whonix. Anonymity vs Pseudonymity, HTTPS Everywhere, Torbutton, Protection against dangerous JavaScript, NoScript, Tips, Update Tor Browser, Browser Plugins, Change Language
+|image=https://www.whonix.org/w/images/1/19/Torbrowser.png
+}}
+[[Image:torbrowser.png|400px|Tor Browser, privacy by design. Fighting web fingerprinting and linkability.|thumb]]
+= Introduction =
+It is recommended<ref>Reasons? See below.</ref>, that you use only Tor Browser for browsing the web in Whonix.
+
+Tor Browser<ref>https://www.torproject.org/projects/torbrowser.html.en</ref><ref>https://tb-manual.torproject.org/linux/en-US/</ref> is a fork<ref>https://en.wikipedia.org/wiki/Fork_(software_development)</ref> of the Mozilla Firefox<ref>http://www.mozilla.com/firefox/</ref> web browser, optimized<ref>https://www.torproject.org/projects/torbrowser/design/</ref> and designed<ref>https://www.torproject.org/torbutton/en/design/</ref> for anonymity, developed by The Tor Project<ref>https://www.torproject.org/</ref>. Given Firefox's popularity, many of you have probably used it before and its user interface is like any other modern web browser.
+
+Here are a few things worth mentioning in the context of Whonix.
+
+= Anonymity vs Pseudonymity =
+When you were to use other browsers than Tor Browser, your IP/DNS would still be protected by Whonix, but you wouldn't profit from Tor Browser's protocol level cleanup. Using other browsers would be [[DoNot#Do_not_confuse_Anonymity_with_Pseudonymity.|pseudonymous rather than anonymous]].
+
+Tor Browser in comparison to other browsers is optimized for anonymity, it contains privacy enhancing patches<ref>https://www.torproject.org/projects/torbrowser/design/#firefox-patches</ref> and add-ons<ref>See below.</ref>. There are no other browsers other than Tor Browser capable of protocol level cleanup. When you use Tor Browser, you will blend in and share the [[Fingerprint]] of other Tor Browser users, which is a good thing.
+
+= HTTPS Encryption =
+
+Using HTTPS instead of HTTP encrypts your communication while browsing the web.
+
+All the data exchanged between your browser and the server you are visiting are encrypted. It prevents the [[Warning#Tor_exit_nodes_can_eavesdrop_on_communications|Tor exit relay to eavesdrop on your communications]].
+
+HTTPS also includes mechanisms to authenticate the server you are communicating with. But those mechanisms can be flawed, [[Warning#Man-in-the-middle_attacks|as explained on our warning page]].
+
+For example, here is how the browser looks like when we try to log in an email account at lavabit.com<ref>http://lavabit.com/</ref>, using their interface<ref>https://lavabit.com/apps/webmail/src/login.php webmail</ref>:
+
+[[Image:lavabit.png]]
+
+Notice the small area on the left of the address bar saying "lavabit.com" on a blue background and the address beginning with "https://" (instead of "http://"):
+
+[[Image:address-bar.png]]
+
+These are the indicators that an encrypted connection using HTTPS<ref>https://en.wikipedia.org/wiki/HTTP_Secure</ref> is being used.
+
+You should try to only use services providing HTTPS when you are sending or retrieving sensitive information (like passwords), otherwise it's very easy for an eavesdropper to steal whatever information you are sending or to modify the content of a page on its way to your browser.
+
+= HTTPS Everywhere =
+
+[[Image:https-everywhere.jpg|HTTPS Everywhere logo|thumb]]
+
+HTTPS Everywhere<ref>https://www.eff.org/https-everywhere</ref> is a Firefox extension shipped in Tor Browser and produced as a collaboration between The Tor Project<ref>https://torproject.org/</ref> and the Electronic Frontier Foundation<ref>https://eff.org/</ref>. It encrypts your communications with a number of major websites. Many sites on the web offer some limited support for encryption over HTTPS, but make it difficult to use. For instance, they may default to unencrypted HTTP, or fill encrypted pages with links that go back to the unencrypted site. The HTTPS Everywhere extension fixes these problems by rewriting all requests to these sites to HTTPS.
+
+To learn more about HTTPS Everywhere you can see:
+
+* the [https://www.eff.org/https-everywhere HTTPS Everywhere homepage]
+* the [https://www.eff.org/https-everywhere/faq/ HTTPS Everywhere FAQ]
+
+= Torbutton =
+
+Tor alone is not enough to protect your anonymity and privacy while browsing the web. All modern web browsers, such as Firefox, support JavaScript<ref>https://en.wikipedia.org/wiki/JavaScript</ref>, Adobe Flash<ref>https://en.wikipedia.org/wiki/Adobe_Flash</ref>, cookies<ref>https://en.wikipedia.org/wiki/HTTP_cookie</ref> and other features which have been shown to be able to defeat the anonymity <ref>[[DoNot#Do_not_confuse_Anonymity_with_Pseudonymity.]].</ref> provided by the Tor network.
+
+In Tor Browser all such features are handled from inside the browser, because it's a modified version of Firefox Patches<ref>https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO/WebBrowsers</ref> and it contains an extension called Torbutton<ref>https://www.torproject.org/torbutton/</ref>. These do all sorts of things to prevent the above type of attacks. But that comes at a price: since this will disable some functionalities and some sites might not work as intended. Don't worry too much about this, the vast majority of websites works very well.
+
+To learn more about Torbutton you can see:
+
+* [https://www.torproject.org/torbutton/ the Torbutton homepage]
+* [https://www.torproject.org/torbutton/torbutton-faq.html.en the Torbutton FAQ]
+
+To learn more about Data Collection Techniques, Fingerprinting you can see:
+
+* [[Data Collection Techniques]]
+
+= New Identity Button =
+The New Identity button on Tor Browser isn't perfect yet (NOT a Whonix issue), there are open bugs.{{Browser_Fingerprinting_Footnote}}
+
+How.
+<pre>
+click TorButton -> click New Idenity
+</pre>
+
+Please understand [[FAQ#New_Identity_and_Tor_circuits|New Identity and Tor circuits]] to learn what this actually does and what its limitations are.
+
+= Protection against dangerous JavaScript =
+
+Having all JavaScript disabled by default would disable a lot of harmless and possibly useful JavaScript and render unusable many websites. This would scare away lots of potential users "because it just doesn't work". Torbutton disables all potentially dangerous JavaScript. On the other hand, having a big user base is important for good anonymity as this very interesting mail by Roger Dingledine explains.<ref>http://www.mail-archive.com/liberationtech@lists.stanford.edu/msg00022.html</ref>
+
+That's why '''JavaScript is enabled by default''' in Tor Browser. We consider this as a necessary compromise between security and usability and as of today we are not aware of any JavaScript that would compromise Whonix anonymity.
+
+For more technical details you can refer to the Torbutton design document.<ref>https://www.torproject.org/torbutton/en/design/</ref> Another related discussion justifying why JavaScript is enabled by default in Tor Browser was on tor-talk, "Tor Browser disabling Javascript anonymity set reduction".<ref>https://lists.torproject.org/pipermail/tor-talk/2012-May/024227.html</ref>
+
+= NoScript =
+
+[[Image:noscript.png|NoScript logo|thumb]]
+
+NoScript also comes with Tor Browser and provides many protections, even though JavaScript is enabled by default. You shouldn't mess with NoScript settings in Tor Browser unless you exactly know what you are doing.
+
+For more information you can refer to the NoScript [http://noscript.net/ website] and [http://noscript.net/features features].
+
+= Tips =
+== Maximizing Browser Window ==
+It [https://trac.torproject.org/projects/tor/ticket/7255 is] be better for privacy and anonymity not to maximize the Tor Browser window.
+
+= Tor Browser in Whonix differences =
+== Introduction ==
+The regular Tor Browser Bundle and Tor Browser in Whonix slightly differ. The environment Tor Browser is running in has been adjusted by Whonix to work behind the Whonix-Gateway. The network and browser fingerprint however, is the same.
+
+Tor Browser's internal update check mechanism is untouched and works fine. Default homepage is
+
+== Whonix Proxy Settings ==
+'''Short''':
+You don't need to change any proxy settings in Tor Browser.
+
+'''Long''': <ref>
+{{Anchor|Whonix Proxy Setting Footnote}}
+([[#Whonix Proxy Setting Footnote|permalink]])<br />
+There is no Tor over Tor in Whonix, which would be [[DoNot#Prevent_Tor_over_Tor_scenarios.|recommended against]], due to Whonix's environment. Whonix does not modify Tor Browser's startup script, defaults, etc. In Whonix-Workstation rinetd listens on {{Code2|127.0.0.1}} {{Code2|9150}} and {{Code2|9151}} (TBB's default ports) and forwards them to Whonix-Gateway {{Code2|10.152.152.10 9150}} (where a Tor SocksPort is listening) and {{Code2|9151}} (where [[Dev/CPFP|Control Port Filter Proxy]] is listening). Tor does not get started by the {{Code2|[https://gitweb.torproject.org/tor-launcher.git tor-launcher]}} Firefox add-on because the {{Code2|[https://trac.torproject.org/projects/tor/ticket/6009 TOR_SKIP_LAUNCH]}} environment variable has been set set to {{Code2|1}}. See also [[Dev/anon-ws-disable-stacked-tor]].
+</ref>
+
+(If you want to change or remove proxy settings, see [[#Change / Remove Proxy Setting]].)
+
+== More than one Tor Browser in Whonix ==
+For better isolation of different identities. For advanced users. Moved to the [[Advanced_Security_Guide#More_than_one_Tor_Browser_in_Whonix|Advanced Security Guide]].
+
+= Update Tor Browser =
+== Introduction ==
+[[#Tor Browser Internal Updater|Tor Browser's Internal Updater, built in stock update notification mechanism]] also works in Whonix. Use it.
+
+[[#Tor_Browser#Tor_Browser_Updater_.28Whonix.29|Tor Browser Downloader (Whonix)]] does [https://phabricator.whonix.org/T400 not] notice upgrades done by Tor Browser's Internal Updater.
+
+The Tor Project configured Tor Browser since version 5.0 to update itself. <ref>
+https://blog.torproject.org/blog/tor-browser-50-released
+<blockquote>
+Starting with this release, Tor Browser will now also download and apply upgrades in the background, to ensure that users upgrade quicker and with less interaction. This behavior is governed by the about:config pref app.update.auto, but we do not recommend disabling it unless you really know what you're doing.
+</blockquote>
+</ref>
+
+Additionally it might also be wise to subscribe to blog of the creators of Tor Browser https://blog.torproject.org for news.
+
+== Updating ==
+{{Anchor|Tor Browser Updater (Whonix)}}
+=== Tor Browser Downloader by Whonix ===
+==== Introduction ====
+{{Code2|Tor Browser Downloader (Whonix)}} is really just a downloader, not a updater. Meaning, it is incapable of keeping user data, for example bookmarks and passwords. If you would like to keep your user data, use [[Tor_Browser#Tor_Browser_Internal_Updater|Tor Browser Internal Updater]] instead.
+
+Here are some (older) Tor Browser Downloader (Whonix) Screenshots.
+
+[[File:Tor Browser Update Check_001.png|Tor Browser Updater (Whonix) checking for updates.]] <br />
+[[File:Tor Browser Update Check_002.png|Tor Browser Updater (Whonix) Update Notification]] <br />
+[[File:Tor Browser Update Check_003.png|Tor Browser Updater (Whonix) downloading.]] <br />
+[[File:Tor Browser Update Check_004.png|Tor Browser Updater (Whonix) update done.]] <br />
+<font size=-3>(Also available as [https://www.whonix.org/w/images/f/f2/Tor_Browser_Update_Check_005.png CLI version].)</font>
+
+Tor Browser version check and download (after confirmation) in Whonix can be done with:
+
+{{Box|text=
+<u>If you are using [[Qubes|Qubes-Whonix]]</u>, complete the following steps:
+<pre>
+Qubes App Launcher (blue/grey "Q") -> Whonix-Workstation AppVM (commonly named anon-whonix) -> Tor Browser Downloader (Whonix)
+</pre>
+
+<u>If you are using a graphical Whonix-Workstation</u>, complete the following steps:
+<pre>
+Start Menu -> Applications -> System -> Tor Browser Downloader (Whonix)
+</pre>
+
+<u>If you are using a terminal-only Whonix-Gateway</u>, complete the following steps:
+{{CodeSelect|code=
+update-torbrowser
+}}
+}}
+
+==== Download Confirmation Screen ====
+Helps to keep you safe.
+
+There is currently no reliable way for a program to securely determine the latest stable version of Tor Browser with reasonable certainty. <ref>[https://trac.torproject.org/projects/tor/ticket/14383 finalize RecommendedTBBVersions format]</ref> <ref>[https://trac.torproject.org/projects/tor/ticket/13065 counter downgrade / stale mirror attacks on RecommendedTBBVersions - sign / verify tbb versions file]</ref> When the version format changes, the automated parser of version information could falsely suggest, a still considered secure, stable version that is not the latest stable version, an alpha, beta or rc (release candidate) version. Rather, you could be the target of a denial of service, indefinite freeze or rollback (downgrade) attack. <ref>
+For a definition of these attacks, see
+[http://theupdateframework.com TUF] ([https://github.com/theupdateframework/tuf The Update Framework])'s
+[https://github.com/theupdateframework/tuf/blob/develop/SECURITY.md threat model] ([http://www.webcitation.org/6F7Io2ncN w]).
+</ref>
+<ref>
+An adversary capable of breaking [[SSL]] could mount such an attacks by replacing [https://www.torproject.org/projects/torbrowser/RecommendedTBBVersions RecommendedTBBVersions] with invalid, frozen or outdated version information.
+</ref>
+
+Therefore the intelligence of the user is utilized as a sanity check. The Download Confirmation Screen enables users to detect such situations and abort.
+
+Version numbers you see under {{Code2|Online versions}} come from the Tor Browser online [https://www.torproject.org/projects/torbrowser/RecommendedTBBVersions RecommendedTBBVersions] versions file that is provided by The Tor Project and parsed by Whonix's Tor Browser Downloader. All versions listed in that file are considered up to date, by The Tor Project, which means that no upgrade is required.
+
+TODO: expand
+
+==== Installation Confirmation Screen ====
+Helps to keep you safe.
+
+There is currently no reliable way for a program to securely determine if your download of Tor Browser was a target of an indefinite freeze or rollback attack with reasonable certainty. <ref>This is because Tor Browser signatures do not provide expiration dates yet. (Similar to Debian's [http://blog.ganneff.de/blog/2008/09/23/valid-until-field-in-release-f.html valid-until] field.</ref> <ref>This is because the user's computer clock could be wrong, so there is no rock solid basis for comparison.</ref>
+
+When verifying cryptographic signatures there are multiple important aspects.
+
+* For one, the signature should be made by a trusted key.
+* Naturally, trusted keys have signed other files in past as well. So one must make sure to have also received the right file and not just some file that was signed by a trusted key.
+* Finally, even when having received the right type of file <ref>i.e. for example, a browser, not a messenger</ref> it should be made sure, that a current signature has been used and not a historic one to counter indefinite freeze and rollback attacks.
+
+By the time you see the Installation Confirmation Screen, the verification of the signature <ref>and hash</ref> already succeeded, but again the intelligence of the user has to be utilized to make sure there the user is not target of an indefinite freeze or downgrade attack.
+
+{{Code2|Previous Signature Creation Date}}: When Tor Browser was previously installed by tb-updater, then tb-updater will have stored the creation date of the accompanying signature the signed Tor Browser. The {{Code2|Previous Signature Creation Date}} field shows you that date.
+
+{{Code2|Last Signature Creation Date}}: This field shows you the date of the creation of the signature that was just downloaded.
+
+Here is a screenshot:<br />
+[[File:torbrowser-updater_signature_verification_screen.png]]
+
+<ref>[[OpenPGP#Common_Misconceptions|gnupg (OpenPGP) common misconceptions]]</ref>
+<ref>The name of the file is stored in the hash file and verified to match the downloaded name of the file and hash.</ref>
+
+Tor Browser local version number detection is [https://phabricator.whonix.org/T400 not implemented].
+
+TODO: Expand.
+
+=== Tor Browser Manual Update ===
+A future update of Tor Browser by The Tor Project might make Whonix's Tor Browser Updater or Tor Browser running in Whonix-Workstation unusable. In case Tor Browser (Updater) inside Whonix-Workstation breaks, a news with instructions on how to fix the issue will be posted within a few days. If not, the Whonix developers are not aware of the issue.
+
+If the Tor Browser update script is ever broken, you are advised to update manually, see [[Manually Downloading Tor Browser]].
+
+=== Tor Browser Internal Updater ===
+Tor Browser's Internal Updater Popup Screenshot: <br />
+[[File:Tor Browser Internal Updater Popup.png]]
+
+Tor Browser's Internal Updater Wizard Screenshot: <br />
+[[File:Tor Browser Internal Updater Wizard.png]]
+
+Here you can see a screenshot of Tor Browser's menu bar that contains Tor Browser's Internal Updater Update Symbol: <br />
+[[File:Tor Browser Tor Button Update Symbol.png]]
+
+Tor Browser's Internal Updater Update Symbol: <br />
+The following symbol is quite useful. It indicates, that [[#Torbutton|Torbutton]] has found out, that there is an update. <br />
+[[File:Tor Browser Tor Button Update Notification.png]]
+
+A screenshot of about:tor, that is as useful as the above symbol:  <br />
+[[File:Tor Browser Internal Updater About Tor.png]]
+
+= Start Tor Browser =
+{{Tor_Browser_Start}}
+
+= File Downloads =
+TODO: add some screenshots, document how to download a file and how to find it using dolphin
+
+= Not installed by Default =
+Reasons why Tor Browser is installed by default in Whonix-Workstation in [[Qubes|Qubes-Whonix]], but not in [[Non-Qubes-Whonix]]. If you are interested in the reasons why, see footnote. <ref>
+{{Anchor|Not_installed_by_Default_Footnote}}
+
+<u>Reasons why Tor Browser is installed by default in Whonix-Workstation in [[Qubes|Qubes-Whonix]], but not in [[Non-Qubes-Whonix]]</u>. ([[#Not_installed_by_Default_Footnote|link]])<br />
+<br />
+{{Anchor|Licensing reasons}}
+<u>Licensing reasons</u>:
+
+* Mozilla trademark: https://trac.torproject.org/projects/tor/ticket/10888
+* The Tor Project trademark: https://www.whonix.org/wiki/Dev/TPO_Trademark
+* [https://phabricator.whonix.org/T337 Tor Browser gets installed default since Qubes-Whonix 12], because Qubes-Whonix is built and distributed by the maintainers of Qubes OS, not Whonix. Different laws apply. They are not concerned about the legal implications.
+</ref>
+
+This will change in Whonix 14. <ref>
+* [https://trac.torproject.org/projects/tor/ticket/19652 permission to install Tor Browser by default in Whonix]
+* [https://trac.torproject.org/projects/tor/ticket/19911 Whonix project official licensee of The trademarks]
+</ref>
+
+= Local Connections =
+'''Note:''' Accessing local application interfaces on 127.0.0.1 it is no longer possible due to a [https://trac.torproject.org/projects/tor/ticket/10419 change] in Tor Browser by The Tor Project. The configured exception means a small trade-off in privacy but is much safer than using another browser. (See [[#Local Connections Exception Threat Analysis]].)
+
+To configure an exception for local connections in Tor Browser:
+
+<pre>
+Preferences -> Advanced -> Network | Connection Settings... -> No Proxy for: "127.0.0.1". Then, click on "OK" 
+</pre>
+
+<ref>
+Alternatively, can could [[#Remove_Proxy_Settings|remove Tor Browser's proxy settings]], but then you would be vulnerable to the same fingerprinting issues (see [[#Local Connections Exception Threat Analysis]]). Additionally, you would be vulnerable to the fingerprinting issues that are opened up by [[#Remove_Proxy_Settings|remove Tor Browser's proxy settings]].
+</ref>
+
+Web HTTP(S)/SOCKS proxies have different instructions and will not work with these steps, see [[#Tor Browser Proxy Configuration|Tor Browser Proxy Configuration]].
+
+'''Recommendations'''
+
+For better anonymity.
+
+* Surf with <u>J</u>ava<u>S</u>cript (JS) disabled in Tor Browser and enable only when needed - mitigates these browser fingerprinting issues completely.
+* Set passwords for WebGUIs listening on localhost.
+* Run sensitive daemons with local WebGUIs on a separate dedicated Whonix-Workstation + virtual network instance.
+
+= Browser Plugins / Flash / Java =
+
+See [[Browser Plugins]].
+
+= Browser Language =
+If you want the browser interface in a different language than English, see [[Language]].
+
+= AppArmor Confinement =
+To protect the system and your data from some types of attack against Tor Browser, you could consider to install Whonix's Tor Browser [[AppArmor]] profile.
+
+As a consequence, it can only read and write to a limited number of folders. This is why you might face Permission denied errors, for example if you try to download files to the {{Code2|home}} folder. You can save files from Tor Browser to the {{Code2|~/Downloads}} folder that is located in the {{Code2|home}} folder. If you want to upload files with Tor Browser, copy them to that folder first.
+
+[[Update]] your package lists.
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+{{CodeSelect|code=
+sudo apt-get install apparmor-profile-torbrowser
+}}
+
+= Advanced Topics =
+== Tor Browser Hardened ==
+TODO: document
+
+Forum discussion:<br />
+https://forums.whonix.org/t/cannot-download-hardened-tor-browser-using-tor-browser-updater-whonix
+
+== Tor Browser Sandboxed ==
+
+===Sandboxing Tor Browser in Non-Qubes-Whonix===
+
+Warning: These instructions are extremely alpha. They currently only work reliably with the 32-bit version of Whonix, but can be slightly modified to work in a (non-Qubes) Debian Jessie VirtualBox VM. Testers or advanced users only!
+
+====Introduction====
+
+A sandbox is a secure environment in which you can run the Tor Browser to mitigate exploit vectors which would otherwise deanonymize you or infect your computer. For instance, sandboxing reduces the opportunities for an attacker to easily identify real IP and MAC addresses, install malware, or browse your files.<ref>https://blog.torproject.org/blog/q-and-yawning-angel</ref> In simple terms, the Tor Browser is run in a limited awareness container that is prevented from interacting with the rest of your computer. The spate of recent attacks on the Tor Browser in the wild suggest this is a prudent approach for cautious users, or those facing significant risks.
+
+The Tor Browser sandbox is compatible with either the "release", "alpha" or "hardened" Tor Browser series. However, the sandboxed "hardened" Tor Browser is the least-tested combination by Tor developers.<ref>https://blog.torproject.org/blog/tor-browser-65a6-hardened-released</ref>
+
+====Sandboxing Effects on Tor Browser Functionality====
+
+While sandboxing improves security, some functionality is lost either by design or inadvertently. In addition, some functions like sound must be optionally configured. As at December 2016, broken items include:<ref>https://trac.torproject.org/projects/tor/wiki/doc/TorBrowser/Sandbox/Linux</ref>
+
+* Foreign language support;
+* The meek pluggable transport; and
+* Manual checks for Tor Browser updates.
+
+
+The Tor Browser sandbox is unlikely to ever support:
+
+* The FTE pluggable transport;
+* Hardware-accelerated 3d rendering;
+* Printing, except to a file;
+* Connections outside of the Tor network; and
+* Compatibility of the "hardened" Tor Browser with a grsec kernel (due to ASAN/Pax conflicts).
+
+
+Manual configuration changes are required for audio support, the Tor ciruit display (already disabled in Whonix), and installs/updates of Tor Browser addons. By design, users will not be able to see downloaded files, fonts are limited to a minimal set, further addons cannot be enabled without sandbox configuration changes, and plug-ins like Flash or Silverlight will not work.
+
+====Tor Browser Sandbox Dependencies====
+
+In order to install and run the sandbox, two things are required:
+
+* Several dependencies available in Debian Jessie backports; and
+* A newer (Whonix-14-developers-only) version of the control-port-filter-python for Tor cookie control protocol authentification.<ref>https://forums.whonix.org/t/tor-browser-sandbox-linux-alpha-coming-soon/3060</ref>
+
+====Installing sandboxed-tor-browser Dependencies====
+
+'''1. Boot your Whonix-Workstation TemplateVM.'''
+
+'''2. Add jessie-backports to your sources.list'''
+
+    sudo su -c "echo -e 'deb http://http.debian.net/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
+
+Or alternatively use the .onion mirror:
+
+    sudo su -c "echo -e 'deb http://vwakviie2ienjx6t.onion/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
+
+'''3. Use apt-pinning before installing dependencies.'''
+
+{{Apt-Pinning}}
+
+Save and exit.
+
+'''4. Update your package lists and install sandboxed-tor-browser dependencies.'''
+
+    sudo apt-get update
+
+    sudo apt-get -t jessie-backports install golang bubblewrap libseccomp2 libseccomp-dev
+
+'''5. Install additional dependencies.'''<ref>https://trac.torproject.org/projects/tor/ticket/21048</ref>
+
+    sudo apt-get install gnome-themes-standard gnome-themes-standard-data
+
+====Installing the Whonix-14 tor-controlport-filter====
+
+Note: This process must be repeated on both the Whonix-Gateway and Whonix-Workstation.
+
+'''1. Upgrade to the Whonix-14 work in progress.'''
+
+Follow the instructions [[Dev/Control_Port_Filter_Proxy#tor-controlport-filter_by_Tails|here]].
+
+====Downloading the Tor Browser Sandbox====
+
+'''1. Download the sandboxed-tor-browser binaries and signing key from the Tor Project.'''<ref>https://www.torproject.org/projects/torbrowser.html.en#downloads-alpha</ref>
+
+In the Whonix-Workstation VM run:
+
+    wget https://www.torproject.org/dist/torbrowser/6.5a6/sandbox-0.0.2-linux64.zip
+
+    wget https://www.torproject.org/dist/torbrowser/6.5a6/sandbox-0.0.2-linux64.zip.asc
+
+'''2. Download the Tor Project signing key and verify the zip file.'''
+
+Run:
+
+    gpg --recv-keys "EF6E 286D DA85 EA2A 4BA7 DE68 4E2C 6E87 9329 8290"
+
+    gpg --verify sandbox-0.0.2-linux64.zip.asc
+
+'''3. Unzip the sandbox.'''
+
+Run:
+
+    unzip sandbox-0.0.2-linux64.zip.asc
+
+====Using the sandboxed-tor-browser====
+
+To start the sandbox, simply run:
+
+    ./sandboxed-tor-browser
+
+And select the Tor Browser version you are currently using in your Whonix-Workstation configuration.
+
+Important notes:
+
+* sandboxed-tor-browser is also a Tor Browser downloader similar to tb-updated / torbrowser-launcher;
+* Whonix network settings are auto-detected as system Tor and there is no need to manually configure settings; 
+* 32-bit support is being deprecated after version 0.0.2 of the sandbox. Version 0.0.3 and later will only have 64-bit binaries, which is compatible with Whonix 14 (next Whonix release); and<ref>https://lists.torproject.org/pipermail/tbb-bugs/2016-December/010256.html</ref>
+* If you wish to check the sandboxed-tor-browser is correctly using the system Tor process, in a terminal run:
+
+
+    env | grep TOR
+
+The output should show:
+
+    TOR_CONTROL_PORT=9151
+
+is set as an environment variable.
+
+===Sandboxing Tor Browser in Qubes-Whonix===
+
+The Tor Browser alpha sandbox is currently blocked in both the Qubes Debian and Qubes-Whonix Templates due to problems with bubblewrap.<ref>https://trac.torproject.org/projects/tor/ticket/21077</ref> <ref>https://github.com/QubesOS/qubes-issues/issues/2540</ref> <ref>https://github.com/projectatomic/bubblewrap/issues/134</ref> 
+
+A recommended interim solution is to use Firejail in Qubes-Whonix to better contain the Tor Browser application.<ref>https://www.whonix.org/wiki/Security_Guide#Firejail</ref>
+
+== Custom Homepage ==
+'''This is an advanced topic.'''
+
+As [https://www.whonix.org/old-forum/index.php/topic,1573.0.html reported], setting a custom homepage in Tor Browser settings might not work.
+
+Technical background: <ref>
+The [https://github.com/Whonix/whonix-welcome-page whonix-welcome-page] package's file [https://github.com/Whonix/whonix-welcome-page/blob/master/usr/lib/whonix-welcome-page/env_var.sh /usr/lib/whonix-welcome-page/env_var.sh] sets [https://trac.torproject.org/projects/tor/ticket/13835 environment variable to set TorBrowser homepage] {{Code2|TOR_DEFAULT_HOMEPAGE}} to {{Code2|/usr/share/homepage/whonix-welcome-page/whonix.html}}.
+
+Perhaps it could be seen as a bug if Tor Browser if a user set custom homepage does not overrule the {{Code2|TOR_DEFAULT_HOMEPAGE}} environment variable? TODO: No bug has been reported at trac.torproject.org yet.
+</ref>
+
+To set a custom homepage, you could try to purge the whonix-welcome-page package. <ref>{{Code|sudo apt-get purge whonix-welcome-page}}.</ref> But this is difficult due to technical limitations as explained on the [[Whonix_Debian_Packages|Whonix Debian Packages]] page.
+
+Alternatively, could modify {{Code2|/usr/lib/whonix-welcome-page/env_var.sh}}, but these changes would be reverted after upgrade. <ref>
+{{CodeSelect|code=
+kdesudo kate /usr/lib/whonix-welcome-page/env_var.sh
+}}
+</ref>
+
+Or you could set environment variable {{Code2|TOR_DEFAULT_HOMEPAGE}} to a custom value. Doing so would be similar setting environment variables as explained in [[#Transparent Torification - No Proxy - System Default]].
+
+== Unsupported Tor Browser Features in Whonix ==
+=== Tor Circuit View ===
+([https://trac.torproject.org/projects/tor/ticket/8641#comment:12 screenshot])
+
+This is [[unsupported]] for security reasons. <ref>
+We do not want Whonix-Workstation to have access to the information, which Tor middle relay or Tor entry guard [or bridge] are being used.
+See also: [[Dev/Control_Port_Filter_Proxy#Indicator_for_current_Circuit_Status_and_Exit_IP]]
+</ref>
+
+=== Misc ===
+* See also [[#Forget_about_Tor_Button.27s_Open_Network_Settings|Forget about Tor Button's Open Network Settings]].
+
+== Verify New Identity ==
+'''This is an advanced topic. You most likely only need it in custom configurations, such as when using a [[Other Operating Systems|Whonix-Custom-Workstation]].'''
+
+First of all, should it have failed, TorButton should notice, that it could not connect to Tor's ControlPort and should report, that giving a new identity failed. If you don't get such an error popup, it is a good indication, that there are no issues.
+
+After the browser restarted, on the about:tor page, click "Test Tor Network Settings". It will lead to https://check.torproject.org (check.tpo) (or manually visit check.tpo, it doesn't matter.). In most cases (Not all! <ref>Getting a new circuit, doesn't guarantee getting a new exit relay. This is normal. See also [[Stream_Isolation]].</ref>) you should have a new exit relay. Check.tpo should report different IP.
+
+On Whonix-Gateway, watch [[Dev/CPFP|Control Port Filter Proxy]]'s log while using TorButton's New Identity feature.
+
+{{CodeSelect|code=
+tail -f /var/log/control-port-filter-python.log
+}}
+
+If you see something like this.
+
+<pre>
+2015-12-12 23:59:41,276 - CPFP log - DEBUG - Request: signal newnym
+2015-12-12 23:59:41,284 - CPFP log - DEBUG - Answer: 250 OK
+</pre>
+
+Then Control Port Filter Proxy received the request from Tor Browser and got Tor's okay, that it worked.
+
+== Get New Identity without Tor ControlPort Access ==
+'''This is an advanced topic. You most likely only need it in custom configurations, such as when not using [[Dev/CPFP|Control Port Filter Proxy]].'''
+
+Simulate, what TorButton would do.
+
+1. Close Tor Browser. <br />
+2. Get new identity on Whonix-Gateway using [[Tor Controller|arm]]. <br />
+3. Start Tor Browser again. <br />
+4. Done.
+
+{{Anchor|Change/Remove Proxy Setting}}
+{{Anchor|Change / Remove Proxy Setting}}
+== Remove Proxy Settings ==
+'''This is an advanced topic. You most likely only need it for advanced tunneling scenarios.'''
+
+To remove Tor Browser proxy settings, i.e setting it to no proxy, apply the following instructions.
+{{Tor_Browser_Remove_Proxy_Settings}}
+
+{{Anchor|Tor Browser Proxy Configuration}}
+
+== Change Proxy Settings ==
+'''This is an advanced topic. You most likely only need it for advanced tunneling scenarios.'''
+
+'''Note that these instructions do not apply to accessing [[Tor_Browser#Local_Connections|local web-interfaces]].'''
+
+{{Template:TorBrowser_Proxy_Configuration}}
+
+== Local Connections Exception Threat Analysis ==
+This applies to [[#Local_Connections|allowing local connections in Tor Browser]].
+
+'''Threat Details'''
+
+According to [https://bugzilla.mozilla.org/show_bug.cgi?id=354493 this] Firefox ticket, JavaScript can be abused to scan internal networks, fingerprint devices, and make malicious commands to those devices if they have a web interface. The configured exception means a small trade-off in privacy but is much safer than using another browser. <ref>https://trac.torproject.org/projects/tor/ticket/10419#comment:37</ref> Read on about steps to further minimize the risks.
+
+'''Analysis'''
+
+There are no embedded devices attached to a Whonix internal network, it is isolated and untrusted. However malicious <u>J</u>ava<u>S</u>cript (JS) will be able to tell an attacker that a service is running on a localhost port. This can reduce your anonymity set.
+
+Malicious misconfiguration of daemons listening on localhost is possible but with limited impact because traffic is still forced through Whonix-Gateway.
+
+'''Misc'''
+
+* [https://forums.whonix.org/t/workaround-available-i2p-no-longer-works-with-the-latest-tor-browser/182/14 Related Whonix Forum Topic]
+* [https://trac.torproject.org/projects/tor/ticket/11493 Tor Browser Bug Report]
+
+== tor-launcher vs torbrowser-launcher ==
+Two totally different things with similar names.
+
+* [https://lists.torproject.org/pipermail/tor-dev/2013-May/004761.html tor-launcher] ([http://trial.pearlcrescent.com/tor/torlauncher/2013-05-03/SetupWizard/wizard-all.png screenshots] ([http://www.webcitation.org/6RVFMxzEf w])) is a Tor Controller, a [https://dist.torproject.org/vidalia-bundles Vidalia] replacement, an add-on that is included in TBB by default.
+* [https://micahflee.com/torbrowser-launcher/ torbrowser-launcher] ([https://micahflee.com/wp-content/uploads/2013/04/tbl.png screenshot]) is an application to download the Tor Browser Bundle (TBB), an alternative to [[#Tor_Browser_Updater_.28Whonix.29|Tor Browser Updater (Whonix)]] ([https://github.com/Whonix/tb-updater tb-updater]).
+
+== tor-launcher ==
+In case you are wondering if tor-launcher will result in [[DoNot#Prevent_Tor_over_Tor_scenarios.|Tor over Tor]]... No, because Tor Browser and Whonix [[Tor_Browser#Whonix_Proxy_Settings|play well together]]. tor-launcher is disabled by default in Whonix-Workstation.
+
+Can or should you remove tor-launcher from TBB? In theory it makes no difference. In practice, it is untested and seems to provide no advantages. Just leave it enabled to have the same tested setup as everyone else.
+
+tor-launcher is not (yet) available for usage in Whonix-Gateway. <ref>https://phabricator.whonix.org/T118</ref>
+
+== torbrowser-launcher ==
+[[#Tor_Browser_Updater_.28Whonix.29|Tor Browser Updater (Whonix)]] ([https://github.com/Whonix/tb-updater tb-updater]) (installed by default in Whonix) is specifically designed to be co-installable with torbrowser-launcher. Maybe one day Whonix will deprecate tb-updater and install torbrowser-launcher by default, see [https://www.whonix.org/old-forum/index.php/topic,404.0.html forum development discussion] if that is of interest to you.
+
+== Terminology ==
+=== Tor vs Tor Browser ===
+[[Tor]] is an anonymizer developed by The Tor Project. Tor Browser is a web browser developed by the Tor Project optimized for privacy. Please don't substitute writing {{Code2|Tor}} when you mean {{Code2|Tor Browser}} or the confusion will be perfect.
+
+=== Tor Browser Transparent Proxying ===
+This Tor Browser "transparent proxying" feature and/or the environment variable <code>TOR_TRANSPROXY=1</code> causes lots of confusion. It was a bad decision by TPO to call it "transparent proxying". What it actually does, is "[[Tor_Browser#Remove_Proxy_Settings|set to no proxy settings]]", i.e "set to system default". Then Tor Browser works network wise just as a unconfigured Firefox / Iceweasel. If the person using this Tor Browser "transparent proxying" feature, happens to not use a gateway with transparent torification features such as Whonix-Gateway, traffic would go through clearnet. If the person using this Tor Browser "transparent proxying" feature, happens to use a torifying gateway such as Whonix-Gateway, traffic happens to go through Tor. If the person using this Tor Browser "transparent proxying" feature, happens to have a JonDo-Gateway, traffic happens to go through JonDo.
+
+Not to be confused with Tor's setting <code>TransPort [address:]port|auto [isolation flags]</code> setting. Not to be confused with [https://trac.torproject.org/projects/tor/wiki/doc/TransparentProxy TransparentProxy], which is different from an [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO/IsolatingProxy IsolatingProxy].
+
+{{Anchor|tb-updater postinst}}
+== Qubes specific ==
+=== Running Tor Browser in Qubes TemplateVM ===
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = Don't start Tor Browser in the whonix-ws TemplateVM or whonix-ws-dvm DisposableVM-TemplateVM. It is not expected to be done that way and wrong.
+}}
+
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+If you want to know why, please press on expand on the right.
+<div class="mw-collapsible-content">
+* You are expected to use Tor Browser as stock as possible with as few modifications as per upstream recommendations by The Tor Project.
+* You risk connecting to the internet with the browser (open issue: https://phabricator.whonix.org/T372 ) thereby compromising the TemplateVM and thereby all TemplateBasedVMs based on that TemplateVM.
+* By starting Tor Browser it creates various files. Although it should not, one or another file might make you [[DoNot#Do_not_confuse_Anonymity_with_Pseudonymity|pseudonymous rather than anonymous]]. You do not want all TemplateBasedVMs based on that TemplateVM be linked to the same pseudonym. You are a lot better of starting Tor Browser for the first time in the TemplateBasedVM rather than TemplateVM. Otherwise you are expecting Tor Browser to be perfect and to no such bug be revealed later. If you look at current and past Tor Browser issues, this seems like a very bad idea:
+** https://trac.torproject.org/projects/tor/query?status=accepted&status=assigned&status=needs_information&status=needs_review&status=new&status=reopened&order=priority&col=id&col=summary&col=keywords&col=status&col=owner&col=type&col=priority&keywords=tbb-linkability
+** https://trac.torproject.org/projects/tor/query?status=accepted&status=assigned&status=needs_review&status=needs_revision&status=new&status=reopened&order=priority&col=id&col=summary&col=keywords&col=status&col=owner&col=type&col=priority&keywords=tbb-fingerprinting
+</div>
+</div>
+
+=== tb-updater in Qubes TemplateVM ===
+Tor Browser is installed by default in Whonix-Workstation in [[Qubes|Qubes-Whonix]], but not in [[Non-Qubes-Whonix]]. If you are interested in the reasons why, see [[#Not installed by Default Footnote]].
+
+Beginning from Whonix 13 by default during Qubes-Whonix-Workstation builds, during the initial installation of [[#Tor Browser Downloader by Whonix]] ({{Code2|tb-updater}} package) ({{Code2|update-torbrowser}}) within chroot, it will be automatically run. If that fails, it will fail closed by default. This means, the package will fail to install. Therefore this could throw and error while building Whonix images from source code or when [[Dev/Installation_from_Repository|installing Whonix from repository]]. This is not great, but it has been decided to install Tor Browser by default in Qubes-Whonix-Workstation. The only way to ensure it really gets installed by default, is to fail closed by default.
+
+Beginning from Whonix 13 by default in Qubes-Whonix-Workstation TemplateVMs, during upgrades of [[#Tor Browser Downloader by Whonix]] ({{Code2|tb-updater}} package) ({{Code2|update-torbrowser}}) it will be automatically run. If that fails, it will fail open by default. This means, you will be informed in the terminal, that no new Tor Browser could be downloaded but apt-get will terminate normally. This is required to implement the Qubes-Whonix feature [https://phabricator.whonix.org/T417 up to date versions of Tor Browsers in newly created AppVMs inherited from updated TemplateVMs].
+
+What should you do if it failed? If you can still update Tor Browser using [[#Tor Browser Internal Updater]] or [[#Tor_Browser_Manual_Update|manually re-download Tor Browser]], then there is no need for concern and this is only a small inconvenience. 
+
+All of this can be configured, if you want to do so...
+
+{{Open with root rights|filename=
+/etc/torbrowser.d/50_user.conf
+}}
+
+When the tb-updater package is upgraded, by default in the Qubes-Whonix-Workstation TemplateVM a hardcoded<ref>In the tb-updater package.</ref> version Tor Browser tarball and signature is automatically downloaded. If you want to disable this, add.
+
+{{CodeSelect|code=
+tb_install_follow=false
+}}
+
+Save.
+
+Technical details:
+
+By default in Qubes-Whonix-Workstation TemplateVMs during Debian maintainer postinst script, folders /var/cache/tb-binary/.cache/tb/ and /var/cache/tb-binary/.tb/tor-browser will be deleted if existing. tb-updater will then download files to /var/cache/tb-binary/.cache/tb/.
+
+<pre>
+find /var/cache/tb-binary/.cache/tb/
+</pre>
+
+<pre>
+/var/cache/tb-binary/.cache/
+/var/cache/tb-binary/.cache/tb
+/var/cache/tb-binary/.cache/tb/files
+/var/cache/tb-binary/.cache/tb/files/sha256sums.txt.asc
+/var/cache/tb-binary/.cache/tb/files/tor-browser-linux64-5.5.4_en-US.tar.xz
+/var/cache/tb-binary/.cache/tb/files/sha256sums.txt
+/var/cache/tb-binary/.cache/tb/temp
+/var/cache/tb-binary/.cache/tb/temp/tar_fifo
+/var/cache/tb-binary/.cache/tb/temp/tor_check_bootstrap_helper_bootstrap_file
+/var/cache/tb-binary/.cache/tb/temp/sha256_output
+/var/cache/tb-binary/.cache/tb/temp/pv_wrapper_fifo
+/var/cache/tb-binary/.cache/tb/temp/tbb_remote_folder
+/var/cache/tb-binary/.cache/tb/gpgtmpdir
+/var/cache/tb-binary/.cache/tb/gpgtmpdir/secring.gpg
+/var/cache/tb-binary/.cache/tb/gpgtmpdir/pubring.gpg~
+/var/cache/tb-binary/.cache/tb/gpgtmpdir/pubring.gpg
+/var/cache/tb-binary/.cache/tb/gpgtmpdir/gpg_bash_lib_internal_gpg_verify_status_fd_file
+/var/cache/tb-binary/.cache/tb/gpgtmpdir/trustdb.gpg
+/var/cache/tb-binary/.cache/tb/gpgtmpdir/gpg_bash_lib_internal_gpg_verify_output_file
+</pre>
+
+After gpg verification, tb-updater will extract the Tor Browser archive to /var/cache/tb-binary/.tb.
+
+<pre>
+find /var/cache/tb-binary/.tb
+</pre>
+
+<pre>
+/var/cache/tb-binary/.tb/tor-browser/...
+</pre>
+
+When a Qubes-Whonix-Workstation AppVM is booted for the first time, in essence, the systemd unit file [https://github.com/Whonix/tb-updater/blob/master/lib/systemd/system/tb-updater-first-boot.service /lib/systemd/system/tb-updater-first-boot.service] runs [https://github.com/Whonix/tb-updater/blob/master/usr/lib/tb-updater/first-boot-home-population /usr/lib/tb-updater/first-boot-home-population]. That script copies /var/cache/tb-binary to /home/user. This results in...
+
+<pre>
+ls -la /home/user/.tb
+</pre>
+
+<pre>
+output... TODO
+</pre>
+
+<pre>
+ls -la /home/user/.cache/tb
+</pre>
+
+<pre>
+output... TODO
+</pre>
+
+Informations for users creating Whonix using the build script.
+
+If you are building Qubes-Whonix using the build script and want to fail open generally, a file /etc/torbrowser.d/50_user.conf has to be created inside chroot before the build with the following content.
+
+{{CodeSelect|code=
+anon_shared_inst_tb=open
+}}
+
+If you are building Qubes-Whonix using the build script and want to skip initial download of Tor Browser during build of Whonix in chroot, a file /etc/torbrowser.d/50_user.conf has to be created inside chroot before the build with the following content.
+
+{{CodeSelect|code=
+tb_install_in_chroot=false
+}}
+
+== Whonix-Custom-Linux-Workstation specific ==
+These instructions are new and you will be an early tester. There could be some connectivity issues.
+
+Please [[contribute]] by testing and finishing these instructions!
+
+These instructions were tested using Tor Browser version 6.0.1. Connectivity might break in later Tor Browser versions in case the developers of Tor Browser modify things related to how networking in Tor Browser gets configured. <ref>
+Once Tor Browser moves to SocksSocket, this will certainly no longer work. References:
+
+* https://trac.torproject.org/projects/tor/ticket/14270
+* https://phabricator.whonix.org/T192
+</ref>
+
+1) [[Manually_Downloading_Tor_Browser|Manually download and install Tor Browser]].
+
+2) You have to set multiple environment variables.
+
+{{Qubes persistence note}}
+
+{{Open with root rights|filename=
+/etc/environment
+}}
+
+Add.
+
+<pre>
+## Deactivate tor-launcher,
+## a Vidalia replacement as browser extension,
+## to prevent running Tor over Tor.
+## https://trac.torproject.org/projects/tor/ticket/6009
+## https://gitweb.torproject.org/tor-launcher.git
+TOR_SKIP_LAUNCH=1
+
+## Environment variable to disable the "TorButton" ->
+## "Open Network Settings..." menu item. It is not useful and confusing to have
+## on a workstation, because this is forbidden for security reasons. Tor must be
+## configured on the gateway.
+TOR_NO_DISPLAY_NETWORK_SETTINGS=1
+
+## environment variable to skip TorButton control port verification
+## https://trac.torproject.org/projects/tor/ticket/13079
+TOR_SKIP_CONTROLPORTTEST=1
+</pre>
+
+Save.
+
+Reboot.
+
+From now, only the browser component of the Tor Browser Bundle will be started.
+
+3) Verify environment variables.
+
+<pre>
+env | grep -i tor
+</pre>
+
+Should show.
+
+<pre>
+TOR_NO_DISPLAY_NETWORK_SETTINGS=1
+TOR_SKIP_CONTROLPORTTEST=1
+TOR_SKIP_LAUNCH=1
+</pre>
+
+4) Configure network settings. <ref>
+Learn about network settings.
+
+{{Tor Browser Manual Proxy Configuration}}
+
+<pre>
+## The following TOR_SOCKS_HOST and TOR_SOCKS_PORT variables
+## do not work flawlessly, due to an upstream bug in Tor Button:
+##    "TOR_SOCKS_HOST, TOR_SOCKS_PORT regression"
+##    https://trac.torproject.org/projects/tor/ticket/8336
+TOR_SOCKS_HOST="10.152.152.10"
+TOR_SOCKS_PORT="9150"
+</pre>
+</ref>
+
+Now you have to create {{Code2|~/.tb/tor-browser/Browser/TorBrowser/Data/Browser/profile.default/user.js}}. This supposes you installed Tor Browser as per step 1). It supposes you have a folder {{Code2|~/.tb/tor-browser}}. If you installed Tor Browser to another folder of your own choice, you need to adjust the path.
+
+{{Open File|filename=
+~/.tb/tor-browser/Browser/TorBrowser/Data/Browser/profile.default/user.js
+}}
+
+Add.
+
+<pre>
+user_pref("extensions.torbutton.use_privoxy", false);
+user_pref("extensions.torbutton.settings_method", "custom");
+user_pref("extensions.torbutton.socks_host", "10.152.152.10");
+user_pref("extensions.torbutton.socks_port", 9100);
+user_pref("network.proxy.socks", "10.152.152.10");
+user_pref("network.proxy.socks_port", 9100);
+user_pref("extensions.torbutton.custom.socks_host", "10.152.152.10");
+user_pref("extensions.torbutton.custom.socks_port", 9100);
+user_pref("extensions.torlauncher.control_host", "10.152.152.10");
+user_pref("extensions.torlauncher.control_port", 9052);
+</pre>
+
+Save.
+
+5) Done.
+
+== Windows specific ==
+'''UNTESTED'''<br />
+'''UNFINISHED'''<br />
+Please [[contribute]] by testing and finishing these instructions!
+
+When you are using a [[Other_Operating_Systems|Custom-Whonix-Workstation]], specifically a Windows-Whonix-Workstation and want to use Tor Browser...
+
+1) Install Tor Browser.
+
+* Download the [https://www.torproject.org/projects/torbrowser.html.en Tor Browser Bundle from torproject.org].
+* Verify the download.
+* Extract it.
+
+2) Use Tor Browser without bundled Tor.
+
+In the folder where you extracted Tor Browser, create a new text file. For example, you could give it the following name.
+
+<pre>
+Start TB without Tor.bat
+</pre>
+
+Add the following content to that file.
+
+<pre>
+SET TOR_SKIP_LAUNCH=1
+
+"Start Tor Browser.lnk"
+</pre>
+
+Save.
+
+<ref>
+We just have to set the **SET TOR_SKIP_LAUNCH=1** environment variable, then start Tor Browser. The Tor Browser Launcher add-on will detect this, skip the connection wizard and skip launching Tor.
+</ref>
+
+3) Configure network settings.
+
+Start Tor Browser. The following links for removing and changing proxy settings do not apply one to one to Windows! [[#Remove Proxy Settings|removing]] of proxy settings should be better avoided. [[#Change Proxy Settings|changing]] proxy settings would be better. How to do this on Windows is currently undocumented but you might figure out.
+
+{{Tor Browser Manual Proxy Configuration}}
+
+4) Figure out missing instructions. Port them from Linux specific to Windows specific.
+
+[[Tor_Browser#Whonix-Custom-Linux-Workstation_specific]]
+
+5) Done.
+
+== Start from Command Line ==
+<pre>
+cd .tb/torbrowser
+</pre>
+<pre>
+./start-tor-browser
+</pre>
+== Debugging ==
+1) Start Tor Browser
+
+2) go to about:config
+
+3) search for ___ and set to ___
+
+<pre>
+extensions.torbutton.loglevel | 1
+extensions.torlauncher.loglevel | 1
+
+extensions.torbutton.logmethod | 0
+extensions.torlauncher.logmethod | 0
+</pre>
+
+4) Close Tor Browser.
+
+5) Restart Tor Browser from command line in debug mode.
+
+<pre>
+cd .tb/torbrowser
+</pre>
+<pre>
+./start-tor-browser --debug
+</pre>
+
+<ref>
+https://www.torproject.org/docs/torbutton/en/design/
+</ref>
+
+= Footnotes / References =
+<references/>
+
+= License =
+
+<pre>Whonix Tor Browser wiki page Copyright (C) Amnesia <amnesia at boum dot org>
+Whonix Tor Browser wiki page Copyright (C) 2012 -2014 Patrick Schleizer <adrelanos@riseup.net>
+
+This program comes with ABSOLUTELY NO WARRANTY; for details see the wiki source code.
+This is free software, and you are welcome to redistribute it
+under certain conditions; see the wiki source code for details.</pre>
+
+{{Footer}}
+
+[[Category:Documentation]]
