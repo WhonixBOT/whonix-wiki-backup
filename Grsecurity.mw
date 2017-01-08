@@ -12,7 +12,7 @@ Grsecurity is a GPL licensed, extensive security enhancement to the Linux kernel
 
 Instead of chasing and fixing individual bugs, Grsecurity and PaX end exploitation of entire bug classes and provide kernel self-protection against zero-days.
 
-== How-To ==
+== How-To: non-Qubes-Whonix ==
 
 === Grsecurity Kernel  Setup ===
 
@@ -238,6 +238,152 @@ To upgrade to a newer gradm release, re-run the same build commands above.
 ==== Usage ====
 
 A detailed [https://wiki.archlinux.org/index.php/Grsecurity#RBAC guide] on generating and enforcing RBAC policy is available on the ArchLinux wiki. Note these instructions apply to all distros.
+
+==How-To: Qubes-Whonix==
+
+This work is being undertaken by Coldhak and these instructions are drawn almost exclusively from their blog and github account.<ref>https://coldhak.ca/blog/2016/12/12/coldkernel-qubes-1.html</ref><ref>https://github.com/coldhakca/coldkernel</ref>
+
+The Debian-8 TemplateVM is currently supported. Work is ongoing to support the Fedora and Whonix TemplateVMs, as well as the Qubes DispVM and dom0.<ref>https://github.com/coldhakca/coldkernel/issues</ref>
+
+Warning: These instructions are extremely alpha and may potentially break your template. Clone your default template(s) before proceeding!
+
+===Debian TemplateVM===
+
+====Configuring the Debian TemplateVM====
+
+'''1. Clone your Debian-8 TemplateVM'''
+
+'''2. Increase the maximum storage size of the Debian-8 TemplateVM'''
+
+https://coldhak.ca/assets/img/blog/coldkernel_pt1/size.png
+
+Note: A minimum of 4GB is recommended. 10GB is a safe value so you don't run out of disk space at the end of the build.
+
+'''3. Edit your sources.list'''
+
+In the Debian TemplateVM, run:
+
+    sudo nano /etc/apt/sources.list
+
+Uncomment the lines starting with deb-src. It should look something like this:
+
+    deb http://http.debian.net/debian jessie main contrib non-free
+    deb-src http://http.debian.net/debian jessie main contrib non-free
+
+    deb https://security.debian.org jessie/updates main contrib non-free
+    deb-src https://security.debian.org jessie/updates main contrib non-free
+
+Save and exit.
+
+'''4. Install dom0 dependencies.'''
+
+In dom0, run:
+
+    sudo qubes-dom0-update grub2-xen
+
+'''5. Install Debian dependencies.'''
+
+In the Debian TemplateVM, run:
+
+    sudo apt install qubes-kernel-vm-support grub2-common
+    sudo apt install paxctl bc wget gnupg fakeroot build-essential devscripts libfile-fcntllock-perl git gcc-4.9-plugin-dev
+    sudo apt-get build-dep linux
+
+====Building the grsec Coldkernel====
+
+'''1. Clone and verify the coldkernel build scripts.'''
+
+Note: always verify and checkout the latest kernel available from coldhak. As at January, 2016 this was the 4.8.15 Linux kernel.
+
+In the Debian TemplateVM, run:
+
+    wget "https://coldhak.ca/coldhak/keys/coldhak.asc" -O coldhak.asc
+    gpg --import coldhak.asc
+    git clone https://github.com/coldhakca/coldkernel
+    cd coldkernel
+    git verify-tag coldkernel-0.9a-4.8.15
+    git checkout tags/coldkernel-0.9a-4.8.15
+
+The verfication step should produce a good signature from the Coldhak developers:
+
+https://coldhak.ca/assets/img/blog/coldkernel_pt1/verify.png
+
+'''2. Build the grsec coldkernel.'''
+
+Note: This step can take several hours depending on your computer hardware; later architectures can finish this step in less than one hour. This process is CPU intensive, and your system may crash if you use other programs simultaneously.
+
+To make the build with hypervisor support, in your Debian TemplateVM run:
+
+    make qubes-guest
+
+https://coldhak.ca/assets/img/blog/coldkernel_pt1/build.png
+
+====Installing the grsec Coldkernel====
+
+Post-build, in the Debian Template VM run:
+
+    wget https://grsecurity.net/paxctld/paxctld_1.2.1-1_amd64.{deb,deb.sig}
+    gpg --homedir=.gnupg --verify paxctld_1.2.1-1_amd64.{deb.sig,deb}
+    sudo dpkg -i paxctld_1.2.1-1_amd64.deb
+    sudo make install-deb
+    sudo cp paxctld.conf /etc/paxctld.conf
+    sudo paxctld -d
+    sudo systemctl enable paxctld
+    sudo mkdir /boot/grub
+    sudo update-grub2
+    sudo shutdown -h now
+
+====Post-install TemplateVM Configuration==== 
+
+'''1. Change the Debian-8 TemplateVM kernel.'''
+
+After the TemplateVM has been shutdown, change the kernel in the Qubes VM Manager to use pvgrub.
+
+https://coldhak.ca/assets/img/blog/coldkernel_pt1/pvgrub.png
+
+'''2. Check the Debian-8 TemplateVM is functional.'''
+
+Start the Debian-8 TemplateVM. If successful, the VM state should be green in Qubes VM Manager and the VM log should show something similar to:
+
+    Linux Version 4.8.15-coldkernel-grsec-2
+
+'''3. Set default grsec special groups.'''
+
+In the Debian TemplateVM, run:
+
+   sudo groupadd -g 9001 grsecproc
+   sudo groupadd -g 9002 tpeuntrusted
+   sudo groupadd -g 9003 denysockets
+
+Note: Respectively, users in these groups are:
+
+* Exempted from grsecurity's /proc restrictions;
+* Unable to execute any files that are not in root-owned directories writable only by root; and
+* Unable to connect to other hosts from your machine or run server applications.
+
+====Post-install Debian-8 AppVM Configuration====
+
+'''1. Create an AppVM based on the Debian-8 coldkernel template.'''
+
+'''2. Change the AppVM kernel selection.'''
+
+Use Qubes VM Manager to set 'pvgrub2' for the AppVM's kernel selection. Otherwise, it defaults to the standard Qubes kernel.
+
+===Fedora TemplateVM===
+
+''To do following Coldhak release.''
+
+===Whonix TemplateVMs===
+
+''To do following Coldhak release.''
+
+===Qubes DispVM===
+
+''To do following Coldhak release.''
+
+===Qubes dom0===
+
+''To do following Coldhak release.''
 
 = Footnotes =
 <references />
