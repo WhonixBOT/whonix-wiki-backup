@@ -1,0 +1,160 @@
+<!--
+Copyright:
+
+   Copyright (C) Amnesia <amnesia at boum dot org>
+   Copyright (C) 2012 -2014 Patrick Schleizer <adrelanos@riseup.net>
+   Copyright (C) 2017 Ego <ego-superego-id@protonmail.com>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+         
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+      
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to:
+
+    Free Software Foundation, Inc. 
+    51 Franklin St, Fifth Floor
+    Boston, MA 02110-1301, USA.
+
+On Debian GNU/Linux systems, the complete text of the GNU General Public
+License can be found in the /usr/share/common-licenses' directory.
+
+The complete text of the GNU General Public License can also be found online on gnu.org <https://www.gnu.org/licenses/gpl.html>, in Whonix virtual machine images in /usr/share/common-licenses/GPL-3 file or on Github <https://github.com/Whonix/Whonix/blob/master/GPLv3>.
+-->
+<!--
+This wiki page is a fork of the Tails Trusting Tails signing key page, from this exact source <http://git.immerda.ch/?p=amnesia.git;a=blob;f=wiki/src/doc/get/trusting_tails_signing_key.mdwn;hb=63b68fb4970361131cbd1713b40521244e88c204>.
+-->
+{{Header}}
+{{#seo:
+|description=Get Egos's OpenPGP signing key. Verify Installer Downloads.
+}}
+= Introduction =
+
+The releases of the Whonix-Installer have been signed by Ego which is why it is necessary to import his signing key to verify the Installer.
+
+This page is strongly related to the [[Trust]] page.
+
+= Download the key =
+<!--
+EDITORS NOTES:
+- Not recommending 'scurl': Because these instructions are done on the host. Perhaps by users that are not yet Whonix users. 'scurl' is not available to them.
+- Not recommending curl: Because it may not be installed on their host. Perhaps Windows users are looking at these instructions.
+- Instructions target regular users. Not from-source-builders.
+-->
+
+1. Download Ego's [[OpenPGP]] key:<br />
+URL INSERT
+
+2. Store it as {{Code2|~/ego.asc}}.
+
+3. Check fingerprints/owners without importing anything.
+
+{{CodeSelect|code=
+gpg --with-fingerprint ego.asc
+}}
+
+4. Verify it shows the following. 
+
+<pre>
+pub  4096R/2EEACCDA 2014-01-16 Patrick Schleizer <adrelanos@riseup.net>
+      Key fingerprint = 916B 8D99 C38E AF5E 8ADC  7A2A 8D66 066A 2EEA CCDA
+sub  4096R/CE998547 2014-01-16 [expires: 2021-04-17]
+sub  4096R/119B3FD6 2014-01-16 [expires: 2021-04-17]
+sub  4096R/77BB3C48 2014-01-16 [expires: 2021-04-17]
+</pre>
+
+5. Import the key.
+
+{{CodeSelect|code=
+gpg --import ego.asc
+}}
+
+The output should tell you that the key was imported:
+
+<pre>
+gpg: key 2EEACCDA: public key "Patrick Schleizer <adrelanos@riseup.net>" imported
+gpg: Total number processed: 1
+gpg:               imported: 1  (RSA: 1)
+</pre>
+
+'''If you had already imported Whonix signing key in the past''', the output should tell you that the key was not changed:
+
+<pre>
+gpg: key 2EEACCDA: "Patrick Schleizer <adrelanos@riseup.net>" not changed
+gpg: Total number processed: 1
+gpg:              unchanged: 1
+</pre>
+
+'''If you are shown the following message''' at the end of the output:
+
+<pre>
+gpg: no ultimately trusted keys found
+</pre>
+
+Analyse the other messages as usual: this extra message doesn't relate to Ego's signing key that you downloaded and usually means that you didn't create an OpenPGP key for yourself yet, which is of no importance to verify the virtual machine images.
+
+= Verifying the Installer
+
+Now, download the cryptographic (OpenPGP) signature and save it in the same folder as the Installer:
+
+[https://download.whonix.org/windows/Whonix-Installer.exe.asc Whonix-Installer.exe.asc]
+
+Then, start the cryptographic verification, which may take several minutes.
+
+<pre>
+cd [the directory in which you downloaded the Installer and .asc files]
+gpg --verify-options show-notations --verify Whonix-Installer.exe.asc Whonix-Installer.exe
+</pre>
+
+If the Virtual Machine image is '''correct''' the output will tell you that the signature is good:
+
+<pre>
+
+</pre>
+
+This might be followed by a warning saying:
+
+<pre>
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg: There is no indication that the signature belongs to the owner.
+</pre>
+
+This doesn't alter the validity of the signature according to the key you downloaded. This warning rather has to do with the trust that you put in Whonix signing key and the [[OpenPGP#The_OpenPGP_Web_of_Trust|Web of Trust]]. To remove this warning you would have to personally sign Whonix signing key with your own key.
+
+If all checks out, the Installer hasn't been tampered with and can be used safely.
+
+
+If the Virtual Machine image is not correct the output will tell you that the signature is bad:
+
+<pre>
+gpg: Signature made Sun Nov 25 21:48:54 2012 UTC
+gpg: using RSA key 77BB3C48
+gpg: BAD signature from "Patrick Schleizer <adrelanos@riseup.net>"
+</pre>
+
+In this case do '''NOT''' use the Installer! Please download it instead again!
+
+= See Also =
+* [[Trust]]
+* [[OpenPGP|OpenPGP key distribution strategies]]
+
+= License =
+<pre>
+Whonix Trusting Whonix Signing Key wiki page Copyright (C) Amnesia <amnesia at boum dot org>
+Whonix Trusting Whonix Signing Key wiki page Copyright (C) 2012 -2014 Patrick Schleizer <adrelanos@riseup.net>
+Whonix Trusting Whonix Signing Key wiki page Copyright (C) 2017 Ego <ego-superego-id@protonmail.com>
+
+This program comes with ABSOLUTELY NO WARRANTY; for details see the wiki source code.
+This is free software, and you are welcome to redistribute it
+under certain conditions; see the wiki source code for details.
+</pre>
+
+{{Footer}}
+
+[[Category:Documentation]]
