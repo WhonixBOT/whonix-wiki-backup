@@ -98,25 +98,22 @@ Add the following content.
   match-hosts:
     - '*'
   commands:
-    SIGNAL:
-      - 'NEWNYM'
     GETINFO:
-      - 'status/circuit-established'
-      - 'version'
-      - pattern: 'net/listeners/socks'
-        response:
-        - pattern:     '250-net/listeners/socks=".*"'
-          replacement: '250-net/listeners/socks="127.0.0.1:9150"'
       - 'onions/current'
     GETCONF:
       - 'hiddenservicesinglehopmode'
     ADD_ONION:
       - pattern:     'NEW:BEST Port=80,(176[0-5][0-9])'
         replacement: 'NEW:BEST Port=80,{client-address}:{} Flags=DiscardPK'
+      ## onionshare creates this dummy probably to test if Tor supports the hidserv option.
       - pattern:     'NEW:BEST Flags=BasicAuth Port=1,1 ClientAuth=onionshare'
-        replacement: 'NEW:BEST Flags=BasicAuth Port=1,1 ClientAuth=onionshare Flags=DiscardPK'
-      - pattern:     'NEW:BEST Flags=BasicAuth Port=80,(176[0-5][0-9]) ClientAuth=onionshare'
-        replacement: 'NEW:BEST Flags=BasicAuth Port=80,{client-address}:{} ClientAuth=onionshare Flags=DiscardPK'
+        replacement: 'NEW:BEST Flags=BasicAuth Port=1,{client-address}:1 ClientAuth=onionshare Flags=DiscardPK'
+      ## Flags=DiscardPK would break it.
+      - pattern: 'NEW:BEST Flags=BasicAuth Port=80,(176[0-5][0-9]) ClientAuth=onionshare'
+        replacement: 'NEW:BEST Flags=BasicAuth Port=80,{client-address}:{} ClientAuth=onionshare'
+        response:
+        - pattern:     '250-PrivateKey=(\S+):\S+'
+          replacement: '250-PrivateKey={}:redacted'
     DEL_ONION:
       - '.+'
   confs:
