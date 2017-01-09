@@ -85,55 +85,10 @@ Control Port Filter Proxy needs some adjustments.
 filename=/etc/tor-controlport-filter.d/whonix.yml
 }}
 
-Add the following content.
+Get the profile content from the following location.
 
-(Must make sure in the following wiki markup using CodeSelect no pipe | is included since that is not supported by CodeSelect. Working version that can be used can also be found [https://phabricator.whonix.org/T574#10972 here].)
-
-{{CodeSelect|code=
----
-- match-exe-paths:
-    - '*'
-  match-users:
-    - '*'
-  match-hosts:
-    - '*'
-  commands:
-    GETINFO:
-      - 'onions/current'
-    GETCONF:
-      - 'hiddenservicesinglehopmode'
-    ADD_ONION:
-      - pattern:     'NEW:BEST Port=80,(176[0-5][0-9])'
-        replacement: 'NEW:BEST Port=80,{client-address}:{} Flags=DiscardPK'
-      ## onionshare creates this dummy probably to test if Tor supports the hidserv option.
-      - pattern:     'NEW:BEST Flags=BasicAuth Port=1,1 ClientAuth=onionshare'
-        replacement: 'NEW:BEST Flags=BasicAuth Port=1,{client-address}:1 ClientAuth=onionshare Flags=DiscardPK'
-      ## Flags=DiscardPK would break it.
-      - pattern: 'NEW:BEST Flags=BasicAuth Port=80,(176[0-5][0-9]) ClientAuth=onionshare'
-        replacement: 'NEW:BEST Flags=BasicAuth Port=80,{client-address}:{} ClientAuth=onionshare'
-        response:
-        - pattern:     '250-PrivateKey=(\S+):\S+'
-          replacement: '250-PrivateKey={}:redacted'
-    DEL_ONION:
-      - '.+'
-  confs:
-    __owningcontrollerprocess:
-  events:
-    SIGNAL:
-      suppress: true
-    CONF_CHANGED:
-      suppress: true
-    HS_DESC:
-      response:
-        - pattern:     '650 HS_DESC CREATED (\S+) (\S+) (\S+) \S+ (.+)'
-          replacement: '650 HS_DESC CREATED {} {} {} redacted {}'
-        - pattern:     '650 HS_DESC UPLOAD (\S+) (\S+) .*'
-          replacement: '650 HS_DESC UPLOAD {} {} redacted redacted'
-        - pattern:     '650 HS_DESC UPLOADED (\S+) (\S+) .+'
-          replacement: '650 HS_DESC UPLOADED {} {} redacted'
-        - pattern:     '.*'
-          replacement: ''
-}}
+* https://github.com/Whonix/control-port-filter-python/blob/master/usr/share/tor-controlport-filter/40_onionshare.yml
+* https://raw.githubusercontent.com/Whonix/control-port-filter-python/master/usr/share/tor-controlport-filter/40_onionshare.yml
 
 Restart Control Port Filter Proxy.
 
