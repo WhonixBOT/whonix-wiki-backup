@@ -28,121 +28,6 @@ done
 ** So users who just have both 50_onionshare.conf and 50_ricochet.conf can use both programs.
 ** Creating files and pasting stuff is usually something that users easily understand. What they don't easily understand is to explain "open file 30_whonix.conf and then inject X at that line and Y and that line etc.".
 
-==== proposal on yml config file merging ====
-Perhaps the following will become Whonix minimal config file. It white lists everything required by Tor Browser and whonixcheck. Perhaps we name it 30_whonix.conf.
-
-{{CodeSelect|code=
----
-- match-exe-paths:
-    - '*'
-  match-users:
-    - '*'
-  match-hosts:
-    - '*'
-  commands:
-    SIGNAL:
-      - 'NEWNYM'
-    GETINFO:
-      - 'status/circuit-established'
-      - 'version'
-      - pattern: 'net/listeners/socks'
-        response:
-        - pattern:     '250-net/listeners/socks=".*"'
-          replacement: '250-net/listeners/socks="127.0.0.1:9150"'
-  confs:
-    __owningcontrollerprocess:
-  events:
-    SIGNAL:
-      suppress: true
-    CONF_CHANGED:
-      suppress: true
-}}
-
------
-
-Most likely the following config file allows all stuff that is required for onionshare. Perhaps we name it 40_onionshare.conf.
-
-{{CodeSelect|code=
----
-- match-exe-paths:
-    - '*'
-  match-users:
-    - '*'
-  match-hosts:
-    - '*'
-  commands:
-    GETINFO:
-      - 'onions/current'
-    ADD_ONION:
-      - pattern:     'NEW:BEST Port=80,(176[0-5][0-9])'
-        replacement: 'NEW:BEST Port=80,{client-address}:{} Flags=DiscardPK'
-    DEL_ONION:
-      - '.+'
-  confs:
-    __owningcontrollerprocess:
-  events:
-    SIGNAL:
-      suppress: true
-    CONF_CHANGED:
-      suppress: true
-    HS_DESC:
-      response:
-        - pattern:     '650 HS_DESC CREATED (\S+) (\S+) (\S+) \S+ (.+)'
-          replacement: '650 HS_DESC CREATED {} {} {} redacted {}'
-        - pattern:     '650 HS_DESC UPLOAD (\S+) (\S+) .*'
-          replacement: '650 HS_DESC UPLOAD {} {} redacted redacted'
-        - pattern:     '650 HS_DESC UPLOADED (\S+) (\S+) .+'
-          replacement: '650 HS_DESC UPLOADED {} {} redacted'
-        - pattern:     '.*'
-          replacement: ''
-}}
-
------
-
-Now, ideally, once tor-controlport-filter start it would read both (or any number) config files and for internal use merge them to the following. It still does everything that 30_whonix.conf is white listing and goes beyond that, also allows everything 40_onionshare.conf is white listing.
-
-{{CodeSelect|code=
----
-- match-exe-paths:
-    - '*'
-  match-users:
-    - '*'
-  match-hosts:
-    - '*'
-  commands:
-    SIGNAL:
-      - 'NEWNYM'
-    GETINFO:
-      - 'status/circuit-established'
-      - 'version'
-      - pattern: 'net/listeners/socks'
-        response:
-        - pattern:     '250-net/listeners/socks=".*"'
-          replacement: '250-net/listeners/socks="127.0.0.1:9150"'
-      - 'onions/current'
-    ADD_ONION:
-      - pattern:     'NEW:BEST Port=80,(176[0-5][0-9])'
-        replacement: 'NEW:BEST Port=80,{client-address}:{} Flags=DiscardPK'
-    DEL_ONION:
-      - '.+'
-  confs:
-    __owningcontrollerprocess:
-  events:
-    SIGNAL:
-      suppress: true
-    CONF_CHANGED:
-      suppress: true
-    HS_DESC:
-      - pattern:     '650 HS_DESC CREATED (\S+) (\S+) (\S+) \S+ (.+)'
-        replacement: '650 HS_DESC CREATED {} {} {} redacted {}'
-      - pattern:     '650 HS_DESC UPLOAD (\S+) (\S+) .*'
-        replacement: '650 HS_DESC UPLOAD {} {} redacted redacted'
-      - pattern:     '650 HS_DESC UPLOADED (\S+) (\S+) .+'
-        replacement: '650 HS_DESC UPLOADED {} {} redacted'
-      - pattern:     '.*'
-        replacement: ''
-}}
-
 ==== overwriting example ====
 1_file.yml
 <pre>
@@ -312,6 +197,121 @@ We will merge/unionise in all cases except
 
 Typically [as I explained before], everything is key value pair. What we should do with "value", depends upon *its* "key".
 But in case of #5, what we do with "replacement"s value depends on the value of previous element "pattern".
+
+==== proposal on yml config file merging ====
+Perhaps the following will become Whonix minimal config file. It white lists everything required by Tor Browser and whonixcheck. Perhaps we name it 30_whonix.conf.
+
+{{CodeSelect|code=
+---
+- match-exe-paths:
+    - '*'
+  match-users:
+    - '*'
+  match-hosts:
+    - '*'
+  commands:
+    SIGNAL:
+      - 'NEWNYM'
+    GETINFO:
+      - 'status/circuit-established'
+      - 'version'
+      - pattern: 'net/listeners/socks'
+        response:
+        - pattern:     '250-net/listeners/socks=".*"'
+          replacement: '250-net/listeners/socks="127.0.0.1:9150"'
+  confs:
+    __owningcontrollerprocess:
+  events:
+    SIGNAL:
+      suppress: true
+    CONF_CHANGED:
+      suppress: true
+}}
+
+-----
+
+Most likely the following config file allows all stuff that is required for onionshare. Perhaps we name it 40_onionshare.conf.
+
+{{CodeSelect|code=
+---
+- match-exe-paths:
+    - '*'
+  match-users:
+    - '*'
+  match-hosts:
+    - '*'
+  commands:
+    GETINFO:
+      - 'onions/current'
+    ADD_ONION:
+      - pattern:     'NEW:BEST Port=80,(176[0-5][0-9])'
+        replacement: 'NEW:BEST Port=80,{client-address}:{} Flags=DiscardPK'
+    DEL_ONION:
+      - '.+'
+  confs:
+    __owningcontrollerprocess:
+  events:
+    SIGNAL:
+      suppress: true
+    CONF_CHANGED:
+      suppress: true
+    HS_DESC:
+      response:
+        - pattern:     '650 HS_DESC CREATED (\S+) (\S+) (\S+) \S+ (.+)'
+          replacement: '650 HS_DESC CREATED {} {} {} redacted {}'
+        - pattern:     '650 HS_DESC UPLOAD (\S+) (\S+) .*'
+          replacement: '650 HS_DESC UPLOAD {} {} redacted redacted'
+        - pattern:     '650 HS_DESC UPLOADED (\S+) (\S+) .+'
+          replacement: '650 HS_DESC UPLOADED {} {} redacted'
+        - pattern:     '.*'
+          replacement: ''
+}}
+
+-----
+
+Now, ideally, once tor-controlport-filter start it would read both (or any number) config files and for internal use merge them to the following. It still does everything that 30_whonix.conf is white listing and goes beyond that, also allows everything 40_onionshare.conf is white listing.
+
+{{CodeSelect|code=
+---
+- match-exe-paths:
+    - '*'
+  match-users:
+    - '*'
+  match-hosts:
+    - '*'
+  commands:
+    SIGNAL:
+      - 'NEWNYM'
+    GETINFO:
+      - 'status/circuit-established'
+      - 'version'
+      - pattern: 'net/listeners/socks'
+        response:
+        - pattern:     '250-net/listeners/socks=".*"'
+          replacement: '250-net/listeners/socks="127.0.0.1:9150"'
+      - 'onions/current'
+    ADD_ONION:
+      - pattern:     'NEW:BEST Port=80,(176[0-5][0-9])'
+        replacement: 'NEW:BEST Port=80,{client-address}:{} Flags=DiscardPK'
+    DEL_ONION:
+      - '.+'
+  confs:
+    __owningcontrollerprocess:
+  events:
+    SIGNAL:
+      suppress: true
+    CONF_CHANGED:
+      suppress: true
+    HS_DESC:
+      - pattern:     '650 HS_DESC CREATED (\S+) (\S+) (\S+) \S+ (.+)'
+        replacement: '650 HS_DESC CREATED {} {} {} redacted {}'
+      - pattern:     '650 HS_DESC UPLOAD (\S+) (\S+) .*'
+        replacement: '650 HS_DESC UPLOAD {} {} redacted redacted'
+      - pattern:     '650 HS_DESC UPLOADED (\S+) (\S+) .+'
+        replacement: '650 HS_DESC UPLOADED {} {} redacted'
+      - pattern:     '.*'
+        replacement: ''
+}}
 
 {{Footer}}
 
