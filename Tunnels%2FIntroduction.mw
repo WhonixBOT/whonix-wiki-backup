@@ -25,6 +25,26 @@ https://lists.torproject.org/pipermail/tor-talk/2016-July/041757.html
 To explain why that is, some background information is required so you can draw conclusions and take actions to avoid this risk. See below.
 }}
 
+----
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px|alt=Warning]]
+| text       = [[Qubes-Whonix]] users note:<br />
+You probably do not want to run the tunnel software from within a TemplateVM. This is because the whonix-gw TemplateVM "is more like a workstation". It is behind sys-whonix. It is not sys-whonix itself.<br />
+<br />
+(If you are using openvpn inside Whonix-Gateway (commonly called sys-whonix) or Whonix-Workstation (commonly called anon-whonix) while following Whonix documentation, openvpn will not start inside the whonix-gw or whonix-ws TemplateVM.) <ref>
+This is because file [https://github.com/Whonix/usability-misc/blob/master/lib/systemd/system/openvpn%40openvpn.service.d/50_unpriv.conf /lib/systemd/system/openvpn@openvpn.service.d/50_unpriv.conf] checks the following condition
+<pre>
+ConditionPathExists=!/var/run/qubes-service/whonix-template
+</pre>
+Which means, if file <code>/var/run/qubes-service/whonix-template</code> exists, which is the case in Whonix TemplateVMs, the {{Code2|openvpn@openvpn}} service will not be started.
+</ref>
+<br />
+In future, the [https://github.com/QubesOS/qubes-issues/issues/1858 TemplateVMs will not have any networking at all by Qubes default]. (They will be upgraded through the qrexec based updates proxy that will be running on sys-whonix.)
+}}
+
+----
+
 * Tor avoids using more than one relay belonging to the same operator  in the circuits it is building. Legitimate Tor relay operators adhere to Tor's relay operator practices of announcing which relays belong to them by declaring this in the Tor relay family setting. Tor also avoids using Tor relays that are within the same network by not using relays within the same /16 subnet. <ref>
 http://tor.stackexchange.com/a/114/80
 </ref> Tor however does not take into account your real external IP nor destination IP addresses. <ref>
@@ -52,22 +72,6 @@ https://lists.torproject.org/pipermail/tor-talk/2016-July/041753.html
 * Perhaps manually pick your Tor relay[s]. Specifically your entry guard[s] or [[Bridges|bridge[s]]]).
 ** Tor documentation generally discourages tampering with Tor's routing algorithm by manually choosing your relays, but since you are trying to be more clever by extending your Tor chain despite all information about the difficulty of this endeavor, perhaps it would make sense to pick your entry guard manually.
 ** Using [[Bridges]] might be an alternative, but note the following quote. "''Bridges are less reliable and tend to have lower performance than other entry points. If you live in a uncensored area, they are not necessarily more secure than entry guards.'' ''Source: [https://lists.torproject.org/pipermail/tor-talk/2012-May/024378.html bridge vs non-bridge users anonymity].''"
-
-{{mbox
-| image   = [[File:Ambox_warning_pn.svg.png|40px|alt=Warning]]
-| text       = [[Qubes-Whonix]] users note:<br />
-You probably do not want to run the tunnel software from within a TemplateVM. This is because the whonix-gw TemplateVM "is more like a workstation". It is behind sys-whonix. It is not sys-whonix itself.<br />
-<br />
-(If you are using openvpn inside Whonix-Gateway (commonly called sys-whonix) or Whonix-Workstation (commonly called anon-whonix) while following Whonix documentation, openvpn will not start inside the whonix-gw or whonix-ws TemplateVM.) <ref>
-This is because file [https://github.com/Whonix/usability-misc/blob/master/lib/systemd/system/openvpn%40openvpn.service.d/50_unpriv.conf /lib/systemd/system/openvpn@openvpn.service.d/50_unpriv.conf] checks the following condition
-<pre>
-ConditionPathExists=!/var/run/qubes-service/whonix-template
-</pre>
-Which means, if file <code>/var/run/qubes-service/whonix-template</code> exists, which is the case in Whonix TemplateVMs, the {{Code2|openvpn@openvpn}} service will not be started.
-</ref>
-<br />
-In future, the [https://github.com/QubesOS/qubes-issues/issues/1858 TemplateVMs will not have any networking at all by Qubes default]. (They will be upgraded through the qrexec based updates proxy that will be running on sys-whonix.)
-}}
 
 = Comparison Table =
 {| class="wikitable" style="background-color: #fff;text-align: center"
