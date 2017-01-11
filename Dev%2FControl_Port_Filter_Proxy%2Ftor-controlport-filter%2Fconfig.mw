@@ -270,7 +270,48 @@ https://github.com/Whonix/control-port-filter-python/blob/164411fb7c8914022a5def
 
 However, likely not possible with rewriting and whatnot.
 
-==== X ====
+==== variables at the python level ====
+For python everything in a yaml file is a _recursive_ key value pair. E.g.
+
+<pre>
+{'match-exe-paths:',''*''}
+</pre>
+
+<pre>
+{'Command','a bunch of key value pairs'}
+{'Command','{'SIGNAL',NEWNYM},{'SAVECONF',CRLF}',....}
+</pre>
+
+<pre>
+{'events',bunch of key value pairs}
+{'events',{'SIGNAL',another key value pair},{'CONF_CHANGED',another key value pair},....}
+{'events',{'SIGNAL',{'suppress',false}},{'CONF_CHANGED',{'suppress',false}},....}
+</pre>
+
+==== overwriting vs merge/union ====
+There need to be rules for:
+
+* 1) *overwriting *a "value" for a key
+* b) *keeping both* the "value"s for a single key - i.e. merge/union them.
+
+==== list ====
+We need to list out all such exceptions. i.e. we need to list out all cases where we are overwriting[#1] and not.
+
+Any change in "pattern" under GETINFO should be merged/unionised(#2).
+
+But what about "pattern" under "response"?
+
+==== Current Rules Implemented in Whonix fork ====
+We will merge/unionise in all cases except
+
+1) {suppress, true/false} - Should be overwritten
+2) {match-hosts, ipaddress} - Should be overwritten
+3) {match-exe, '*'} - so overwrite with * always
+4) {match-user,'*'} - so overwrite with * always
+5) If Response: Pattern is same, then overwrite values of the "replacement" [ else, merge]
+
+Typically [as I explained before], everything is key value pair. What we should do with "value", depends upon *its* "key".
+But in case of #5, what we do with "replacement"s value depends on the value of previous element "pattern".
 
 {{Footer}}
 
