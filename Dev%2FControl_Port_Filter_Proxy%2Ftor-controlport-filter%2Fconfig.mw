@@ -18,6 +18,8 @@ Also other packages who want to extend tor-controlport-filter config must not mo
 
 Whonix will ship by default a locked down config. Opening as little attack surface as possible. If users want to use other functions such as onionshare they need to compromise security. They need to allow additional Tor control protocol commands so their application such as onionshare can work.
 
+----
+
 ==== on various .d style implementation flavors ====
 Different software packages such as apt vs grub all implement their '.d' folders a bit differently. They're most times sources in lexical order and the new convention is to only use configs ending with '.conf'.
 
@@ -42,6 +44,8 @@ done
 ** Similarly we ideally we can just say for ricochet "create a file /etc/tor-controlport-filter.d/50_ricochet.conf with the following content".
 ** So users who just have both 50_onionshare.conf and 50_ricochet.conf can use both programs.
 ** Creating files and pasting stuff is usually something that users easily understand. What they don't easily understand is to explain "open file 30_whonix.conf and then inject X at that line and Y and that line etc.".
+
+----
 
 ==== How ====
 tor-controlport-filter in Whonix cannot filter per application. Whonix-Gateway won't have access to the program name talking to it. So Whonix can only have one global whitelist. However, it would be nice if that global whitelist could be split into multiple files.
@@ -68,6 +72,8 @@ for item in $file_list ; do
 done
 </pre>
 
+----
+
 ==== match-exe-paths ====
 Whonix is currently using the following.
 
@@ -78,6 +84,8 @@ Whonix is currently using the following.
 
 This is because that information gets lost during the workstation -> gateway transfer. Hard to have it both way - Fine tuned restricted application white lists (which are great) vs Whonix workstation -> gateway split model.
 
+----
+
 ==== match-users ====
 <pre>
   match-users:
@@ -85,6 +93,8 @@ This is because that information gets lost during the workstation -> gateway tra
 </pre>
 
 Same as above.
+
+----
 
 ==== match-hosts ====
 Whonix is currently using the following. 
@@ -100,6 +110,8 @@ More fine tuned control however would be desirable. A user using multiple Whonix
 
 If that gets to complicated, just forget about it.
 
+----
+
 ==== comparison with Whonix legacy control-port-filter-python config parsing code ====
 If you like to look at 'legacy control-port-filter-python' (that's how I call the script that Whonix had before moving to tor-controlport-filter code by Tails due to lack of a better term)... Here is how config parsing worked back then:
 
@@ -112,6 +124,8 @@ Using plain text config files (no yaml / yml).
 https://github.com/Whonix/control-port-filter-python/blob/164411fb7c8914022a5def02b5aea7118e7ca8a8/etc/cpfpy.d/30_default.conf#L72-L91
 
 However, likely not possible with rewriting and whatnot.
+
+----
 
 ==== variables at the python level ====
 For python everything in a yaml file is a _recursive_ key value pair. E.g.
@@ -131,11 +145,15 @@ For python everything in a yaml file is a _recursive_ key value pair. E.g.
 {'events',{'SIGNAL',{'suppress',false}},{'CONF_CHANGED',{'suppress',false}},....}
 </pre>
 
+----
+
 ==== overwriting vs merge/union ====
 There need to be rules for:
 
 * 1) *overwriting *a "value" for a key
 * b) *keeping both* the "value"s for a single key - i.e. merge/union them.
+
+----
 
 ==== list ====
 We need to list out all such exceptions. i.e. we need to list out all cases where we are overwriting[#1] and not.
@@ -143,6 +161,8 @@ We need to list out all such exceptions. i.e. we need to list out all cases wher
 Any change in "pattern" under GETINFO should be merged/unionised(#2).
 
 But what about "pattern" under "response"?
+
+----
 
 ==== Current Rules Implemented in Whonix fork ====
 We will merge/unionise in all cases except
@@ -156,6 +176,8 @@ We will merge/unionise in all cases except
 
 Typically [as I explained before], everything is key value pair. What we should do with "value", depends upon *its* "key".
 But in case of #5, what we do with "replacement"s value depends on the value of previous element "pattern".
+
+----
 
 ==== suppress overwriting example ====
 1_file.yml
@@ -184,6 +206,8 @@ merged_file.yml
     CONF_CHANGED:
       suppress: false
 </pre>
+
+----
 
 ==== proposal on yml config file merging ====
 Perhaps the following will become Whonix minimal config file. It white lists everything required by Tor Browser and whonixcheck. Perhaps we name it [https://github.com/Whonix/control-port-filter-python/blob/master/etc/tor-controlport-filter.d/30_whonix.yml 30_whonix.conf].
@@ -300,9 +324,13 @@ Now, ideally, once tor-controlport-filter start it would read both (or any numbe
         replacement: ''
 }}
 
+----
+
 ==== Whonix fork commits ====
 * https://github.com/joysn/control-port-filter-python/commit/22ce6ba6ff6513e45d9166e6004d8748fd407eb0
 * https://github.com/joysn/control-port-filter-python/commit/98eaef3dc7eb23ab9ec90297f1eccab74646f684#diff-700d916dcb6f72233745db056c63f43c
+
+----
 
 ==== Whonix 14 onionshare example log ====
 Using these two config files:
