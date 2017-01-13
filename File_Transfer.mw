@@ -104,64 +104,70 @@ See [[KVM#Shared_Folders]].
 This option works when your Whonix is able to start normally. In case however where Whonix does not start, you need to use another option such as [[#Mount Disk Images]]. See [[VirtualBox/Guest_Additions#Shared_Folder|VirtualBox Guest Additions, Shared Folder]] chapter.
 
 == Mount Disk Image ==
+All these steps going to be inside the host operating system.
 
-As per [https://bugs.launchpad.net/bugs/1253465 this], qemu-utils package version equal or bigger than {{Code2|2.8}} should be capable of mounting VirtualBox disk images.
+Shut down any eventually still running Whonix virtual machines. preferably to back-up your data to avoid any data loss.
 
-Notes:- 
+[[Update]] your package lists.
 
-* All these steps going to be inside the host os. 
+{{CodeSelect|code=
+sudo apt-get update
+}}
 
-* Turn off whonix (if its still running inside the virtualbox) , preferably to back-up your data to avoid any file lost. 
-sudo apt-get install
-
-Steps:- 
-
-* install qemu
+Install qemu.
 
 {{CodeSelect|code=
 sudo apt-get install qemu 
 }}
 
-* Load the Network Block Device kernel module
+Load the Network Block Device kernel module.
 
 {{CodeSelect|code=
 sudo modprobe nbd max_part=16
 }}
+
 {{CodeSelect|code=
 sudo rmmod nbd
 }}
 
-* Attach the disk image (.vmdk) to one of the nbd you just created
+Attach the disk image (.vmdk) to one of the nbd you just created.
 
-(My example is Whonix-ws.vmdk which is stored in the default place created by VirtualBox for VMs:-  /home/user/VirtualBox VMs)
+(The example is Whonix-ws.vmdk which is stored in the default place created by VirtualBox for VMs <code>/home/user/VirtualBox VMs</code>.
+
+{{CodeSelect|code=
+sudo qemu-nbd -c /dev/nbd0 '/home/user/VirtualBox VMs/Whonix-Workstation/Whonix-Workstation-13.0.0.1.5-disk1.vmdk'
+}}
+
+<ref>
+Why do we use <code>sudo modprobe nbd max_part=16</code> instead of just <code>sudo modprobe nbd</code>? because it will show this error:-
 
 {{CodeSelect|code=
 sudo qemu-nbd -c /dev/nbd0 '/home/user/VirtualBox VMs/Whonix-Workstation/Whonix-Workstation-13.0.0.1.5-disk1.vmdk'
 }}
 
-Why do we use sudo modprobe nbd max_part=16 instead of just sudo modprobe nbd? because it will show this error:-
-
-{{CodeSelect|code=
-sudo qemu-nbd -c /dev/nbd0 '/home/user/VirtualBox VMs/Whonix-Workstation/Whonix-Workstation-13.0.0.1.5-disk1.vmdk'
-}}
 {{CodeSelect|code=
 Failed to open /dev/nbd0: No suck file or directory /build/qemu-XXUWBP/qemu-2.1+dfsq/nbd.c:nbd_receive_request ():L756: read failed
 }}
 
-and this is perhaps due to an old bug <ref>https://forums.gentoo.org/viewtopic-t-822672-start-0.html</ref>
+This is perhaps due to an old bug.
+<ref> <ref>
+https://forums.gentoo.org/viewtopic-t-822672-start-0.html
+</ref>
 
-- Now you could, for instance, run cfdisk on the block device, but you will most likely want to mount an individual partition
+Now you could, for instance, run a partition manager like <code>cfdisk</code> on the block device, but you will most likely want to mount an individual partition.
 
 {{CodeSelect|code=
 sudo mount /dev/nbd0p1 /mnt
 }}
 
-done , now you can see new partition with whonix-ws mounted inside it. 
+Done. Now you can see new partition with Whonix-Workstation mounted inside it. 
 
-* Once you are done, you can unmount everything by:- 
+Once you are done, you should unmount everything by.
+
 {{CodeSelect|code=
 sudo umount /mnt
 }}
+
 {{CodeSelect|code=
 qemu-nbd -d /dev/nbd0
 }}
