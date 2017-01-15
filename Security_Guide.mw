@@ -361,21 +361,23 @@ See [[Install Software]].
 See [[Install Software#How to install or update with most caution?|How to install or update with most caution?]].
 
 = Onionizing Repositories =
-When Whonix, Debian and Qubes packages are installed or updated, default settings point to repositories with a http:// URI.<ref>https://www.whonix.org/wiki/Whonix-APT-Repository#Repository_Location_URI</ref> However, experimental .onion support is already available for both Whonix and Debian packages, with Qubes .onion mirrors planned for the near-term.<ref>https://forums.whonix.org/t/onionizing-qubes-whonix-repositories/3265</ref><ref>https://www.whonix.org/wiki/Install_Software#How_to_install_or_update_with_most_caution.3F</ref>
+When Whonix, Debian and Qubes packages are installed or updated, default settings point to repositories with a http:// URI.<ref>https://www.whonix.org/wiki/Whonix-APT-Repository#Repository_Location_URI</ref> However, experimental .onion support is already available for the Whonix, Debian and Qubes packages.
 
-Whonix 14 will prefer .onion repositories by default, even when adding third-party resources. Until then, in order to install or update with the utmost caution, users may consider manually editing their sources.list to point to the Whonix and Debian .onion mirrors. There are several security and privacy benefits of this approach:<ref>https://blog.torproject.org/blog/tor-heart-apt-transport-tor-and-debian-onions</ref>
+There are several security and privacy benefits of using .onions:<ref>https://blog.torproject.org/blog/tor-heart-apt-transport-tor-and-debian-onions</ref>
 
 * The user cannot be uniquely targeted for malicious updates (attackers are forced to attack everyone requesting the update);
 * The package repository, or observers watching it, can't track what programs you've installed;
 * The ISP cannot easily learn what packages you fetch; and
 * End-to-end authentication and encryption provides protection against man-in-the-middle attacks e.g. version downgrade attacks.
 
+==Whonix and Debian Packages==
+Whonix 14 will prefer .onion repositories by default, even when adding third-party resources. Until then, in order to install or update with the utmost caution, users may consider manually editing their sources.list to point to the Whonix and Debian .onion mirrors. 
 
 To use the .onion mirrors, it is necessary to change the whonix.list and debian.list files in the /etc/apt/sources.list.d directory in both the Whonix-Workstation and Whonix-Gateway TemplateVMs. tor:// or tor:// + http:// entries are not required in Whonix because apt is uwt-wrapped.
 
 '''1. Open the Debian sources file in an editor with root rights.'''
 
-[[Qubes-Whonix]] users note: You should do that in the TemplateVMs whonix-gw and whonix-ws.
+[[Qubes-Whonix]] users note: You should do this in the whonix-gw and whonix-ws TemplateVMs.
 
 If you are using a graphical Whonix or Qubes-Whonix, run:
 
@@ -390,7 +392,7 @@ If you are using a terminal-only Whonix, run:
         #deb http://ftp.debian.org/debian jessie main contrib non-free
         deb http://vwakviie2ienjx6t.onion/debian jessie main contrib non-free
 
-        # deb http://security.debian.org jessie/updates main contrib non-free
+        #deb http://security.debian.org jessie/updates main contrib non-free
         deb http://sgvtcaew4bxjd7ln.onion jessie/updates main contrib non-free
 
         #Optional Backports
@@ -430,6 +432,32 @@ Cut and paste the following text and comment out (#) the corresponding http repo
         deb http://sdscoq7snqtznauu.onion/torproject.org jessie main
 
 Save and exit.
+
+==Qubes Packages==
+
+All the following commands must be run in dom0 in order to use Qubes’ Tor hidden service repositories for each type of VM.<ref>https://www.qubes-os.org/doc/hidden-service-repos/</ref>
+
+Note: The cat commands are optional, for confirmation only. Also, the downside of this approach is that repository definitions are managed by a Qubes package, meaning you'll need to apply further manual updates in the future when it changes.
+
+'''Dom0'''
+
+In dom0, run:
+
+    sudo sed -i 's/yum.qubes-os.org/qubes-yum.kkkkkkkkkk63ava6.onion/' /etc/yum.repos.d/qubes-dom0.repo && cat /etc/yum.repos.d/qubes-dom0.repo
+
+    sudo sed -i 's/yum.qubes-os.org/qubes-yum.kkkkkkkkkk63ava6.onion/' /etc/yum.repos.d/qubes-templates.repo && cat /etc/yum.repos.d/qubes-templates.repo
+
+'''Fedora Template'''
+
+In dom0, run:
+
+    qvm-run -a --nogui -p -u root $FedoraTemplateVM 'sed -i "s/yum.qubes-os.org/qubes-yum.kkkkkkkkkk63ava6.onion/" /etc/yum.repos.d/qubes-r3.repo && cat /etc/yum.repos.d/qubes-r3.repo'
+
+'''Debian and Whonix Templates'''
+
+In dom0, run:
+
+    qvm-run -a --nogui -p -u root $DebianTemplateVM 'sed -i "s/deb.qubes-os.org/qubes-deb.kkkkkkkkkk63ava6.onion/" /etc/apt/sources.list.d/qubes-r3.list && cat /etc/apt/sources.list.d/qubes-r3.list'
 
 = Other Anonymizing Networks over Tor UDP Tunnel =
 
