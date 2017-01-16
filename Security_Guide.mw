@@ -484,10 +484,153 @@ It's recommended to use a dedicated virtual machine for this activity, see [[Mul
 = Time Attacks =
 See [[Time Attacks]].
 
-= Missing Documentation =
-Discussed in the following link. It's mostly about [[Qubes-Whonix]] but also contains things that apply to [[Non-Qubes-Whonix]]. Based on that discussion, documentation here will be updated in future. In meanwhile please read that discussion.
+= General Hardening Checklist =
 
-https://forums.whonix.org/t/hardening-qubes-whonix
+It is possible to significantly harden your platform and improve the chances of successful anonymous activity. This depends upon a user's skill level, motivation and available hardware. This checklist is intended to provide a quick overview of some of the most important issues, categorized by difficulty level (easy, moderate, difficult and expert).
+
+Note: Recommendations specific to Qubes-Whonix or non-Qubes-Whonix have been marked accordingly.
+== Easy ==
+
+=== Anonymous Blogging, Posting, Chat, Email and File Sending ===
+
+* To remain anonymous, follow all the Whonix recommendations to minimize threats of keyboard/mouse biometrics, stylometry analysis and other covert channels.<ref>https://www.whonix.org/wiki/Surfing_Posting_Blogging</ref>
+
+=== Disabling/Minimizing Hardware Risks ===
+
+* In Qubes-Whonix, only use a mouse and keyboard utilizing PS/2 ports (not USB ports) to prevent malicious compromise of dom0 (PS/2 adapters and available controllers are required);
+* Do not enable audio input to any VM unless strictly required and consider disabling microphones where possible (muting on the host) or unplugging external devices;<ref>https://www.whonix.org/wiki/Computer_Security_Education#Microphone</ref>
+* Preferably detach or cover webcams unless they are in use; and<ref>https://www.whonix.org/wiki/Computer_Security_Education#Webcam</ref>
+* Avoiding using wireless devices, since they are insecure.<ref>https://www.whonix.org/wiki/Computer_Security_Education#Wireless_Input_Devices</ref>
+
+=== Mandatory Access Control ===
+
+* Enable all available apparmor profiles in the Whonix-Workstation and Whonix-Gateway TemplateVMs; and<ref>https://www.whonix.org/wiki/Security_Guide#AppArmor</ref>
+* Enable seccomp on the Whonix-Gateway AppVM.<ref>https://www.whonix.org/wiki/Security_Guide#Seccomp</ref>
+
+=== Passwords and Logins ===
+
+'''Qubes-Whonix Only'''
+
+* Store all login credentials and passwords in an offline vault VM (preferably with KeypassX) and securely cut and paste into the Tor Browser; and
+* Copy something else into the clipboard after pasting so the password is purged and cannot be accidentally pasted elsewhere.
+
+=== Tor Browser Series and Settings ===
+
+* Consider using the 'hardened' Tor Browser series for additional ALSR memory protections;
+* Default search settings to the DuckDuckGo .onion hidden service;
+* Select 'ClearClick' protections in NoScript;
+* Run the Tor Browser Security Slider in the highest position;
+* Disable Javascript by default and only allow sparingly for trusted sites;
+* Use .onion hidden services where possible to stay within the Tor network; and
+* Follow all other Whonix recommendations for safe use of the Tor Browser.<ref>https://www.whonix.org/wiki/Tor_Browser</ref>
+
+=== VirtualBox ===
+
+'''Non-Qubes-Whonix Only'''
+
+* Remove a host of VirtualBox features to reduce the attack surface;<ref>https://www.whonix.org/wiki/Security_Guide#VirtualBox_Hardening</ref>
+* Take regular 'clean' VM snapshots that are not used for any activities; and<ref>https://www.whonix.org/wiki/Security_Guide#VM_Snapshots</ref>
+* Spoof the Initial Virtual Hardware Clock Offset.<ref>https://www.whonix.org/wiki/Advanced_Security_Guide#Spoof_the_Initial_Virtual_Hardware_Clock_Offset</ref>
+
+=== Whonix Updates ===
+
+* Install newer Tor versions via jessie-proposed-updates.<ref>https://www.whonix.org/wiki/Whonix-APT-Repository#Change_Whonix_APT_Repository</ref>
+
+== Moderate ==
+
+=== Create a USB Qube ===
+
+'''Qubes-Whonix Only'''
+
+* Prepare and utilize a USB qube to protect dom0 from malicious USB devices.<ref>https://www.qubes-os.org/doc/usb/</ref>
+
+=== Networking ===
+
+'''Qubes-Whonix Only'''
+
+* Use the Debian-8 Template for networking (sys-net and sys-firewall) since it is minimal in nature and does not 'ping home', unlike the Fedora Template.<ref>https://github.com/QubesOS/qubes-issues/issues/1781</ref> <ref>https://forums.whonix.org/t/disable-sys-net-pings-to-fedoraproject-org/1952</ref>
+
+=== Newer Kernels ===
+
+'''Qubes-Whonix Only'''
+
+* Install newer kernels to benefit from additional protections (including grsec elements) being mainlined by the kernel hardening project.<ref>https://www.qubes-os.org/doc/software-update-dom0/</ref>
+
+=== Onionizing Repositories ===
+
+* Default the Debian, Whonix and Qubes package updates to Tor hidden service repositories.<ref>https://www.whonix.org/wiki/Security_Guide#Onionizing_Repositories</ref>
+
+=== Sandboxing ===
+
+* Use the alpha sandbox to restrict the Tor Browser; and<ref>https://www.whonix.org/wiki/Tor_Browser#Sandboxing_Tor_Browser_in_Qubes-Whonix</ref>
+* Use Firejail to restrict Firefox-ESR, VLC and other applications.<ref>https://www.whonix.org/wiki/Security_Guide#Firejail</ref>
+
+=== Secure Back-ups ===
+
+'''Qubes-Whonix Only'''
+
+* Store encrypted back-ups on a separate back-up disk that is already encrypted with LUKS.<ref>https://github.com/QubesOS/qubes-issues/issues/971</ref>
+
+=== Spoof MAC Addresses ===
+
+'''Qubes-Whonix Only'''
+
+* Spoof the MAC address on the Debian-9 or Fedora-24 TemplateVM used for network connections if you expect to travel with your laptop or PC (unnecessary for home PCs not changing locations).<ref>https://www.qubes-os.org/doc/anonymizing-your-mac-address/</ref>
+
+=== Time Stamps ===
+
+'''Non-Qubes-Whonix Only'''
+
+* Disable ICMP and TCP timestamps on your host operating system.<ref>https://www.whonix.org/wiki/Computer_Security_Education#Disable_TCP_Timestamps</ref> <ref>https://www.whonix.org/wiki/Computer_Security_Education#Disable_ICMP_Timestamps</ref>
+
+== Difficult ==
+
+=== Anti-Evil Maid ===
+
+'''Qubes-Whonix Only'''
+
+* If you have a Trusted Platform Module, use AEM protection to attest that only desired (trusted) components have been loaded and executed during the system boot.<ref>https://www.qubes-os.org/doc/anti-evil-maid/</ref><ref>https://github.com/QubesOS/qubes-antievilmaid/blob/master/anti-evil-maid/README</ref>
+
+=== Chaining Anonymizing Tunnels ===
+
+* Avoid this course of action; the anonymity benefits are unproven and it may actually hurt your anonymity and security.<ref>https://www.whonix.org/wiki/Tunnels/Introduction</ref>
+
+=== Disposable VMs ===
+
+'''Qubes-Whonix Only'''
+
+* Run all instances of the Tor Browser in a DispVM - preferably uncustomized to resist fingerprinting.<ref>https://www.whonix.org/wiki/Qubes/Disposable_VM</ref>
+
+=== Email ===
+
+'''Qubes-Whonix Only'''
+
+* Use split-GPG for email to reduce the risk of key theft used for encryption/decryption and signing.<ref>https://www.qubes-os.org/doc/split-gpg/</ref>
+
+=== Grsec Templates ===
+
+* In Qubes-Whonix, use dom0, Debian, Fedora and Whonix grsec templates to provide significant kernel exploit protections; and<ref>https://www.whonix.org/wiki/Grsecurity#How-To:_Qubes-Whonix</ref>
+* In non-Qubes-Whonix, install the latest Grsecurity kernel on your host or KVM Whonix guest.<ref>https://www.whonix.org/wiki/Grsecurity#How-To:_Non-Qubes-Whonix</ref>
+
+=== Host Security ===
+
+'''Non-Qubes-Whonix Only'''
+
+* Follow all Whonix recommendations to harden your host OS e.g. minimize the attack surface, utilize full-disk encryption, torify apt-get traffic, scan your firewall, and other measures.<ref>https://www.whonix.org/wiki/Advanced_Security_Guide#Host_Security</ref> <ref>https://www.whonix.org/wiki/Advanced_Security_Guide#Physical_Attacks</ref>
+
+== Expert ==
+
+=== Disable Intel ME Blobs ===
+
+* It is possible to partially deblob Intel's (despicable) ME firmware image by removing unnecessary partitions from it (warning: high risk of bricking of your computer!).<ref>https://github.com/corna/me_cleaner/blob/master/me_cleaner.py</ref><ref>http://hardenedlinux.org/firmware/2016/11/17/neutralize_ME_firmware_on_sandybridge_and_ivybridge.html</ref>
+
+=== Flash the Router with Opensource Firmware ===
+
+* Flash the insecure, limited-utility, proprietary firmware on your router with a powerful open-source Linux alternative (warning: risk of bricking your router!).<ref>https://www.flashrouters.com/ddwrt-router-information</ref><ref>https://www.flashrouters.com/ddwrt-router-information</ref>
+
+=== Install Libreboot ===
+
+* Libreboot is a free, opensource BIOS or UEFI replacement (firmware) that initializes the hardware and starts the bootloader for your OS (warning: incompatible with newer architectures - you risk bricking your computer!).<ref>https://libreboot.org/</ref>
 
 = Stay Tuned =
 [[Stay Tuned]]
