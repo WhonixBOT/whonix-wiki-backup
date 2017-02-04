@@ -4132,6 +4132,142 @@ Note:
 
 Note: Instead of launching sand-boxed applications from the terminal, both Whonix and Qubes-Whonix users can edit the relevant .desktop file that launches a process and prepend the executable path with the firejail command. This process can be repeated with every .desktop application file if desired.<ref>https://www.whonix.org/wiki/Dev/Firejail</ref>
 
+= onionshare from git with Debian jessie =
+'''Developers only!'''
+
+==== Preparation ====
+You need newer control port filter / upgrade to Whonix 14 developers-only. You get it by upgrading to Whonix 14 developers-only.
+
+Upgrade both Whonix-Gateway and Whonix-Workstation to Whonix 14 developers-only. For instructions see:
+[[Upgrading_Whonix_13_to_Whonix_14]]
+
+Or use Whonix 13.0.0.1.4 developers-only from https://forums.whonix.org/t/whonix-13-0-0-1-4-developers-only/3486/3 or newer (if existing).
+
+==== Configure Control Port Filter Proxy ====
+On Whonix-Gateway.
+
+Control Port Filter Proxy needs some adjustments.
+
+{{CodeSelect|code=
+sudo cp /usr/share/tor-controlport-filter-merger/examples/40_onionshare.yml /etc/tor-controlport-filter-merger.d/
+}}
+
+Restart Control Port Filter Proxy.
+
+{{CodeSelect|code=
+sudo service tor-controlport-filter restart
+}}
+
+==== Configure Whonix-Workstation Firewall  ====
+Inside Whonix-Workstation.
+<ref>As per https://labs.riseup.net/code/issues/7870#note-15 onionshare uses ports 17600 to 17659.</ref>
+
+{{Firewall Settings Workstation}}
+
+Add.
+
+{{CodeSelect|code=
+EXTERNAL_OPEN_PORTS+=" $(seq 17600 17659) "
+}}
+
+Save.
+
+{{Reload_Firewall_Whonix-Workstation}}
+
+==== enable backports  ====
+Add Debian Jessie Backports to repos sources lists.
+
+{{CodeSelect|code=
+sudo su -c "echo -e 'deb http://http.debian.net/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
+}}
+
+{{Apt-Pinning}}
+
+==== Install Dependencies ====
+[[Update]] your package lists.
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+Install the dependencies from jessie-backports. <ref>[https://github.com/micahflee/onionshare/issues/232#issuecomment-162349804 Requires] [https://packages.debian.org/de/jessie-backports/python3-stem python3-stem] 1.4.1b-1~bpo8+1 or higher. Can be installed from Debian backports.</ref>
+
+{{CodeSelect|code=
+sudo apt-get install --no-install-recommends -t jessie-backports python3-stem python3-flask python3-pyqt5 python-nautilus
+}}
+
+==== Install onionshare ====
+You need to use onionshare 0.9.1 or above, because it has the required support for ephemeral Tor hidden services. <ref>Tor control protocol command add_onion</ref> Install it from git.
+
+{{CodeSelect|code=
+git clone https://github.com/micahflee/onionshare.git
+}}
+
+==== Start onionshare - regular ====
+{{CodeSelect|code=
+cd onionshare
+}}
+
+{{CodeSelect|code=
+cd dev_scripts
+}}
+
+{{CodeSelect|code=
+./onionshare /usr/bin/nano
+}}
+
+==== Start onionshare - stealth ====
+{{CodeSelect|code=
+sudo su -c "echo -e 'deb http://http.debian.net/debian stretch main' > /etc/apt/sources.list.d/stretch.list"
+sudo apt-get update
+sudo apt-get install --no-install-recommends -t stretch python3-stem
+}}
+
+{{CodeSelect|code=
+./onionshare --stealth /usr/bin/nano
+}}
+
+==== Hack to get onionshare with stealth Hidden Services Support ====
+Developers only.
+
+<pre>
+#!/bin/bash
+
+set -x
+set -e
+
+sudo su -c "echo -e 'deb http://http.debian.net/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
+
+sudo su -c "echo -e 'deb http://http.debian.net/debian stretch main' > /etc/apt/sources.list.d/stretch.list"
+
+sudo apt-get update
+
+sudo apt-get install --yes --no-install-recommends -t jessie-backports python3-stem python3-flask python3-pyqt5 python-nautilus
+
+sudo apt-get install --yes --no-install-recommends -t stretch python3-stem
+
+## build dependencies
+sudo apt-get install -y build-essential fakeroot python3-all python3-stdeb dh-python  python3-flask python3-stem python3-pyqt5 python-nautilus python3-nose
+
+echo 'EXTERNAL_OPEN_PORTS+=" $(seq 17600 17659) "' | sudo tee /etc/whonix_firewall.d/50_user.conf
+
+sudo whonix_firewall
+
+cd onionshare
+
+./install/build_deb.sh 
+
+sudo dpkg -i deb_dist/onionshare_0.9.2-1_all.deb
+
+true $?
+</pre>
+
+==== Current Status ====
+TODO
+
+Forum discussion:<br />
+https://forums.whonix.org/t/feature-request-onionshare-support
+
 = Footnotes =
 <references />
 
