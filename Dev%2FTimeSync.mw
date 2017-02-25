@@ -468,31 +468,30 @@ curl -silent --head torproject.org | grep -i date:
 {{Anchor|sdwdate-tray}}
 
 = sdwdate-gui =
-Proposal.
-
 Successful boot and network time synchronization.
 
-* Two independent processes: sdwdate-daemon and sdwdate-tray.
-* A one way messaging mechanism sdwdate-daemon -> sdwdate-tray. [sdwdate-tray implements a file watcher watching the changes in a file "/run/sdwdate/status" or so, updated by sdwdate-daemon.]
+* Two independent processes: sdwdate (the daemon) and sdwdate-gui (the systray).
+* A one way messaging mechanism sdwdate -> sdwdate-gui. [sdwdate-gui implements a file watcher watching the changes in a file "/run/sdwdate/status" or so, updated by sdwdate.]
 <br/>
 Boot cycle:
 * system starts
 * all network blocked, besides for Tor and sdwdate-python - implemented by whonix-gw-firewall / whonix-ws-firewall, which will keep care to create a file /var/run/sdwdate-firewall/limited (with content 'whonix-gw-firewall')
-* sdwdate-daemon starts
-* sdwdate-daemon writes its successive statuses to a /tmp file, clearing the previous status. The history is kept in the log.
-* sdwdate-tray starts after X is running. Checks boot clock randomization, checks sdwdate (1), reads the last sdwdate-daemon status file, removes the file.
-* sdwdate-tray sets its icon, updates its on-hover text and a pops a notification according to the last sdwdate-daemon status.
-** sdwdate-daemon status success (2): releases the network, pops a success notification.
-** sdwdate-daemon status warning/error: pops a warning, waits until sdwdate-daemon success (polling).
+* sdwdate starts
+* sdwdate writes its successive statuses to a /tmp file, clearing the previous status. The history is kept in the log.
+* sdwdate-gui starts after X is running. Checks boot clock randomization, checks sdwdate (1), reads the last sdwdate status file, removes the file.
+* sdwdate-gui sets its icon, updates its on-hover text and a pops a notification according to the last sdwdate status.
+** sdwdate status success (2): releases the network, pops a success notification.
+** sdwdate status warning/error: pops a warning, waits until sdwdate success (polling).
 
-(2) In most of the cases, time synchronization should be completed before sdwdate-tray is ready (kdm started, X running).
+(2) In most of the cases, time synchronization should be completed before sdwdate-gui is ready (kdm started, X running).
 <br/>
 
 Normal cycle:
-* sdwdate-tray polls sdwdate-daemon status file. Any warning/error is reported by [icon change - on-hover text - <s>pop up notification</s> no popup]
+
+* sdwdate-gui polls sdwdate status file. Any warning/error is reported by [icon change - on-hover text - <s>pop up notification</s> no popup]
 <br/>
 [progress-done-success] mechanism:
-* The asynchronous times fetching in sdwdate-daemon should render the progress feature obsolete. Yet a safety could be implemented in sdwdate-daemon  for the case url_to_unixtime fails.
+* The asynchronous times fetching in sdwdate should render the progress feature obsolete. Yet a safety could be implemented in sdwdate for the case url_to_unixtime fails.
 * [done-success] could be handled in the messaging mechanism (not that many possible combinations).
 <br/>
 Notes:
@@ -502,13 +501,13 @@ Notes:
 * everything is asynchronous, events could happen in a different order
 
 
-sdwdate-tray right click menu:
+sdwdate-gui right click menu:
+
 * open sdwdate's log
 * restart sdwdate
-* restart fresh ?
 
 
-sdwdate-tray left click action:
+sdwdate-gui left click action:
 
 * show a popup with the latest hovering over text?
 * passive or active popup?
