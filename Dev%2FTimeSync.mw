@@ -153,127 +153,6 @@ OK: (Full torified network access allowed.)
 == boot clock randomization ==
 {{Boot_Clock_Randomization}}
 
-= Tor Consensus Method =
-===== Introduction =====
-'''Just an idea. Not implemented.'''
-
-Tails' [https://git-tails.immerda.ch/tails/plain/config/chroot_local-includes/etc/NetworkManager/dispatcher.d/20-time.sh {{Code2|tordate}}] ([https://tails.boum.org/contribute/design/Time_syncing/#index3h1 Guessing time based on Tor consensus]), renamed to {{Code2|[[anondate]]}} for trademark reasons and refactored to work outside of Tails provides useful bash functions to check system clock using Tor's consensus file and Tor's log.
-
-https://github.com/Whonix/anon-shared-helper-scripts/blob/master/usr/lib/anon-shared-helper-scripts/anondate
-
-Tor connects to the network. The Tor consensus file contains rough time information. Since when and until when it is valid.
-
-{{Code2|tordate}} (now {{Code2|anondate}}) can provide us with a few machine readable infos we can then use for whatever we may need them.
-
-This is magic.
-<pre>
-valid-after=2014-07-31 21:00:00
-valid-until=2014-08-01 00:00:00
-</pre>
-
-This is simply {{Code2|/bin/date}}.
-<pre>
-Current time is 2014-07-31 22:44:02
-</pre>
-
-Less magic.
-<pre>
-Current time is in valid Tor range
-</pre>
-
-Less magic, but maybe useful.
-<pre>
-Current time is not in valid Tor range, setting to middle of this range: [2014-07-31 22:30:00]
-</pre>
-
-{{Code2|anondate}} can do this by parsing Tor's verified consensus file {{Code2|/var/lib/cached-microdesc-consensus}} or by parsing {{Code2|/var/lib/tor/unverified-microdesc-consensus}}.
-
-===== Open Questions =====
-====== Under which conditions Tor is not able to verify the Tor consensus file? ======
-1) If it has been tampered with by a man-in-the-middle.
-
-2) For clocks that are more than 30 days in the past or 2 days in the future, Tor will not even be able to download a consensus. In this case anondate can parse Tor's log and report the authority's cert's valid-after date. <ref>
-Source, source code comment in tordate: https://git-tails.immerda.ch/tails/plain/config/chroot_local-includes/etc/NetworkManager/dispatcher.d/20-time.sh
-<pre>
-	# Since Tor 0.2.3.x Tor doesn't download a consensus for
-	# clocks that are more than 30 days in the past or 2 days in
-	# the future.  For such clock skews we set the time to the
-	# authority's cert's valid-after date.
-</pre>
-</ref>
-
-<pre>
-anondate --tor-cert-valid-after
-</pre>
-
-<pre>
-Jun 16 00:00:00 2014 GMT
-</pre>
-
-Is the authority's cert's valid-after date signed/verified/built-into-Tor or can it be tampered with by a man-in-the-middle attack?
-
-3) Anything else?
-
-====== Other Questions ======
-* When can anondate set time from verified and when only from unverified consensus file?
-* How reliable is it to do something as non-standard, unintended, inventive such as parsing Tor's consensus and Tor's log?
-* When clock is more than 1 hour in past or more than 3 hour in future, Tor will be unable to establish circuits? <ref>https://lists.torproject.org/pipermail/tor-talk/2012-February/023264.html</ref>
-* How accurate has the clock to be so hidden services can be accessed? See: https://trac.torproject.org/projects/tor/ticket/3460
-
-===== Reasons for relying solely on anondate for time setting =====
-* Does not require [https://github.com/Whonix/Whonix/issues/24 ssl certificate pinning].
-* Does not rely on remote web servers.
-* Does not require a somewhat accurate clock as [[#Remote Web Servers Method]] requires to get a rough time guess.
-
-===== Reasons against relying solely on anondate for time setting =====
-* Provides only rough time.
-** [[Fingerprint#For_the_websites_that_you_are_visiting|web fingerprint]] would differ from most other Tor users.
-** Would cause lots of support requests complaining about skewed clocks.
-** Might trouble hidden services (such as hidden web servers) that need to show time to clients?
-** Might trouble people attempting to [[I2P|tunnel I2P through Tor]]?
-** Might cause other (gpg) verification issues?
-* Fingerprinting issues at ISP level:
-** In situation, where the clock is that much off, that Tor cannot establish circuits, setting time using anondate required, restart of Tor required:
-*** As per [[Comparison with Others#Fingerprint]], quoted from the [https://tails.boum.org/contribute/design/Time_syncing/#index5h1 Tails Design about Time syncing]: "Our initial time guess based on the Tor consensus is probably easier to fingerprint, though: a fresh Tor is started, and restarted again right after the consensus has been downloaded."
-*** Related: [[Comparison with Others#Network Time related]]
-* <s>Hidden services can only be accessed if the clock is no more than 30 minutes slow or fast. <ref>https://trac.torproject.org/projects/tor/ticket/3582#comment:3</ref></s>
-* [https://labs.riseup.net/code/issues/5774 Tails ticket: Robust time syncing] Quote: <blockquote>Currently we use tordate to set the initial clock. It's very messy and error prone, so we desperately need a robust replacement.</blockquote>
-* Vulnerable to ISP level man-in-the-middle attacks:
-** [https://tails.boum.org/contribute/design/Time_syncing/ Tails Design: Time Syncing] Quote: <blockquote>First, replaying a consensus older than one week or so results in preventing access to the Tor network, and that's all, because onion keys will be wrong.</blockquote>
-*** In a situation where an adversary is replaying a more than ~7 days old consensus:
-**** anondate could report a clock that is more than ~7 days slow. With a system clock that is that slow, Tor would no longer be able to establish circuits. But there are multiple reasons why Tor may not be able to establish circuits. So anondate could only guess, that the clock reported in Tor consensus is more than ~7 days slow, but not know with certainty. 
-*** In a situation where an adversary is replaying an up to ~7 days old consensus:
-**** anondate could report a clock that is up to ~7 days slow and Tor would still be able to create circuits.
-**** With Tor as is at the moment, anondate cannot even in principle provide a more accurate time guess than a clock that is up to ~7 days slow.
-**** Using an up to ~7 days old consensus, is most likely something we really should avoid?
-** Therefore vulnerable to Attack 3 as per [[#Attacks]].
-
-===== Conclusions =====
-* Relying solely on anondate for time setting is probably a bad idea.
-* Tor consensus time is used as an  [https://phabricator.whonix.org/T151 sdwdate Tor Consensus Time Sanity Check]. (Whonix 14 and above)
-* Rough time fix.
-** Only for users that do not care about being temporarily [[Fingerprint|fingerprinted]]! This needs proper documentation.
-** If clock is too much off so sdwdate cannot fix it, use anondate to get a rough time fix, then let sdwdate do the rest.
-
-===== Why not use tordate by Tails instead of reinventing the wheel with anondate? =====
-* Because Tails code is highly Tails specific.
-** Depending on non-persistent Tor data dir.
-** Entangled with Tails specific gui notifications.
-** Entangled into the Tails specific boot process with other scripts.
-** Not a clean abstraction of "tell me what Tor's log / Tor's consensus thinks about date/time".
-** Quote: "Currently we use tordate to set the initial clock. It's very messy and error prone, so we desperately need a robust replacement." <ref>https://labs.riseup.net/code/issues/5774</ref>
-
-===== Random Stuff =====
-* [https://mailman.boum.org/pipermail/tails-dev/2012-January/000822.html tails-dev mailing list: tordate: why is it safe to set time from unverified-consensus?]
-** String parsing a unverified consensus using anondate is more risky [hitting hypothetical vulnerabilities in grep] than string parsing a verified Tor consensus.
-* Tor consensus is in some cases downloaded from Tor directory authorities and in some cases from Tor directory mirrors. The latter should not be trusted as much as the former.
-* We ought to not download the Tor consensus exclusively from Tor directory authorities. Source: <ref>https://forums.whonix.org/t/tor-dev-mailinglist-proposal/489/10</ref> <blockquote><armadev> oh. i think that would be horrible. hundreds of thousands of users doing that could overwhelm the directory authorities.</blockquote>
-
-===== Status of this idea =====
-* Needs more research.
-* A simple command line tool that can parse Tor's consensus and Tor's log as been implemented: [[#anondate]]
-* Perhaps relying solely on anondate for time setting could be implemented as an alternative [[Dev/TimeSync#Time_Fetching_Methods|Time Fetching Method]] into sdwdate and be available as an option (disabled by default in Whonix).
-
 = Conclusions =
 * <span style="background-color: {{Red}}">'''Attack 1'''</span> is a general Tor problem. It is impossible to solve for Whonix. It is unsolved in other projects as well.
 * <span style="background-color: {{Yellow}}">'''Attack 2'''</span> gets partially defeated.
@@ -441,6 +320,127 @@ curl -silent --head torproject.org | grep -i date:
 </ref>
 
 {{Anchor|sdwdate-tray}}
+
+= Tor Consensus Method =
+===== Introduction =====
+'''Just an idea. Not implemented.'''
+
+Tails' [https://git-tails.immerda.ch/tails/plain/config/chroot_local-includes/etc/NetworkManager/dispatcher.d/20-time.sh {{Code2|tordate}}] ([https://tails.boum.org/contribute/design/Time_syncing/#index3h1 Guessing time based on Tor consensus]), renamed to {{Code2|[[anondate]]}} for trademark reasons and refactored to work outside of Tails provides useful bash functions to check system clock using Tor's consensus file and Tor's log.
+
+https://github.com/Whonix/anon-shared-helper-scripts/blob/master/usr/lib/anon-shared-helper-scripts/anondate
+
+Tor connects to the network. The Tor consensus file contains rough time information. Since when and until when it is valid.
+
+{{Code2|tordate}} (now {{Code2|anondate}}) can provide us with a few machine readable infos we can then use for whatever we may need them.
+
+This is magic.
+<pre>
+valid-after=2014-07-31 21:00:00
+valid-until=2014-08-01 00:00:00
+</pre>
+
+This is simply {{Code2|/bin/date}}.
+<pre>
+Current time is 2014-07-31 22:44:02
+</pre>
+
+Less magic.
+<pre>
+Current time is in valid Tor range
+</pre>
+
+Less magic, but maybe useful.
+<pre>
+Current time is not in valid Tor range, setting to middle of this range: [2014-07-31 22:30:00]
+</pre>
+
+{{Code2|anondate}} can do this by parsing Tor's verified consensus file {{Code2|/var/lib/cached-microdesc-consensus}} or by parsing {{Code2|/var/lib/tor/unverified-microdesc-consensus}}.
+
+===== Open Questions =====
+====== Under which conditions Tor is not able to verify the Tor consensus file? ======
+1) If it has been tampered with by a man-in-the-middle.
+
+2) For clocks that are more than 30 days in the past or 2 days in the future, Tor will not even be able to download a consensus. In this case anondate can parse Tor's log and report the authority's cert's valid-after date. <ref>
+Source, source code comment in tordate: https://git-tails.immerda.ch/tails/plain/config/chroot_local-includes/etc/NetworkManager/dispatcher.d/20-time.sh
+<pre>
+	# Since Tor 0.2.3.x Tor doesn't download a consensus for
+	# clocks that are more than 30 days in the past or 2 days in
+	# the future.  For such clock skews we set the time to the
+	# authority's cert's valid-after date.
+</pre>
+</ref>
+
+<pre>
+anondate --tor-cert-valid-after
+</pre>
+
+<pre>
+Jun 16 00:00:00 2014 GMT
+</pre>
+
+Is the authority's cert's valid-after date signed/verified/built-into-Tor or can it be tampered with by a man-in-the-middle attack?
+
+3) Anything else?
+
+====== Other Questions ======
+* When can anondate set time from verified and when only from unverified consensus file?
+* How reliable is it to do something as non-standard, unintended, inventive such as parsing Tor's consensus and Tor's log?
+* When clock is more than 1 hour in past or more than 3 hour in future, Tor will be unable to establish circuits? <ref>https://lists.torproject.org/pipermail/tor-talk/2012-February/023264.html</ref>
+* How accurate has the clock to be so hidden services can be accessed? See: https://trac.torproject.org/projects/tor/ticket/3460
+
+===== Reasons for relying solely on anondate for time setting =====
+* Does not require [https://github.com/Whonix/Whonix/issues/24 ssl certificate pinning].
+* Does not rely on remote web servers.
+* Does not require a somewhat accurate clock as [[#Remote Web Servers Method]] requires to get a rough time guess.
+
+===== Reasons against relying solely on anondate for time setting =====
+* Provides only rough time.
+** [[Fingerprint#For_the_websites_that_you_are_visiting|web fingerprint]] would differ from most other Tor users.
+** Would cause lots of support requests complaining about skewed clocks.
+** Might trouble hidden services (such as hidden web servers) that need to show time to clients?
+** Might trouble people attempting to [[I2P|tunnel I2P through Tor]]?
+** Might cause other (gpg) verification issues?
+* Fingerprinting issues at ISP level:
+** In situation, where the clock is that much off, that Tor cannot establish circuits, setting time using anondate required, restart of Tor required:
+*** As per [[Comparison with Others#Fingerprint]], quoted from the [https://tails.boum.org/contribute/design/Time_syncing/#index5h1 Tails Design about Time syncing]: "Our initial time guess based on the Tor consensus is probably easier to fingerprint, though: a fresh Tor is started, and restarted again right after the consensus has been downloaded."
+*** Related: [[Comparison with Others#Network Time related]]
+* <s>Hidden services can only be accessed if the clock is no more than 30 minutes slow or fast. <ref>https://trac.torproject.org/projects/tor/ticket/3582#comment:3</ref></s>
+* [https://labs.riseup.net/code/issues/5774 Tails ticket: Robust time syncing] Quote: <blockquote>Currently we use tordate to set the initial clock. It's very messy and error prone, so we desperately need a robust replacement.</blockquote>
+* Vulnerable to ISP level man-in-the-middle attacks:
+** [https://tails.boum.org/contribute/design/Time_syncing/ Tails Design: Time Syncing] Quote: <blockquote>First, replaying a consensus older than one week or so results in preventing access to the Tor network, and that's all, because onion keys will be wrong.</blockquote>
+*** In a situation where an adversary is replaying a more than ~7 days old consensus:
+**** anondate could report a clock that is more than ~7 days slow. With a system clock that is that slow, Tor would no longer be able to establish circuits. But there are multiple reasons why Tor may not be able to establish circuits. So anondate could only guess, that the clock reported in Tor consensus is more than ~7 days slow, but not know with certainty. 
+*** In a situation where an adversary is replaying an up to ~7 days old consensus:
+**** anondate could report a clock that is up to ~7 days slow and Tor would still be able to create circuits.
+**** With Tor as is at the moment, anondate cannot even in principle provide a more accurate time guess than a clock that is up to ~7 days slow.
+**** Using an up to ~7 days old consensus, is most likely something we really should avoid?
+** Therefore vulnerable to Attack 3 as per [[#Attacks]].
+
+===== Conclusions =====
+* Relying solely on anondate for time setting is probably a bad idea.
+* Tor consensus time is used as an  [https://phabricator.whonix.org/T151 sdwdate Tor Consensus Time Sanity Check]. (Whonix 14 and above)
+* Rough time fix.
+** Only for users that do not care about being temporarily [[Fingerprint|fingerprinted]]! This needs proper documentation.
+** If clock is too much off so sdwdate cannot fix it, use anondate to get a rough time fix, then let sdwdate do the rest.
+
+===== Why not use tordate by Tails instead of reinventing the wheel with anondate? =====
+* Because Tails code is highly Tails specific.
+** Depending on non-persistent Tor data dir.
+** Entangled with Tails specific gui notifications.
+** Entangled into the Tails specific boot process with other scripts.
+** Not a clean abstraction of "tell me what Tor's log / Tor's consensus thinks about date/time".
+** Quote: "Currently we use tordate to set the initial clock. It's very messy and error prone, so we desperately need a robust replacement." <ref>https://labs.riseup.net/code/issues/5774</ref>
+
+===== Random Stuff =====
+* [https://mailman.boum.org/pipermail/tails-dev/2012-January/000822.html tails-dev mailing list: tordate: why is it safe to set time from unverified-consensus?]
+** String parsing a unverified consensus using anondate is more risky [hitting hypothetical vulnerabilities in grep] than string parsing a verified Tor consensus.
+* Tor consensus is in some cases downloaded from Tor directory authorities and in some cases from Tor directory mirrors. The latter should not be trusted as much as the former.
+* We ought to not download the Tor consensus exclusively from Tor directory authorities. Source: <ref>https://forums.whonix.org/t/tor-dev-mailinglist-proposal/489/10</ref> <blockquote><armadev> oh. i think that would be horrible. hundreds of thousands of users doing that could overwhelm the directory authorities.</blockquote>
+
+===== Status of this idea =====
+* Needs more research.
+* A simple command line tool that can parse Tor's consensus and Tor's log as been implemented: [[#anondate]]
+* Perhaps relying solely on anondate for time setting could be implemented as an alternative [[Dev/TimeSync#Time_Fetching_Methods|Time Fetching Method]] into sdwdate and be available as an option (disabled by default in Whonix).
 
 = Debugging =
 Useful to run in Qubes dom0.
