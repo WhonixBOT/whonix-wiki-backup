@@ -58,7 +58,88 @@ In summary, there are issues with security as well as maintenance overhead.
 Usability wise not very useful. Users could download and compile source packages. As far as I know there is no install/upgrade mechanism for source packages. Even if there was, they would not auto compile and upgrade. Would require quite some documentation. apt-get source pkg-name, cd pkg-name, install build dependencies, install dependencies, build, install. More support overhead. Plus almost same issues as for binary packages.
 
 == guix ==
-TODO: research
+
+GNU Guix is a compromise between tracking/maintaining the dependency hell of a non-Debian program or completely excluding them for that reason.
+
+By including and maintaining Guix as a gateway into instead we cut down the effort needed to obtain external programs for us and for the program devs too.
+
+Brief Intro:
+In addition to standard package management features, Guix supports
+transactional upgrades and roll-backs, unprivileged package management,
+per-user profiles, and garbage collection (more details in the manual.)<ref>https://lists.gnu.org/archive/html/gnu-system-discuss/2012-11/msg00000.html</ref>
+
+
+'''*Where to download? How to verify? How to install? (Any compilation
+required?)'''
+
+Download here:
+https://www.gnu.org/software/guix/download/
+
+Verification and install instructions:
+https://www.gnu.org/software/guix/manual/html_node/Binary-Installation.html
+
+No compilation required. A signed binary tarball is distributed. The binary installation tarball can be (re)produced and verified simply by running the following command in the Guix source tree:
+
+make guix-binary.system.tar.xz
+
+Full manual:
+https://www.gnu.org/software/guix/manual/guix.html
+
+'''*Any ready-made repositories available that we can start using? Like, if
+one manages to install Guix on Debian or Whonix, what packages can be
+installed? How does that work in practice?'''
+
+The Guix library is made of ~5K packages. They carry Libre packages only:
+https://www.gnu.org/software/guix/packages/
+
+Packages are installed with:
+
+guix package -i hello
+
+
+'''*Any onion repositories?'''
+
+No. I think they might be open to running one. I can talk with them and the Tor people to make it happen.
+
+'''*Does it pass TUF's threat model?'''
+
+I haven't been able to find anything on that. A very good question to discuss with them.
+
+'''*Socks proxy support or can torsocks work?'''
+
+Package configuration definitions include support for defining network access including redirecting traffic to Tor. Manual example:
+
+Scheme Procedure: tor-service [config-file] [#:tor tor]
+
+    Return a service to run the Tor anonymous networking daemon.
+
+    The daemon runs as the tor unprivileged user. It is passed config-file, a file-like object, with an additional User tor line and lines for hidden services added via tor-hidden-service. Run man tor for information about the configuration file. 
+
+https://www.gnu.org/software/guix/manual/guix.html#Networking-Services
+
+
+'''*How does its sandboxing work and why is it secure?'''
+
+Not sandboxing as in Apparmor isolation but the ability to build/install/upgrade software without requiring root ever. Guix packages can also be shared among unprivileged user profiles.
+
+'''*Any example packages?'''
+
+There is the hello package as an example or any of the ones listed in the directory mentioned above(?)
+
+Info on making packages:
+
+https://www.gnu.org/software/guix/manual/guix.html#Packaging-Guidelines
+
+
+'''*How to create a repository?'''
+
+In the manual there is support for fetching source from git repositories and building that. So potentially any git repo can act as a decentralized package hosting.
+
+All packages and their dependency tree is self contained in the Guix main repo.
+
+
+Interesting reading:
+https://arxiv.org/pdf/1305.4584.pdf
 
 {{Footer}}
 
