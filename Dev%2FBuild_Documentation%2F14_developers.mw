@@ -1,0 +1,38 @@
+<pre>
+#!/bin/bash
+
+set -x
+set -e
+
+export REPO_PROXY=http://127.0.0.1:3142
+
+#target_opts="--target qcow2"
+#target_opts="--target virtualbox"
+target_opts="--target virtualbox --target qcow2"
+
+cd Whonix
+
+sudo ./whonix_build --flavor whonix-gateway $target_opts --clean
+sudo ./whonix_build --flavor whonix-workstation $target_opts --clean
+
+cd ..
+
+sudo rm -r "/home/user/whonix_binary" || true
+
+cd Whonix
+
+#export SKIP_SCRIPTS+=" 1100_prepare-build-machine "
+#export SKIP_SCRIPTS+=" 1200_create-debian-packages "
+#export SKIP_SCRIPTS+=" 2700_export-vbox-vm "
+
+vm="whonix-gateway"
+sudo -E ./whonix_build --flavor "$vm" $target_opts --unsafe-io true --build
+
+export SKIP_SCRIPTS+=" 1200_create-debian-packages "
+export SKIP_SCRIPTS+=" 1100_prepare-build-machine "
+
+vm="whonix-workstation"
+sudo -E ./whonix_build --flavor "$vm" $target_opts --unsafe-io true ---build
+
+true "DONE."
+</pre>
