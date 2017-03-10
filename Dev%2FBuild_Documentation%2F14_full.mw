@@ -78,11 +78,39 @@ sudo apt-get update
 </pre>
 
 <pre>
-sudo apt-get install git curl apt-cacher-ng
+sudo apt-get install git curl apt-cacher-ng torsocks tor
 </pre>
 
 * [[Dev/Get_Whonix_Source_Code|Get Whonix source code]].
 * [[Template:Build_Configuration|OPTIONAL build configuration]]
+
+= onion sources =
+If you are building behind a Tor transparent proxy such as Whonix-Gateway, you can skip the following steps.
+
+<pre>
+sudo mkdir -p /lib/systemd/system/apt-cacher-ng.service.d
+</pre>
+
+{{Open with root rights|
+filename=/lib/systemd/system/apt-cacher-ng.service.d/50_user.conf
+}}
+
+Add.
+
+<pre>
+[Service]
+ExecStart=/usr/sbin/apt-cacher-ng SocketPath=/run/apt-cacher-ng/socket -c /etc/apt-cacher-ng ForeGround=1
+</pre>
+
+Save.
+
+<pre>
+sudo systemctl daemon-reload
+</pre>
+
+<pre>
+sudo systemctl apt-cacher-ng restart
+</pre>
 
 == VM Creation ==
 <!--
