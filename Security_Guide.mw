@@ -562,23 +562,54 @@ Note: Qubes users can repeat these steps in the Debian-8 TemplateVM to onionize 
 
 '''6. ''Optional:'' Onionize Tor Project Updates'''
 
-Only do this if you are using [[#Even Newer Tor versions from The Tor Project repository]].
+Note: only do this if you are using [[Security_Guide#Tor_Versioning|Tor versions from The Tor Project repository]].
 
-In the Whonix-Gateway, create a torproject.list file using an editor with root rights. [[Qubes-Whonix]] users note: You should do this in the whonix-gw TemplateVM.
+The following commands are run in either the Whonix-Gateway or whonix-gw TemplateVM (for [[Qubes-Whonix]] users).
+
+First, import and verify the Tor Project signing key (0x4E2C6E8793298290) using the long key ID. Open a terminal and run:
+
+<pre>
+gpg --keyserver pool.sks-keyservers.net --recv-keys "EF6E 286D DA85 EA2A 4BA7 DE68 4E2C 6E87 9329 8290"
+</pre>
+
+Verify the fingerprint is correct:
+
+<pre>
+gpg --fingerprint "EF6E 286D DA85 EA2A 4BA7 DE68 4E2C 6E87 9329 8290"
+</pre>
+
+The output should show:
+
+<pre>
+pub   4096R/93298290 2014-12-15 [expires: 2020-08-24]
+Key fingerprint = EF6E 286D DA85 EA2A 4BA7  DE68 4E2C 6E87 9329 8290
+uid Tor Browser Developers (signing key) <torbrowser@torproject.org>
+sub   4096R/F65C2036 2014-12-15 [expires: 2017-08-25]
+sub   4096R/D40814E0 2014-12-15 [expires: 2017-08-25]
+sub   4096R/C3C07136 2016-08-24 [expires: 2018-08-24]
+</pre>
+
+Next, create a torproject.list file using an editor with root rights.
 
 If you are using a graphical Whonix or Qubes-Whonix, run:
 
-        kdesudo kwrite /etc/apt/sources.list.d/torproject.list
+<pre>
+kdesudo kwrite /etc/apt/sources.list.d/torproject.list
+</pre>
 
 If you are using a terminal-only Whonix, run:
 
-        sudo nano /etc/apt/sources.list.d/torproject.list
+<pre>
+sudo nano /etc/apt/sources.list.d/torproject.list
+</pre>
 
-Cut and paste the following text and comment out (#) the corresponding http repository:
+Then, cut and paste the following text and comment out (#) the corresponding http repository:
 
-        #Tor Project Mirror
-        #deb http://deb.torproject.org/torproject.org jessie main
-        deb http://sdscoq7snqtznauu.onion/torproject.org jessie main
+<pre>
+#Tor Project Mirror
+#deb http://deb.torproject.org/torproject.org jessie main
+deb http://sdscoq7snqtznauu.onion/torproject.org jessie main
+</pre>
 
 Save and exit.
 
@@ -648,6 +679,50 @@ A dedicated virtual machine is recommended for this activity, see: [[Multiple Wh
 
 = Time Attacks =
 See [[Time Attacks]].
+
+= Tor Versioning =
+
+'''Newer Tor Versions from the Whonix Repository'''
+
+Consider installing newer Tor versions via the Whonix stable-proposed-updates repository. [[Whonix-APT-Repository#Change_Whonix_APT_Repository|Enable]] the Whonix stable-proposed-updates repository and then [[Update|upgrade]] your system as usual. This is only recommended for testers.
+
+'''Even Newer Tor Versions from The Tor Project Repository'''
+
+''Untested and not fully documented. Testers only.''
+
+Note: this risks breaking connectivity, for instance if the latest Tor version from deb.torproject.org has not been fully tested by Whonix developers at a specific point in time. <ref>
+This has happened in the past. For example, on one occasion Tor from deb.torproject.org came with AppArmor changes that were incompatible with [https://github.com/Whonix/anon-gw-anonymizer-config anon-gw-anonymizer-config]'s [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/apparmor.d/local/system_tor.anondist /etc/apparmor.d/local/system_tor.anondist] which resulted in Tor's systemd unit failing.
+</ref>
+
+If you wish to proceed, install the even newer Tor version by enabling the deb.torproject.org repository. This requires installation of the [https://github.com/Whonix/anon-shared-build-apt-sources-tpo anon-shared-build-apt-sources-tpo] package. This will  enable The Tor Project's apt-get signing key and install the apt source torproject.list. <ref>
+Alternatively you can use [https://www.torproject.org/docs/debian The Tor Project's native instructions for Debian], but these manual steps are more difficult and involved. Further, the verification of The Tor Project apt-get signing key is harder. Since you already [[trust]] Whonix, the logical choice is to trust another Whonix package to install the right signing key.
+</ref>
+
+[[Update]] your package lists:
+
+<pre>
+sudo apt-get update
+</pre>
+
+Install anon-shared-build-apt-sources-tpo:
+
+<pre>
+sudo apt-get install anon-shared-build-apt-sources-tpo
+</pre>
+
+Refresh your package lists: <ref>
+So the newly installed /etc/apt/sources.list.d/torproject.list takes effect.
+</ref>
+
+<pre>
+sudo apt-get update
+</pre>
+
+Install the (potentially) newer version of Tor: <ref>You will not always receive a later version of Tor. For example, at the time of writing the stretch repositories for both packages.debian.org and  deb.torproject.org have identical Tor versions. As the Debian stable release ages, the likelihood of receiving a newer Tor version from deb.torproject.org increases.</ref>
+
+<pre>
+sudo apt-get install tor
+</pre>
 
 = System Hardening Checklist =
 
@@ -722,47 +797,8 @@ Note: Recommendations specific to [[Qubes-Whonix]] or [[Non-Qubes-Whonix]] have 
 * Spoof the initial [[Advanced_Security_Guide#Spoof_the_Initial_Virtual_Hardware_Clock_Offset|virtual hardware clock offset]].
 
 === Whonix Updates ===
-==== Newer Tor versions from Whonix repository ====
-Install never Tor versions via the stable-proposed-updates repository. [[Whonix-APT-Repository#Change_Whonix_APT_Repository|Enable]] the Whonix stable-proposed-updates. Then [[Update|upgrade]] your system as usual.
 
-==== Even Newer Tor versions from The Tor Project repository ====
-TODO - document and test:
-
-Enable the deb.torproject.org repository for even newer Tor versions. You can do that by installing the [https://github.com/Whonix/anon-shared-build-apt-sources-tpo anon-shared-build-apt-sources-tpo] package. This enables The Tor Project's apt-get signing key as well as installs apt source torproject.list. <ref>
-Alternatively you could use [https://www.torproject.org/docs/debian The Tor Project's native instructions for Debian.] However, these are more difficult. More manual steps required. The verification of The Tor Project apt-get signing key would be harder. Since you already [[trust]] Whonix, you can as well trust another Whonix package to install the right signing key.
-</ref>
-
-Note: this could break connectivity if the Tor version from deb.torproject.org has not been tested by Whonix developers at that point. <ref>
-Happened in past. Tor from deb.torproject.org came with AppArmor changes that were incompatible with
-
-[https://github.com/Whonix/anon-gw-anonymizer-config anon-gw-anonymizer-config]'s [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/apparmor.d/local/system_tor.anondist /etc/apparmor.d/local/system_tor.anondist] which resulted in Tor's systemd unit failing.
-</ref>
-
-[[Update]] your package lists.
-
-<pre>
-sudo apt-get update
-</pre>
-
-Install anon-shared-build-apt-sources-tpo.
-
-<pre>
-sudo apt-get install anon-shared-build-apt-sources-tpo
-</pre>
-
-Need to refresh your package lists. <ref>
-So the newly installed /etc/apt/sources.list.d/torproject.list takes effect.
-</ref>
-
-<pre>
-sudo apt-get update
-</pre>
-
-Install a newer version of Tor. Maybe. For example at the time of writing packages.debian.org stretch repository contained the same versions like deb.torproject.org stretch repository. Even with versions from packages.debian.org considered newer by apt-get. The older the current stable release of Debian gets, the more likely you get newer Tor versions from deb.torproject.org.
-
-<pre>
-sudo apt-get install tor
-</pre>
+* Consider installing [[Security_Guide#Tor_Versioning|newer Tor versions]] via the Whonix stable-proposed-updates repository or directly from The Tor Project repository.
 
 == Moderate ==
 
