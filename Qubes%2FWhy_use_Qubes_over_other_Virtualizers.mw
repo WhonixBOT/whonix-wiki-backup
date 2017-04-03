@@ -1,64 +1,80 @@
 {{Header}}
 {{#seo:
-|description=Qubes advantages over VirtualBox and KVM
+|description=Qubes Advantages Over VirtualBox and KVM
 }}
 
-=== Why use Qubes over other Virtualizers? ===
-The Qubes project is focusing on providing the Qubes OS desktop operating system that runs a virtualizer. Not a general purpose operating system where the ability to install a virtualizer is just another feature.
+=== Why Use Qubes Over Other Virtualizers? ===
+The Qubes project is focused on developing the Qubes OS desktop operating system, which is based upon the principle of "Security by Isolation". It is not a general purpose operating system where the ability to install a virtualizer is just another feature. Rather, it runs a bare-metal virtualizer (Xen) and isolates hardware controllers and multiple user domains (qubes) in separate VMs that are explicitly assigned different levels of trust.
 
-* Security
-** Network stack, WiFi drivers are running in a dedicated network VM, which reduces attack surface.
-** Qubes actively discourages using the host (dom0) for any other purposes than running VMs.
-** Firewalled / no open incoming ports by default.
-** No networking on the host (dom0). Even the download part of fetching host (dom0) upgrades is done in a dedicated UpdateVM (currently by default NetVM), before those are verified and installed on dom0.
-** [https://www.qubes-os.org/doc/DisposableVms/ DisposableVMs] <ref>There are no disposable Whonix VMs yet, but Qubes encourages using regular / DisposableVMs.</ref>
-** {{software compartmentalization vs. physical separation}}
-** Supports [https://www.qubes-os.org/doc/anti-evil-maid/ Anti Evil Maid (AEM)].
-** No [[Computer_Security_Education#Microphone|microphones]] attached to VMs by default.
-** TCP timestamps disabled by default. <ref>
+'''Security'''
+* The Xen hypervisor and administrative domain (dom0) in Qubes actively discourages any other activity other than running VMs.
+* The network stack and WiFi drivers are running in a dedicated, unprivileged network VM (NetVM), which substantially reduces the attack surface.
+* Enabling VT-d/IOMMU via BIOS provides DMA protection.
+* An additional firewall VM is used to house the Linux kernel-based firewall, providing extra protection against a compromised NetVM.
+* The USB stack can be isolated in a dedicated USB VM, protecting dom0 from untrusted USB devices.
+* Future separation of the [https://github.com/QubesOS/qubes-issues/issues/833 GUI (graphical) domain] from dom0 is planned.
+* By default, Qubes OS is firewalled and no incoming ports are open.
+* No networking is present in the administrative domain (dom0). Even dom0 upgrades are done in a dedicated UpdateVM (currently set by default to NetVM), before those are verified and installed in dom0.
+* All TemplateVM and dom0 updates can be easily fetched over Tor via the Whonix-Gateway AppVM (commonly called sys-whonix).
+* [https://www.qubes-os.org/doc/DisposableVms/ DisposableVMs] are available to open untrusted applications, links, attachments and documents. <ref>Disposable Whonix-Workstation VMs are now available, with multiple DisposableVMs planned for Qubes R4.0.</ref>
+* [https://www.qubes-os.org/doc/anti-evil-maid/ Anti Evil Maid (AEM)] protection is supported.
+* [https://www.qubes-os.org/doc/yubi-key/ Yubikey] multi-factor user authentication is available to enhance the security of logins, mitigate the risk of password snooping, and improve USB keyboard security.
+* No [[Computer_Security_Education#Microphone|microphones]] are attached to VMs by default.
+* TCP timestamps are disabled by default. <ref>
 [[Computer_Security_Education#Disable_TCP_Timestamps]]
 </ref>
-** ICMP timestamps disabled by default. <ref>
-[[Computer_Security_Education#Disable ICMP Timestamps]]
-</ref>
-* Usability
-** Creating new VMs is very easy and very fast.
-** The VMs start menu is integrated into the host's (dom0) start menu.
-** Usable, secure clipboard and files [https://www.qubes-os.org/doc/CopyPaste/ copy and paste].
-** Easier [https://www.qubes-os.org/doc/BackupRestore/ backup / restore of VMs].
-** Keyboard layout only needs to be configured once in dom0.
-** No duplicate task bars.
-** Default seamless mode for windows. (Similar to VirtualBox’s Seamless Mode or VMware’s Unity Mode. <ref>http://www.howtogeek.com/171145/use-virtualboxs-seamless-mode-or-vmwares-unity-mode-to-seamlessly-run-programs-from-a-virtual-machine/</ref>) Yet, distinction of which window comes from what VM is easily possible. <ref>https://www.qubes-os.org/doc/GettingStarted/</ref>
-* Performance
-** VMs start up much faster, because fewer services need to be started.
-** AppVMs therefore also take much less RAM.
-** AppVMs take much fewer disk space, because those can share the root image of the TemplateVM. (Read more: [https://www.qubes-os.org/doc/TemplateImplementation/ TemplateImplementation])
+* ICMP timestamps disabled by default. <ref>
+[[Computer_Security_Education#Disable ICMP Timestamps]]</ref>
+* Unforgeable, colored window borders allow easy identification of windows with different security levels.
+* PDFs can be easily sanitized via a trusted PDF converter.
+* Greater security of email-centric work environments by protecting private keys via split GPG and limiting network connections exclusively to the chosen email server.
+* Protection against unintentional leaks of critical user data by setting an empty NetVM field for the corresponding qube.
+* Tor Traffic can be white-listed using corridor as a filtering gateway, protecting against accidental clearnet leaks.
+* Availability of an [https://github.com/talex5/qubes-mirage-firewall experimental unikernel] firewall based on MirageOS for greater security, performance and a lower resource footprint.
+* {{software compartmentalization vs. physical separation}}
 
-=== [[Qubes|Qubes-Whonix]] advantages over [[Non-Qubes-Whonix]] ===
-* Anonymity
-** Easy to tunnel whole system including host (dom0) updates through Tor (besides sys-net and sys-firewall).
-* Security
-** Multiple Whonix-Workstations AppVMs can easily use the same Whonix-Gateway ProxyVM without being able to contact each other. <ref>
-This issue for non-Qubes-Whonix is documented on the [[Multiple Whonix-Workstations]] wiki page.
-</ref>
-** Downloads of Whonix TemplateVM images are using cryptographic signatures of the dom0 package manager (qubes-dom0-update / dnf) which makes verification transparent (doing it for the user without knowing it).
-* Usability
-** Easier installation.
-*** As an option during Qubes installer.
-*** Or later [[Qubes/Install|download from Qubes repository]].
-** [[Non-Qubes-Whonix_Known_bugs|Non-Qubes-Whonix specific known issues]] do not apply.
-** No confusing [[Non-Qubes-Whonix_Known_bugs#Network_Manager_Systray_Unmanaged_Devices|Network Manager Systray Unmanaged Devices]], since there is no duplicate taskbar.
-** No confusion by the VM timezone set to UTC (for anonymity reasons) <ref>  [[Post_Install_Advice#Network_Time_Syncing]]</ref>, since there is no duplicate taskbar. <ref>https://phabricator.whonix.org/T71</ref>
-** Watching videos using VLC works out of the box. <ref>
-Whonix [[VirtualBox]]  issues: [[Non-Qubes-Whonix_Known_bugs#VLC_.2F_Video_Player_Crash|VLC / Video Player Crash]]
-</ref> <ref>
-Whonix [[KVM]] Video issue: https://www.whonix.org/old-forum/index.php/topic,1768.0.html
-</ref>
-** No duplicate sound settings. <ref>
-Whonix [[VirtualBox]]: You have duplicate sound settings withing VMs.
-</ref> <ref>
-Whonix [[KVM]]: https://www.whonix.org/old-forum/index.php/topic,1767.0.html
-</ref>
+
+'''Usability'''
+* OS agnostic: qubes can be based upon Fedora, Debian, Whonix, Windows, Kali Linux and Arch Linux templates, among others.
+* All isolated qubes are integrated into a single, usable system via a unified desktop.
+* Software installation and updates are centralized.
+* Creating new VMs and disposing of unwanted VMs is very easy and fast.
+* The VM start menu is integrated into the host's (dom0) start menu via Qubes VM Manager.
+* A secure and usable mechanism for [https://www.qubes-os.org/doc/CopyPaste/ copying and pasting] clipboard contents and files between qubes.
+* An easier [https://www.qubes-os.org/doc/BackupRestore/ backup / restore mechanism for VMs].
+* The keyboard layout only needs to be configured once in dom0.
+* No duplicate task bars are present.
+* A default seamless mode is available for Windows (similar to VirtualBox’s Seamless Mode or VMware’s Unity Mode). <ref>http://www.howtogeek.com/171145/use-virtualboxs-seamless-mode-or-vmwares-unity-mode-to-seamlessly-run-programs-from-a-virtual-machine/</ref> It is easy to distinguish which window belongs to each VM. <ref>https://www.qubes-os.org/doc/GettingStarted/</ref>
+
+
+'''Performance'''
+* VMs boot up much faster, because fewer services need to be started.
+* AppVMs therefore also use much less RAM.
+* AppVMs use far less disk space because they can share the root image of the TemplateVM in read-only mode. Separate disk storage is only used for the user's directory and per-VM settings (read more: [https://www.qubes-os.org/doc/TemplateImplementation/ TemplateImplementation]).
+* Standalone VMs can be created for the installation of software in only specific domains.
+
+=== [[Qubes|Qubes-Whonix]] Advantages Over [[Non-Qubes-Whonix]] ===
+'''Anonymity'''
+* It is easier to tunnel the whole system - including host (dom0) updates - through Tor (besides sys-net and sys-firewall).
+
+
+'''Security'''
+* Multiple Whonix-Workstations AppVMs can easily use the same Whonix-Gateway ProxyVM without being able to make contact with one another. <ref> This issue for non-Qubes-Whonix is documented on the [[Multiple Whonix-Workstations]] wiki page.</ref>
+* Downloads of Whonix TemplateVM images use cryptographic signatures of the dom0 package manager (qubes-dom0-update / dnf). Without the user knowing it, this makes verification transparent.
+
+
+'''Usability'''
+* Easier installation.
+** As an option during Qubes installer.
+** Or later [[Qubes/Install|downloaded from the Qubes repository]].
+* [[Non-Qubes-Whonix_Known_bugs|Non-Qubes-Whonix specific known issues]] do not apply.
+* No confusing [[Non-Qubes-Whonix_Known_bugs#Network_Manager_Systray_Unmanaged_Devices|Network Manager Systray Unmanaged Devices]] error messages, since there is no duplicate taskbar.
+* No confusion is caused by the VM timezone being set to UTC (for anonymity reasons) <ref>  [[Post_Install_Advice#Network_Time_Syncing]], </ref> since there is no duplicate taskbar. <ref>https://phabricator.whonix.org/T71</ref>
+* Watching videos with VLC works out of the box. <ref>Whonix [[VirtualBox]]  issues: [[Non-Qubes-Whonix_Known_bugs#VLC_.2F_Video_Player_Crash|VLC / Video Player Crash]]</ref> <ref>Whonix [[KVM]] Video issue: https://www.whonix.org/old-forum/index.php/topic,1768.0.html</ref>
+* No duplicate sound settings are present. <ref>Whonix [[VirtualBox]]: You have duplicate sound settings withing VMs.</ref> <ref>Whonix [[KVM]]: https://www.whonix.org/old-forum/index.php/topic,1767.0.html</ref>
+
+=== Qubes Vulnerabilities ===
+Qubes is not however a magic bullet - attacks are still possible against: the virtualization technology (VT-x, VT-d), the hypervisor (Xen), and additional software used by a virtualized system (e.g. qemu, DirectX emulation). Further, data leaks are possible via cooperative covert channels (malware working in concert across two VMs), and side channel attacks (malware in one VM trying to learn about processes executed in another VM). 
 
 === Footnotes ===
 <references />
