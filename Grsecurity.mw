@@ -241,9 +241,9 @@ A detailed [https://wiki.archlinux.org/index.php/Grsecurity#RBAC guide] on gener
 
 ==How-To: Qubes-Whonix==
 
-This work is being undertaken by Coldhak and these instructions are drawn almost exclusively from their blog and github account.<ref>https://coldhak.ca/blog/2016/12/12/coldkernel-qubes-1.html</ref><ref>https://github.com/coldhakca/coldkernel</ref>
+This work is being undertaken by Coldhak and the instructions are drawn almost exclusively from their blog and github account.<ref>https://coldhak.ca/blog/2016/12/12/coldkernel-qubes-1.html</ref><ref>https://github.com/coldhakca/coldkernel</ref> The Debian-8 TemplateVM is currently supported. Work is ongoing to support the Fedora and Whonix TemplateVMs, as well as the Qubes DispVM and dom0.<ref>https://github.com/coldhakca/coldkernel/issues</ref>
 
-The Debian-8 TemplateVM is currently supported. Work is ongoing to support the Fedora and Whonix TemplateVMs, as well as the Qubes DispVM and dom0.<ref>https://github.com/coldhakca/coldkernel/issues</ref>
+Note: These instructions have been tested to work with the 4.8 Linux kernel. At the time of writing, some Qubes users report post-build TemplateVM problems when using the latest 4.9 Linux kernel branch (which also has Qubes testing repository dependencies). It is advisable to use the 4.8 kernel series until the 4.9 series has stabilized.
 
 '''Warning:''' These instructions are extremely alpha and may potentially break your template. Clone your default template(s) before proceeding!
 
@@ -290,11 +290,26 @@ sudo apt install paxctl bc wget gnupg fakeroot build-essential devscripts libfil
 sudo apt-get build-dep linux
 </pre>
 
+'''6. ''Optional:'' Install 4.9 Kernel Branch Dependencies'''
+
+Note: If attempting to build a Linux 4.9 grsec kernel, you will need qubes-kernel-vm-support 3.2.4+deb8u1 from the Qubes Testing repository for the Debian TemplateVM. <ref>https://github.com/coldhakca/coldkernel/issues/55 Otherwise, you will receive error messages for the module build.</ref> <ref>https://github.com/QubesOS/qubes-issues/issues/2691</ref>
+
+Temporarily enable Qubes' testing repository for the Debian TemplateVM following the steps found here: https://www.qubes-os.org/doc/software-update-vm/
+
+Update your package lists:
+<pre>
+sudo apt-get update
+</pre>
+Install the latest available kernel VM support package:
+<pre>
+sudo apt-get install qubes-kernel-vm-support
+</pre>
+Afterwards, reset your default Qubes repository to the stable Qubes version.
 ====Building the grsec Coldkernel====
 
 '''1. Clone and Verify the Coldkernel Build Scripts'''
 
-Note: always verify and checkout the latest kernel available from coldhak. As at April, 2017 this was the 4.9.20 Linux kernel.
+Note: Always verify and checkout the latest kernel available from coldhak. As at April, 2017 this was the 4.9.20 Linux kernel.
 
 In the Debian TemplateVM, run:
 <pre>
@@ -313,6 +328,10 @@ gpg: WARNING: This key is not certified with a trusted signature!
 gpg: There is no indication that the signature belongs to the owner.
 Primary key fingerprint: 1073 B61B 69CB 0444 33B6  4F7B 0B1F 9321 DE32 FEBB
 </pre>
+
+The fingerprint should match that found on the coldhak website:
+https://coldhak.ca/assets/img/blog/coldkernel_pt1/verify.png
+
 '''2. Build the grsec Coldkernel'''
 
 Note: This step can take several hours depending on your computer hardware; later architectures can finish this step in less than one hour. This process is CPU intensive, and your system may crash if you use other programs simultaneously.
@@ -338,6 +357,11 @@ Building coldkernel...                                                          
 
 ====Installing the grsec Coldkernel====
 
+Note: During the <i>sudo update-grub2</i> step below, you can safely ignore this error message if it appears: <ref>https://github.com/QubesOS/qubes-doc/blob/master/configuration/managing-vm-kernel.md</ref>
+<pre>
+ grub2-probe: error: cannot find a GRUB drive for /dev/mapper/dmroot. Check your device.map
+</pre>
+
 Post-build, in the Debian Template VM run:
 <pre>
 wget https://grsecurity.net/paxctld/paxctld_1.2.1-1_amd64.{deb,deb.sig}
@@ -351,11 +375,12 @@ sudo mkdir /boot/grub
 sudo update-grub2
 sudo shutdown -h now
 </pre>
+
 ====Post-install TemplateVM Configuration==== 
 
 '''1. Change the Debian-8 TemplateVM Kernel'''
 
-After the TemplateVM has been shutdown, change the kernel in the Qubes VM Manager to use pvgrub.
+After the TemplateVM has been shutdown, change the kernel in the Qubes VM Manager to use pvgrub2.
 
 https://coldhak.ca/assets/img/blog/coldkernel_pt1/pvgrub.png
 
