@@ -450,13 +450,96 @@ Return to function (memcpy, PIE): Killed
 
 Follow the steps [https://en.wikibooks.org/wiki/Grsecurity/The_Administration_Utility#Full_System_Learning here].
 
-====Post-install Debian-8 AppVM Configuration====
+====Post-install Debian AppVM Configuration====
 
 '''1. Create an AppVM Based on the Debian-8 Coldkernel Template'''
 
 '''2. Change the AppVM Kernel Selection'''
 
 Use Qubes VM Manager to set "pvgrub2" for the AppVM's kernel selection. Otherwise, it defaults to the standard Qubes kernel.
+
+====Upgraded Kernel Builds====
+
+When an upgraded grsec Linux kernel is released by Coldhak, <ref>see https://github.com/coldhakca/coldkernel</ref> you can 'bump' the kernel version of your existing grsec TemplateVM via the following steps.
+
+'''1. Fetch and Verify the Upgraded Kernel Branch'''
+
+Note: You do not perform the cloning step again. The signing key is not imported again, unless it has changed.
+
+''If the signing key has changed,'' in the TemplateVM run:
+<pre>
+wget "https://coldhak.ca/coldhak/keys/coldhak.asc" -O coldhak.asc
+gpg --import coldhak.asc
+</pre>
+
+In all cases, verify and checkout the upgraded kernel branch (change the kernel reference below to match the updated release) in the TemplateVM:
+<pre>
+cd coldkernel
+git verify-tag coldkernel-0.9a-4.9.20
+git checkout tags/coldkernel-0.9a-4.9.20
+</pre>
+
+The verfication step (git verify-tag) should produce a good signature from the Coldhak developers:
+<pre>
+gpg: Signature made Mon 03 Apr 2017 11:50:21 AM EDT using RSA key ID DE32FEBB
+gpg: Good signature from "Coldhak developers (signing key) <contact@coldhak.ca>"
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg: There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 1073 B61B 69CB 0444 33B6  4F7B 0B1F 9321 DE32 FEBB
+</pre>
+The fingerprint should match that found on the coldhak website: https://coldhak.ca/assets/img/blog/coldkernel_pt1/verify.png 
+
+'''2. Build the Upgraded Kernel'''
+
+To make the build with hypervisor support, in your TemplateVM run:
+<pre>
+make qubes-guest
+</pre>
+The output should look as follows:
+<pre>
+patching file coldkernel.config
+Importing signing keys...                                                                                                       [DONE]
+Removing previous working directory (if one exists)...                                                          [DONE]
+Fetching kernel sources and signatures...                                                                            [DONE]
+Fetching grsecurity patch and signatures...                                                                          [DONE]
+Unpacking Linux Kernel sources...                                                                                        [DONE]
+Verifying the Linux Kernel sources...                                                                                     [DONE]
+Verifying Kernel patches...                                                                                                    [DONE]
+Extracting Linux Kernel sources...                                                                                         [DONE]
+Applying grsecurity patch, and moving coldkernel.config into place...                                   [DONE]
+Building coldkernel...                                                                                                             [DONE]
+</pre>
+
+'''3. Installing the Upgraded grsec Coldkernel'''
+
+paxctld is not downloaded again, unless there was an update. First check: https://github.com/coldhakca/coldkernel to see if this is required.
+
+<i>If paxctld has changed,</i> (change the paxctld reference below to match the updated release) in the TemplateVM run:
+<pre>
+wget https://grsecurity.net/paxctld/paxctld_1.2.1-1_amd64.{deb,deb.sig}
+gpg --homedir=.gnupg --verify paxctld_1.2.1-1_amd64.{deb.sig,deb}
+sudo dpkg -i paxctld_1.2.1-1_amd64.deb 
+</pre>
+
+In all cases, repeat these installation steps:
+<pre>
+sudo make install-deb
+sudo cp paxctld.conf /etc/paxctld.conf
+sudo paxctld -d
+sudo update-grub2
+sudo shutdown -h now
+</pre>
+
+'''4. Post-install TemplateVM Configuration'''
+
+Follow steps 2-4 [[Grsecurity#Post-install_TemplateVM_Configuration|here]], except:
+* Do not set default grsec special groups again, unless they have changed; and
+* Do not install paxtest again, only run <i>paxtest blackhat</i> to check grsecurity is running correctly.
+
+
+'''5. Post-install AppVM Configuration'''
+
+Follow [[Grsecurity#Post-install_Debian-8_AppVM_Configuration|these steps]] to create a new AppVM based on the upgraded kernel branch.
 
 ===Fedora TemplateVM===
 
