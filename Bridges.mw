@@ -86,19 +86,22 @@ As time goes on and more {{Code2|obfs4}} bridge operators go online, it may be p
 The Tor Project provides a database of [https://bridges.torproject.org/bridges?transport=obfs3 {{Code2|public obfs3 bridges}}] and [https://bridges.torproject.org/bridges?transport=obfs4 {{Code2|public obfs4 bridges}}] A more exhaustive list of public obfuscated bridges is available at [https://bridges.torproject.org/options The Tor Project Bridge Database]. It is not recommended to use {{Code2|obfs}} and {{Code2|obfs2}} bridges, which: <ref>https://www.torproject.org/docs/bridges.html.en#PluggableTransports</ref> 
 <blockquote>... are now deprecated and were replaced by {{Code2|obfs3}} . . . and {{Code2|obfs4}}.</blockquote>
 
-= How to use bridges in Whonix =
+= How to Use Bridges in Whonix =
 === Introduction ===
-How to use obfuscated, (private) and/or ordinary bridges in Whonix?
+This section will explain how to use (private) obfuscated bridges in Whonix.
 
-Whonix does not include a wizard that guides you through the process of setting up bridges before connecting to Tor. The graphical [[Tor_Browser#tor-launcher_vs_torbrowser-launcher|tor-launcher]] ([[Dev/tor-launcher|screenshots]]) that you might know from {{Code2|The Tor Project}}'s {{Code2|Tor Browser}} cannot be used in Whonix.
+Whonix does not yet include a wizard to assist in setting up bridges before connecting to Tor. The graphical [[Tor_Browser#tor-launcher_vs_torbrowser-launcher|tor-launcher]] ([[Dev/tor-launcher|screenshots]]) that some users might know from The Tor Project's Tor Browser cannot be used in Whonix.
 
-({{Code2|Private}}) Ordinary, {{Code2|obfs2}}, {{Code2|obfs3}} and {{Code2|obfs4}} bridges can currently be configured on Whonix-Gateway the same way they would be configured when not using Whonix, i.e. as if you were using Debian, because [[About#Based_on_Debian|Whonix is based on Debian]]. This is done by editing {{Code2|/etc/tor/torrc}} within the Whonix-Gateway.
+Private or ordinary {{Code2|obfs2}}, {{Code2|obfs3}} and {{Code2|obfs4}} bridges can currently be configured on Whonix-Gateway. The process is identical to the steps completed on a Debian platform because [[About#Based_on_Debian|Whonix is based on Debian]]. Bridges are configured by simply editing {{Code2|/etc/tor/torrc}} within the Whonix-Gateway.
 
-=== Step 1: access {{Code2|/etc/tor/torrc}} to add bridges ===
+=== 1. Access {{Code2|/etc/tor/torrc}} to Add Bridges ===
 {{Open_/etc/tor/torrc}}
 
-=== Step 2: edit {{Code2|/etc/tor/torrc}} (for all Whonix platforms) ===
-Once inside {{Code2|/etc/tor/torrc}}, scoll all the way to the bottom, and copy-paste the following text:
+=== 2. Edit {{Code2|/etc/tor/torrc}} ===
+
+Note: This step is the same on all Whonix platforms.
+
+Once inside {{Code2|/etc/tor/torrc}}, scoll all the way to the bottom of the file and copy and paste the following text.
 {{CodeSelect|code=
 UseBridges 1
 ClientTransportPlugin obfs2,obfs3 exec /usr/bin/obfsproxy managed
@@ -106,38 +109,73 @@ ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy managed
 ClientTransportPlugin fte exec /usr/bin/fteproxy --managed
 }}
 
-Now you must add IP addresses for your bridges. For finding IP addresses, See section above, titled [[#Finding_a_bridge_and_choosing_the_right_protocol|Finding a bridge and choosing the right protocol]].
+Now the bridge IP addresses you discovered in the section [[#Finding_a_bridge_and_choosing_the_right_protocol|Finding a Bridge and Choosing the Right Protocol]] must be added to the file.
 
-Copy-paste the IP addresses at the bottom of {{Code2|/etc/tor/torrc}}.  Make sure to manually add the text "bridge" at the beginning of each line entry.
+Copy and paste those IP addresses to the very bottom of {{Code2|/etc/tor/torrc}}, <u>after the ClientTransportPlugin entries</u>. Make sure to manually add the text "bridge" at the beginning of each line entry.
 
-Example of text to add to {{Code2|/etc/tor/torrc}}. ('''Note: do not copy-paste this list'''; these IP's will not work.) (Use either obfs3 or obfs4. Not both at the same time.) Get your own [https://bridges.torproject.org/bridges?transport=obfs3 obfs3 bridges] or better [https://bridges.torproject.org/bridges?transport=obfs4 obfs4 bridges] from Tor:
+In the <i>obfs3</i> and <i>obfs4</i> examples below:
+* '''Do not copy and paste this list of bridge entries to the torrc file.''' They will not work.
+* Make sure you have already retrieved your own [https://bridges.torproject.org/bridges?transport=obfs3 obfs3 bridges] or better yet [https://bridges.torproject.org/bridges?transport=obfs4 obfs4 bridges] from The Tor Project.
+* Use '''either''' the <i>obfs3</i> or <i>obfs4</i> protocol, not both.
+* '''Capitalization in the torrc file matters.''' Bridges will not connect if you enter "Bridge" instead of "bridge" etc.
+
+
+{{Code2|Obfs3}} example text to add to {{Code2|/etc/tor/torrc}}.
 {{CodeSelect|code=
 bridge obfs3 109.195.132.77:22321 4352e58420e68f5e40bf7c74faddccd9d1349413
 bridge obfs3 55.32.27.22:38123  4352e58420e68f5e40bf7c74faddccd9d1349413
 bridge obfs3 192.24.131.513:62389 4352e58420e68f5e40bf7c74faddccd9d1349413
-
+}}
+{{Code2|Obfs4}} example text to add to {{Code2|/etc/tor/torrc}}.
+{{CodeSelect|code=
 bridge obfs4 192.235.207.85:42086 0EEB10BF4B4FAF56D46E cert=oue8sYYw5wi4n3mf2WDOg iat-mode=0
 bridge obfs4 34.218.26.20:43263 DD21A551767816A0C9495 cert=7qzS6KASquPvJU82Fm7qoJw iat-mode=0
 bridge obfs4 161.217.177.95:10703 B3B8009D01BB7E5FDFAEC cert=4RaIqGiOytEXm6Hw iat-mode=0
-
-## fte is not yet supported. Wait for Whonix 14.
-## https://phabricator.whonix.org/T520
-Bridge fte 10.200.100.60:95128 4352e58420e68f5e40bf7c74faddccd9d1349413
-Bridge fte 300.100.300.80:23521 4352e58420e68f5e40bf7c74faddccd9d1349413
+}}
+{{Code2|fte}} example text to add to {{Code2|/etc/tor/torrc}}. <ref>fte is not yet supported in Whonix 13; wait for the Whonix 14 release. https://phabricator.whonix.org/T520</ref>
+{{CodeSelect|code=
+bridge fte 10.200.100.60:95128 4352e58420e68f5e40bf7c74faddccd9d1349413
+bridge fte 300.100.300.80:23521 4352e58420e68f5e40bf7c74faddccd9d1349413
 }}
 
-Once you have completed editing {{Code2|/etc/tor/torrc}}, now save and exit.
+When {{Code2|/etc/tor/torrc}} editing is finished, save and exit.
 <pre>
 <Ctrl-X> --> press Y --> <Enter>
 </pre>
 
-=== Step 3: enable Tor ===
-If you do not previously have already...
+The complete sample text of a complete {{Code2|obfs4}} torrc file is below. Check your file is similar, except for the specific bridge entries.
+<pre>
+# This file is part of Whonix
+# Copyright (C) 2012 - 2013 adrelanos
+# See the file COPYING for copying conditions.
+
+# Use this file for your user customizations.
+# Please see /etc/tor/torrc.examples for help, options, comments etc.
+
+# Anything here will override Whonix's own Tor config customizations in /usr/share/tor/tor-service-defaults-torrc
+
+# Enable Tor through whonixsetup or manually uncomment "DisableNetwork 0" by
+# removing the # in front of it.
+DisableNetwork 0
+UseBridges 1
+ClientTransportPlugin obfs2,obfs3 exec /usr/bin/obfsproxy managed
+ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy managed
+ClientTransportPlugin fte exec /usr/bin/fteproxy --managed
+
+bridge obfs4 192.235.207.85:42086 0EEB10BF4B4FAF56D46E cert=oue8sYYw5wi4n3mf2WDOg iat-mode=0
+bridge obfs4 34.218.26.20:43263 DD21A551767816A0C9495 cert=7qzS6KASquPvJU82Fm7qoJw iat-mode=0
+bridge obfs4 161.217.177.95:10703 B3B8009D01BB7E5FDFAEC cert=4RaIqGiOytEXm6Hw iat-mode=0
+</pre>
+
+=== 3. Enable Tor ===
+Follow this procedure if it has not previously completed.
 
 {{Enable_Tor}}
 
-=== Step 4: make changes to {{Code2|/etc/tor/torrc}} take effect ===
+=== 4. Have {{Code2|/etc/tor/torrc}} Changes Take Effect ===
 {{Reload_Tor}}
+
+If there are still connection problems, this can relate to the firewall blocking outgoing connections to the ports provided by the bridge. In that case, use bridges with ports 80 and 443, since they are used for general Internet browsing and should work.
 
 = Troubleshooting =
 == Connection Issues ==
