@@ -1,0 +1,541 @@
+{{Header}}
+{{#seo:
+|description=How to use DisposableVM with Qubes-Whonix
+|image=https://www.whonix.org/w/images/5/55/Qubes-logo-icon.png
+}}
+
+== Advanced users only! ==
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = 
+Warning!
+<br />
+Due to [[#Warnings|a few usability issues affecting anonymity unless knowing about those and working around those]] either:
+
+* carefully read and understand this page or,
+* wait until Qubes 4.0 <ref>
+Because DisposableVMs will be improved a lot in Qubes 4.0. See: https://github.com/QubesOS/qubes-issues/issues/866#issuecomment-220495485
+</ref> before you start using Qubes DisposableVMs for anonymity purposes.
+
+<ref>
+We [https://forums.whonix.org/t/advertisement-tracking-real-threat-to-whonix-project/3200/7 had] a user running into the [[#Warning: Do not use Firefox from Qubes DisposableVM default start menu|'do not use Firefox from Qubes DisposableVM default start menu' issue]].
+</ref>
+}}
+
+__TOC__
+
+----
+
+== What are DisposableVMs? ==
+Under the Qubes TemplateVM model <ref>[https://www.qubes-os.org/getting-started AppVMs (qubes) and TemplateVMs]</ref>, any changes made to a [https://github.com/QubesOS/qubes-issues/issues/2489 TemplateBasedVM's root filesystem] are lost upon reboot. This is advantageous for several reasons: it allows centralized (and therefore faster) updates for all applications (most) inside the root filesystem, saves time and disk space. However, certain directories are designed to persist between reboots in order to store files and settings. These directories are stored in <code>/rw/</code> and include <code>/home/user</code> as well as additional directories defined by "bind directory" settings <ref>[https://www.qubes-os.org/doc/bind-dirs/ How to make any file in a TemplateBasedVM persistent using bind-dirs]</ref>.
+
+Qubes does not have a built-in snapshot capability like VirtualBox that can completely revert all changes back to a particular VM state. <ref>
+Apart from [https://www.qubes-os.org/doc/dom0-tools/qvm-revert-template-changes/ qvm-revert-template-changes] which can only revert back prior the previous (not last) shutdown of the TemplateVM.
+</ref> <ref>
+[https://forums.whonix.org/t/qubes-vm-snapshots-using-git-svn Qubes VM snapshots using git / SVN]
+</ref> In other words, on AppVMs, there is no method to reverse changes to the persistent file system without implementing some type of custom solution. To ensure that '''all''' changes to the filesystem are discarded after a session, Qubes offers DisposableVMs. When a DisposableVM is shutdown, the VM is removed from Qubes and all related VM images are deleted from the host filesystem. This is [[Qubes/Disposable_VM#Warning:_Disposable_VMs_are_not_amnesic|not yet amnesic / should not be relied upon for anti-forensics yet]]!
+
+On one hand, this system ensures that files do not persist without requiring any user intervention; on the other hand, the user can no longer decide between keeping or destroying the current VM state. You must choose whether to use a standard AppVM or a DisposableVM beforehand - this decision can not be modified after-the-fact.
+
+===== The Two-Layered DisposableVM System =====
+Qubes currently uses a two-layered approach to DisposableVMs. At the base of the system is a ''TemplateVM'' upon which a ''DisposableVM-Template'' is created. Every time a new ''DisposableVM'' is launched, it is based on the DisposableVM-Template - hence, two layers. For a standard Whonix installation, the base TemplateVM would be <code>whonix-ws</code>; the DisposableVM-Template would be called <code>whonix-ws-dvm</code>; and each new DisposableVM (<code>disp1, disp2, ...</code>) would be based on <code>whonix-ws-dvm</code>. Once a DisposableVM-Template is created, its <code>/home/user/</code> directory can be customized <ref>
+https://www.qubes-os.org/doc/dispvm-customization/
+</ref> independently of the base TemplateVM. While it will continue to inherit changes to the base TemplateVM's root filesystem (for example, package updates), user files in <code>/home/user/</code> will continue to persist independently.
+
+===== DisposableVM Traffic is Stream Isolated from Other VMs =====
+DisposableVMs work especially well with Whonix-Gateway because each VM is assigned a unique internal IP address. This ensures that all traffic from a DisposableVM is [[Stream_Isolation | stream isolated]] from all other traffic from concurrently running VMs.
+
+----
+
+== Warnings ==
+==== Warning: Do not use Firefox from Qubes DisposableVM default start menu ====
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = 
+Do NOT expect anonymity when using Qubes start menu -> DisposableVM -> Firefox. It is better not to use that default Qubes start menu entry at all. This is because using any browser other than Tor Browser is discouraged if anonymity is desired. For reasoning, see [[Tor Browser]].
+}}
+
+Later under chapter [[#Setup]] you will be instructed in sub chapter [[#Edit Qubes DisposableVM start menu]] on how to prevent this.
+
+==== Warning: Use caution when spawning DisposableVMs from other VMs  ====
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = 
+If a DisposableVM is created (by <code>Open in DisposableVM</code><ref>cli:domU: <code>qvm-open-in-dvm</code></ref> or <code>Run in DisposableVM</code><ref>cli:domU: <code>qvm-run --dispvm</code></ref>) from within a VM that is not connected to Whonix-Gateway, the new DisposableVM may route its traffic over clearnet. This is because DisposableVMs inherit their NetVMs from the calling VM (or the calling VM's <code>dispvm_netvm</code> setting if different). The <code>dispvm_netvm</code> setting can be configured per VM by:
+<code>dom0 -> Qubes VM Manager -> VM Settings -> Advanced -> NetVM for DisposableVM</code><ref>cli:dom0: <code>qvm-prefs -s vmname dispvm_netvm sys-whonix</code></ref>
+
+If the calling VM is connected to Whonix-Gateway, this step is not necessary and the DisposableVM's traffic will be routed over Tor.
+}}
+
+<ref>[https://github.com/QubesOS/qubes-issues/issues/1954 Whonix default NetVM settings fixes]</ref>
+
+==== Warning: DisposableVMs are not amnesic ====
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = 
+All changes to a DisposableVM's file system are discarded upon shutdown. However, like snapshots, DisposableVMs can leave traces of their activity on storage and in memory that may be recoverable through data forensics. This is further justification for using full disk encryption on your Qubes host and also, for shutting down the system completely when not in use. Laptop users may wish to remove batteries to ensure that power to the RAM is indeed cut off.
+}}
+
+<ref>[[Warning#Whonix_is_not_amnesic | Whonix is not amnesic]]</ref><ref>[[FAQ#Is_there_a_substitute_for_Whonix.27s_lack_of_an_Amnesic_feature_.2F_Live_CD.2FDVD.3F_Forensics.3F | Is there a substitute for Whonix's lack of an Amnesic feature?]]</ref>
+<ref>[https://groups.google.com/d/topic/qubes-devel/QwL5PjqPs-4/discussion DisposableVMs do not run entirely in RAM]</ref>
+<ref>[https://github.com/QubesOS/qubes-issues/issues/904 DisposableVMs: support for in-RAM execution only (for anti-forensics) #904]</ref>
+
+==== Warning: DisposableVMs may be linkable to other VMs connected to the same Whonix-Gateway ====
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = 
+It has been stated that Tor caches "DNS, HS descriptors, pre-emptive circuits, etc"<ref>source: https://lists.torproject.org/pipermail/tor-dev/2016-October/011591.html</ref> which may lead to linkability between AppVMs and DisposableVMs sharing the same gateway. The extent to which this is a threat for Whonix users is currently being investigated <ref>[https://phabricator.whonix.org/T567 Multi GW Documentation]</ref>.
+}}
+
+==== Warning: Check your Tor Browser Version ====
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = 
+Keeping Tor Browser updated in [customized] DisposableVM can be difficult [https://forums.whonix.org/t/using-whonix-workstation-as-a-disposablevm-dispvm/2461/21 because of] various [https://forums.whonix.org/t/qubes-dispvm-technical-discussion/3232/11 reasons]. When using Tor Browser in DisposableVMs make sure it is up to date. You can learn about recent Tor Browser versions by following https://blog.torproject.org or looking at raw [https://www.torproject.org/projects/torbrowser/RecommendedTBBVersions RecommendedTBBVersions].
+<br />
+Use [[Tor_Browser#Tor_Browser_Internal_Updater|Tor Browser Internal Updater]] to see if your version is up to date once per day when using DisposableVMs with Tor Browser. Another way to see Tor Browser's version number is <code>Tor Browser -> menu -> ? (next to customize) -> About Tor Browser</code>.
+
+See [[Qubes/Disposable_VM#Updating_Tor_Browser]].
+}}
+
+----
+
+== Setup ==
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = 
+These instructions are current as of Qubes 3.2. Updated documentation will be required for Qubes 4.0 since it is anticipated that it will bring major changes to the DisposableVM implementation.<ref>[https://github.com/QubesOS/qubes-issues/issues/1335 home folder of template not inherited by DisposableVM #1335]</ref>
+}}
+
+''All examples are given in terms of GUI actions whenever possible. The equivalent CLI commands will be listed in the footnotes.''
+
+==== Creating a new DisposableVM-Template based on Whonix-Workstation ====
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+(Advanced users: If you wish to install a version of Tor Browser other than stable (ie alpha, hardened), click on expand on the right for instructions.)
+<div class="mw-collapsible-content">
+'''Option #1: Use a non-customized DisposableVM-Template.''' This template will use a stock image based on whonix-ws and will not preserve any changes that are made to it.
+
+''Disable <code>tb-updater</code>'s {{Code2|automatic update during apt-get inside Qubes TemplateVM functionality}}<ref>[[Tor_Browser#tb-updater_in_Qubes_TemplateVM]]</ref> to prevent it from overwriting of your preferred Tor Browser version. <ref>It would overwrite it with the stable version.</ref>''
+
+In whonix-ws terminal: <code>echo "tb_install_follow=false" | sudo tee -a /etc/torbrowser.d/50_user.conf</code>
+
+''Install preferred version of Tor Browser to TemplateVM by launching Tor Browser Downloader by Whonix and following the instructions. <ref name=hide_gtk_warnings /> <ref name=noaskstart /> <ref name=cli_noaskstart />
+
+In whonix-ws terminal: <code>noaskstart=true update-torbrowser --input gui >/dev/null 2>&1</code>
+
+''Create DisposableVM-Template based on whonix-ws TemplateVM''
+
+In dom0 terminal: <code>qvm-create-default-dvm whonix-ws</code>
+
+When a new version of Tor Browser is released, repeat the previous two steps to update your TemplateVM and your DisposableVM-Template.
+
+'''Option #2: Use a customized DisposableVM-Template.''' This template can be further customized by following the instructions below. [[#Customizing a DisposableVM-Template]]
+
+''Delete existing DisposableVM-Template.''
+
+In dom0 terminal: <code>qvm-remove <oldDisposableVM-Template></code>
+
+''Create a new DisposableVM-Template based on whonix-ws TemplateVM.''
+
+In dom0 terminal: <code>qvm-create-default-dvm whonix-ws</code>
+
+''Configure Whonix-Gateway as the NetVM for the DisposableVM-Template.''
+
+In dom0 terminal: <code>qvm-prefs -s whonix-ws-dvm netvm sys-whonix</code>
+
+''Launch DisposableVM-Template terminal.''
+
+In dom0 terminal: <code>qvm-run -a whonix-ws-dvm konsole</code>
+
+''Enable customized flag in DisposableVM-Template.''
+
+In DisposableVM-Template terminal: <code>touch /home/user/.qubes-dispvm-customized</code>
+
+''Use update-torbrowser to download and install preferred TorBrowserBundle''
+
+In DisposableVM-Template terminal: <code>noaskstart=true update-torbrowser --input gui >/dev/null 2>&1</code>
+
+''Shutdown the DisposableVM-Template''
+
+In DisposableVM-Template terminal: <code>sudo poweroff</code>
+
+''Regenerate the DisposableVM-Template.''
+
+In dom0 terminal: <code>qvm-create-default-dvm whonix-ws</code>
+
+Remember to [[Qubes/Disposable_VM#Warning:_Check_your_Tor_Browser_Version|check your Tor Browser version]]!
+
+----
+</div>
+</div>
+
+'''Create and Configure a DisposableVM-Template'''
+
+Open a dom0 terminal.
+
+<code>
+Qubes App Launcher (blue/grey "Q") -> System Tools -> Konsole or Xfce Terminal
+</code>
+
+Create a DisposableVM-Template.
+
+<code>
+qvm-create-default-dvm whonix-ws
+</code>
+
+Enable showing your DisposableVM-Template in Qubes VM Manager (QVMM).
+
+<code>
+dom0 -> Qubes VM Manager -> (menu) View -> enable 'Show/Hide internal VMs'
+</code>
+
+<code>
+dom0 -> Qubes VM Manager -> enable 'Show/Hide inactive VMs'
+</code>
+
+Configure Whonix-Gateway as your NetVM.<ref>cli:dom0: <code>qvm-prefs -s whonix-ws-dvm netvm sys-whonix</code></ref>
+
+<code>
+dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> VM Settings -> NetVM -> sys-whonix 
+</code>
+
+If you intend to spawn DisposableVMs from other VMs, configure your NetVM for DisposableVM setting, see [[Qubes/Disposable_VM#Warning:_Use_caution_when_spawning_DisposableVMs_from_other_VMs|Warning: Use caution when spawning DisposableVMs from other VMs]].
+
+Your DisposableVM is now ready for use and is configured with all of the applications present in your Whonix-Workstation template, including Tor Browser.
+
+Also follow the next step [[#Edit Qubes DisposableVM start menu]] to make sure you will not be accidentally starting Firefox which is discouraged!
+
+===== Edit Qubes DisposableVM start menu  =====
+Do the following to work around [[#Warning: Do not use Firefox from Qubes DisposableVM default start menu]].
+
+In Qubes dom0.
+
+<code>alt + F3 -> on the left side, click DisposableVM -> right click on 'Firefox' -> edit -> </code>
+
+* Name: <code>DisposableVM: Tor Browser</code>
+* Command: <code>sh -c 'echo torbrowser | /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red'</code>
+
+<code>click 'Save'</code>
+
+While you are at it, you might want to also edit the xterm entry and change to konsole, however that is not important for security, that is just an optional matter of taste.
+
+==== Deleting a DisposableVM-Template ====
+Deleting a DisposableVM-Template is not usually necessary, since only one DisposableVM-Template is allowed (up to Qubes 3.2). Creating a new DisposableVM-Template will overwrite the existing one. However, if you've customized the template, you may need to delete the existing one to start with a fresh unmodified DisposableVM-Template.
+
+A DisposableVM-Template can be deleted in the same manner as other VMs:
+
+<code>
+dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> click 'Remove VM'
+</code>
+<ref>cli:dom0: <code>qvm-remove <vmname></code></ref>
+
+==== Customizing a DisposableVM-Template ====
+Extra caution must be exercised when customizing a DisposableVM-Template. <ref>Qubes documentation: [https://www.qubes-os.org/doc/dispvm-customization DisposableVM Customization]</ref> From a privacy perspective, one would ideally want to have a DisposableVM-Template that is indistinguishable from any other Whonix-Workstation. If changes are made to the DisposableVM-Template, such as the installation of obscure programs or the setting of unique configurations or the placement of unique data files, those may serve to link all of your DisposableVMs via a unique fingerprint should they be compromised independently. It is also good to remember that your DisposableVM will likely be exposed to your greatest threats.
+
+Tor Browser specifically is largely designed to be used in its stock configuration in order to preserve as big an anonymity (fingerprint) set as possible. Many changes can result in the alteration of its fingerprint so it is advisable to only change what you are knowledgeable about. Some changes, like disabling JavaScript by default, may make sense to you in terms of trade-offs. Additionally, minor cosmetic changes, like the UI layout, or the placement of buttons, may be considered harmless to your privacy while enhancing your own personal usability.
+
+Please remember that only files in <code>/home/user/</code> can be customized in a DisposableVM-Template.<ref>[https://github.com/QubesOS/qubes-issues/issues/1335 home folder of template not inherited by DisposableVM #1335]</ref>
+
+As stated previously, the following steps to customize the DisposableVM are completely optional.
+
+'''Tell Qubes to preserve your custom changes.'''
+
+Open a terminal in the DisposableVM-Template.<ref>cli:dom0: <code>qvm-run -a whonix-ws-dvm konsole</code></ref>
+
+<code>
+dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> click 'Run command in VM' -> type 'konsole'
+</code>
+
+<code>
+touch /home/user/.qubes-dispvm-customized
+</code>
+
+'''Launch the application you would like to customize.'''<ref>cli:dom0: <code>qvm-run -a whonix-ws-dvm <name of application></code></ref>
+
+<code>
+dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> click 'Run command in VM'
+</code>
+
+Enter the name of the application. For example, <code>torbrowser, libreoffice, konsole, dolphin, okular, kgpg, etc</code>
+
+'''Finalize the DisposableVM-Template'''
+
+Once you are satisfied with your changes, shutdown the DisposableVM-Template.<ref>cli:dom0: <code>qvm-shutdown <vmname></code></ref>
+
+<code>
+dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> click 'Shutdown VM'
+</code>
+
+Regenerate the DisposableVM-Template.
+
+Open a dom0 terminal.
+
+<code>
+Qubes App Launcher (blue/grey "Q") -> System Tools -> Konsole or Xfce Terminal
+</code>
+
+<code>
+qvm-create-default-dvm whonix-ws
+</code>
+
+All of your changes to <code>/home/user/</code> in the DisposableVM-Template should now persist whenever you re-create the template.
+
+==== Updating a DisposableVM-Template ====
+Changes to the underlying TemplateVM (whonix-ws) are detected automatically and the DisposableVM-Template is updated without user intervention. That means package updates that are applied to whonix-ws are also applied to the whonix-ws-dvm.
+
+===== Updating Tor Browser =====
+Tor Browser presents a special situation because of the fact that it is installed in a user's home directory. As a result, the TemplateVM (whonix-ws) never updates existing Tor Browser installations.
+
+'''For ''non-customized'' DisposableVM-Templates''': The simplest method to obtain the latest Tor Browser is to use Whonix's built-in Tor Browser downloader functionality. Simply update [[Tor_Browser#Tor_Browser_Downloader_by_Whonix|Tor Browser Downloader by Whonix (tb-updater)]] in whonix-ws while performing your usual maintenance [https://www.qubes-os.org/doc/whonix/update/ upgrading] via <code>sudo apt-get update</code> and <code>sudo apt-get dist-upgrade</code>.
+
+Then, create a new DisposableVM to overwrite the existing one.
+
+Open a dom0 terminal.
+
+<code>
+Qubes App Launcher (blue/grey "Q") -> System Tools -> Konsole or Xfce Terminal
+</code>
+
+Create a new DisposableVM-Template using the updated whonix-ws TemplateVM.
+
+<code>
+qvm-create-default-dvm whonix-ws
+</code>
+
+'''For ''customized'' DisposableVM-Templates''': Users may choose to use [[Tor_Browser#Tor_Browser_Downloader_by_Whonix|Tor Browser Downloader by Whonix (tb-updater)]] ({{Code2|update-torbrowser}}) or to use [[Tor_Browser#Tor_Browser_Internal_Updater|Tor Browser's internal updater]].
+
+'''''Option #1:''' Use ({{Code2|update-torbrowser}}) and download a new copy of Tor Browser''
+
+<code>
+dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> click 'Run command in VM' -> type 'konsole'
+</code><ref>cli:dom0: <code>qvm-run -a whonix-ws-dvm konsole</code></ref>
+
+Launch Tor Browser Downloader by Whonix and follow the instructions. <ref name=hide_gtk_warnings>
+Using <code>>/dev/null 2>&1</code> to hide some useless and confusing GTK warnings.
+</ref> <ref name=noaskstart>
+Using <code>noaskstart="true"</code> to prevent [[Tor_Browser#Running_Tor_Browser_in_Qubes_TemplateVM]].
+</ref> <ref name=cli_noaskstart>
+Or for CLI version, simply use.
+<br />
+<code>noaskstart="true" update-torbrowser</code>
+</ref>
+
+<code>
+noaskstart=true update-torbrowser --input gui >/dev/null 2>&1
+</code>
+
+Shutdown the DisposableVM-Template<ref>
+cli:dom0: <code>qvm-shutdown whonix-ws-dvm</code><br />
+or<br />
+DisposableVM-Template cli:domU: <code>sudo poweroff</code>
+</ref>
+
+<code>
+dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> click 'Shutdown VM'
+</code>
+
+Regenerate the DisposableVM-Template.
+
+Open a dom0 terminal.
+
+<code>
+Qubes App Launcher (blue/grey "Q") -> System Tools -> Konsole or Xfce Terminal
+</code>
+
+<code>
+qvm-create-default-dvm whonix-ws
+</code>
+
+'''''Option #2:''' Use Tor Browser's internal updater and download new updates only''
+
+<code>
+dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> click 'Run command in VM' -> type 'torbrowser'</code><ref>cli:dom0: <code>qvm-run -a whonix-ws-dvm torbrowser</code></ref>
+
+Use Tor Browser's Internal Updater by clicking TorButton and selecting <code>Check for Tor Browser Update</code>. Close and restart Tor Browser.
+
+Shutdown the DisposableVM-Template<ref>cli:dom0: <code>qvm-shutdown whonix-ws-dvm</code></ref>
+
+<code>
+dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> click 'Shutdown VM'
+</code>
+
+Regenerate the DisposableVM-Template.
+
+Open a dom0 terminal.
+
+<code>
+Qubes App Launcher (blue/grey "Q") -> System Tools -> Konsole or Xfce Terminal
+</code>
+
+<code>
+qvm-create-default-dvm whonix-ws
+</code>
+
+----
+
+== Usage ==
+DisposableVMs lend themselves well to being used for risky, largely independent activities, like web browsing or opening untrusted files; while AppVMs might be better suited when file persistence is necessary (for example: an email client with local email storage). Qubes' VM integration tools, like secure file copy<ref>Qubes documentation: [https://www.qubes-os.org/doc/copying-files/ Copying and Moving Files Between Domains]</ref> and secure clipboard<ref>Qubes documentation: [https://www.qubes-os.org/doc/copy-paste Copying and Pasting Text Between Domains]</ref>, mean that clean, trusted files and text can be easily transferred to your trusted VMs should it be necessary and safe.
+
+==== Tips ====
+* Remember that a DisposableVM is shutdown when the '''first''' user-launched process is terminated. If you create a new DisposableVM by launching Tor Browser and then proceed to compose text in an editor, all of your work will be lost if you close Tor Browser. To avoid this, you may want to launch a DisposableVM via a terminal and launch additional applications from the command line. When you are ready to destroy the DisposableVM, you can simply exit from the terminal.
+
+* In Qubes, it is never a good idea to store valuable information in an untrusted VM. This is further enforced by the fact that Tor Browser doesn't remember bookmarks or credentials. A best practice for storing this type of information is to use a password manager in an offline vault VM. @rustybird has announced a new "split-tor-browser"<ref>[https://github.com/rustybird/qubes-split-browser Github: Split Browser]</ref> package that can retrieve urls and credentials from a trusted VM for use in a DisposableVM's web browser. (This package has not yet been tested or endorsed by Whonix.)
+
+* Sometimes it is useful to have a non-networked DisposableVM for opening untrusted files that may try to use the network maliciously. Like all Qubes VMs, the NetVM for a DisposableVM can be changed dynamically while the VM is running. Simply set the NetVM to 'none' using the Qubes VM Manager or the CLI.<ref>cli:dom0: <code>qvm-prefs -s disp<1 | 2 | ...> netvm none</code></ref> '''Warning:''' If you decide to re-establish network connectivity, use utmost caution in doing so, since there is no mechanism in place to prevent you from connecting to a clearnet NetVM.
+
+* DisposableVMs can be created directly by launching programs from the application menu using shortcuts. ([[#Adding_shortcuts_to_application_menus.5B28.5D | See below for instructions.]]) They can also be spawned by using context-menus or CLI commands in other AppVMs. See [https://www.qubes-os.org/doc/dispvm/ Qubes dispVM documentation] for different methods. Once again, be sure to heed the [[#Warning:_Use_caution_when_spawning_DisposableVMs_from_other_VMs_.5B3.5D | relevant warning]] in the Warnings section..
+
+----
+==== Adding desktop shortcut ====
+===== Qubes 3.2 / XFCE4 =====
+To create a desktop shortcut that starts Tor Browser inside a DisposableVM, you could do the following.
+
+<code>
+Right click anywhere on the free space of the desktop. -> Create Launcher
+</code>
+
+* Name: <code>DispTB</code>
+* Command: <code>sh -c 'echo torbrowser | /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red'</code>
+
+<code>
+Click Create
+</code>
+
+Double click the newly created desktop shortcut to start it.
+
+At first start, you can safely click "Mark Executable".
+
+You might like using XFCE workspace switcher to switch to another empty virtual desktop so you do not have to minimize existing windows in order to see the desktop shortcuts.
+
+----
+==== Start Tor Browser in a DisposableVM ====
+For example use a shortcut above (or use some other way to start it). Then remember to [[Qubes/Disposable_VM#Warning:_Check_your_Tor_Browser_Version|check your Tor Browser version]]!
+
+----
+==== Adding shortcuts to application menus ====
+<ref>Qubes feature request WIP: [https://github.com/QubesOS/qubes-issues/issues/1339 have DisposableVMs inherit launcher shortcuts like other TemplateBasedVMs #1339]</ref>
+===== Qubes 3.2 / XFCE4 (untested) =====
+
+Make a <code>.desktop</code> file for every DisposableVM shortcut you would like to add to your menus.<ref>Official documentation: [https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html Desktop entry specifications]</ref> These .desktop files must be placed in <code>~/.local/share/applications/</code>.
+
+Open a terminal in your DisposableVM-Template.
+
+<code>
+dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> click 'Run command in VM' -> type 'konsole'
+</code><ref>cli:dom0: <code>qvm-run -a whonix-ws-dvm konsole</code></ref>
+
+{{CodeSelect|code=
+mkdir -p ~/.local/share/applications/
+}}
+
+Use your favorite text editor to create and open each .desktop file. Name each one as you prefer.
+
+{{CodeSelect|code=
+kwrite ~/.local/share/applications/dvm-torbrowser.desktop
+}}
+
+Add to the .desktop file the following entries and substitute fields as appropriate. In the Exec field, substitute <code>torbrowser</code> with the CLI command used to launch each application you would like a shortcut for. Examples: <code>konsole, kwrite, libreoffice, kgpg, okular, dolphin</code>
+
+<!-- EDITORS NOTE: '{{!}}' is a magic word for '|'.-->
+{{CodeSelect|code=
+[Desktop Entry]
+Name=Tor Browser
+Comment=Launch Tor Browser in DisposableVM
+Type=Application
+Terminal=false
+Exec=sh -c 'echo torbrowser {{!}} /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red'
+}}
+
+Icon= & Category= are also useful fields. Feel free to research the .desktop specification using the footnote above.
+
+Once the .desktop files have been created, they need to be added to your Applications menu. Use a text editor to edit the following file.
+
+{{CodeSelect|code=
+kwrite ~/.config/menus/xfce-applications.menu
+}}
+
+Find the menu entry associated with your DisposableVM-Template. (Help!)
+
+{{CodeSelect|code=
+<Menu>
+    <Name>DisposableVMTemplate</Name>
+}}
+
+In the <Include> subsection add the appropriately named .desktop file.
+
+{{CodeSelect|code=
+<Filename>dvm-torbrowser.desktop</Filename>
+}}
+
+===== Qubes 3.2 / XFCE4 - menulibre (untested) =====
+
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+Currently not recommended unless you want to experiment and know how to fix the application menu in case it breaks. Click on expland on the right if you are interested.
+<div class="mw-collapsible-content">
+menulibre removes Qubes System Tools start menu entry
+
+https://groups.google.com/forum/m/#!msg/qubes-users/rxI8lNOD7p0/p9Va5Vg9BwAJ
+
+adrelanos: I was using git to manage my whole home folder so I was able to:
+
+* undo any changes menulibre is doing
+* remove any newly created files by menulibre
+
+so I could restore my Qubes System Tools start menu entry.
+
+<code>
+sudo qubes-dom0-update menulibre
+</code>
+
+<code>
+Qubes Start Menu -> System Tools -> Menu Editor
+</code>
+</div>
+</div>
+
+===== Qubes 3.1 / KDE4 =====
+<code>
+dom0 -> right-click Application Launcher Menu -> click `Edit Applications`
+</code>
+
+Select DisposableVM from VM entries on the left panel. Press the arrow button to expand the menu.
+    
+Click New Item on the Toolbar.
+    
+Type in a Name for the shortcut.
+    
+Type in the Command to launch the program in the DisposableVM.
+
+    Examples:
+    Tor Browser
+    sh -c 'echo torbrowser | /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red'
+    Konsole
+    sh -c 'echo konsole | /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red'
+    Dolphin
+    sh -c 'echo dolphin | /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red'
+
+Click on the square in the upper right if you'd like to choose an icon. (Custom application icons are stored in /var/lib/qubes/<type of vm>/<vm name>/apps.icons/)
+    
+Click Save.
+
+----
+==== cli ====
+If you want for example to open konsole or Tor Browser in a DisposableVM.
+
+Open a dom0 terminal.
+
+<code>
+echo konsole | /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red
+</code>
+
+<code>
+echo torbrowser | /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red
+</code>
+
+----
+
+== Footnotes ==
+<references />
+
+{{Footer}}
+[[Category:Documentation]]
