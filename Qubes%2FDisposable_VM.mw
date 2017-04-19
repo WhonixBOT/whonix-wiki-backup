@@ -26,7 +26,7 @@ __TOC__
 
 ----
 
-== What are Disposable VMs? ==
+== What are DisposableVMs? ==
 Under the Qubes TemplateVM model <ref>[https://www.qubes-os.org/getting-started AppVMs (qubes) and TemplateVMs]</ref>, any changes made to a [https://github.com/QubesOS/qubes-issues/issues/2489 TemplateBasedVM's root filesystem] are lost upon reboot. This is advantageous for several reasons: it allows centralized (and therefore faster) updates for all applications (most) inside the root filesystem, saves time and disk space. However, certain directories are designed to persist between reboots in order to store files and settings. These directories are stored in <code>/rw/</code> and include <code>/home/user</code> as well as additional directories defined by "bind directory" settings <ref>[https://www.qubes-os.org/doc/bind-dirs/ How to make any file in a TemplateBasedVM persistent using bind-dirs]</ref>.
 
 Qubes does not have a built-in snapshot capability like VirtualBox that can completely revert all changes back to a particular VM state. <ref>
@@ -37,13 +37,13 @@ Apart from [https://www.qubes-os.org/doc/dom0-tools/qvm-revert-template-changes/
 
 On one hand, this system ensures that files do not persist without requiring any user intervention; on the other hand, the user can no longer decide between keeping or destroying the current VM state. You must choose whether to use a standard AppVM or a DisposableVM beforehand - this decision can not be modified after-the-fact.
 
-===== The Two-Layered Disposable VM System =====
+===== The Two-Layered DisposableVM System =====
 Qubes currently uses a two-layered approach to DisposableVMs. At the base of the system is a ''TemplateVM'' upon which a ''DisposableVM-Template'' is created. Every time a new ''DisposableVM'' is launched, it is based on the DisposableVM-Template - hence, two layers. For a standard Whonix installation, the base TemplateVM would be <code>whonix-ws</code>; the DisposableVM-Template would be called <code>whonix-ws-dvm</code>; and each new DisposableVM (<code>disp1, disp2, ...</code>) would be based on <code>whonix-ws-dvm</code>. Once a DisposableVM-Template is created, its <code>/home/user/</code> directory can be customized <ref>
 https://www.qubes-os.org/doc/dispvm-customization/
 </ref> independently of the base TemplateVM. While it will continue to inherit changes to the base TemplateVM's root filesystem (for example, package updates), user files in <code>/home/user/</code> will continue to persist independently.
 
-===== Disposable VM Traffic is Stream Isolated from Other VMs =====
-Disposable VMs work especially well with Whonix-Gateway because each VM is assigned a unique internal IP address. This ensures that all traffic from a DisposableVM is [[Stream_Isolation | stream isolated]] from all other traffic from concurrently running VMs.
+===== DisposableVM Traffic is Stream Isolated from Other VMs =====
+DisposableVMs work especially well with Whonix-Gateway because each VM is assigned a unique internal IP address. This ensures that all traffic from a DisposableVM is [[Stream_Isolation | stream isolated]] from all other traffic from concurrently running VMs.
 
 ----
 
@@ -69,7 +69,7 @@ If the calling VM is connected to Whonix-Gateway, this step is not necessary and
 
 <ref>[https://github.com/QubesOS/qubes-issues/issues/1954 Whonix default NetVM settings fixes]</ref>
 
-==== Warning: Disposable VMs are not amnesic ====
+==== Warning: DisposableVMs are not amnesic ====
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text       = 
@@ -77,10 +77,10 @@ All changes to a DisposableVM's file system are discarded upon shutdown. However
 }}
 
 <ref>[[Warning#Whonix_is_not_amnesic | Whonix is not amnesic]]</ref><ref>[[FAQ#Is_there_a_substitute_for_Whonix.27s_lack_of_an_Amnesic_feature_.2F_Live_CD.2FDVD.3F_Forensics.3F | Is there a substitute for Whonix's lack of an Amnesic feature?]]</ref>
-<ref>[https://groups.google.com/d/topic/qubes-devel/QwL5PjqPs-4/discussion Disposable VMs do not run entirely in RAM]</ref>
+<ref>[https://groups.google.com/d/topic/qubes-devel/QwL5PjqPs-4/discussion DisposableVMs do not run entirely in RAM]</ref>
 <ref>[https://github.com/QubesOS/qubes-issues/issues/904 DispVMs: support for in-RAM execution only (for anti-forensics) #904]</ref>
 
-==== Warning: Disposable VMs may be linkable to other VMs connected to the same Whonix-Gateway ====
+==== Warning: DisposableVMs may be linkable to other VMs connected to the same Whonix-Gateway ====
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text       = 
@@ -374,7 +374,7 @@ qvm-create-default-dvm whonix-ws
 ----
 
 == Usage ==
-Disposable VMs lend themselves well to being used for risky, largely independent activities, like web browsing or opening untrusted files; while AppVMs might be better suited when file persistence is necessary (for example: an email client with local email storage). Qubes' VM integration tools, like secure file copy<ref>Qubes documentation: [https://www.qubes-os.org/doc/copying-files/ Copying and Moving Files Between Domains]</ref> and secure clipboard<ref>Qubes documentation: [https://www.qubes-os.org/doc/copy-paste Copying and Pasting Text Between Domains]</ref>, mean that clean, trusted files and text can be easily transferred to your trusted VMs should it be necessary and safe.
+DisposableVMs lend themselves well to being used for risky, largely independent activities, like web browsing or opening untrusted files; while AppVMs might be better suited when file persistence is necessary (for example: an email client with local email storage). Qubes' VM integration tools, like secure file copy<ref>Qubes documentation: [https://www.qubes-os.org/doc/copying-files/ Copying and Moving Files Between Domains]</ref> and secure clipboard<ref>Qubes documentation: [https://www.qubes-os.org/doc/copy-paste Copying and Pasting Text Between Domains]</ref>, mean that clean, trusted files and text can be easily transferred to your trusted VMs should it be necessary and safe.
 
 ==== Tips ====
 * Remember that a DisposableVM is shutdown when the '''first''' user-launched process is terminated. If you create a new DisposableVM by launching Tor Browser and then proceed to compose text in an editor, all of your work will be lost if you close Tor Browser. To avoid this, you may want to launch a DisposableVM via a terminal and launch additional applications from the command line. When you are ready to destroy the DisposableVM, you can simply exit from the terminal.
@@ -440,7 +440,7 @@ Add to the .desktop file the following entries and substitute fields as appropri
 {{CodeSelect|code=
 [Desktop Entry]
 Name=Tor Browser
-Comment=Launch Tor Browser in Disposable VM
+Comment=Launch Tor Browser in DisposableVM
 Type=Application
 Terminal=false
 Exec=sh -c 'echo torbrowser {{!}} /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red'
