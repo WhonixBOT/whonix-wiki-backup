@@ -243,17 +243,17 @@ A detailed [https://wiki.archlinux.org/index.php/Grsecurity#RBAC guide] on gener
 
 This work is being undertaken by Coldhak and the instructions are drawn almost exclusively from their blog and github account.<ref>https://coldhak.ca/blog/2016/12/12/coldkernel-qubes-1.html</ref> <ref>https://github.com/coldhakca/coldkernel</ref> The Debian-8 TemplateVM is currently supported. Work is ongoing to support the Fedora and Whonix TemplateVMs, as well as the Qubes DispVM and dom0.<ref>https://github.com/coldhakca/coldkernel/issues</ref>
 
-Note: These instructions have been tested to work with the 4.8 Linux kernel. At the time of writing, some Qubes users report post-build TemplateVM problems when using the latest 4.9 Linux kernel branch (which also has Qubes testing repository dependencies). It is advisable to use the 4.8 kernel series until the 4.9 series has stabilized.
+Note: These instructions have been tested to work with the 4.8 Linux "coldkernel" in a Debian-8 TemplateVM. At the time of writing, Qubes users report post-build TemplateVM problems when using the 4.9 Linux kernel with pvgrub2 in a Debian-8 template. <ref>https://github.com/QubesOS/qubes-issues/issues/2762</ref>. It is advisable to use the 4.8 Linux coldkernel series until this bug is fixed or alternatively attempt to build the 4.9 Linux coldkernel in a Debian-9 TemplateVM (untested).
 
-'''Warning:''' These instructions are extremely alpha and may potentially break your template. Clone your default template(s) before proceeding!
+'''Warning:''' These instructions are extremely alpha and may potentially break the template. Always clone default templates before proceeding!
 
 ===Debian TemplateVM===
 
 ====Configuring the Debian TemplateVM====
 
-'''1. Clone the Debian-8 TemplateVM'''
+'''1. Clone the Debian TemplateVM'''
 
-'''2. Increase the Maximum Storage Size of the Debian-8 TemplateVM'''
+'''2. Increase the Maximum Storage Size of the Debian TemplateVM'''
 
 https://coldhak.ca/assets/img/blog/coldkernel_pt1/size.png
 
@@ -261,11 +261,11 @@ Note: A minimum of 4GB is recommended. 10GB is a safe value so you don't run out
 
 '''3. Edit sources.list'''
 
-In the Debian TemplateVM, run:
+In the Debian TemplateVM, run.
 <pre>
 sudo nano /etc/apt/sources.list
 </pre>
-Uncomment the lines starting with deb-src. It should look something like this:
+Uncomment the lines starting with deb-src. It should look something like this.
 <pre>
 deb http://http.debian.net/debian jessie main contrib non-free
 deb-src http://http.debian.net/debian jessie main contrib non-free
@@ -277,50 +277,35 @@ Save and exit.
 
 '''4. Install dom0 Dependencies'''
 
-In dom0, run:
+In dom0, run.
 <pre>
 sudo qubes-dom0-update grub2-xen
 </pre>
 '''5. Install Debian Dependencies'''
 
-In the Debian TemplateVM, run:
+In the Debian TemplateVM, run.
 <pre>
 sudo apt install qubes-kernel-vm-support grub2-common
 sudo apt install paxctl bc wget gnupg fakeroot build-essential devscripts libfile-fcntllock-perl git gcc-4.9-plugin-dev
 sudo apt-get build-dep linux
 </pre>
 
-'''6. ''Optional:'' Install 4.9 Kernel Branch Dependencies'''
-
-Note: If attempting to build a Linux 4.9 grsec kernel, you will need qubes-kernel-vm-support 3.2.4+deb8u1 from the Qubes Testing repository for the Debian TemplateVM. <ref>https://github.com/coldhakca/coldkernel/issues/55 Otherwise, you will receive error messages for the module build.</ref> <ref>https://github.com/QubesOS/qubes-issues/issues/2691</ref>
-
-Temporarily enable Qubes' testing repository for the Debian TemplateVM following the steps found here: https://www.qubes-os.org/doc/software-update-vm/
-
-Update your package lists:
-<pre>
-sudo apt-get update
-</pre>
-Install the latest available kernel VM support package:
-<pre>
-sudo apt-get install qubes-kernel-vm-support
-</pre>
-Afterwards, reset your default Qubes repository to the stable Qubes version.
 ====Building the grsec Coldkernel====
 
 '''1. Clone and Verify the Coldkernel Build Scripts'''
 
-Note: Always verify and checkout the latest kernel available from coldhak. As at April, 2017 this was the 4.9.20 Linux kernel.
+Note: Always verify and checkout the latest kernel available from coldhak. For the 4.8 Linux kernel branch, this is version 4.8.17. For the 4.9 Linux kernel branch, as at April 2017 this was version 4.9.20. The 4.8.17 (stable) coldkernel is referenced in instructions below.
 
-In the Debian TemplateVM, run:
+In the Debian TemplateVM, run.
 <pre>
 wget "https://coldhak.ca/coldhak/keys/coldhak.asc" -O coldhak.asc
 gpg --import coldhak.asc
 git clone https://github.com/coldhakca/coldkernel
 cd coldkernel
-git verify-tag coldkernel-0.9a-4.9.20
-git checkout tags/coldkernel-0.9a-4.9.20
+git verify-tag coldkernel-0.9a-4.8.17
+git checkout tags/coldkernel-0.9a-4.8.17
 </pre>
-The verfication step (git verify-tag) should produce a good signature from the Coldhak developers:
+The verfication step (git verify-tag) should produce a good signature from the Coldhak developers, similar to this.
 <pre>
 gpg: Signature made Mon 03 Apr 2017 11:50:21 AM EDT using RSA key ID DE32FEBB
 gpg: Good signature from "Coldhak developers (signing key) <contact@coldhak.ca>"
@@ -329,18 +314,18 @@ gpg: There is no indication that the signature belongs to the owner.
 Primary key fingerprint: 1073 B61B 69CB 0444 33B6  4F7B 0B1F 9321 DE32 FEBB
 </pre>
 
-The fingerprint should match that found on the coldhak website:
+The fingerprint should match that found on the coldhak website.
 https://coldhak.ca/assets/img/blog/coldkernel_pt1/verify.png
 
 '''2. Build the grsec Coldkernel'''
 
-Note: This step can take several hours depending on your computer hardware; later architectures can finish this step in less than one hour. This process is CPU intensive, and your system may crash if you use other programs simultaneously.
+Note: This step can take several hours depending on your computer hardware; later architectures can finish this step in less than one hour. This process is CPU intensive, and the system may crash if other programs are used simultaneously.
 
-To make the build with hypervisor support, in your Debian TemplateVM run:
+To make the build with hypervisor support, in the Debian TemplateVM run.
 <pre>
 make qubes-guest
 </pre>
-The output should look as follows:
+The output should look as follows.
 <pre>
 patching file coldkernel.config
 Importing signing keys...                                                                                                       [DONE]
@@ -357,12 +342,12 @@ Building coldkernel...                                                          
 
 ====Installing the grsec Coldkernel====
 
-Note: During the <i>sudo update-grub2</i> step below, you can safely ignore this error message if it appears: <ref>https://github.com/QubesOS/qubes-doc/blob/master/configuration/managing-vm-kernel.md</ref>
+Note: During the <i>sudo update-grub2</i> step below, this error message can be safely ignored if it appears. <ref>https://github.com/QubesOS/qubes-doc/blob/master/configuration/managing-vm-kernel.md</ref>
 <pre>
  grub2-probe: error: cannot find a GRUB drive for /dev/mapper/dmroot. Check your device.map
 </pre>
 
-Post-build, in the Debian Template VM run:
+Post-build, in the Debian Template VM run.
 <pre>
 wget https://grsecurity.net/paxctld/paxctld_1.2.1-1_amd64.{deb,deb.sig}
 gpg --homedir=.gnupg --verify paxctld_1.2.1-1_amd64.{deb.sig,deb}
@@ -378,21 +363,21 @@ sudo shutdown -h now
 
 ====Post-install TemplateVM Configuration==== 
 
-'''1. Change the Debian-8 TemplateVM Kernel'''
+'''1. Change the Debian TemplateVM Kernel'''
 
 After the TemplateVM has been shutdown, change the kernel in the Qubes VM Manager to use pvgrub2.
 
 https://coldhak.ca/assets/img/blog/coldkernel_pt1/pvgrub.png
 
-'''2. Check the Debian-8 TemplateVM is Functional'''
+'''2. Check the Debian TemplateVM is Functional'''
 
-Start the Debian-8 TemplateVM. If successful, the VM state should be green in Qubes VM Manager and the VM log should show something similar to:
+Start the Debian TemplateVM. If successful, the VM state should be green in Qubes VM Manager and the VM log should contain output similar to this.
 <pre>
-Linux Version 4.9.20-coldkernel-grsec-1
+Linux Version 4.8.17-coldkernel-grsec-2
 </pre>
 '''3. Set Default Grsec Special Groups'''
 
-In the Debian TemplateVM, run:
+In the Debian TemplateVM, run.
 <pre>
 sudo groupadd -g 9001 grsecproc
 sudo groupadd -g 9002 tpeuntrusted
@@ -400,19 +385,19 @@ sudo groupadd -g 9003 denysockets
 </pre>
 Note: Respectively, users in these groups are:
 
-* Exempted from grsecurity's /proc restrictions;
-* Unable to execute any files that are not in root-owned directories writable only by root; and
+* Exempted from grsecurity's /proc restrictions.
+* Unable to execute any files that are not in root-owned directories writable only by root.
 * Unable to connect to other hosts from your machine or run server applications.
 
 
 '''4. Install paxtest and Check that Grsecurity is Running'''
 
-In the Debian TemplateVM, run:
+In the Debian TemplateVM, run.
 <pre>
 sudo apt-get install paxtest
 paxtest blackhat
 </pre>
-You should see output similar to this:
+You should see output similar to this.
 <pre>
 Executable anonymous mapping: Killed
 Executable bss: Killed
@@ -452,7 +437,7 @@ Follow the steps [https://en.wikibooks.org/wiki/Grsecurity/The_Administration_Ut
 
 ====Post-install Debian AppVM Configuration====
 
-'''1. Create an AppVM Based on the Debian-8 Coldkernel Template'''
+'''1. Create an AppVM Based on the Debian Coldkernel Template'''
 
 '''2. Change the AppVM Kernel Selection'''
 
@@ -460,19 +445,19 @@ Use Qubes VM Manager to set "pvgrub2" for the AppVM's kernel selection. Otherwis
 
 ====Upgraded Kernel Builds====
 
-When an upgraded grsec Linux kernel is released by Coldhak, <ref>see https://github.com/coldhakca/coldkernel</ref> you can 'bump' the kernel version of your existing grsec TemplateVM via the following steps.
+When an upgraded grsec Linux kernel is released by Coldhak, <ref>https://github.com/coldhakca/coldkernel</ref> the kernel version of the existing grsec TemplateVM can be bumped via the following steps.
 
 '''1. Fetch and Verify the Upgraded Kernel Branch'''
 
-Note: You do not perform the cloning step again. The signing key is not imported again, unless it has changed.
+Note: Do not perform the cloning step again. The signing key is not imported again, unless it has changed.
 
-''If the signing key has changed,'' in the TemplateVM run:
+''If the signing key has changed,'' in the TemplateVM run.
 <pre>
 wget "https://coldhak.ca/coldhak/keys/coldhak.asc" -O coldhak.asc
 gpg --import coldhak.asc
 </pre>
 
-In all cases, verify and checkout the upgraded kernel branch (change the kernel reference below to match the updated release) in the TemplateVM:
+In all cases, verify and checkout the upgraded kernel branch (change the kernel reference below to match the updated release) in the TemplateVM.
 <pre>
 cd coldkernel
 git fetch
@@ -480,7 +465,7 @@ git verify-tag coldkernel-0.9a-4.9.20
 git checkout tags/coldkernel-0.9a-4.9.20
 </pre>
 
-The verfication step (git verify-tag) should produce a good signature from the Coldhak developers:
+The verfication step (git verify-tag) should produce a good signature from the Coldhak developers.
 <pre>
 gpg: Signature made Mon 03 Apr 2017 11:50:21 AM EDT using RSA key ID DE32FEBB
 gpg: Good signature from "Coldhak developers (signing key) <contact@coldhak.ca>"
@@ -488,15 +473,16 @@ gpg: WARNING: This key is not certified with a trusted signature!
 gpg: There is no indication that the signature belongs to the owner.
 Primary key fingerprint: 1073 B61B 69CB 0444 33B6  4F7B 0B1F 9321 DE32 FEBB
 </pre>
-The fingerprint should match that found on the coldhak website: https://coldhak.ca/assets/img/blog/coldkernel_pt1/verify.png 
+The fingerprint should match that found on the coldhak website. 
+https://coldhak.ca/assets/img/blog/coldkernel_pt1/verify.png 
 
 '''2. Build the Upgraded Kernel'''
 
-To make the build with hypervisor support, in your TemplateVM run:
+To make the build with hypervisor support, in the TemplateVM run.
 <pre>
 make qubes-guest
 </pre>
-The output should look as follows:
+The output should look as follows.
 <pre>
 patching file coldkernel.config
 Importing signing keys...                                                                                                       [DONE]
@@ -515,14 +501,14 @@ Building coldkernel...                                                          
 
 paxctld is not downloaded again, unless there was an update. First check: https://github.com/coldhakca/coldkernel to see if this is required.
 
-<i>If paxctld has changed,</i> change the paxctld reference below to match the updated release and run in the TemplateVM:
+<i>If paxctld has changed,</i> change the paxctld reference below to match the updated release and run in the TemplateVM.
 <pre>
 wget https://grsecurity.net/paxctld/paxctld_1.2.1-1_amd64.{deb,deb.sig}
 gpg --homedir=.gnupg --verify paxctld_1.2.1-1_amd64.{deb.sig,deb}
 sudo dpkg -i paxctld_1.2.1-1_amd64.deb 
 </pre>
 
-In all cases, repeat these installation steps:
+In all cases, repeat these installation steps.
 <pre>
 sudo make install-deb
 sudo cp paxctld.conf /etc/paxctld.conf
@@ -534,13 +520,13 @@ sudo shutdown -h now
 '''4. Post-install TemplateVM Configuration'''
 
 Follow steps 2-4 [[Grsecurity#Post-install_TemplateVM_Configuration|here]], except:
-* Do not set default grsec special groups again, unless they have changed; and
+* Do not set default grsec special groups again, unless they have changed.
 * Do not install paxtest again, only run <i>paxtest blackhat</i> to check grsecurity is running correctly.
 
 
 '''5. Post-install AppVM Configuration'''
 
-Follow [[Grsecurity#Post-install_Debian-8_AppVM_Configuration|these steps]] to create a new AppVM based on the upgraded kernel branch.
+Follow [[Grsecurity#Post-install_Debian_AppVM_Configuration|these steps]] to create a new AppVM based on the upgraded kernel branch.
 
 ===Fedora TemplateVM===
 
