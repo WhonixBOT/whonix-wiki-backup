@@ -325,92 +325,95 @@ All of the changes to <i>/home/user/</i> in the DisposableVM-Template should now
 Changes to the underlying TemplateVM (whonix-ws) are detected automatically and the DisposableVM-Template is updated without user intervention. That means package updates that are applied to whonix-ws are also applied to the whonix-ws-dvm.
 
 ===== Updating Tor Browser =====
-Tor Browser presents a special situation because of the fact that it is installed in a user's home directory. As a result, the TemplateVM (whonix-ws) never updates existing Tor Browser installations.
+Tor Browser presents a special situation because it is installed in a user's home directory. As a result, the TemplateVM (whonix-ws) never updates existing Tor Browser installations.
 
-'''For ''non-customized'' DisposableVM-Templates''': The simplest method to obtain the latest Tor Browser is to use Whonix's built-in Tor Browser downloader functionality. Simply update [[Tor_Browser#Tor_Browser_Downloader_by_Whonix|Tor Browser Downloader by Whonix (tb-updater)]] in whonix-ws while performing your usual maintenance [https://www.qubes-os.org/doc/whonix/update/ upgrading] via <code>sudo apt-get update</code> and <code>sudo apt-get dist-upgrade</code>.
+'''Non-Customized DisposableVM-Templates Users''' 
+
+To obtain the latest Tor Browser, the simplest method is to use Whonix's built-in Tor Browser downloader functionality. Simply update using [[Tor_Browser#Tor_Browser_Downloader_by_Whonix|Tor Browser Downloader by Whonix (tb-updater)]] in whonix-ws when performing your usual maintenance [https://www.qubes-os.org/doc/whonix/update/ upgrading]. 
+
+Update.
+
+{{CodeSelect|code=
+sudo apt-get update && sudo apt-get dist-upgrade
+}}
 
 Then, create a new DisposableVM to overwrite the existing one.
 
 Open a dom0 terminal.
 
-<code>
-Qubes App Launcher (blue/grey "Q") -> System Tools -> Konsole or Xfce Terminal
-</code>
+<code> Qubes App Launcher (blue/grey "Q")</code> -> <code>System Tools</code> -> <code>Konsole or Xfce Terminal</code>
 
 Create a new DisposableVM-Template using the updated whonix-ws TemplateVM.
 
-<code>
+{{CodeSelect|code=
 qvm-create-default-dvm whonix-ws
-</code>
+}}
 
-'''For ''customized'' DisposableVM-Templates''': Users may choose to use [[Tor_Browser#Tor_Browser_Downloader_by_Whonix|Tor Browser Downloader by Whonix (tb-updater)]] ({{Code2|update-torbrowser}}) or to use [[Tor_Browser#Tor_Browser_Internal_Updater|Tor Browser's internal updater]].
+'''Customized DisposableVM-Template Users'''
 
-'''''Option #1:''' Use ({{Code2|update-torbrowser}}) and download a new copy of Tor Browser''
+Users have two choices: 
 
-<code>
-dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> click 'Run command in VM' -> type 'konsole'
-</code><ref>cli:dom0: <code>qvm-run -a whonix-ws-dvm konsole</code></ref>
+# [[Tor_Browser#Tor_Browser_Downloader_by_Whonix|Tor Browser Downloader by Whonix (tb-updater)]] (update-torbrowser)
+# [[Tor_Browser#Tor_Browser_Internal_Updater|Tor Browser's internal updater]].
+<br />
+'''Option #1: Use ({{Code2|update-torbrowser}}) to download a new copy of Tor Browser'''
+
+<code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>right-click on 'whonix-ws-dvm'</code> -> <code>click 'Run command in VM'</code> -> <code>type 'konsole'</code> <ref>On the command line (dom0), run. <pre>qvm-run -a whonix-ws-dvm konsole</pre></ref>
 
 Launch Tor Browser Downloader by Whonix and follow the instructions. <ref name=hide_gtk_warnings>
-Using <code>>/dev/null 2>&1</code> to hide some useless and confusing GTK warnings.
+Using <i>>/dev/null 2>&1</i> to hide some useless and confusing GTK warnings.
 </ref> <ref name=noaskstart>
-Using <code>noaskstart="true"</code> to prevent [[Tor_Browser#Running_Tor_Browser_in_Qubes_TemplateVM]].
+Using <i>noaskstart="true"</i> to prevent [[Tor_Browser#Running_Tor_Browser_in_Qubes_TemplateVM]].
 </ref> <ref name=cli_noaskstart>
-Or for CLI version, simply use.
+Or for command line interface version, simply use.
 <br />
-<code>noaskstart="true" update-torbrowser</code>
+<i>noaskstart="true" update-torbrowser</i>
 </ref>
 
-<code>
+{{CodeSelect|code=
 noaskstart=true update-torbrowser --input gui >/dev/null 2>&1
-</code>
+}}
 
-Shutdown the DisposableVM-Template<ref>
-cli:dom0: <code>qvm-shutdown whonix-ws-dvm</code><br />
+Shutdown the DisposableVM-Template. <ref>On the command line (dom0), run. <pre>qvm-shutdown whonix-ws-dvm</pre>
 or<br />
-DisposableVM-Template cli:domU: <code>sudo poweroff</code>
+DisposableVM-Template command line (domU), run. <pre>sudo poweroff</pre>
 </ref>
 
-<code>
-dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> click 'Shutdown VM'
-</code>
+<code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>right-click on 'whonix-ws-dvm'</code> -> <code>click 'Shutdown VM'</code>
 
 Regenerate the DisposableVM-Template.
 
 Open a dom0 terminal.
 
-<code>
-Qubes App Launcher (blue/grey "Q") -> System Tools -> Konsole or Xfce Terminal
-</code>
+<code>Qubes App Launcher (blue/grey "Q")</code> -> <code>System Tools</code> -> <code>Konsole or Xfce Terminal</code>
 
-<code>
+Then run.
+
+{{CodeSelect|code=
 qvm-create-default-dvm whonix-ws
-</code>
+}}
 
-'''''Option #2:''' Use Tor Browser's internal updater and download new updates only''
+'''Option #2: Use Tor Browser's internal updater and download new updates only'''
 
-<code>
-dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> click 'Run command in VM' -> type 'torbrowser'</code><ref>cli:dom0: <code>qvm-run -a whonix-ws-dvm torbrowser</code></ref>
+<code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>right-click on 'whonix-ws-dvm'</code> -> <code>click 'Run command in VM'</code> -> <code>type 'torbrowser'</code> <ref> On the command line (dom0), run. <pre>qvm-run -a whonix-ws-dvm torbrowser</pre></ref>
 
 Use Tor Browser's Internal Updater by clicking TorButton and selecting <code>Check for Tor Browser Update</code>. Close and restart Tor Browser.
 
-Shutdown the DisposableVM-Template<ref>cli:dom0: <code>qvm-shutdown whonix-ws-dvm</code></ref>
+Shutdown the DisposableVM-Template. <ref>On the command line (dom0), run. <pre>qvm-shutdown whonix-ws-dvm</pre></ref>
 
-<code>
-dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> click 'Shutdown VM'
-</code>
+<code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>right-click on 'whonix-ws-dvm'</code> -> <code>click 'Shutdown VM'</code>
 
 Regenerate the DisposableVM-Template.
 
 Open a dom0 terminal.
 
-<code>
-Qubes App Launcher (blue/grey "Q") -> System Tools -> Konsole or Xfce Terminal
-</code>
+<code>Qubes App Launcher (blue/grey "Q")</code> -> <code>System Tools</code> -> <code>Konsole or Xfce Terminal</code>
 
-<code>
+Regenerate the template.
+
+{{CodeSelect|code=
 qvm-create-default-dvm whonix-ws
-</code>
+}}
 
 ----
 
