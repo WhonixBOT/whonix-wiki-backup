@@ -265,55 +265,61 @@ A DisposableVM-Template can be deleted in the same manner as other VMs.
 <ref>On the command line (dom0), run. <pre>qvm-remove <vmname></pre></ref>
 
 ==== Customizing a DisposableVM-Template ====
-Extra caution must be exercised when customizing a DisposableVM-Template. <ref>Qubes documentation: [https://www.qubes-os.org/doc/dispvm-customization DisposableVM Customization]</ref> From a privacy perspective, one would ideally want to have a DisposableVM-Template that is indistinguishable from any other Whonix-Workstation. If changes are made to the DisposableVM-Template, such as the installation of obscure programs or the setting of unique configurations or the placement of unique data files, those may serve to link all of your DisposableVMs via a unique fingerprint should they be compromised independently. It is also good to remember that your DisposableVM will likely be exposed to your greatest threats.
+Extra caution must be exercised when customizing a DisposableVM-Template. <ref>Qubes documentation: [https://www.qubes-os.org/doc/dispvm-customization DisposableVM Customization]</ref> From a privacy perspective, one would ideally want to have a DisposableVM-Template that is indistinguishable from any other Whonix-Workstation. If changes are made to the DisposableVM-Template, these may link all of the DisposableVMs via a uniquely generated fingerprint should they be compromised independently. Risky changes include, but are not limited to: the installation of obscure programs, uncommon configuration settings, or the placement of unique data files. Always remember that the DisposableVM will likely be exposed to the greatest Internet threats.
 
-Tor Browser specifically is largely designed to be used in its stock configuration in order to preserve as big an anonymity (fingerprint) set as possible. Many changes can result in the alteration of its fingerprint so it is advisable to only change what you are knowledgeable about. Some changes, like disabling JavaScript by default, may make sense to you in terms of trade-offs. Additionally, minor cosmetic changes, like the UI layout, or the placement of buttons, may be considered harmless to your privacy while enhancing your own personal usability.
+Tor Browser is specifically designed to prevent websites from fingerprinting the user or identifying them based on the browser configuration. It should generally be used in its stock configuration in order to make the user's fingerprint less unique, due to commonality with the larger pool of Tor users. Each individual browser change can contribute to significant worsening of the fingerprint, so it is advisable to only make alterations if the expected impact is known.
 
-Please remember that only files in <code>/home/user/</code> can be customized in a DisposableVM-Template.<ref>[https://github.com/QubesOS/qubes-issues/issues/1335 home folder of template not inherited by DisposableVM #1335]</ref>
+Some changes, like disabling JavaScript by default, may make sense to users in terms of a usability-security trade-off. Additionally, minor cosmetic changes like the UI layout, or the placement of buttons, may be considered harmless to privacy while enhancing personal usability.
 
-As stated previously, the following steps to customize the DisposableVM are completely optional.
+Please remember that only files in <i>/home/user/</i> can be customized in a DisposableVM-Template. <ref>[https://github.com/QubesOS/qubes-issues/issues/1335 Home folder of template not inherited by DisposableVM #1335]</ref>
 
-'''Tell Qubes to preserve your custom changes.'''
+As stated earlier, the following steps to customize the DisposableVM are completely optional.
 
-Open a terminal in the DisposableVM-Template.<ref>cli:dom0: <code>qvm-run -a whonix-ws-dvm konsole</code></ref>
+'''1. Configure Qubes to Preserve Customized Changes'''
 
-<code>
-dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> click 'Run command in VM' -> type 'konsole'
-</code>
+Open a terminal in the DisposableVM-Template. <ref>On the command line (dom0), run. <pre>qvm-run -a whonix-ws-dvm konsole</pre></ref>
 
-<code>
+<code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>right-click on 'whonix-ws-dvm'</code> -> <code>click 'Run command in VM'</code> -> <code>type 'konsole'</code>
+
+Instruct Qubes to preserve changes.
+
+{{CodeSelect|code=
 touch /home/user/.qubes-dispvm-customized
-</code>
+}}
 
-'''Launch the application you would like to customize.'''<ref>cli:dom0: <code>qvm-run -a whonix-ws-dvm <name of application></code></ref>
+'''2. Launch the Application to Customize''' <ref>On the command line (dom0), run. <pre>qvm-run -a whonix-ws-dvm <name of application></pre></ref>
 
-<code>
-dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> click 'Run command in VM'
-</code>
+<code> dom0 </code> -> <code>Qubes VM Manager</code> -> <code>right-click on 'whonix-ws-dvm'</code> -> <code>click 'Run command in VM'</code>
 
-Enter the name of the application. For example, <code>torbrowser, libreoffice, konsole, dolphin, okular, kgpg, etc</code>
+Enter the name of the application. For example. <ref>Other common applications launched from the command line are konsole, dolphin, okular, kgpg and so on.</ref>
 
-'''Finalize the DisposableVM-Template'''
+{{CodeSelect|code=
+torbrowser
+}}
 
-Once you are satisfied with your changes, shutdown the DisposableVM-Template.<ref>cli:dom0: <code>qvm-shutdown <vmname></code></ref>
+{{CodeSelect|code=
+libreoffice
+}}
 
-<code>
-dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> click 'Shutdown VM'
-</code>
+'''3. Finalize the DisposableVM-Template'''
 
-Regenerate the DisposableVM-Template.
+Once satisfactory changes have been made, shutdown the DisposableVM-Template. <ref>On the command line (dom0), run. <pre>qvm-shutdown <vmname></pre></ref>
+
+<code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>right-click on 'whonix-ws-dvm'</code> -> <code>click 'Shutdown VM'</code>
+
+'''4. Regenerate the DisposableVM-Template'''
 
 Open a dom0 terminal.
 
-<code>
-Qubes App Launcher (blue/grey "Q") -> System Tools -> Konsole or Xfce Terminal
-</code>
+<code>Qubes App Launcher (blue/grey "Q")</code> -> <code>System Tools</code> -> <code>Konsole or Xfce Terminal</code>
 
-<code>
+Regenerate the template.
+
+{{CodeSelect|code=
 qvm-create-default-dvm whonix-ws
-</code>
+}}
 
-All of your changes to <code>/home/user/</code> in the DisposableVM-Template should now persist whenever you re-create the template.
+All of the changes to <i>/home/user/</i> in the DisposableVM-Template should now persist whenever the template is re-created.
 
 ==== Updating a DisposableVM-Template ====
 Changes to the underlying TemplateVM (whonix-ws) are detected automatically and the DisposableVM-Template is updated without user intervention. That means package updates that are applied to whonix-ws are also applied to the whonix-ws-dvm.
