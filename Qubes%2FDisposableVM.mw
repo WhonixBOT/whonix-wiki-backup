@@ -432,54 +432,48 @@ DisposableVMs lend themselves well to being used for risky, largely independent 
 ----
 ==== Adding a Desktop Shortcut ====
 ===== Qubes 3.2 / XFCE4 =====
-To create a desktop shortcut that starts Tor Browser inside a DisposableVM, you could do the following.
+To create a desktop shortcut that starts Tor Browser inside a DisposableVM, perform the following steps.
 
-<code>
-Right click anywhere on the free space of the desktop. -> Create Launcher
-</code>
+<code>Right click anywhere on the free space of the desktop</code> -> <code>Create Launcher</code> ->
 
 * Name: <code>DispTB</code>
 * Command: <code>sh -c 'echo torbrowser | /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red'</code>
+<br />
+-> <code>Click Create</code>
 
-<code>
-Click Create
-</code>
+Double-click the newly created desktop shortcut to start it. At first start, it is safe to click "Mark Executable".
 
-Double click the newly created desktop shortcut to start it.
-
-At first start, you can safely click "Mark Executable".
-
-You might like using XFCE workspace switcher to switch to another empty virtual desktop so you do not have to minimize existing windows in order to see the desktop shortcuts.
+In order to see the desktop shortcuts, users may prefer to use the XFCE workspace switcher to navigate to another empty virtual desktop so existing windows do not need to be minimized.
 
 ----
 
 ==== Start Tor Browser in a DisposableVM ====
-For example use a shortcut above (or use some other way to start it). Then remember to [[Qubes/Disposable_VM#Warning:_Check_your_Tor_Browser_Version|check your Tor Browser version]]!
+Tor Browser can be started with a desktop shortcut like in the above example, or via another method. After launch, do not forget to [[Qubes/Disposable_VM#Warning:_Check_your_Tor_Browser_Version|check the Tor Browser version]]!
 
 ----
 ==== Adding Shortcuts to Application Menus ====
-<ref>Qubes feature request WIP: [https://github.com/QubesOS/qubes-issues/issues/1339 have DisposableVMs inherit launcher shortcuts like other TemplateBasedVMs #1339]</ref>
-===== Qubes 3.2 / XFCE4 (untested) =====
+<ref>Qubes feature request WIP: [https://github.com/QubesOS/qubes-issues/issues/1339 Have DisposableVMs inherit launcher shortcuts like other TemplateBasedVMs #1339]</ref>
+===== Qubes 3.2 / XFCE4 (Untested) =====
 
-Make a <code>.desktop</code> file for every DisposableVM shortcut you would like to add to your menus.<ref>Official documentation: [https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html Desktop entry specifications]</ref> These .desktop files must be placed in <code>~/.local/share/applications/</code>.
+Make a <i>.desktop</i> file for every DisposableVM shortcut that will be added to the menu.<ref>Official documentation: [https://specifications.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html Desktop entry specifications]</ref> These .desktop files must be placed in <i>~/.local/share/applications/</i>.
 
-Open a terminal in your DisposableVM-Template.
+Open a terminal in the DisposableVM-Template.
 
-<code>
-dom0 -> Qubes VM Manager -> right click on 'whonix-ws-dvm' -> click 'Run command in VM' -> type 'konsole'
-</code><ref>cli:dom0: <code>qvm-run -a whonix-ws-dvm konsole</code></ref>
+<code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>right-click on 'whonix-ws-dvm'</code> -> <code>click 'Run command in VM'</code> -> <code>type 'konsole'</code> <ref>On the command line (dom0), run. <pre>qvm-run -a whonix-ws-dvm konsole</pre></ref>
+
+Create a local applications directory.
 
 {{CodeSelect|code=
 mkdir -p ~/.local/share/applications/
 }}
 
-Use your favorite text editor to create and open each .desktop file. Name each one as you prefer.
+Use a text editor to create and open each .desktop file and logically name each one.
 
 {{CodeSelect|code=
 kwrite ~/.local/share/applications/dvm-torbrowser.desktop
 }}
 
-Add to the .desktop file the following entries and substitute fields as appropriate. In the Exec field, substitute <code>torbrowser</code> with the CLI command used to launch each application you would like a shortcut for. Examples: <code>konsole, kwrite, libreoffice, kgpg, okular, dolphin</code>
+As appropriate, add the following entries and substitute fields to each .desktop file. In the Exec field, substitute <i>torbrowser</i> with the command used to launch each relevant application matching the shortcut. For example: <i>konsole, kwrite, libreoffice, kgpg, okular, dolphin</i> and so on.
 
 <!-- EDITORS NOTE: '{{!}}' is a magic word for '|'.-->
 {{CodeSelect|code=
@@ -493,90 +487,73 @@ Exec=sh -c 'echo torbrowser {{!}} /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell 
 
 Icon= & Category= are also useful fields. Feel free to research the .desktop specification using the footnote above.
 
-Once the .desktop files have been created, they need to be added to your Applications menu. Use a text editor to edit the following file.
+Once the .desktop files have been created, they need to be added to the Applications menu. Use a text editor to edit the following file.
 
 {{CodeSelect|code=
 kwrite ~/.config/menus/xfce-applications.menu
 }}
 
-Find the menu entry associated with your DisposableVM-Template. (Help!)
+Find the menu entry associated with the DisposableVM-Template. (Help!)
 
 {{CodeSelect|code=
 <Menu>
     <Name>DisposableVMTemplate</Name>
 }}
 
-In the <Include> subsection add the appropriately named .desktop file.
+In the <Include> subsection, add the appropriately named .desktop file.
 
 {{CodeSelect|code=
 <Filename>dvm-torbrowser.desktop</Filename>
 }}
 
-===== Qubes 3.2 / XFCE4: MenuLibre (untested) =====
+===== Qubes 3.2 / XFCE4: MenuLibre (Untested) =====
 
 <div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
-Currently not recommended unless you want to experiment and know how to fix the application menu in case it breaks. Click on expland on the right if you are interested.
+This is recommended for testers only! Users should know how to fix the application menu in case it breaks. If interested, click on Expand on the right.
 <div class="mw-collapsible-content">
-menulibre removes Qubes System Tools start menu entry
+Warning: Testers have previously experienced [https://groups.google.com/forum/m/#!msg/qubes-users/rxI8lNOD7p0/p9Va5Vg9BwAJ removal of the Qubes System Tools start menu entry] when applying these changes! For greater safety, consider using git to manage the home folder so any MenuLibre changes can be reverted.
 
-https://groups.google.com/forum/m/#!msg/qubes-users/rxI8lNOD7p0/p9Va5Vg9BwAJ
+In dom0, run.
 
-adrelanos: I was using git to manage my whole home folder so I was able to:
-
-* undo any changes menulibre is doing
-* remove any newly created files by menulibre
-
-so I could restore my Qubes System Tools start menu entry.
-
-<code>
+{{CodeSelect|code=
 sudo qubes-dom0-update menulibre
-</code>
+}}
 
-<code>
-Qubes Start Menu -> System Tools -> Menu Editor
-</code>
+The use the menu editor.
+
+<code>Qubes Start Menu</code> -> <code>System Tools</code> -> <code>Menu Editor</code>
 </div>
 </div>
 
 ===== Qubes 3.1 / KDE4 =====
-<code>
-dom0 -> right-click Application Launcher Menu -> click `Edit Applications`
-</code>
+<code>dom0</code> -> <code>right-click Application Launcher Menu</code> -> <code>click `Edit Applications`</code> -> <code>Select DisposableVM from the VM entries on the left panel</code> -> <code>Press the arrow button to expand the menu</code> -> <code>Click New Item on the Toolbar</code> -> <code>Type in a Name for the shortcut</code> ->
+    
+Type in the specific command to launch the program in the DisposableVM. Tor Browser, konsole and dolphin are provided as examples below.
 
-Select DisposableVM from VM entries on the left panel. Press the arrow button to expand the menu.
-    
-Click New Item on the Toolbar.
-    
-Type in a Name for the shortcut.
-    
-Type in the Command to launch the program in the DisposableVM.
+<pre>
+sh -c 'echo torbrowser | /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red'
 
-    Examples:
-    Tor Browser
-    sh -c 'echo torbrowser | /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red'
-    Konsole
-    sh -c 'echo konsole | /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red'
-    Dolphin
-    sh -c 'echo dolphin | /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red'
+sh -c 'echo konsole | /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red'
 
-Click on the square in the upper right if you'd like to choose an icon. (Custom application icons are stored in /var/lib/qubes/<type of vm>/<vm name>/apps.icons/)
-    
-Click Save.
+sh -c 'echo dolphin | /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red'
+</pre>
+
+-> <code>Click on the square in the upper right in order to choose an icon</code> <ref>Custom application icons are stored in <i>/var/lib/qubes/<type of vm>/<vm name>/apps.icons/</i></ref> -> <code>Click Save</code>.
 
 ----
 
-==== cli ====
-If you want for example to open konsole or Tor Browser in a DisposableVM.
+==== Command Line Interface ====
+It is simple to start applications like konsole or Tor Browser in a DisposableVM.
 
 Open a dom0 terminal.
 
-<code>
+{{CodeSelect|code=
 echo konsole | /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red
-</code>
+}}
 
-<code>
+{{CodeSelect|code=
 echo torbrowser | /usr/lib/qubes/qfile-daemon-dvm qubes.VMShell dom0 DEFAULT red
-</code>
+}}
 
 ----
 
