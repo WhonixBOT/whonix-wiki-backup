@@ -99,66 +99,116 @@ When using DisposableVMs, use the [[Tor_Browser#Tor_Browser_Internal_Updater|Tor
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text       = 
-These instructions are current as of Qubes 3.2. Updated documentation will be required for Qubes 4.0 since it is anticipated that it will bring major changes to the DisposableVM implementation.<ref>[https://github.com/QubesOS/qubes-issues/issues/1335 home folder of template not inherited by DisposableVM #1335]</ref>
+These instructions are current as of Qubes 3.2. Updated documentation will be required for Qubes 4.0 since it is anticipated it will bring major changes to the DisposableVM implementation.<ref>[https://github.com/QubesOS/qubes-issues/issues/1335 Home folder of template not inherited by DisposableVM #1335]</ref>
+}}
+<br />
+'''Note:''' All examples below reference GUI actions whenever possible. The equivalent command line interface commands are listed in the footnotes.
+
+==== Creating a New DisposableVM-Template Based on Whonix-Workstation ====
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+'''Note for advanced users:''' If you wish to install the alpha or sandboxed version of Tor Browser, click on Expand on the right.
+<div class="mw-collapsible-content">
+'''Option #1: Use a non-customized DisposableVM-Template''' 
+
+This template will use a stock image based on <code>whonix-ws</code> and will not preserve any changes that are made to it.
+
+Step 1: Disable <code>tb-updater</code>'s functionality which automatically updates during apt-get inside the Qubes TemplateVM. <ref>[[Tor_Browser#tb-updater_in_Qubes_TemplateVM]]</ref> 
+
+This prevents the preferred Tor Browser version being overwritten by the stable version.
+
+In whonix-ws terminal, run.
+
+{{CodeSelect|code=
+echo "tb_install_follow=false" | sudo tee -a /etc/torbrowser.d/50_user.conf
 }}
 
-''All examples are given in terms of GUI actions whenever possible. The equivalent CLI commands will be listed in the footnotes.''
+Step 2: Install the preferred version of Tor Browser to TemplateVM by launching Tor Browser Downloader by Whonix and following the instructions. <ref name=hide_gtk_warnings /> <ref name=noaskstart /> <ref name=cli_noaskstart />
 
-==== Creating a new DisposableVM-Template based on Whonix-Workstation ====
-<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
-(Advanced users: If you wish to install a version of Tor Browser other than stable (ie alpha, hardened), click on expand on the right for instructions.)
-<div class="mw-collapsible-content">
-'''Option #1: Use a non-customized DisposableVM-Template.''' This template will use a stock image based on whonix-ws and will not preserve any changes that are made to it.
+In whonix-ws terminal, run.
 
-''Disable <code>tb-updater</code>'s {{Code2|automatic update during apt-get inside Qubes TemplateVM functionality}}<ref>[[Tor_Browser#tb-updater_in_Qubes_TemplateVM]]</ref> to prevent it from overwriting of your preferred Tor Browser version. <ref>It would overwrite it with the stable version.</ref>''
+{{CodeSelect|code=
+noaskstart=true update-torbrowser --input gui >/dev/null 2>&1
+}}
 
-In whonix-ws terminal: <code>echo "tb_install_follow=false" | sudo tee -a /etc/torbrowser.d/50_user.conf</code>
+Step 3: Create a DisposableVM-Template based on the <code>whonix-ws</code> TemplateVM.
 
-''Install preferred version of Tor Browser to TemplateVM by launching Tor Browser Downloader by Whonix and following the instructions. <ref name=hide_gtk_warnings /> <ref name=noaskstart /> <ref name=cli_noaskstart />
+In dom0 terminal, run.
 
-In whonix-ws terminal: <code>noaskstart=true update-torbrowser --input gui >/dev/null 2>&1</code>
+{{CodeSelect|code=
+qvm-create-default-dvm whonix-ws
+}}
 
-''Create DisposableVM-Template based on whonix-ws TemplateVM''
+When a new version of Tor Browser is released, repeat the previous two steps to update the TemplateVM and  DisposableVM-Template.
 
-In dom0 terminal: <code>qvm-create-default-dvm whonix-ws</code>
+'''Option #2: Use a Customized DisposableVM-Template.''' 
 
-When a new version of Tor Browser is released, repeat the previous two steps to update your TemplateVM and your DisposableVM-Template.
+Note: This template can be further customized by following the instructions [[#Customizing a DisposableVM-Template|below]].
 
-'''Option #2: Use a customized DisposableVM-Template.''' This template can be further customized by following the instructions below. [[#Customizing a DisposableVM-Template]]
+Step 1: Delete the existing DisposableVM-Template.
 
-''Delete existing DisposableVM-Template.''
+In dom0 terminal, run. 
 
-In dom0 terminal: <code>qvm-remove <oldDisposableVM-Template></code>
+{{CodeSelect|code=
+qvm-remove <oldDisposableVM-Template>
+}}
 
-''Create a new DisposableVM-Template based on whonix-ws TemplateVM.''
+Step 2: Create a new DisposableVM-Template based on the <code>whonix-ws</code> TemplateVM.
 
-In dom0 terminal: <code>qvm-create-default-dvm whonix-ws</code>
+In dom0 terminal, run.
 
-''Configure Whonix-Gateway as the NetVM for the DisposableVM-Template.''
+{{CodeSelect|code=
+qvm-create-default-dvm whonix-ws
+}}
 
-In dom0 terminal: <code>qvm-prefs -s whonix-ws-dvm netvm sys-whonix</code>
+Step 3: Configure Whonix-Gateway as the NetVM for the DisposableVM-Template.
 
-''Launch DisposableVM-Template terminal.''
+In dom0 terminal, run.
 
-In dom0 terminal: <code>qvm-run -a whonix-ws-dvm konsole</code>
+{{CodeSelect|code=
+qvm-prefs -s whonix-ws-dvm netvm sys-whonix
+}}
 
-''Enable customized flag in DisposableVM-Template.''
+Step 4: Launch a DisposableVM-Template terminal.
 
-In DisposableVM-Template terminal: <code>touch /home/user/.qubes-dispvm-customized</code>
+In dom0 terminal, run. 
 
-''Use update-torbrowser to download and install preferred TorBrowserBundle''
+{{CodeSelect|code=
+qvm-run -a whonix-ws-dvm konsole
+}}
 
-In DisposableVM-Template terminal: <code>noaskstart=true update-torbrowser --input gui >/dev/null 2>&1</code>
+Step 5: Enable a customized flag in the DisposableVM-Template.
 
-''Shutdown the DisposableVM-Template''
+In the DisposableVM-Template terminal, run.
 
-In DisposableVM-Template terminal: <code>sudo poweroff</code>
+{{CodeSelect|code=
+touch /home/user/.qubes-dispvm-customized
+}}
 
-''Regenerate the DisposableVM-Template.''
+Step 6: Use update-torbrowser to download and install the preferred TorBrowserBundle.
 
-In dom0 terminal: <code>qvm-create-default-dvm whonix-ws</code>
+In the DisposableVM-Template terminal, run.
 
-Remember to [[Qubes/Disposable_VM#Warning:_Check_your_Tor_Browser_Version|check your Tor Browser version]]!
+{{CodeSelect|code=
+noaskstart=true update-torbrowser --input gui >/dev/null 2>&1
+}}
+
+Step 7: Shutdown the DisposableVM-Template.
+
+In the DisposableVM-Template terminal, run.
+
+{{CodeSelect|code=
+sudo poweroff
+}}
+
+Step 8: Regenerate the DisposableVM-Template.
+
+In dom0 terminal, run.
+
+{{CodeSelect|code=
+qvm-create-default-dvm whonix-ws
+}}
+
+Do not forget to [[Qubes/Disposable_VM#Warning:_Check_your_Tor_Browser_Version|check your Tor Browser version]]!
 
 ----
 </div>
