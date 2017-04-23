@@ -23,7 +23,7 @@ Control Port Filter Proxy (cpfpy) has been implemented as a solution. It gives W
 
 Therefore when cpfpy gets asked {{Code2|GETINFO net/listeners/socks}}, it lies, and answers '250-net/listeners/socks="127.0.0.1:9150"'. This makes Tor Button happy and therefore it shows a "Congratulations!" (success) welcome page on its default homepage about:tor and not the failure page, which would confuse users. Since bug [https://trac.torproject.org/projects/tor/ticket/9224 TorButton about:tor fails when using additional socks listeners] has been fixed by Tor Tor Project, it that lie wouldn't be necessary anymore. <font size=-3>We're keeping it, because it is not necessary for Tor Button get a full list of all ports Tor is listening on. If an attacker compromised Whonix-Workstation, hiding that list has an advantage. The attacker can probe what ports are available to that Whonix-Workstation, but if the user added extra ports not available to the compromised Whonix-Workstation (only available to another Whonix-Workstation listening on another IP), at least those remain secret. (This is a bit theoretical, because a compromised Whonix-Workstation can spoof its LAN IP and most likely very few users are using ARP spoofing defenses. Should we add ARP spoofing defenses by default at some point, we at least don't have to worry about this point.)</font>
 
-For eventual further Tor control port access requirements by Tor Button, the configuration file of accepted commands has to be extended. If Tor Button would ever ask for anything which violates Whonix's design (Whonix-Workstation has no way of finding out its own external IP address in particular), such as {{Code2|GETINFO address}}, for example if Tor Button wanted to ensure, that the user isn't using its own external IP address, a new lie would have to be added to the cpfpy script. In case many more lies are required, lies should go into the config file as well, for now, hard coding is sufficient.
+For eventual further Tor control port access requirements by Tor Button, the configuration file of accepted commands has to be extended. If Tor Button would ever ask for anything which violates Whonix's design (Whonix-Workstation has no way of finding out its own external IP address in particular), such as {{Code2|GETINFO address}}, for example if Tor Button wanted to ensure, that the user is not using its own external IP address, a new lie would have to be added to the cpfpy script. In case many more lies are required, lies should go into the config file as well, for now, hard coding is sufficient.
 
 [[whonixcheck]] asks cpfpy {{Code2|status/bootstrap-phase}} <ref>
 Find out what {{Code2|status/bootstrap-phase}} answers yourself in Whonix-Gateway.
@@ -75,7 +75,7 @@ Tor Browser (running in Whonix-Workstation) is configured by default (not change
 Control Port Filter proxy listens on 0.0.0.0 port 9052, filters (white list) incoming control port messages and forwards them to the real Tor Control Port listening in 127.0.0.1:9051. Control Port Filter Proxy itself uses cookies authentication to authenticate Tor's control port. The latter is not important, since Whonix-Gateway's only purpose is running Tor, its not a multi user operating system, and if it were compromised, cookie authentication wouldn't be of help anymore either.
 
 == Attack Scenarios ==
-Once Whonix-Workstation has been compromised, the adversary could continuously and/or using a pattern, send white listed commands to Tor. At the moment, only {{Code2|NEWNYM}} would be of interest. When the adversary is also an ISP level adversary, the adversary might be able to see the pattern being produced. This however isn't a big risk, since once Whonix-Workstation is compromised, more powerful attacks are available - An adversary could also use "Morse Code", i.e. limit the victims traffic for a few seconds to zero or close to zero, then push the traffic to its maximum. 
+Once Whonix-Workstation has been compromised, the adversary could continuously and/or using a pattern, send white listed commands to Tor. At the moment, only {{Code2|NEWNYM}} would be of interest. When the adversary is also an ISP level adversary, the adversary might be able to see the pattern being produced. This however is not a big risk, since once Whonix-Workstation is compromised, more powerful attacks are available - An adversary could also use "Morse Code", i.e. limit the victims traffic for a few seconds to zero or close to zero, then push the traffic to its maximum. 
 
 More worrying is the extended attack surface.
 
@@ -334,6 +334,18 @@ https://trac.torproject.org/projects/tor/ticket/9675
 * Event support.
 * Wildcard support.
 * TODO: expand
+
+<hr>
+
+== surrogate.go by Yawning Angel ==
+[https://gitweb.torproject.org/tor-browser/sandboxed-tor-browser.git/tree/src/cmd/sandboxed-tor-browser/internal/tor/surrogate.go surrogate.go (tor project gitweb)] by Yawning Angel
+
+* golang (build dep, not run dep)
+* AGPL (Achtung!)
+* Part of new/upcoming [https://trac.torproject.org/projects/tor/wiki/doc/TorBrowser/Sandbox/Linux Sandboxed Tor Browser]
+* "Tor control/socks port surrogates." (quoting top comment) Intended to proxy/filter both ControlPort and SOCKSPort of tor process in one bubblewrapped sandbox, while actual Tor Browser runs in another bubblewrapped sandbox.
+* Observed version: [https://gitweb.torproject.org/tor-browser/sandboxed-tor-browser.git/commit/src/cmd/sandboxed-tor-browser/internal/tor/surrogate.go?id=6ff4802a9f4b76c791c2bf864b5446170474215f 6ff4802]
+* So, official TPO Tor Browser variant also has this problem. Oops!
 
 <hr>
 
