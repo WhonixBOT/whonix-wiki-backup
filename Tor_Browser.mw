@@ -47,7 +47,8 @@ If browsers other than Tor Browser are used in Whonix, the user's IP address and
 
 In comparison to other browsers, Tor Browser is optimized for anonymity and has a host of [https://www.torproject.org/projects/torbrowser/design/#firefox-patches privacy-enhancing patches] and add-ons. <ref>See below for a further description of these features.</ref> With Tor Browser, the user "blends in" and shares the [[Fingerprint]] of around [https://metrics.torproject.org/ two million other users], which is advantageous for privacy.
 
-= HTTPS Encryption =
+= Encryption =
+== HTTPS Encryption ==
 It is important to understand the difference between HTTP and HTTPS: <ref>https://en.wikipedia.org/wiki/HTTPS</ref>
 
 <blockquote>HTTPS (also called HTTP over Transport Layer Security (TLS), HTTP over SSL, and HTTP Secure) is a communications protocol for secure communication over a computer network which is widely used on the Internet. HTTPS consists of communication over Hypertext Transfer Protocol (HTTP) within a connection encrypted by Transport Layer Security, or its predecessor, Secure Sockets Layer. The main motivation for HTTPS is authentication of the visited website and protection of the privacy and integrity of the exchanged data.</blockquote>
@@ -62,13 +63,16 @@ In the context of Tor Browser, this means users should prefer HTTPS instead of H
 
 As an example, the screenshot below is how the browser looks when visiting the Whonix website. <ref>https://www.whonix.org</ref>
 
+'''A Secure Connection to www.whonix.org'''
 [[File:HTTPS-website-example.png|800px]]
 
 Take notice of the small area on the left-hand side of the address bar. Indicators of an encrypted connection are  <code>www.whonix.org</code> is highlighted with a padlock and "Secure Connection" in green writing, and the URL begins with ''https://'' instead of ''http://''.
 
 Try to only use services providing HTTPS when sensitive information is sent or received. Otherwise, passwords,  financial / personal information or other sensitive data can be easily stolen or intercepted by eavesdroppers. HTTP webpage contents can also be modified on its way to your browser for malicious purposes.
 
-The following figures from EFF provide an overview of HTTP/HTTPS connections with and without Tor, and what information is visible to various third parties. The descriptors are as follows: <ref>https://www.eff.org/pages/tor-and-https</ref>
+'''HTTP / HTTPS Connections with and without Tor'''
+
+The following figures from EFF provide an overview of HTTP / HTTPS connections with and without Tor, and what information is visible to various third parties. The descriptors are as follows: <ref>https://www.eff.org/pages/tor-and-https</ref>
 
 <blockquote>Potentially visible data includes: the site you are visiting (SITE.COM), your username and password (USER/PW), the data you are transmitting (DATA), your IP address (LOCATION), and whether or not you are using Tor (TOR).</blockquote> 
 
@@ -88,7 +92,46 @@ The following figures from EFF provide an overview of HTTP/HTTPS connections wit
 
 [[File:without-tor-https.png|800px]]
 
-= HTTPS Everywhere =
+== End-to-End Encryption ==
+
+Whenever possible, users are encouraged to stay within the Tor network for communications and web browsing via available <i>.onion</i> addresses. These services are commonly referred to as "hidden services", even when their location is publicly known. <ref>https://riseup.net/en/security/network-security/tor/onionservices-best-practices</ref>
+
+URLs ending in the <i>.onion</i> extension provide a superior level of security and privacy, since the user's connection forms a completely encrypted tunnel that incorporates [https://en.wikipedia.org/wiki/Perfect_forward_secrecy perfect forward secrecy (PFS)]. PFS means the compromise of long-term keys does not compromise past session keys. As a consequence, past encrypted communications and sessions cannot be retrieved and decrypted if long-term secrets keys or passwords are compromised in the future by adversaries. <ref>This does not however defend against improved cryptanalysis that breaks underlying ciphers being used, for example, by the emergence of quantum computers. Only post-quantum ciphers resistant to these attacks will prevail.</ref> 
+
+Additional benefits of hidden services include: <ref>https://www.torproject.org/docs/hidden-services.html.en</ref> 
+
+* Prevention of possible passive surveillance by network observers and the Tor exit node when using plain Tor + HTTPS. Adversaries cannot (easily) determine which destination the users are connecting from/to.
+* Hidden services establish "rendezvous points" in the Tor network for web services whereby neither the hosting service or the user know each other's network identity.
+* Hidden services can be combined with SSL/TLS to provide additional protection. Only a handful of services currently provide this service, including DuckDuckGo: https://3g2upl4pq6kufc4m.onion and ProtonMail: https://protonirockerxow.onion. <ref>Extra layers of encryption are not really necessary, since a completely encrypted tunnel is already formed (but it certainly doesn't hurt). Until recently, these certificates would not validate because of the *.onion hostname.</ref> <ref>https://riseup.net/en/security/network-security/tor/onionservices-best-practices</ref>
+* Hidden services do not use the insecure DNS system. Strong authentication comes from the self-authenticating address: the address itself forms a cryptographic proof of the <i>.onion's</i> identity. <ref>https://blog.torproject.org/blog/cooking-onions-names-your-onions</ref> <ref>This is why onion addresses appear absurdly long and random.</ref>
+
+
+'''How Connections with Hidden Services Work'''
+
+To understand how hidden services work, a simple overview of the process is outlined below. <ref>https://www.torproject.org/docs/hidden-services.html.en</ref>
+
+'''Step 1.''' Hidden services advertise their existence in the Tor network. This is done by randomly picking some relays and building circuits, before asking these relays to act as introduction points by providing the service's public key. The hidden server's location (IP address) is shielded.
+
+'''Step 2.''' The hidden service generates a hidden service descriptor containing the public key and a summary of introduction points. This is signed with its private key and then uploaded to a distributed hash table, so users can find the service when searching for a <i>.onion</i> resource.  <ref>This is currently a 16 character name, but will be increased to 54 characters in the near-medium term to upgrade the cryptographic strength of <i>.onion</i> services. See: https://blog.torproject.org/blog/cooking-onions-names-your-onions </ref> This also forms an important verification mechanism for the user to confirm they are talking to the right hidden service.
+
+'''Step 3.''' The user who learnt that the <i>.onion</i> resource exists requests more information from the database, by downloading the descriptor from the distributed hash table. If the descriptor exists, the user now knows the introduction points and the right public key to use. The user also creates a Tor circuit to another randomly picked relay to use as a rendezvous point (with a one-time secret).
+
+'''Step 4.''' If the descriptor is present and the rendezvous point is ready, the user assembles an "introduce message". This is encrypted to the hidden service's public key and includes the rendezvous point address and the one-time secret. The user requests this be delivered to the hidden service (via a Tor circuit) anonymously, so the IP address remains hidden.
+
+'''Step 5.''' The hidden service decrypts the user's introduce message and find the rendezvous point address and one-time secret in it. The service creates a circuit to the rendezvous point and sends the one-time secret to it in a rendezvous message. The hidden service <i>must</i> use the same set of entry guards when creating circuits, to prevent attackers from forcing hidden services to use corrupt relays as an entry node (and learning the hidden server's IP address via timing analysis).
+
+'''Step 6.''' The rendezvous point notifies the user the successful connection has been established. Both the user and hidden service use their circuits to the rendezvous piont for communication. The rendezvous point relays end-to-end encrypted messages from user to service and vice versa.
+
+Use of <i>.onion</i> addresses leads to a 6 relay arrangement: 3 picked by the user (with the third used as a rendezvous point), and 3 picked by the hidden service. The final successful connection between a user and a hidden service is represented in the picture below.
+
+'''Alice (User) and Bob (Hidden Service) Successful Connection'''
+
+''TO DO: Capture and insert this screen shot below.''
+
+https://www.torproject.org/images/THS-6.png
+
+= Tor Browser Add-Ons =
+== HTTPS Everywhere ==
 
 [[File:httpseverywhere.png|150px|HTTPS Everywhere logo|thumb]]
 
@@ -100,6 +143,14 @@ To learn more about HTTPS Everywhere, visit:
 
 * The [https://www.eff.org/https-everywhere HTTPS Everywhere homepage].
 * The [https://www.eff.org/https-everywhere/faq/ HTTPS Everywhere FAQ].
+
+== NoScript ==
+
+[[Image:noscript.png|NoScript logo|thumb]]
+
+NoScript also comes with Tor Browser and provides many protections, even though JavaScript is enabled by default. You shouldn't mess with NoScript settings in Tor Browser unless you exactly know what you are doing.
+
+For more information you can refer to the NoScript [http://noscript.net/ website] and [http://noscript.net/features features].
 
 = Torbutton =
 
@@ -133,14 +184,6 @@ Having all JavaScript disabled by default would disable a lot of harmless and po
 That's why '''JavaScript is enabled by default''' in Tor Browser. We consider this as a necessary compromise between security and usability and as of today we are not aware of any JavaScript that would compromise Whonix anonymity.
 
 For more technical details you can refer to the Torbutton design document.<ref>https://www.torproject.org/torbutton/en/design/</ref> Another related discussion justifying why JavaScript is enabled by default in Tor Browser was on tor-talk, "Tor Browser disabling Javascript anonymity set reduction".<ref>https://lists.torproject.org/pipermail/tor-talk/2012-May/024227.html</ref>
-
-= NoScript =
-
-[[Image:noscript.png|NoScript logo|thumb]]
-
-NoScript also comes with Tor Browser and provides many protections, even though JavaScript is enabled by default. You shouldn't mess with NoScript settings in Tor Browser unless you exactly know what you are doing.
-
-For more information you can refer to the NoScript [http://noscript.net/ website] and [http://noscript.net/features features].
 
 = Tips =
 == Maximizing Browser Window ==
