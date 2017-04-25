@@ -1,1 +1,53 @@
-.
+<b>MAC Address Randomization: Not as Random as You Think</b>
+
+For privacy-minded individuals, randomization of Media Access Control (MAC) addresses for Wi-Fi networks and mobile devices has long been touted as a standard defensive technique. However, recent research <ref>https://arxiv.org/pdf/1703.02874v1.pdf</ref> suggests that major flaws in implementation have left smartphone users defenseless and vulnerable to exploitation.
+
+<b>What is MAC Address Randomization?</b>
+
+All network interfaces on networked devices have a factory-assigned MAC address which is hard-coded on a network interface controller. In the case of smartphones using 802.11 (Wi-Fi) radio specifications, <ref>https://en.wikipedia.org/wiki/IEEE_802.11</ref> devices have a 48-bit link-layer MAC address that functions as a globally unique identifier. The MAC address is sent in every link-layer frame sent to or from the mobile device. <ref>https://arxiv.org/pdf/1703.02874v1.pdf</ref>
+
+Smartphone behavior is distinct from general computing network cards (both wired and wireless), as the MAC address used to assign an address to your computer on the local network is not passively sent to computers beyond the local router. This means the MAC address is not traceable unless logged by other computers on the network. <ref>Unfortunately, due to weaknesses in current spoofing methods it is likely the MAC address can be enumerated via the physical characteristics of the Wi-Fi card. https://www.whonix.org/wiki/Computer_Security_Education#Introduction_2</ref> 
+<ref>Spoofing is only necessary if you expect to travel with your laptop or PC. It is not required for home PCs that do not change locations. For further information on spoofing MAC addresses in Whonix, see https://www.whonix.org/wiki/Computer_Security_Education#MAC_Address</ref>
+
+Smartphone behavior has grave privacy implications. Any network observer can eavesdrop on nearby Wi-Fi traffic, with pinpointing of this traffic to a uniquely identified device. <ref>https://arxiv.org/pdf/1703.02874v1.pdf</ref> In addition to broadcasting of the MAC address ID, smartphones constantly send probe requests that broadcast at a semi-constant rate, posing an even greater surveillance risk: <ref>https://arxiv.org/pdf/1703.02874v1.pdf</ref> 
+
+<blockquote>... wireless devices identify access points within close proximity. Traditionally, devices perform active scanning where they broadcast probe request frames asking nearby APs to identify themselves and respond with 802.11 parameter  information required for connection setup. These probe request frames require a source MAC address, but if an 802.11 device uses its globally unique MAC address then it is effectively broadcasting its identity at all times to any wireless receiver that is nearby. Wireless device users can then easily be tracked across temporal and spatial boundaries as their devices are transmitting with their unique identity.</blockquote>
+
+In an attempt to solve this problem, most major smartphone device manufacturers and operating systems (Android, iOS etc.) have implemented protocols to create temporary, randomized MAC addresses that are distinct from the true global identifier. Randomized, pseudonym addresses are changed periodically to restrict third party tracking. <ref>https://en.wikipedia.org/wiki/MAC_spoofing#MAC_Address_Randomization_in_WiFi</ref>
+
+In theory, observers of network traffic (like ISPs) should be prevented from singling out smartphone traffic or identifying the physical location from other nearby devices, because randomized MAC addresses shouldn't be linkable to the previous address. <ref>https://arxiv.org/pdf/1703.02874v1.pdf</ref> 
+
+<b>The Flawed MAC Address Randomization Implementation</b>
+
+Transportation of network traffic without a static ID is a common sense approach for privacy advocates. Unfortunately, a recent study by the US Naval Academy shows the implementation of this technique in smartphones is seriously flawed across every OS platform, device manufacturer and model. 
+
+Using real-world datasets, the 2017 study found: <ref>https://arxiv.org/pdf/1703.02874v1.pdf</ref>
+
+* Randomization techniques and schemes were easily identified from large collections of wireless traffic.
+* Adoption rates for MAC randomization are low, particularly for Android devices. <ref>Possibly due to chipset and firmware incompatibilities.</ref>
+* Passive and active techniques for determining true global identifiers is a trivial task due to flawed MAC randomization implementations, particularly for Android devices. <ref>Notably, Samsung devices were never observed to perform MAC randomization, despite being the leading manufacturer of Android devices.</ref>
+* The global MAC address was discoverable via a "control frame attack". This allows tracking/surveillance for all known devices, irrespective of the OS, manufacturer, device type or randomization scheme.
+
+
+Smartphone chipsets were discovered to have a flaw in how they handled low-level control frames, allowing an identification accuracy of 100%. Considering previous studies exhibited "only" a 50% accuracy rate, and Android devices were susceptible even when Wi-Fi was disabled or Airplane Mode enabled, this is a devastating result for user privacy. <ref>https://securityintelligence.com/news/mac-address-randomization-gets-clobbered/</ref>
+
+<b>Conclusion</b>
+
+Unfortunately, smartphone MAC address randomization policies are not universally adopted, nor particularly effective at eliminating privacy risks. Network adversaries currently have a smaller test set to contend with, making their job of identification easier. <ref>https://arxiv.org/pdf/1703.02874v1.pdf</ref>
+
+Standardized MAC address randomization needs to be correctly implemented on any mobile device using Wi-Fi, with the entire length of the MAC field used as randomization input. Unique methods of randomization simply increase the attacker's chances of deanonymizing a user. <ref>https://arxiv.org/pdf/1703.02874v1.pdf</ref>
+
+Other critical changes for smartphone user privacy include: <ref>https://arxiv.org/pdf/1703.02874v1.pdf</ref> <ref>See the original paper for further discussion of these issues.</ref>
+
+* Random addresses for every probe request.
+* Removal of sequencing numbers from probe requests. 
+* Removal of global MAC addresses from probe requests.
+* Elimination of directed probe requests for cellular offloading.
+* Redesign of chipset firmware to prevent RTS frames eliciting a CTS response while in State 1.
+
+
+Convincing device manufacturers to implement MAC address randomization consistently across all devices is a large and improbable undertaking. <ref>https://securityintelligence.com/news/mac-address-randomization-gets-clobbered/</ref> Without a solution on the horizon, users of mobile devices should expect to be uniquely fingerprinted. User behavior on mobile devices should be adjusted accordingly in response to this clear and present danger to user privacy.
+
+<b>Primary Source</b>
+
+Martin, J. et al. (2017). "A Study of MAC Address Randomization in Mobile Devices and When it Fails". <i>US Naval Academy</i>.
