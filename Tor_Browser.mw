@@ -156,7 +156,7 @@ The following figures from EFF provide an overview of HTTP / HTTPS connections w
 
 [[File:without-tor-https.png|800px]]
 
-== End-to-End Encryption ==
+== Hidden Services Encryption ==
 
 Whenever possible, users are encouraged to stay within the Tor network for communications and web browsing via available <i>.onion</i> addresses. These services are commonly referred to as "hidden services", even when their location is publicly known. <ref>https://riseup.net/en/security/network-security/tor/onionservices-best-practices</ref>
 
@@ -358,11 +358,108 @@ Whonix has modified environment variables to prevent visibility of the "Open Net
 
 Whonix has also removed the [[Tor_Browser#Tor_Circuit_View|Tor Circuit View]] for security reasons. Normally, Torbutton shows the three Tor relays used for the website in the current tab. This includes the IP addresses of each and the countries they are located in, with the node immediately above the "Internet" node reflecting the Tor exit relay. <ref>https://tails.boum.org/doc/anonymous_internet/Tor_Browser/index.en.html</ref>
 
-= User Tips =
-== Successful Tor Connection ==
-If you have successfully launched Tor Browser, <i>check.torproject.org</i> should show the following message.
-[[File:This-Browser-is-Using-Tor.png|800px|Tor Browser, privacy by design. Fighting web fingerprinting and linkability.|thumb]]
+= Tor Browser: How-To =
+== Start Tor Browser ==
+{{Tor_Browser_Start}}
 
+If you have successfully launched Tor Browser, <code>check.torproject.org</code> should show the following message.
+
+<b>Successful Tor Browser Connection</b>
+[[File:This-Browser-is-Using-Tor.png|800px]]
+
+== File Downloads ==
+Lets say you wanted to download this image using Tor Browser. By default the download path going to be <code>/home/user/.tb/tor-browser/Browser/Downloads</code>. It is inconvenient to navigate to this sub sub sub folder.
+
+[[File:tbbd.png|600px]]
+
+To make things simpler, save files directly inside <code>/home/user/Downloads</code>.
+
+Go to about:preferences in Tor Browser.
+
+[[File:tbbd6.png|600px]]
+
+Change the default Download folder.
+
+[[File:tbbd7.png|600px]]
+
+Change the setting to <code>Safe files to</code>.
+
+[[File:tbbd8.png|600px]]
+
+Done. Your files should now be downloaded to <code>/home/user/Downloads</code>. You can navigate there using dolphin or konsole.
+
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+If you stored files inside the "wrong" sub sub sub folder, and want to access you file anyhow, please press expand on the right.
+<div class="mw-collapsible-content">
+Start dolphin.
+
+Now in order to go to your downloadable path using dolphin please follow the images. First we need to enable showing hidden files.
+
+[[File:tbbd2.png|600px]]
+
+Double click on <code>.tb</code> folder.
+
+[[File:tbbd3.png|600px]]
+
+Get into the following path.
+
+[[File:tbbd4.png|600px]]
+
+Now you are going to find what you have downloaded.
+
+[[File:tbbd5.png|600px]]
+</div>
+</div>
+
+== Browser Language ==
+If you want the browser interface in a different language than English, see [[Language]].
+
+== Local Connections ==
+'''Note:''' Accessing local application interfaces on 127.0.0.1 it is no longer possible due to a [https://trac.torproject.org/projects/tor/ticket/10419 change] in Tor Browser by The Tor Project. The configured exception means a small trade-off in privacy but is much safer than using another browser. (See [[#Local Connections Exception Threat Analysis]].)
+
+To configure an exception for local connections in Tor Browser:
+
+<pre>
+Preferences -> Advanced -> Network | Connection Settings... -> No Proxy for: "127.0.0.1". Then, click on "OK" 
+</pre>
+
+<ref>
+Alternatively, can could [[#Remove_Proxy_Settings|remove Tor Browser's proxy settings]], but then you would be vulnerable to the same fingerprinting issues (see [[#Local Connections Exception Threat Analysis]]). Additionally, you would be vulnerable to the fingerprinting issues that are opened up by [[#Remove_Proxy_Settings|remove Tor Browser's proxy settings]].
+</ref>
+
+Web HTTP(S)/SOCKS proxies have different instructions and will not work with these steps, see [[#Tor Browser Proxy Configuration|Tor Browser Proxy Configuration]].
+
+'''Recommendations'''
+
+For better anonymity.
+
+* Surf with <u>J</u>ava<u>S</u>cript (JS) disabled in Tor Browser and enable only when needed - mitigates these browser fingerprinting issues completely.
+* Set passwords for WebGUIs listening on localhost.
+* Run sensitive daemons with local WebGUIs on a separate dedicated Whonix-Workstation + virtual network instance.
+
+== Harden Tor Browser ==
+=== Tor Browser Series and Settings ===
+
+TO DO: Reference Security Guide entry and link to sandboxed Tor Browser section
+
+=== AppArmor Confinement ===
+To protect the system and your data from some types of attack against Tor Browser, you could consider to install Whonix's Tor Browser [[AppArmor]] profile.
+
+As a consequence, it can only read and write to a limited number of folders. This is why you might face Permission denied errors, for example if you try to download files to the {{Code2|home}} folder. You can save files from Tor Browser to the {{Code2|~/Downloads}} folder that is located in the {{Code2|home}} folder. If you want to upload files with Tor Browser, copy them to that folder first.
+
+{{Update}}
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+Install the {{Code2|apparmor-profile-torbrowser}} package.
+
+{{CodeSelect|code=
+sudo apt-get install apparmor-profile-torbrowser
+}}
+
+= User Tips =
 == Maximizing Browser Window ==
 It [https://trac.torproject.org/projects/tor/ticket/7255 is] better for privacy and anonymity not to maximize the Tor Browser window. <ref>
 http://forums.whonix.org/t/should-still-recommend-against-maximizing-tor-browser-window
@@ -508,53 +605,6 @@ The following symbol is quite useful. It indicates, that [[#Torbutton|Torbutton]
 A screenshot of about:tor, that is as useful as the above symbol:  <br />
 [[File:Tor Browser Internal Updater About Tor.png]]
 
-= Start Tor Browser =
-{{Tor_Browser_Start}}
-
-= File Downloads =
-Lets say you wanted to download this image using Tor Browser. By default the download path going to be <code>/home/user/.tb/tor-browser/Browser/Downloads</code>. It is inconvenient to navigate to this sub sub sub folder.
-
-[[File:tbbd.png|600px]]
-
-To make things simpler, save files directly inside <code>/home/user/Downloads</code>.
-
-Go to about:preferences in Tor Browser.
-
-[[File:tbbd6.png|600px]]
-
-Change the default Download folder.
-
-[[File:tbbd7.png|600px]]
-
-Change the setting to <code>Safe files to</code>.
-
-[[File:tbbd8.png|600px]]
-
-Done. Your files should now be downloaded to <code>/home/user/Downloads</code>. You can navigate there using dolphin or konsole.
-
-<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
-If you stored files inside the "wrong" sub sub sub folder, and want to access you file anyhow, please press expand on the right.
-<div class="mw-collapsible-content">
-Start dolphin.
-
-Now in order to go to your downloadable path using dolphin please follow the images. First we need to enable showing hidden files.
-
-[[File:tbbd2.png|600px]]
-
-Double click on <code>.tb</code> folder.
-
-[[File:tbbd3.png|600px]]
-
-Get into the following path.
-
-[[File:tbbd4.png|600px]]
-
-Now you are going to find what you have downloaded.
-
-[[File:tbbd5.png|600px]]
-</div>
-</div>
-
 = Not installed by Default =
 Reasons why Tor Browser is installed by default in Whonix-Workstation in [[Qubes|Qubes-Whonix]], but not in [[Non-Qubes-Whonix]]. If you are interested in the reasons why, see footnote. <ref>
 {{Anchor|Not_installed_by_Default_Footnote}}
@@ -574,52 +624,9 @@ This will change in Whonix 14. <ref>
 * [https://trac.torproject.org/projects/tor/ticket/19911 Whonix project official licensee of The trademarks]
 </ref>
 
-= Local Connections =
-'''Note:''' Accessing local application interfaces on 127.0.0.1 it is no longer possible due to a [https://trac.torproject.org/projects/tor/ticket/10419 change] in Tor Browser by The Tor Project. The configured exception means a small trade-off in privacy but is much safer than using another browser. (See [[#Local Connections Exception Threat Analysis]].)
-
-To configure an exception for local connections in Tor Browser:
-
-<pre>
-Preferences -> Advanced -> Network | Connection Settings... -> No Proxy for: "127.0.0.1". Then, click on "OK" 
-</pre>
-
-<ref>
-Alternatively, can could [[#Remove_Proxy_Settings|remove Tor Browser's proxy settings]], but then you would be vulnerable to the same fingerprinting issues (see [[#Local Connections Exception Threat Analysis]]). Additionally, you would be vulnerable to the fingerprinting issues that are opened up by [[#Remove_Proxy_Settings|remove Tor Browser's proxy settings]].
-</ref>
-
-Web HTTP(S)/SOCKS proxies have different instructions and will not work with these steps, see [[#Tor Browser Proxy Configuration|Tor Browser Proxy Configuration]].
-
-'''Recommendations'''
-
-For better anonymity.
-
-* Surf with <u>J</u>ava<u>S</u>cript (JS) disabled in Tor Browser and enable only when needed - mitigates these browser fingerprinting issues completely.
-* Set passwords for WebGUIs listening on localhost.
-* Run sensitive daemons with local WebGUIs on a separate dedicated Whonix-Workstation + virtual network instance.
-
 = Browser Plugins / Flash / Java =
 
 See [[Browser Plugins]].
-
-= Browser Language =
-If you want the browser interface in a different language than English, see [[Language]].
-
-= AppArmor Confinement =
-To protect the system and your data from some types of attack against Tor Browser, you could consider to install Whonix's Tor Browser [[AppArmor]] profile.
-
-As a consequence, it can only read and write to a limited number of folders. This is why you might face Permission denied errors, for example if you try to download files to the {{Code2|home}} folder. You can save files from Tor Browser to the {{Code2|~/Downloads}} folder that is located in the {{Code2|home}} folder. If you want to upload files with Tor Browser, copy them to that folder first.
-
-{{Update}}
-
-{{CodeSelect|code=
-sudo apt-get update
-}}
-
-Install the {{Code2|apparmor-profile-torbrowser}} package.
-
-{{CodeSelect|code=
-sudo apt-get install apparmor-profile-torbrowser
-}}
 
 = Advanced Topics =
 == Sandboxed Tor Browser ==
