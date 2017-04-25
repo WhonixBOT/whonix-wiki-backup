@@ -622,64 +622,64 @@ sudo apt-get install apparmor-profile-torbrowser
 }}
 
 = Advanced Topics =
-== Tor Browser Hardened ==
-
-With all major hardening features (selfrando and sandboxing) becoming part of the mainline version of Tor Browser, there is discussion among TBB devs to drop or rename the hardened version name to debug version.<ref>https://forums.whonix.org/t/hardened-tor-browser-bundle-not-as-hardened-you-think-soon-becoming-extinct/3582/3</ref><ref>https://lists.torproject.org/pipermail/tbb-dev/2017-February/000454.html</ref>
-
-Debug features like ASan are not suited for security and are extremely resource intensive.
-
-Note that sandboxing is only available in the 64-bit versions of Tor Browser only.
-
-== Tor Browser Sandboxed ==
-
+== Sandboxed Tor Browser ==
 === Introduction ===
+Note: This is only available for 64-bit Linux users currently.
 
-A sandbox is a secure environment in which you can run the Tor Browser to mitigate exploit vectors which would otherwise deanonymize you or infect your computer. For instance, sandboxing reduces the opportunities for an attacker to easily identify real IP and MAC addresses, install malware, or browse your files.<ref>https://blog.torproject.org/blog/q-and-yawning-angel</ref> In simple terms, the Tor Browser runs in a limited awareness container that is prevented from interacting with the rest of your computer. The spate of recent attacks on the Tor Browser in the wild suggest this is a sensible approach for cautious users or those facing significant risks.
+The "hardened" Tor Browser has been deprecated and major features like Selfrando memory randomization are now part of the alpha series and planned for eventual mainline adoption. Consequently, The Tor Project recommends users seeking a higher security solution should default to the sandboxed Tor Browser: <ref>https://blog.torproject.org/blog/discontinuing-hardened-tor-browser-series</ref>. <ref>Special debug builds will now be used instead of shipping ASan in regular builds. This is beneficial because ASan has a debugging, rather than a security focus, and is extremely resource intensive.</ref>
 
-The Tor Browser sandbox is compatible with either the "release", "alpha" or "hardened" Tor Browser series. However, the sandboxed "hardened" Tor Browser is the combination least-tested by Tor developers.<ref>https://blog.torproject.org/blog/tor-browser-65a6-hardened-released</ref>
+<blockquote>While the Sandboxed Tor Browser is currently in an experimental state itself, we feel that it provides much better safeguards against exploitation than the features we shipped in the hardened series.</blockquote>
+
+A sandbox is a secure environment for running Tor Browser which mitigates exploit vectors which would otherwise deanonymize the user or infect their computer. For instance, sandboxing reduces the opportunities for an attacker to easily identify real IP and MAC addresses, install malware, or browse user files.<ref>https://blog.torproject.org/blog/q-and-yawning-angel</ref> In simple terms, Tor Browser runs in a limited awareness container that is prevented from interacting with the rest of the user's computer. The spate of recent attacks on Tor Browser in the wild suggest this is a sensible approach for cautious users or those facing significant risks.
+
+The Tor Browser sandbox is compatible with either the stable or alpha Tor Browser series, but it is incompatible with grsec kernels. <ref>https://blog.torproject.org/blog/tor-browser-65a6-hardened-released</ref>
 
 === Sandboxing Effects on Tor Browser Functionality ===
 
 Sandboxing improves security, but some functionality is lost inadvertently or by design. Also, some functions like sound must be optionally configured. In early 2017, broken items include:<ref>https://trac.torproject.org/projects/tor/wiki/doc/TorBrowser/Sandbox/Linux</ref>
 
-* Foreign language support;
-* The meek pluggable transport; and
+* Foreign language support.
+* The meek pluggable transport.
 * Manual checks for Tor Browser updates.
 
 
 The Tor Browser sandbox is unlikely to ever support:
 
-* The FTE pluggable transport;
-* Hardware-accelerated 3D rendering;
-* Printing, except to a file;
-* Connections outside of the Tor network; and
-* Compatibility of the "hardened" Tor Browser with a grsec kernel (due to ASAN/Pax conflicts).
+* The FTE pluggable transport.
+* Hardware-accelerated 3D rendering.
+* Printing, except to a file.
+* Connections outside of the Tor network.
+* Compatibility of Tor Browser with a grsec kernel (due to ASAN/Pax conflicts).
 
 
 Manual configuration changes are required for: audio support, the Tor ciruit display (already disabled in Whonix), and installs/updates of Tor Browser add-ons. By design: fonts are limited to a minimal set, plug-ins like Flash or Silverlight will not work, users will not be able to see downloaded files, and further add-ons cannot be enabled without sandbox configuration changes.
 
 === Sandboxing Tor Browser in Non-Qubes-Whonix ===
 
-Warning: these instructions are extremely alpha and require a 64-bit version of Whonix (Whonix 14) to work. Testers or advanced users only!
+'''Warning:''' These instructions are extremely alpha and require a 64-bit version of Whonix (Whonix 14) to work. Testers or advanced users only!
 
 ==== Tor Browser Sandbox Dependencies ====
 
-In order to install and run the sandbox you need:
+There are several dependencies in order to install and run the sandbox:
 
-* Bubblewrap from Debian Jessie backports;
-* A newer (Whonix-14-developers-only) version of the control-port-filter-python for Tor cookie control protocol authentification; and <ref>https://forums.whonix.org/t/tor-browser-sandbox-linux-alpha-coming-soon/3060</ref>
+* Bubblewrap from Debian Jessie backports.
+* A newer (Whonix-14-developers-only) version of the control-port-filter-python for Tor cookie control protocol authentification. <ref>https://forums.whonix.org/t/tor-browser-sandbox-linux-alpha-coming-soon/3060</ref>
 * ''Optional:'' Libnotify4 for desktop notifications about events.
 
 
-'''1. Boot your Whonix-Workstation VM'''
+'''1. Boot Whonix-Workstation'''
 
 '''2. Add jessie-backports to sources.list'''
 
-    sudo su -c "echo -e 'deb http://http.debian.net/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
+{{CodeSelect|code=
+sudo su -c "echo -e 'deb http://http.debian.net/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
+}}
 
-Or to use the .onion mirror:
+Or to use the .onion mirror.
 
-    sudo su -c "echo -e 'deb http://vwakviie2ienjx6t.onion/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
+{{CodeSelect|code=
+sudo su -c "echo -e 'deb http://vwakviie2ienjx6t.onion/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
+}}
 
 '''3. Use Apt-pinning Before Installing Dependencies'''
 
@@ -687,17 +687,23 @@ Or to use the .onion mirror:
 
 '''4. Update the Package Lists and Install Bubblewrap'''
 
-    sudo apt-get update
+{{CodeSelect|code=
+sudo apt-get update
+}}
 
-    sudo apt-get -t jessie-backports install bubblewrap
+{{CodeSelect|code=
+sudo apt-get -t jessie-backports install bubblewrap
+}}
 
-Note: golang is not needed unless manually building the sandbox from source. lib-seccomp dependencies are no longer required for v0.0.3 of the sandbox.
+Note: golang is not needed unless manually building the sandbox from source. lib-seccomp dependencies are no longer required for since v0.0.3 of the sandbox.
 
 '''5. ''Optional:'' Install Libnotify4 for Desktop Notifications'''
 
-    sudo apt-get install libnotify4
+{{CodeSelect|code=
+sudo apt-get install libnotify4
+}}
 
-Note: the Adwaita Gtk+-2.0 theme is already installed in the Whonix template. 
+Note: The Adwaita Gtk+-2.0 theme is already installed in the Whonix template. 
 
 ==== Download the Tor Browser Sandbox ====
 
@@ -705,57 +711,80 @@ Note: the Adwaita Gtk+-2.0 theme is already installed in the Whonix template.
 
 For later releases, the Tor Project sandbox binaries and key files can be found [https://www.torproject.org/projects/torbrowser.html.en#downloads-alpha here].
 
-In the Whonix-Workstation VM, open a terminal and run:
+In the Whonix-Workstation, open a terminal and run.
 
-    wget https://dist.torproject.org/torbrowser/7.0a1/sandbox-0.0.3-linux64.zip
-    wget https://dist.torproject.org/torbrowser/7.0a1/sandbox-0.0.3-linux64.zip.asc
+{{CodeSelect|code=
+wget https://www.torproject.org/dist/torbrowser/7.0a3/sandbox-0.0.6-linux64.zip
+}}
+
+{{CodeSelect|code=
+wget https://www.torproject.org/dist/torbrowser/7.0a3/sandbox-0.0.6-linux64.zip.asc
+}}
 
 '''2. Download the Tor Project Signing Key and Verify the Zip File'''
 
-In the terminal, run:
+In the terminal, run.
 
-    gpg --recv-keys "EF6E 286D DA85 EA2A 4BA7 DE68 4E2C 6E87 9329 8290"
-    gpg --verify sandbox-0.0.3-linux64.zip.asc
+{{CodeSelect|code=
+gpg --recv-keys "EF6E 286D DA85 EA2A 4BA7 DE68 4E2C 6E87 9329 8290"
+}}
 
-The output should show a good signature from the Tor developers and be similar to this:
+{{CodeSelect|code=
+gpg --verify sandbox-0.0.6-linux64.zip.asc
+}}
 
-    gpg: Signature made Tue 24 Jan 2015 09:29:09 AM CET using RSA key ID D40814E0
-    gpg: Good signature from "Tor Browser Developers (signing key) "
-    gpg: WARNING: This key is not certified with a trusted signature!
-    gpg: There is no indication that the signature belongs to the owner.
-    Primary key fingerprint: EF6E 286D DA85 EA2A 4BA7  DE68 4E2C 6E87 9329 8290
+The output should show a good signature from the Tor developers and be similar to this.
+
+<pre>
+gpg: Signature made Tue 24 Jan 2015 09:29:09 AM CET using RSA key ID D40814E0
+gpg: Good signature from "Tor Browser Developers (signing key) "
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg: There is no indication that the signature belongs to the owner.
+Primary key fingerprint: EF6E 286D DA85 EA2A 4BA7  DE68 4E2C 6E87 9329 8290
+</pre>
 
 If you receive a bad signature warning, delete the files, rotate your Tor circuits, and download them again.
 
-'''3. Unzip the sandbox'''
+'''3. Unzip the Sandbox'''
 
-In the terminal, run:
+In the terminal, run.
 
-    unzip sandbox-0.0.3-linux64.zip
+{{CodeSelect|code=
+unzip sandbox-0.0.6-linux64.zip
+}}
 
 ==== Launching sandboxed-tor-browser ====
 
-To start the sandbox, open a terminal and run:
+To start the sandbox, open a terminal and run.
 
-    cd sandbox
-    ./sandboxed-tor-browser
+{{CodeSelect|code=
+cd sandbox
+}}
 
-When prompted, select the Tor Browser version you wish to use in your Whonix-Workstation VM.  To check the sandboxed-tor-browser is correctly using the system Tor process run:
+{{CodeSelect|code=
+./sandboxed-tor-browser
+}}
 
-    env | grep TOR
+When prompted, select the Tor Browser version you wish to use in Whonix-Workstation.  To check the sandboxed-tor-browser is correctly using the system Tor process run.
 
-The output should show:
+{{CodeSelect|code=
+env | grep TOR
+}}
 
-    TOR_CONTROL_PORT=9151
+The output should show.
+
+<pre>
+TOR_CONTROL_PORT=9151
+</pre>
 
 Is set as an environment variable.
 
 Important notes:
 
-* sandboxed-tor-browser is also a Tor Browser downloader similar to tb-updated / torbrowser-launcher;
-* Whonix network settings are auto-detected as system Tor. There is no need to manually configure settings; 
-* 32-bit support has been deprecated since version 0.0.2 of the sandbox; and
-* 64-bit only support from sandbox version 0.0.3 onwards means it is only compatible with Whonix 14 (the next Whonix release).
+* sandboxed-tor-browser is also a Tor Browser downloader similar to tb-updated / torbrowser-launcher.
+* Whonix network settings are auto-detected as system Tor. There is no need to manually configure settings.
+* 32-bit support has been deprecated since version 0.0.2 of the sandbox.
+* 64-bit only support since sandbox version 0.0.3 means it is only compatible with Whonix 14 (the next Whonix release).
 
 === Sandboxing Tor Browser in Qubes-Whonix ===
 
