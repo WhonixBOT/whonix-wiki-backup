@@ -533,27 +533,32 @@ Tor Browser language settings are changed in one of three ways:
 For instructions on changing Tor Browser's interface to a language other than English, see [[Language#Tor_Browser]].
 
 == Local Connections ==
-'''Note:''' Accessing local application interfaces on 127.0.0.1 it is no longer possible due to a [https://trac.torproject.org/projects/tor/ticket/10419 change] in Tor Browser by The Tor Project. The configured exception means a small trade-off in privacy but is much safer than using another browser. (See [[#Local Connections Exception Threat Analysis]].)
+=== Configuring an Exception ===
 
-To configure an exception for local connections in Tor Browser:
+Sometimes a user needs to access the local application interface on 127.0.01 in order to run specific applications like I2P. <ref>Since it uses predetermined ports on the localhost.</ref> Due to potential fingerprinting and information leakage risks, this behavior is no longer possible in Tor Browser unless an exception is configured. <ref>https://trac.torproject.org/projects/tor/ticket/10419</ref> <ref>https://trac.torproject.org/projects/tor/ticket/11493</ref>
 
-<pre>
-Preferences -> Advanced -> Network | Connection Settings... -> No Proxy for: "127.0.0.1". Then, click on "OK" 
-</pre>
+To configure an exception for local connections in Tor Browser: <ref>Alternatively, the user can [[#Remove_Proxy_Settings|remove Tor Browser's proxy settings]], but this method is still vulnerable to the same fingerprinting issues as configuring an exception. There are also other factors which will worsen the user's fingerprint, such as the breaking of both stream isolation and the tab isolation by socks user name in Tor Browser.</ref>
 
-<ref>
-Alternatively, can could [[#Remove_Proxy_Settings|remove Tor Browser's proxy settings]], but then you would be vulnerable to the same fingerprinting issues (see [[#Local Connections Exception Threat Analysis]]). Additionally, you would be vulnerable to the fingerprinting issues that are opened up by [[#Remove_Proxy_Settings|remove Tor Browser's proxy settings]].
-</ref>
+<code>Preferences</code> -> <code>Advanced</code> -> <code>Network | Connection Settings...</code> -> <code>No Proxy for: "127.0.0.1"</code> -> <code>click "OK"</code>
 
-Web HTTP(S)/SOCKS proxies have different instructions and will not work with these steps, see [[#Tor Browser Proxy Configuration|Tor Browser Proxy Configuration]].
+Note: Web HTTP(S)/SOCKS proxies have different instructions and will not work with these steps, see [[#Tor Browser Proxy Configuration|Tor Browser Proxy Configuration]]. The configured exception means a small trade-off in privacy, but it is much safer than using another browser. <ref>https://trac.torproject.org/projects/tor/ticket/10419#comment:37</ref>
 
 '''Recommendations'''
 
-For better anonymity.
+For better anonymity:
 
-* Surf with <u>J</u>ava<u>S</u>cript (JS) disabled in Tor Browser and enable only when needed - mitigates these browser fingerprinting issues completely.
-* Set passwords for WebGUIs listening on localhost.
-* Run sensitive daemons with local WebGUIs on a separate dedicated Whonix-Workstation + virtual network instance.
+* Browse with JavaScript disabled in Tor Browser and enable it only when needed. Disabled JavaScript mitigates these browser fingerprinting issues completely.
+* Set passwords for WebGUIs listening on the localhost.
+* Run sensitive daemons with local WebGUIs on a separate, dedicated Whonix-Workstation and virtual network instance.
+* Read the [[#Local_Connections_Exception_Threat_Analysis]] section below.
+
+=== Local Connections Exception Threat Analysis ===
+
+According to [https://bugzilla.mozilla.org/show_bug.cgi?id=354493 this] Firefox ticket, JavaScript can be abused to scan internal networks, fingerprint devices, and make malicious commands to those devices if they have a web interface.
+
+In Whonix, there are no embedded devices attached to an internal network; it is isolated and untrusted. However, malicious Javascript can reveal to an attacker that a service is running on a localhost port. Consequently, this can reduce the user's anonymity set. Further, daemons listening on the localhost can be maliciously misconfigured, but this has limited impact because traffic is still forced through Whonix-Gateway.
+
+For further reading on this topic, see [https://forums.whonix.org/t/workaround-available-i2p-no-longer-works-with-the-latest-tor-browser/182/14 this related Whonix Forum topic] and [https://trac.torproject.org/projects/tor/ticket/11493 Tor Browser bug report].
 
 == Harden Tor Browser ==
 === Tor Browser Series and Settings ===
