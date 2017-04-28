@@ -1043,24 +1043,27 @@ The Tor Browser alpha sandbox is currently blocked in [[Qubes-Whonix]] due to pr
 A recommended interim solution is to use [[Security_Guide#Firejail|Firejail]] to better contain the Tor Browser application.
 
 = Advanced: Custom Homepage =
+It is unclear whether [https://www.whonix.org/old-forum/index.php/topic,1573.0.html setting a custom homepage] in Tor Browser settings will currently work. Previous user attempts lead to the Whonix default homepage being loaded on startup, even though a different homepage was manually set. The custom homepage only appeared following use of the New Identity function. <ref>This is a potential bug since the user-set custom homepage does not overrule the {{Code2|TOR_DEFAULT_HOMEPAGE}} environment variable. No bug has yet been reported.</ref>
 
-As [https://www.whonix.org/old-forum/index.php/topic,1573.0.html reported], setting a custom homepage in Tor Browser settings might not work.
+'''Technical Background'''
 
-Technical background: <ref>
-The [https://github.com/Whonix/whonix-welcome-page whonix-welcome-page] package's file [https://github.com/Whonix/whonix-welcome-page/blob/master/usr/lib/whonix-welcome-page/env_var.sh /usr/lib/whonix-welcome-page/env_var.sh] sets [https://trac.torproject.org/projects/tor/ticket/13835 environment variable to set TorBrowser homepage] {{Code2|TOR_DEFAULT_HOMEPAGE}} to {{Code2|/usr/share/homepage/whonix-welcome-page/whonix.html}}.
+The [https://github.com/Whonix/whonix-welcome-page whonix-welcome-page] package currently sets [https://trac.torproject.org/projects/tor/ticket/13835 the environment variable] {{Code2|TOR_DEFAULT_HOMEPAGE}} to {{Code2|/usr/share/homepage/whonix-welcome-page/whonix.html}} when setting the Tor Browser homepage. This is done via the [https://github.com/Whonix/whonix-welcome-page/blob/master/usr/lib/whonix-welcome-page/env_var.sh bash script file] <ref>Also <i>/usr/lib/whonix-welcome-page/env_var.sh</i></ref> associated with the package.
 
-Perhaps it could be seen as a bug if Tor Browser if a user set custom homepage does not overrule the {{Code2|TOR_DEFAULT_HOMEPAGE}} environment variable? TODO: No bug has been reported at trac.torproject.org yet.
-</ref>
+'''User-set Custom Homepage Solutions'''
 
-To set a custom homepage, you could try to purge the whonix-welcome-page package. <ref>{{Code|sudo apt-get purge whonix-welcome-page}}.</ref> But this is difficult due to technical limitations as explained on the [[Whonix_Debian_Packages|Whonix Debian Packages]] page.
+Three possible options are available (untested):
 
-Alternatively, you could modify {{Code2|/usr/lib/whonix-welcome-page/env_var.sh}}, but these changes would be reverted after upgrade. <ref>
+* Attempting to purge the whonix-welcome-page package. <ref>
+{{CodeSelect|code=
+sudo apt-get purge whonix-welcome-page
+}}
+</ref> This solution is difficult due to technical limitations as explained on the [[Whonix_Debian_Packages|Whonix Debian Packages]] page.
+* Modifying {{Code2|/usr/lib/whonix-welcome-page/env_var.sh}}. <ref>
 {{CodeSelect|code=
 kdesudo kate /usr/lib/whonix-welcome-page/env_var.sh
 }}
-</ref>
-
-Or you could set environment variable {{Code2|TOR_DEFAULT_HOMEPAGE}} to a custom value. Doing so would be similar setting environment variables as explained in [[#Transparent Torification - No Proxy - System Default]].
+</ref> Unfortunately these changes will revert after an upgrade.
+* Setting the environment variable {{Code2|TOR_DEFAULT_HOMEPAGE}} to a custom value. This would have a similar effect as setting environment variables as outlined in [[#Transparent Torification - No Proxy - System Default]].
 
 = Advanced: Custom Configurations =
 '''Note:''' Custom configurations is an advanced topic. Only a small minority of users ever need to apply these actions below.
