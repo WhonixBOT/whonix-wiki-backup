@@ -847,56 +847,31 @@ When using Tor Browser, users <b>should not</b>:
 * Fail to [[#Multiple_Tor_Browser_Instances_and_Whonix-Workstations|compartmentalize]] their [[#Sandboxing_and_DisposableVMs|Tor Browser activities]].
 
 = Whonix Tor Browser Differences =
-== Introduction ==
-The regular Tor Browser and Tor Browser in Whonix slightly differ. The environment Tor Browser is running in has been adjusted by Whonix to work behind the Whonix-Gateway. The network and browser fingerprint however, is the same.
+The regular Tor Browser Bundle and Whonix Tor Browser slightly differ. The reason is Tor Browser must be adjusted by Whonix to work behind Whonix-Gateway. Despite slight environmental variable adjustments, the network and browser fingerprint remain the same.
 
-Tor Browser's internal update check mechanism is untouched and works fine. Default homepage is
+The main Whonix Tor Browser differences can be summarized as follows:
 
-== Whonix Proxy Settings ==
-'''Short''':
-You don't need to change any proxy settings in Tor Browser.
-
-'''Long''': <ref>
-{{Anchor|Whonix Proxy Setting Footnote}}
-([[#Whonix Proxy Setting Footnote|permalink]])<br />
-There is no Tor over Tor in Whonix, which would be [[DoNot#Prevent_Tor_over_Tor_scenarios.|recommended against]], due to Whonix's environment. Whonix does not modify Tor Browser's startup script, defaults, etc. In Whonix-Workstation rinetd listens on {{Code2|127.0.0.1}} {{Code2|9150}} and {{Code2|9151}} (Tor Browser's default ports) and forwards them to Whonix-Gateway {{Code2|10.152.152.10 9150}} (where a Tor SocksPort is listening) and {{Code2|9151}} (where [[Dev/CPFP|Control Port Filter Proxy]] is listening). Tor does not get started by the {{Code2|[https://gitweb.torproject.org/tor-launcher.git tor-launcher]}} Firefox add-on because the {{Code2|[https://trac.torproject.org/projects/tor/ticket/6009 TOR_SKIP_LAUNCH]}} environment variable has been set set to {{Code2|1}}. See also [[Dev/anon-ws-disable-stacked-tor]].
+* The default landing page upon Tor Browser start is set to use a local Whonix resource. <ref>The default Tor Browser Bundle uses <i>about:tor</i> as the landing page. See: https://trac.torproject.org/projects/tor/ticket/13835</ref>
+* The Tor Circuit View and Open Network Settings functions have been [[#Disabled_Torbutton_Functions|disabled]] in Torbutton. The former is [[unsupported]] for security reasons. <ref>This is so Whonix-Workstation does not have access to the information about which Tor middle relay or Tor entry guard [or bridge] are being used. See also: [[Dev/Control_Port_Filter_Proxy#Indicator_for_current_Circuit_Status_and_Exit_IP]]
 </ref>
-
-(If you want to change or remove proxy settings, see [[#Change / Remove Proxy Setting]].)
-
-== More than One Tor Browser in Whonix ==
-For better isolation of different identities. For advanced users. Moved to the [[Advanced_Security_Guide#More_than_one_Tor_Browser_in_Whonix|Advanced Security Guide]].
-
-== Not Installed by Default ==
-Reasons why Tor Browser is installed by default in Whonix-Workstation in [[Qubes|Qubes-Whonix]], but not in [[Non-Qubes-Whonix]]. If you are interested in the reasons why, see footnote. <ref>
-{{Anchor|Not_installed_by_Default_Footnote}}
-
-<u>Reasons why Tor Browser is installed by default in Whonix-Workstation in [[Qubes|Qubes-Whonix]], but not in [[Non-Qubes-Whonix]]</u>. ([[#Not_installed_by_Default_Footnote|link]])<br />
-<br />
-{{Anchor|Licensing reasons}}
+* Tor Browser is installed by default in the [[Qubes|Qubes-Whonix]] Whonix Workstation, but not in [[Non-Qubes-Whonix]] for licensing reasons. This will change in Whonix 14. <ref>
 <u>Licensing reasons</u>:
 
 * Mozilla trademark: https://trac.torproject.org/projects/tor/ticket/10888
 * The Tor Project trademark: https://www.whonix.org/wiki/Dev/TPO_Trademark
-* [https://phabricator.whonix.org/T337 Tor Browser gets installed default since Qubes-Whonix 12], because Qubes-Whonix is built and distributed by the maintainers of Qubes OS, not Whonix. Different laws apply. They are not concerned about the legal implications.
-</ref>
-
-This will change in Whonix 14. <ref>
-* [https://trac.torproject.org/projects/tor/ticket/19652 permission to install Tor Browser by default in Whonix]
+* [https://phabricator.whonix.org/T337 Tor Browser gets installed by default since Qubes-Whonix 12] because Qubes-Whonix is built and distributed by the maintainers of Qubes OS, not Whonix. Different laws apply and they are not concerned about the legal implications.
+</ref> <ref>
+* [https://trac.torproject.org/projects/tor/ticket/19652 Permission to install Tor Browser by default in Whonix]
 * [https://trac.torproject.org/projects/tor/ticket/19911 Whonix project official licensee of The trademarks]
 </ref>
 
-== Unsupported Tor Browser Features ==
-=== Tor Circuit View ===
-([https://trac.torproject.org/projects/tor/ticket/8641#comment:12 screenshot])
 
-This is [[unsupported]] for security reasons. <ref>
-We do not want Whonix-Workstation to have access to the information, which Tor middle relay or Tor entry guard [or bridge] are being used.
-See also: [[Dev/Control_Port_Filter_Proxy#Indicator_for_current_Circuit_Status_and_Exit_IP]]
-</ref>
+Whonix does <i>not</i>:
 
-=== Miscellaneous ===
-* See also [[#Forget_about_Tor_Button.27s_Open_Network_Settings|Forget about Tor Button's Open Network Settings]].
+* Change Tor Browser's [[#Tor_Browser_Internal_Updater|Internal Updater checking mechanism]].
+* Affect the safe operation of Tor. There is no [[DoNot#Prevent_Tor_over_Tor_scenarios.|Tor over Tor scenario]] in the Whonix environment.
+* Modify Tor Browser's startup script, default settings and so on. <ref>In Whonix-Workstation, rinetd listens on {{Code2|127.0.0.1}} {{Code2|9150}} and {{Code2|9151}} (Tor Browser's default ports) and forwards them to Whonix-Gateway {{Code2|10.152.152.10 9150}} (where a Tor SocksPort is listening) and {{Code2|9151}} (where [[Dev/CPFP|Control Port Filter Proxy]] is listening). Tor does not get started by the {{Code2|[https://gitweb.torproject.org/tor-launcher.git tor-launcher]}} Firefox add-on because the {{Code2|[https://trac.torproject.org/projects/tor/ticket/6009 TOR_SKIP_LAUNCH]}} environment variable has been set set to {{Code2|1}}. See also [[Dev/anon-ws-disable-stacked-tor]].</ref>
+* [[#Advanced:_Proxy_Settings|Change or remove proxy settings]] by default.
 
 = Advanced: Sandboxed Tor Browser =
 == Introduction ==
