@@ -301,21 +301,23 @@ Although not recommended, users can add special firewall rules, use pre-configur
 
 === Disable TCP Timestamps ===
 
-Adversaries can remotely access the current uptime of your machine and the host's clock-down to millisecond precision. To avoid this information being passed, it is recommended that you disable TCP timestamps on your systems. The less information attackers can get, the higher the security.
+Note: TCP timestamps provide protection against [https://en.wikipedia.org/wiki/Protection_Against_Wrapped_Sequence_Numbers#TCP_timestamps wrapped sequence numbers]. 
+
+The downside of TCP timestamps is adversaries can remotely calculate the system uptime (and boot time) of the machine and the host's clock down to millisecond precision. These calculated uptimes (and boot times) can help to detect hidden network-enabled operating systems, as well as link spoofed IP and MAC addresses together and more. <ref>http://forensicswiki.org/wiki/TCP_timestamps</ref> 
+
+To prevent this information being available to an adversary, it is recommended that TCP timestamps are disabled on any operating systems being used. The less information available to attackers, the greater the security.
 
 {{Anchor|Linux or Qubes}}
 ==== Qubes ====
-This is the default in Qubes R3.1 and above. <ref>https://github.com/QubesOS/qubes-issues/issues/1344</ref>
+TCP timestamps are disabled by default in Qubes R3.1 and above. <ref>https://github.com/QubesOS/qubes-issues/issues/1344</ref>
 
 ==== Linux ====
 <ref>
-temporary
+Temporary disabling TCP timestamps for testing purposes.
 
-You can skip this Temporary chapter and move on to [[#Permanently]] if you are looking for a permanent solution.
+Note: Users can skip this temporary option and instead apply the chapter's main instructions if a permanent solution is desired.
 
-To dynamically disable TCP timestamping on Linux...
-
-(When using Qubes: in the NetVM.)
+To dynamically disable TCP timestamping on Linux (when using Qubes: in the NetVM).
 
 Become root.
 
@@ -323,7 +325,7 @@ Become root.
 sudo su
 }}
 
-Disable TCP timestamping.
+Disable TCP timestamps.
 
 {{CodeSelect|code=
 echo 0 > /proc/sys/net/ipv4/tcp_timestamps
@@ -338,44 +340,71 @@ Become root.
 sudo su
 }}
 
-You need to add the following line to {{Code2|/etc/sysctl.d/tcp_timestamps.conf}}:
+Add the following line to {{Code2|/etc/sysctl.d/tcp_timestamps.conf}}.
 
 {{CodeSelect|code=
 net.ipv4.tcp_timestamps = 0
 }}
 
-To do that, you could use the following command.
+To do that, use the following command.
 
 {{CodeSelect|code=
 echo "net.ipv4.tcp_timestamps = 0" > /etc/sysctl.d/tcp_timestamps.conf
 }}
 
-To apply the sysctl settings without reboot, run the following command.
+To apply the sysctl settings without a reboot, run the following command.
 
 {{CodeSelect|code=
 sysctl -p
 }}
 
-Check if it is really set.
+Check if the changes have been properly set.
 
 {{CodeSelect|code=
 sysctl -a | grep net.ipv4.tcp_timestamps
 }}
 
-If it worked correctly, the system should respond the following:  net.ipv4.tcp_timestamps = 0
+If it worked correctly, the system should provide the following output.
 
+<pre>
+net.ipv4.tcp_timestamps = 0
+</pre>
 ==== Windows ====
 
-To disable TCP timestamping on Windows, run the following root command:
+To disable TCP timestamps on Windows, run the following root command.
 
 {{CodeSelect|code=
 netsh int tcp set global timestamps=disabled
 }}
 
-Note: You must have administrator privileges.
+Note: The user must have administrator privileges.
 
 ==== Other Operating Systems ====
-TODO
+'''MacOS (untested)''' <ref>This should also work for BSD-like operating systems.</ref>
+
+Users must disable rfc1323 which handles TCP timestamps. To check system-set TCP values, run. <ref>https://serverfault.com/questions/216956/how-to-check-tcp-timeout-in-linux-macos</ref>
+
+{{CodeSelect|code=
+sysctl net.inet.tcp
+}}
+
+A value of 1 against <code>net.inet.tcp.rfc1323</code> indicates it is on, while 0 indicates it is turned off.
+
+To permanently turn off TCP timestamps, run.
+
+{{CodeSelect|code=
+sudo su
+}}
+
+{{CodeSelect|code=
+echo net.inet.tcp.rfc1323=0 > /etc/sysctl.conf
+}}
+
+To temporarily turn off TCP timestamps (until reboot) for testing, run. <ref>https://macosx.com/threads/slow-tcp-ip-smc-router.9132/</ref> <ref>https://seconfig.sytes.net/blog/p/9201755583327191420/office-where-mac-computers-couldn-t-browse-https-sites</ref>
+
+{{CodeSelect|code=
+sudo sysctl -w net.inet.tcp.rfc1323=0
+}}
 
 === Disable ICMP Timestamps ===
 ==== Qubes ====
