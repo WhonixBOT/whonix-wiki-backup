@@ -410,9 +410,34 @@ sudo sysctl -w net.inet.tcp.rfc1323=0
 This is the default in Qubes R3.1 and above. <ref>https://github.com/QubesOS/qubes-issues/issues/1346</ref>
 
 ==== Linux ====
-ICMP Timestamps need to be blocked using your firewall. This is distro dependent and varies widely as does having a firewall enabled on your specific OS - some distros don't turn it on. There are many differing ways to accomplish this via command-line, its recommended to consult your distro's documentation.
+ICMP timestamps need to be blocked with the [[#Firewall|firewall]]. <ref>Advanced users can of course use IP tables. For example in [https://lists.debian.org/debian-firewall/1999/12/msg00010.html Debian]: <code>ipchains -p icmp -s $INTIP/0 13 -i $INTIF -j DENY</code> and <code>ipchains -p icmp -s 0.0.0.0/0 14 -i $EXTIF -j DENY</code></ref> This is distribution dependent and varies widely as does having a firewall enabled on your specific OS. Be aware that some distributions do not turn on the firewall by default. 
 
-Instead for a more straightforward way, you are advised to download a GUI front-end to configure your firewall and have it set to silently drop all incoming connections by default, allowing only outgoing traffic from your machine.
+There are many differing ways to accomplish blocking ICMP timestamps via the command line, therefore users are recommended to consult the specific distribution's documentation. <ref>For instance, [http://www.thegeekstuff.com/2010/07/how-to-disable-ping-replies-in-linux/ Debian users] could edit the <i>/etc/systcl.conf</i> file manually and add <code>net.ipv4.icmp_echo_ignore_all = 1</code></ref> The most straightforward way is to download a GUI front-end (like gufw) to configure the firewall and have it set to silently drop all incoming connections by default, and allow only outgoing traffic from the machine.
+
+==== Windows ====
+Note: This is untested. Recent Windows operating systems (Win 10, Win 8/8.1, Win 7) should have disabled ICMP settings by default in the Windows firewall. <ref>http://www.sysprobs.com/enable-ping-reply-and-ftp-traffic-in-windows-10-and-server</ref> 
+
+'''From the Menu'''
+
+The status of ICMP timestamps can be manually checked and changed on Windows systems via the Firewall settings. <ref>https://answers.microsoft.com/en-us/windows/forum/windows_7-security/check-icmp-timestamp-response/062ffa99-ffae-4ab0-a328-84371ed46ed8?tab=question&status=AllReplies#tabs</ref>
+
+<code>Right-click on Start button</code> -> <code>Select Control Panel</code> -> <code>Select Windows Firewall</code> -> <code>Select Advanced Settings tab</code>
+
+The ICMP Settings dialog box should show the ICMP timestamp is disabled: <code>Allow incoming timestamp request</code> is unchecked. <ref>https://msdn.microsoft.com/en-us/library/ms912869%28v=winembedded.5%29.aspx</ref>
+
+'''From the Command Line'''
+
+ICMP timestamp responses can be disabled via the netsh command line utility. This is necessary for Vista and earlier Windows versions. <ref>https://social.technet.microsoft.com/Forums/windows/en-US/219f3dcc-3e5b-4d9b-88ae-137215575c7f/icmp-timestamp-response?forum=w7itprosecurity</ref>
+
+Open a terminal.
+
+Run as an administrator.
+
+{{CodeSelect|code=
+netsh firewall set icmpsetting 13 disable
+}}
+
+Outgoing ICMP timestamp responses are now blocked.
 
 ==== Other Operating Systems ====
 TODO: document.
