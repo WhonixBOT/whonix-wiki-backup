@@ -440,7 +440,38 @@ netsh firewall set icmpsetting 13 disable
 Outgoing ICMP timestamp responses are now blocked.
 
 ==== Other Operating Systems ====
-TODO: document.
+
+'''MacOS'''
+
+Note: This is untested.
+
+MacOS systems should have ICMP timestamps disabled by default. Therefore, if the firewall is enabled and "Stealth Mode" is set, the system should not respond to any ICMP requests. This is how to check the system is properly secured: <ref>http://osxdaily.com/2015/11/18/enable-stealth-mode-mac-os-x-firewall/</ref>
+
+<code>Menu</code> -> <code>System Preferences</code> -> <code>Security & Privacy</code> -> <code>Select the Firewall tab</code> -> <code>Check Firewall is On</code> -> <code>Click Firewall Options</code> -> <code>Enable Stealth Mode</code> -> <code>Click OK</code>
+
+The "Block all incoming connections" checkbox should also be enabled for greater security. 
+
+The user can also manually change or check the timestamp status of ICMP, since the system variable is  <code>net.inet.icmp.timestamp</code> in the <i>/etc/sysctl.conf</i> file. <ref>https://security.stackexchange.com/questions/46090/why-is-icmp-timestamping-disabled-on-os-x</ref> 
+
+To permanently disable ICMP timestamps. <ref>https://superuser.com/questions/680200/os-x-how-to-make-it-reply-to-icmp-time-stamp-query</ref>
+
+{{CodeSelect|code=
+sudo sh -c "echo net.inet.icmp.timestamp=0 >> /etc/sysctl.conf"
+}}
+
+'''OpenBSD''' 
+
+Note: This is untested.
+
+The easiest solution is to configure the firewall to block incoming and outgoing ICMP packets with ICMP types 13 (timestamp request) and 14 (timestamp response). <ref>https://beyondsecurity.zendesk.com/hc/en-us/articles/203609549--How-can-I-mitigate-ICMP-Timestamp-</ref>
+
+Alternatively, set the relevant sysctl variable to 0 (it is enabled by default). In a terminal, run.
+
+{{CodeSelect|code=
+sysctl -w net.inet.icmp.tstamprepl=0
+}}
+
+TODO: expand.
 
 === Microphone ===
 Does your computer or notebook have a microphone? You could have a built-in one, but never noticed it. In most cases it is recommended to disable your microphone for security reasons. If your Whonix-Workstation ever gets compromised by malware, an adversary could eavesdrop through your microphone. It is safe to assume that everyone has had an unencrypted phone call during their life time and that one of them has been recorded. 
