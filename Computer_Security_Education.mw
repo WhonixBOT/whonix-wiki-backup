@@ -190,12 +190,73 @@ Updating firmware may or may not improve security. On the one hand it may fix vu
 
 The reality is that advanced adversaries like intelligence agencies are routinely hacking the firmware of [https://www.wired.com/2013/09/nsa-router-hacking/ Internet routers, switches and firewalls], along with [https://www.wired.com/2015/02/nsa-firmware-hacking/ harddrive firmware], and [https://wikileaks.org/vault7/#Dark%20Matter UEFI/EFI and ethernet adapters]. The number of targets is already in the tens of thousands on an annual basis. Subverting firmware in this manner provides a stealthy and persistent presence that can eavesdrop on or re-route all network data, or access information in invisible storage areas that are unecrypted (bypassing disk encryption). Worst of all, the firmware sabotage is believed to typically persist through software updates or complete OS re-installations. Attacks may also be designed to corrupt firmware so machines are prevented from booting, even with an external drive. <ref>http://www.darkreading.com/partner-perspectives/intel/raising-the-stakes-when-software-attacks-hardware/a/d-id/1319423</ref>
 
-=== Using Libre Software Hardware ===
-'''This chapter contains general security advice and is unspecific to Whonix.'''
+=== Using Open-source Hardware ===
+'''Note:''' This chapter contains general security advice and is unspecific to Whonix. Users interested in this topic should undertake significant research before purchasing any open-source hardware.
 
-[https://en.wikipedia.org/wiki/Open-source_hardware Open-source hardware] is not affected by the non-Free firmware updates issue described above. Such hardware might be more trustworthy. (The Lemote Yeeloong Notebook maybe?)
+==== Hardware Trust in Modern Computing ====
+Security researcher Joanna Rutkowska has noted that modern computing and networking security relies upon a critical foundation - trusted hardware and firmware domains. Even high-security operating systems have an security upper bound that is defined by the trustworthiness of hardware components that are ideally placed to compromise the entire system if bugs or backdoors are present: <ref>https://blog.invisiblethings.org/papers/2015/x86_harmful.pdf</ref>
 
-TODO: research and expand
+<blockquote>... for years we have been, similarly, assuming the underlying hardware, together with all the firmware that runs on it, such as the BIOS/UEFI and the SMM, GPU/NIC/SATA/HDD/EC firmware, etc., is all. . . trusted.</blockquote>
+<blockquote>
+But isn’t that a rational assumption, after all?
+</blockquote>
+<blockquote>
+Well, not quite: today we know it is rather unwise to assume all hardware and firmware is trusted. Various research from the last ten years, as discussed below, has provided enough evidence for that, in the author’s opinion. We should thus revisit this assumption. And given what’s at stake, the sooner we do this, the better.
+</blockquote>
+
+Rutkowska has concluded the following hardware components and mechanisms are all vulnerable to exploitation (easily backdoored) and often flawed in their implementation: <ref>https://blog.invisiblethings.org/papers/2015/x86_harmful.pdf</ref>
+
+* x86 boot security (BIOS implementation).
+* Vt-d (CPU-enforced sandboxing of networking).
+* Graphics cards (GPUs) and sub-systems.
+* USB controllers.
+* Disk controllers (SATA etc.).
+* Embedded controllers (for keyboard operation, battery charging etc.).
+* Audio cards.
+* Peripheral devices.
+* Intel Management Engine (ME) and AMD Security Processor (embedded microcontrollers).
+* Built-in speakers, microphones and cameras.
+
+
+This is particularly true for privileged, out-of-band hardware components like Intel ME's AMT which can read or write any of the host computer's memory, without any constraints - the perfect, undetectable rootkiting infrastructure. <ref>https://blog.invisiblethings.org/papers/2015/x86_harmful.pdf</ref> In short, it appears that modern computing architectures are impossible to secure properly, especially since popular, proprietary hardware options (Intel and AMD) dominate the market. <ref>AMD-based x86 platforms have analogous hardware mechanisms to Intel, so they are not theoretically safer.</ref>
+
+==== Open-source Hardware Alternatives ====
+Users who are motivated to avoid proprietary hardware solutions are in a bind. There are few options available that are truly "free" (open-source), affordable, and provide suitable processing power to run "secure" operating systems like Qubes-Whonix, because specific hardware requirements like VT-d and VT-x are necessary for compatibility with future software releases. 
+
+Open-source hardware is also not perfectly secure, since it is not "stateless", that is, lacking any persistent storage. <ref>https://blog.invisiblethings.org/papers/2015/state_harmful.pdf</ref> Further, "free" hardware does not really exist, since by definition it requires that hardware be free at all levels, including: licensing, the chip and circuit board designs, the field-programmable gate array, source code, relevant repositories and so on. Also, proprietary "soft cores" which are often incorporated in various hardware circuits need to be purged to meet the necessary criteria. <ref>https://www.wired.com/2015/03/richard-stallman-how-to-make-hardware-designs-free/</ref> <ref>https://www.wired.com/2015/03/need-free-digital-hardware-designs/</ref>
+
+'''ARM-based Platforms'''
+
+ARM architecture dominates smartphone and tablet markets and provides a good level of performance. However,  an open-source "ARM processor" is non-existent, because only the specifications and other intellectual property (IP) are released to manufacturers under specific licenses. This leads to NVIDIA, Samsung and others combining the ARM IP with their own, leading to the actual, customized processors called System-on-Chips (SoCs). <ref>https://blog.invisiblethings.org/papers/2015/state_harmful.pdf</ref> ARM SoCs also often have a TrustZone extension, with implementation providing similar functionality to Intel's ME. There is nothing special in ARM architecture that prevents the possible introduction of backdoors.
+
+'''Open-source Processors'''
+
+Unfortunately, a fully open-source, Linux-capable based processor (SoC) is not yet available, with the design still being finalized. While this project will eventually allow a 64-bit RISC-V instruction set architecture and the development of low-cost boards, the wait may be lengthy (many years) and it is not clear such processors will perform well enough for typical desktop workflows like watching movies, running browsers, using office suites and so on. It is also unknown whether this design will allow for security technologies like IOMMU and memory virtualization. <ref>http://www.lowrisc.org/about/</ref> <ref>https://blog.invisiblethings.org/papers/2015/state_harmful.pdf</ref>
+
+==== Final Hardware Purchase ====
+The Free Software Foundation (FSF) makes a number of relevant recommendations: <ref>https://www.fsf.org/resources/hw</ref>
+
+* Find devices which support fully free distributions of GNU/Linux.
+* Purchase hardware from manufacturers who support GNU/Linux.
+* Purchase hardware which supports coreboot/libreboot as a proprietary BIOS replacement. <ref>For example, the Thinkpad X200 and X60 laptop series. Users utilizing coreboot/libreboot with Intel CPUs are not necessarily safe, since the Firmware Support Package (FSP) can still potentially modify things in a malicious manner.</ref>
+* Purchase hardware without the need for proprietary drivers or firmware: [http://h-node.org/ hdnode.org].
+* Check the [https://www.fsf.org/resources/hw/endorsement/criteria FSF criteria] for hardware certification requirements.
+* If looking for a single-board computer (SBC), check the [https://www.fsf.org/resources/hw/single-board-computers list] of available (flawed) hardware. <ref>None of these options are completely free in their design.</ref>
+* Check the list of [http://www.coreboot.org/Supported_Motherboards motherboards] that are compatible with coreboot. <ref>Some motherboards still require proprietary CPU microcode.</ref>
+
+
+'''Buyer Considerations'''
+
+Based on the preceding information and links, users seeking an open-source solution need to make a compromise. Since RISC processors supporting a fully-fledged operating system do not yet exist, the closest thing available is [https://www.fsf.org/resources/hw/single-board-computers single-board computers (SBCs)], which are delivered as one circuit board that are powerful enough to run a real operating system. 
+
+These systems generally contain a SoC with an ARM processor, with options like [http://spectrum.ieee.org/consumer-electronics/portable-devices/novena-a-laptop-with-no-secrets Novena] and [http://www.mouser.com/new/pandaboardorg/pandaboardES/ PandaBoardES] falling into this category. However, they still have a number of closed-source binary blobs and the FSF also notes "severe flaws" in these products due to proprietary design concerns.
+
+High-end laptop options like those provided by [https://puri.sm/ Purism] also seek to remove as many proprietary blobs as possible, for example by using coreboot in place of the standard BIOS implementation. Unfortunately, this solution is expensive and still relies on an Intel processor. Despite the claims that ME is "neutralized", the ME still poses potential security threats to the user as highlighted in Rutkowska's research.
+
+In practical terms, it is just simpler for the majority of users to purchase a standard closed-source architecture. This provides a high-performance solution and the features necessary for compatibility with high-end operating systems like [[Qubes-Whonix]]. In the coming years when open-source processors and hardware designs further mature and the necessary functionality is provided for virtualization, users will then have a reasonable and fairly-priced alternative.
+
+==== Firmware Considerations ====
+[https://en.wikipedia.org/wiki/Open-source_hardware Open-source hardware] is not affected by the non-free firmware updates issue described in the previous chapter. Such hardware might be more trustworthy, but open source firmware can be just as insecure as a proprietary one. Fortunately, open source firmware increases the chances of making it actually secure, with options like coreboot appearing to be a promising solution. <ref>https://blog.invisiblethings.org/papers/2015/x86_harmful.pdf</ref>
 
 === Host Operating System ===
 ==== Windows Hosts ====
