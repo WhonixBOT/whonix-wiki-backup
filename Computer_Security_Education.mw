@@ -328,9 +328,75 @@ Canonical is getting snugly with Microsoft which should make you uncomfortable g
 
 There are of course other options. See [[Dev/Operating_System#Why_don.27t_you_use_.3Cyour_favorite_most_secure_operating_system.3E_for_Whonix.3F | "Why don't you use <your favorite most secure operating system> for Whonix?"]] for analysis of alternatives.
 
-=== LAN/Router Security ===
+=== Router and Local Area Network Security ===
+If the Whonix-Gateway is ever compromised, it can theoretically access any computer in your [https://en.wikipedia.org/wiki/Local_area_network local area network (LAN)]. Therefore, users who have administrator control over the home network are strongly recommended to lock down the web interface of your home router and apply the strictest settings possible.
 
-If your Whonix-Gateway is ever compromised, it can theoretically access any computer in your local network. Therefore, if you are the administrator of your home network, it is recommended that you lock down the web interface of your home router, i.e. installing the latest firmware with latest security patches and using a secure password.
+==== The State of Router Insecurity ====
+Most routers provided by Internet Services Providers (ISPs) and those widely available in electronics stores are profoundly insecure, have outdated software and firmware, enable settings by default that open exploit opportunities, and remain vulnerable if users fail to take appropriate steps. <ref>https://www.defcon.org/images/defcon-18/dc-18-presentations/Heffner/DEFCON-18-Heffner-Routers.pdf</ref> 
+
+Many experienced users who are concerned about computing security overlook these problems and instead focus on general operating system and networking solutions, rather than this weak endpoint frequently targeted by attackers, including state-level adversaries. Compromised routers can easily spy on a user's activities, conduct man-in-the-middle attacks, alter unencrypted data, or send the user to websites that masquerade as webmail or on-line banking portals. <ref>http://www.tomsguide.com/us/home-router-security,news-19245.html</ref>
+
+==== Suitable Hardware and Router Configurations ====
+Experts routinely advise that low-grade routers should be avoided. Cheap models often fail to notify of firmware updates that patch security vulnerabilities, have limitations on password length for administrator access, and typically come as a less-secure, combined modem/router unit. 
+
+Users should consider upgrading to a commercial-grade router that is normally intended for small businesses as a sensible investment in security. Further, it is safer to have a personally owned routing device that connects to an ISP-provided modem/router in order to maximize administrative control over routing and wireless features of the home network. 
+
+Before purchase, check the router has firewall capabilities and it supports Network Address Translation (NAT), so internal systems cannot be directly accessed from the Internet. Also check whether the router can be configured off-line, which is an advantage. Disconnect or turn-off routers/modems when they are not in use. <ref>http://www.usar.army.mil/Portals/98/Documents/Slicksheet_BestPracticesForKeepingYourHomeNetworkSecure.pdf</ref> <ref>http://www.tomsguide.com/us/home-router-security,news-19245.html</ref>
+
+==== Accessing Router Settings ====
+To access and change router settings, the user must type the router's IP address into a web browser address bar and enter the administrative login and password. Routers usually have a common address like: <code>192.168.1.1</code>, but there are many alternatives depending on the make and model of the router. Check the manual that comes with the router to determine the correct address, or alternatively research the manufacturer's website to determine this address. <ref>http://www.pcworld.com/article/243290/how_to_lock_down_your_wireless_network.html</ref> Users who are still unsure of the relevant address can use terminal commands to trace the ip route.
+
+On Linux operating systems, run the following command in a terminal. <ref>In Qubes-Whonix, this command is run from the NetVM terminal.</ref>
+
+{{CodeSelect|code=
+ip route
+}}
+
+The output starting with "default via XXX.XXX.XXX.XXX" is the relevant router IP address for changing settings. Users who are unsure of the default login credentials can check the list [http://www.routerpasswords.com/ here] and search by manufacturer and model.
+
+==== Recommended Router Settings ====
+To lock down the router, the following settings are recommended. 
+
+'''General Settings''' <ref>http://routersecurity.org/checklist.php</ref> <ref>http://www.tomsguide.com/us/home-router-security,news-19245.html</ref> <ref>https://www.defcon.org/images/defcon-18/dc-18-presentations/Heffner/DEFCON-18-Heffner-Routers.pdf</ref>
+
+* Change the default router username and password to something suitably long and random using a [https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases Diceware passphrase]. <ref>It may be sensible to tape this on the router so it is not lost in the future.</ref>
+* Turn off [https://security.stackexchange.com/questions/38631/what-are-the-security-implications-of-enabling-upnp-in-my-home-router Universal Plug and Play (UPnP)], which can allow applications to open ports to external computers.
+* Disable [https://en.wikipedia.org/wiki/NAT_Port_Mapping_Protocol NAT-PMP], since it has similar functionality to UPnP.
+* Disable the [http://routersecurity.org/hnap.php Home Network Administrative Protocol] since it allows remote management of network devices.
+* Port forwarding (if desired by the user) should be limited to a source IP address and/or source IP address subnet.
+* Keep router firmware up-to-date at all times for better security. Set the self-updating firmware option if it is available.
+* Do not bind services to the external interface. 
+* Reconfigure the router firewall rules to drop all relevant incoming packets. 
+* Disable the HTTP interface and enable the HTTPS interface instead, preferably on a non-standard port. For example: <code>https://192.168.1.1:82</code> instead of <code>http://192.168.1.1</code>
+* Use the browser's incognito or private mode when accessing the administrative interface so the URL is not saved in the browser history.
+* Change the [https://en.wikipedia.org/wiki/SSID Service Set ID (SSID)] which often leaks router information. Do not use personally identifying information like the apartment number you live in.
+* Disable cloud-based router management (if offered) because trust is shifted to another person between the user and the router.
+* Do not use mesh router systems that do not permit local administrative access.
+* Disable remote administrative access and administrative access over Wi-Fi. Set administrator access only via wired ethernet connections (not possible with mesh routers).
+* Disable all other remote-access protocols like [https://en.wikipedia.org/wiki/Ping_%28networking_utility%29 PING], [https://en.wikipedia.org/wiki/Telnet Telnet] and [https://en.wikipedia.org/wiki/Ssh SSH].
+* Firewall ports should be set to "stealth" rather than "closed" so no response is given to unsolicited external communications from attackers probing the network.
+* Set logging to on, if the feature is available. This allows for a record of unsolicited incoming connection attempts, attempted logins and so on.
+* Avoid administrating the router with a smartphone application.
+* Use Gibson Research Corp.'s [https://www.grc.com/shieldsup Shields Up port-scanning service] to test the router for hundreds of common vulnerabilities, most of which can be mitigated by the router's administrator.
+
+
+'''Wireless Network Settings''' <ref>http://www.pcworld.com/article/243290/how_to_lock_down_your_wireless_network.html</ref> <ref>http://www.tomsguide.com/us/home-router-security,news-19245.html</ref> <ref>http://routersecurity.org/checklist.php</ref>
+
+* Disable the [https://en.wikipedia.org/wiki/Wi-Fi_Protected_Setup Wi-Fi Protected Setup (WPS)] which allows any device to connect to the network with the relevant eight-digit PIN.
+* Don't bother disabling SSID broadcasting since it is trivial to guess.
+* Do not rely on the [https://en.wikipedia.org/wiki/Wired_Equivalent_Privacy WEP] and [https://en.wikipedia.org/wiki/Wi-Fi_Protected_Access WPA] standards which are cryptographically weak and have known security weaknesses. Use the [https://en.wikipedia.org/wiki/WPA2 WPA2] standard so only authorized users can use the network. <ref>Usually the WPA2 Personal standard is fine; the WPA2 Enterprise version is only required for businesses.</ref>
+* Use routers that exclusively use WPA2, preferably with the AES standard (CCMP) and not TKIP which is less secure.
+* Enable the "Block WAN Requests" option to conceal the network from other Internet users.
+* Limit the number of [https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol Dynamic Host Configuration Protocol (DHCP)] leases (connects) to the Wi-Fi network to match the number of personal devices owned.
+* Enable MAC Filtering so only specific devices may connect to the network.
+* If you must allow use of the Wi-Fi network to visitors, set up a guest network that turns itself off after a set period.
+* Use the 5-GHz band for Wi-Fi instead of the standard 2.4GHz band (if possible), since the 5 GHz band does not travel as far.
+* If possible, schedule Wi-Fi networks to turn off at night, and then turn on in the morning.
+
+==== Router Firmware ====
+Strong consideration should be given to flashing the wired/wireless router with an open-source GNU/Linux distribution. Solutions such as [https://wiki.openwrt.org/ OpenWrt] and [https://www.dd-wrt.com/site/ DD-WRT] provide firmware that is suitable for a large variety of wired and wireless routers and embedded systems. 
+
+The strengths of this approach are openness, regularly updated firmware images, a great number of functionalities (fully-featured), less bloat, and more control over router behavior. Check the online guides for instructions on how to proceed and whether the home router is compatible with the available firmware.
 
 === Host Firewall ===
 
