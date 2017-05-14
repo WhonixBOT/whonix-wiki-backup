@@ -777,35 +777,34 @@ Preparing a spoofed MAC address will be futile if (when the computer is booted) 
 * For Physical Isolation users: Whonix-Gateway automatically connects to Tor after start.
 * For USB Wi-FI device users: Automatic connections might also occur, depending on the configuration.
 
-==== Changing MAC address ====
+==== Changing MAC Addresses ====
 ===== For Qubes Hosts =====
-Qubes users do this in their NetVM. Refer to the Qubes documentation / support. See:
+Note: Currently, Qubes OS does not automatically “anonymize” or spoof the MAC Address. 
 
-* https://www.qubes-os.org/doc/randomizing-your-mac-address/
+Qubes users can manually change MAC addresses in the NetVM by following either the Network Manager or macchanger guides. Refer to the following Qubes documentation and related support items:
+
+* https://www.qubes-os.org/doc/anonymizing-your-mac-address/
 * https://groups.google.com/forum/#!searchin/qubes-users/macchanger/qubes-users/gUPK-YqkC3E/WsarnjrddrsJ
 * https://github.com/QubesOS/qubes-issues/issues/938
 
 ===== For Linux Hosts =====
 <div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
-If you are interested in this with [[Non-Qubes-Whonix]], please press on expand on the right.
+If you are interested in this with [[Non-Qubes-Whonix]], please press on Expand on the right.
 <div class="mw-collapsible-content">
 {{Non-Qubes-Whonix}}
 
-'''''TODO''''': test and expand, please help!
+TODO: please help to test and expand these instructions.
 
-<u>(1)</u>
+'''1. Edit the Network Interfaces File'''
 
-'''Standard-[[Download]]-Version (Virtual Machine) users'''
+* Standard-[[Download|Whonix]]-Version (VM) users: Edit ''/etc/network/interfaces'' on the host.
+* [[Physical Isolation]] users: Edit ''/etc/network/interfaces'' on Whonix-Gateway.
 
-Edit ''/etc/network/interfaces'' on the host.
 
-'''[[Physical Isolation]] users'''
+'''2. Get Macchanger'''
 
-Edit ''/etc/network/interfaces'' on Whonix-Gateway
+In a terminal, run.
 
-<u>(2)</u>
-
-'''Get Macchanger'''
 {{CodeSelect|code=
 su
 }}
@@ -813,11 +812,9 @@ su
 apt-get update && apt-get install macchanger
 }}
 
-<u>(3)</u>
+'''3. Change the MAC Address (I)'''
 
-'''Changing MAC'''
-
-If instructions 1+ below don't work, you can use the following to manually change the MAC address for your device (eth0, wlan0, etc.): 
+Note: The following steps will manually change the MAC address for the device. An example is provided for a wireless device (wlan0). Replace wlan0 to match your device, such as a ethernet device (eth0) and so on.
 {{CodeSelect|code=
 su
 }}
@@ -830,7 +827,8 @@ macchanger -a wlan0
 {{CodeSelect|code=
 ifconfig wlan0 up
 }}
-This might also work without macchanger:
+
+Note: If instructions from Step 1+ did not work, the following steps might also work without macchanger. Replace wlan0 to match your specific device.
 {{CodeSelect|code=
 su
 }}
@@ -843,7 +841,7 @@ ifconfig wlan0 hw ether 00:AA:BB:CC:DD:EE
 {{CodeSelect|code=
 ifconfig wlan0 up
 }}
-Or, using iproute2 commands:
+Or use iproute2 commands to change the MAC address.
 {{CodeSelect|code=
 ip link set down wlan0
 }}
@@ -854,30 +852,31 @@ ip link set wlan0 address 00:AA:BB:CC:DD:EE
 ip link set up wlan0
 }}
 
-<u>(4)</u>
+'''4. Change the MAC Address (II)'''
 
-Below "''iface eth0 inet dhcp''" Add
+Below <code>iface eth0 inet dhcp</code>, add.
 
 {{CodeSelect|code=
 hwaddress ether 00:00....
 }}
-<u>(5)</u>
 
-To automatically randomize the MAC address on boot, if desired, add
+'''5. ''Optional:'' Automatically Randomize MAC Address on Boot'''
+
+If this is desired, add.
 
 {{CodeSelect|code=
 pre-up macchanger -e eth0
 }}
 
-<u>(6)</u>
+'''6. Change New Network Interfaces Settings'''
 
-To prevent automatically bringing up new network interfaces, all that is needed is to uncomment.
+To prevent automatically bringing up new network interfaces, uncomment the following.
 
 {{CodeSelect|code=
 auto eth0
 }}
 
-Then manually bring up with
+Then set manual bring ups with the following.
 
 {{CodeSelect|code=
 sudo ifup eth0
