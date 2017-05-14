@@ -884,6 +884,60 @@ sudo ifup eth0
 </div>
 </div>
 
+===== For Windows Hosts =====
+Note: In Windows, the MAC address can be changed with specific tools, by editing the registry or via Device Manager. The following instructions describe the process in Windows 10 via Device Manager.
+
+Take the following steps: <ref>http://windowsreport.com/mac-address-changer-windows-10/</ref>
+
+<code>Press Windows Key + X</code> -> <code>select Device Manager</code> -> <code>Expand the list of Network adapters</code> -> <code>Right-click the appropriate adapter</code> -> <code>Select Properties</code> -> <code>Navigate to Advanced tab</code> -> <code>Select Network Address</code> -> <code>Enter any 12 digit hexadecimal value</code> -> <code>Click OK</code>
+
+Reboot the computer for the changes to take effect. To check the changes are correct, in a terminal run. 
+
+{{CodeSelect|code=
+ipconfig /all 
+}}
+
+The physical address of the adapter should show the new MAC address.
+
+===== For macOS Hosts =====
+Note: These steps are untested.
+
+'''1. Find the Current MAC Address of the Interface''' <ref>http://www.online-tech-tips.com/computer-tips/how-to-change-mac-address/</ref>
+
+<code>Open System Preferences</code> -> <code>Click on Network</code> -> <code>Select the interface from the listbox on the left</code> -> <code> Select the Advanced button</code> -> <code>Click on Hardware tab</code>
+
+The first line is the MAC address of the interface.
+
+'''2. Change the MAC Address'''
+
+Note: There is no eth0 on default configurations of MacOS. By default, <code>en0</code> and <code>en1</code> are the physical network connections (wired and wireless LAN). <ref>https://superuser.com/questions/1190550/physical-and-wireless-interfaces-in-macos</ref> Disconnect from the networks before running these commands.
+
+In a terminal, run as an administrator.
+
+<pre>
+ifconfig en0 | grep ether
+</pre>
+
+The output will show the MAC address for the en0 interface. Depending on how many interfaces there are on the computer, the command might need to be run several times by adding 1 to the number each time.
+
+Once a MAC address is listed that matches the one seen via System Preferences, the user knows which interface (en0, en1....) to change. 
+
+In a terminal, run the following as an administrator. Change "en0" to match the relevant interface, and "XX:XX:XX:XX:XX:XX" for the desired new MAC address (for example: f8:1e:df:d8:9d:8a).
+
+{{CodeSelect|code=
+sudo ifconfig en0 ether XX:XX:XX:XX:XX:XX
+}}
+
+'''3. Check the MAC Address has Changed'''
+
+In a terminal, re-run.
+
+<pre>
+ifconfig en0 | grep ether
+</pre>
+
+The output should show a value matching the user's change.
+
 ==== Sources ====
 See footnote. <ref>
 * https://tails.boum.org/contribute/design/MAC_address/
