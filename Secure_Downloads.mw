@@ -1,1 +1,18 @@
-.
+Secure downloading of files is a complex subject and the potential security implications are poorly understood by most users.
+
+Whonix users will frequently want to download files from the Internet in order to achieve desired aims. Unfortunately, resorting to the simple wget command is ill-advised, because it is [https://lists.gnu.org/archive/html/bug-wget/2012-07/msg00015.html buggy]. For example, if users do not force a request to use SSL encryption, wget can [https://stackoverflow.com/a/38835162 fail silently]. Even when SSL is enforced with a command line option, this can [https://www.gnu.org/software/wget/manual/html_node/HTTPS-0028SSL002fTLS_0029-Options.html break interoperability with some sites] that use self-signed, expired or invalid certificates. Users could potentially ignore certificate verification warnings and proceed with downloads where the site's authenticity is in question.
+
+To provide greater security when downloading, Whonix has implemented a scurl script. This invokes the usage of [https://packages.debian.org/jessie/curl curl] with the following additional command line parameters:
+
+* <code>--tlsv1.2 --proto =https</code> to enforce strong encryption.
+* <code>--remote-name</code> to simplify naming conventions for downloaded files.
+<br />
+Scurl is not vulnerable to [https://security.stackexchange.com/questions/41988/how-does-sslstrip-work SSLstrip]. This is a man-in-the-middle attack which forces a user's browser to communicate with the adversary in plain-text over HTTP (poisoning the download).
+
+Unfortunately, scurl is mostly only available in Whonix and the command will generally not work in other distributions. To use scurl, simply run (replace "httpsURL" with the actual file location).
+
+{{CodeSelect|code=
+scurl httpsURL
+}}
+
+In all cases, users should avoid downloading files over plain HTTP.
