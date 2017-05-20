@@ -1,8 +1,93 @@
 {{Header}}
 {{#seo:
-|description=
+|description=Use Tor Browser without Tor for enhanced security and privacy compared with other browsers.
 |image=
 }}
+
+= Using Tor Browser without Tor =
+
+[[Tor Browser]] is based on Firefox and implements a large number of changes for enhanced security and privacy. It routes all traffic through [https://www.torproject.org/about/overview.html Tor], which can prevent the recipients of your communications from seeing that you sent it. Disabling Tor means that your IP address is not hidden anymore. But Tor Browser without Tor will still protect you better than Firefox, Chrome/Chromium and Microsoft Edge from numerous other [[Data Collection Techniques|data collection techniques]] as described in ''[https://www.torproject.org/projects/torbrowser/design/ The Design and Implementation of the Tor Browser].''
+
+== To do/Questions ==
+
+<ul>
+<li>Why would one want to disable Tor?</li>
+<li>Make instructions clearer.</li>
+<li>How to: Create desktop shortcut, change logo of shortcut (at least in Windows)</li>
+<li>Test whether running simultaneously one TBB with Tor enabled and one with Tor disabled interfere with each other. (Does not seem to be the case.)</li>
+<li>Change name and logo.</li>
+<li>Argue why Tor Browser is useful even without Tor. (The fingerprint on https://panopticlick.eff.org does not change.)</li>
+<li>Note that Tor Browser Bundle notifies of updates even if Tor is disabled.</li>
+<li><del>
+</del></li>
+<li><del>
+Does the Firefox Password Manager work when Private Browsing Mode is enabled? (No.)
+</del></li>
+<li>Are there better ways of changing the settings than creating a <code>user.js</code> file (e.g. manually editing <code>about:config</code>)?</li>
+<li>If you want to use a clearnet Tor Browser ''in addition to'' Tor Browser (using Tor): Copy directory, change shortcut paths.</li>
+<li><code>--allow-remote</code></li>
+<li>Explain safety-settings. Medium-level security settings will annoy many, and so will NoScript.</li></ul>
+
+== Instructions ==
+
+=== Installation ===
+
+<ul>
+<li><p>'''Windows:''' Follow the instructions [https://ssd.eff.org/en/module/how-use-tor-windows in this guide] from EFF's Surveillance Self Defence until the section 'Using Tor Browser'.</p></li>
+<li><p>'''macOS:''' Follow the instructions [https://ssd.eff.org/en/module/how-use-tor-mac-os-x in this guide] from EFF's Surveillance Self Defence until the section 'Using Tor Browser Bundle'.</p></li>
+<li><p>'''Linux:''' Get Tor Browser Bundle (TBB), preferably by installing Tor Browser Launcher, which downloads the most recent version of TBB for you, verifies its integrity and stores it in <code>~/.local/share/torbrowser</code>.</p>
+<ul>
+<li>If you use a Debian or any of its derivatives (Ubuntu, Mint) run <code>sudo apt-get install torbrowser-launcher</code>.</li>
+<li>If you use Fedora run <code>sudo dnf install torbrowser-launcher</code>.</li></ul>
+
+<p>Start Tor Browser Launcher by running <code>torbrowser-launcher</code>.</p>
+<p>Tor Browser Launcher automatically opens Tor Browser after finishing. When Tor Browser starts for the first time it asks you to set 'Tor Network Settings'. You can safely click Quit, as you will not use Tor.</p></li></ul>
+
+=== Disabling Tor ===
+
+'''Warning:''' Disabling Tor means your traffic will not be routed through the Tor network. Your IP address will be visible to the recipients of your communications just if you would any other browser. '''You will not be anonymous.'''
+
+# Open the <code>profile.default</code> directory.
+
+* '''Windows:'''
+* '''macOS:'''
+* '''Linux:''' Go to <code>~/.local/share/torbrowser/tbb/x86_64/tor-browser_en-US/Browser/Tor Browser/Data/Browser/profile.default/</code>. (<code>x86_64/tor-browser_en-US</code> may vary depending on locale and processor architecture.)
+
+<ol start="2" style="list-style-type: decimal;">
+<li><p>Create a new file named <code>user.js</code> with the following contents and save it to that directory.<ref>This method utilizes a [http://kb.mozillazine.org/User.js_file <code>user.js</code> file] to set the preferences listed in [https://superuser.com/questions/1117383/can-i-use-tor-browser-without-using-tor-network these instructions for how to set them manually].</ref></p>
+<pre>// Disable proxying
+user_pref(&quot;network.proxy.socks_remote_dns&quot;, false);
+user_pref(&quot;network.proxy.type&quot;, 0);
+// Disable Tor service
+user_pref(&quot;extensions.torlauncher.start_tor&quot;, false);</pre></li>
+<li><p>See the previous reference if you would like to set them manually in Tor Browser instead.</p></li>
+<li><p>Start Tor Browser.</p></li></ol>
+
+* '''Windows:''' Change the icon.
+* '''macOS:'''
+* '''Linux:''' Run <code>~/.local/share/torbrowser/tbb/x86_64/tor-browser_en-US/Browser/start-tor-browser</code>.
+
+You will now be welcomed by 'Something Went Wrong! Tor is not working in this browser.' Confirm that this is the case by going to https://check.torproject.org, which should tell you that you are not using Tor.
+
+<ol start="4" style="list-style-type: decimal;">
+<li>...</li></ol>
+
+* '''Windows:''' Change the icon.
+* '''macOS:''' ?
+* '''Linux:''' Create a desktop shortcut.
+
+=== Making Tor Browser more...normal ===
+
+<ul>
+<li><p>'''How to set preferences?''' Click on the three horizontal bars in the upper-right corner of the Tor Browser window. Select 'Preferences' in the menu that pops up.</p></li>
+<li><p>'''How to prevent Tor Browser from deleting the browsing and download history as well as all cookies when it closes?''' By default Tor Browser always uses private browsing mode. To disable it go to Preferences, click the 'Privacy' tab on the left-hand side and uncheck the box to the left of 'Always use private browsing mode'. The browser needs to restart for the changes to take effect.</p>
+<p>NB: When you disable private browsing mode Tor Browser by default keeps cookies 'until they expire'. To increase your privacy you should install some extensions that block tracking cookies: [https://addons.mozilla.org/en-US/firefox/addon/disconnect/ Disconnect], [https://addons.mozilla.org/en-US/firefox/addon/privacy-badger17/ Privacy Badger] (browser might need to be restarted for it to work), and, if you want an ad-blocker too, [https://addons.mozilla.org/en-US/firefox/addon/privacy-badger17/ uBlock Origin]. You may also want to set cookies to be kept 'I close Tor Browser' (also in the Privacy section of Preferences).</p></li>
+<li><p>'''How can to make Tor Browser remember passwords?''' Necessary first step: Disable private browsing mode (see above). Then go to Preferences, click the 'Security' tab on the left-hand side and tick the box to the left of 'Remember login for sites'.</p></li></ul>
+
+= See also =
+
+* https://github.com/pyllyukko/user.js/
+
 
 = Footnotes =
 <references/>
