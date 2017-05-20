@@ -1,1 +1,220 @@
-.
+= System Hardening Checklist =
+
+It is possible for users to significantly harden their platform and improve the chances of successful, anonymous activity. This depends upon a user's skill level, motivation and available hardware. The checklist below is intended to provide a quick overview of important issues, categorized by difficulty level (easy, moderate, difficult and expert).
+
+Note: Recommendations specific to [[Qubes-Whonix]] or [[Non-Qubes-Whonix]] are marked accordingly.
+== Easy ==
+
+=== Anonymous Blogging, Posting, Chat, Email and File Sending ===
+
+* To remain anonymous, follow all the [[Surfing_Posting_Blogging|Whonix recommendations]] to minimize threats of keyboard/mouse biometrics, stylometry analysis and other covert channels.
+
+=== Disabling and Minimizing Hardware Risks ===
+
+* In Qubes-Whonix, only use a mouse and keyboard utilizing PS/2 ports (not USB ports) to prevent [https://theinvisiblethings.blogspot.fr/2011/06/usb-security-challenges.html malicious compromise] of dom0 (PS/2 adapters and available controllers are required).
+* Do not enable audio input to any VM unless strictly required and consider [[Computer_Security_Education#Microphones|disabling microphones]] where possible (muting on the host) or unplugging external devices.
+* Preferably [[Computer_Security_Education#Webcams|detach or cover webcams]] unless they are in use. In Qubes-Whonix, assign it to an untrusted VM (if needed).
+* Avoid using [[Computer_Security_Education#Wireless_Input_Devices|wireless devices]], since they are insecure.
+* Preferably disable or remove [https://en.wikipedia.org/wiki/Bluetooth#History_of_security_concerns Bluetooth hardware modules].
+* Disable or remove [[Advanced_Security_Guide#Problematic_Interfaces|problematic devices]] like ExpressCard, PMCIA, FireWire or Thunderbolt which may allow attackers with physical access to read RAM.
+
+=== File Handling ===
+
+'''Qubes-Whonix Only'''
+
+* In File Manager, disable previews of files from untrusted sources. Change file preferences in the TemplateVM's File Manager so future AppVMs inherit this feature.
+* Files received or downloaded from untrusted sources (the internet, via email etc.) should not be opened in a trusted VM. Instead, open them in a DisposableVM (right click).
+* Untrusted PDFs should be opened in a DisposableVM or converted into a [https://github.com/QubesOS/qubes-app-linux-pdf-converter trusted (sanitized) PDF] to prevent exploitation of the PDF reader and potential infection of the VM.
+
+=== Mandatory Access Control ===
+
+* Enable all available [[Security_Guide#AppArmor|apparmor profiles]] in the Whonix-Workstation and Whonix-Gateway TemplateVMs.
+* Enable [[Security_Guide#Seccomp|seccomp]] on the Whonix-Gateway AppVM.
+
+=== Passwords and Logins ===
+
+* In Qubes-Whonix, store all login credentials and passwords in an offline vault VM (preferably with KeypassX) and securely cut and paste them into the Tor Browser. Copy something else into the clipboard after pasting so the password is purged and cannot be accidentally pasted elsewhere.
+* Use unique and random [https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases Diceware passphrases] of 6-7 words in length for all on-line accounts, system logins and encryption / decryption purposes to prevent the feasibility of brute-forcing attacks.
+
+=== Secure Downloads and Software Installation ===
+
+* Download Internet files [[Secure_Downloads|securely]] using <i>scurl</i> instead of <i>wget</i> from the command line.
+* Prefer installation of software from signed GNU/Linux repositories.
+* Always [[#Verifying_Fingerprints|verify fingerprints]] before importing keys or trusting the OpenPGP output of files signed with the key(s).
+
+=== Secure Qubes Operation ===
+
+'''Qubes-Whonix Only'''
+
+* Verify the [https://www.qubes-os.org/doc/verifying-signatures/ authenticity and integrity] of the Qubes iso download.
+* Check gpg is enabled in [http://docs.fedoraproject.org/en-US/Fedora/12/html/Deployment_Guide/sec-Configuring_Yum_and_Yum_Repositories.html config files] (gpgcheck=1) if new Fedora repositories are installed.
+* Safely import new signing keys by checking it is the same from multiple sources.
+* Preferably only install packages from trusted sources e.g. pre-configured Fedora, Debian, Whonix and Qubes sources. Untrusted or unverifiable programs should be installed in standaloneVMs or less trusted, cloned templates.
+* For critical user data, protect against [https://www.qubes-os.org/doc/data-leaks/ unintentional leaks] by setting an empty NetVM field (set to "none") for the corresponding AppVM. 
+* Observe the [https://theinvisiblethings.blogspot.fr/2011/05/app-oriented-ui-model-and-its-security.html security context] of colored windows borders in Qubes before running applications or manipulating data.
+* Enable [https://en.wikipedia.org/wiki/IOMMU VT-d/IOMMU] via BIOS to have [https://en.wikipedia.org/wiki/DMA_attack DMA protection], effective network isolation, and the ability to assign PCIe devices to a HVM. Check it is running via dom0 (qubes-hcl-report).
+* Ensure computer hardware meets all other [[Security_Guide#Qubes-Whonix_Hardware_Requirements|Qubes-Whonix  requirements]] for the best security, functionality and future compatibility with Qubes 4.X releases. 
+* Always keep the system up to date in [https://www.qubes-os.org/doc/software-update-dom0/ dom0], [https://www.qubes-os.org/doc/software-update-vm/ template VMs] and standalone VMs.
+* Never run applications in TemplateVMs or dom0, except updating tools or editors for configuration purposes (running applications poses security risks).
+* Avoid [https://www.qubes-os.org/doc/multiboot/ dual / multi-boot configurations] in Qubes. The other OS could modify the unprotected /boot partition or firmware to maliciously compromise Qubes and/or spy on user activities.
+* Follow all other [https://www.qubes-os.org/doc/security-guidelines/ security advice] from the Qubes team.
+
+=== Tor Browser Series and Settings ===
+
+* Consider using the Tor Browser alpha series. It provides additional [https://www.ics.uci.edu/~perl/pets16_selfrando.pdf Selfrando] (load-time memory randomization) protection. <ref>Selfrando provides a significant security improvement over standard address space layout randomization (ASLR) present in Tor Browser and other browsers. Selfrando is incompatible with grsecurity kernels. Due to a recently resolved [https://trac.torproject.org/projects/tor/ticket/20683 bug], Selfrando has not yet been integrated into the alpha series.</ref> <ref>The "hardened" Tor Browser series has been deprecated, see: https://trac.torproject.org/projects/tor/ticket/21912</ref> 
+* Default search settings to the [https://3g2upl4pq6kufc4m.onion/privacy DuckDuckGo] <i>.onion</i> hidden service.
+* Select [https://noscript.net/faq#qa7_1 ClearClick protections] in NoScript.
+* Run the [[Tor_Browser#Security_Slider|Tor Browser Security Slider]] in the highest position. <ref>This may affect usability and proper functioning on some websites.</ref>
+* [https://www.torproject.org/docs/faq.html.en#TBBJavaScriptEnabled Disable Javascript] by default and [[Tor_Browser#Security_vs_Usability_Trade-off|only allow it sparingly]] for trusted sites. <ref>This is more secure, but increases the user's fingerprinting risk due to selective use of Javascript.</ref>
+* Use [https://www.torproject.org/docs/hidden-services.html.en <i>.onion</i> hidden services] where possible to stay within the Tor network.
+* Use [[Tor_Browser#Multiple_Tor_Browser_Instances_and_Whonix-Workstations|multiple Tor Browser instances or Whonix-Workstations]] to better compartmentalize contextual identities.
+* Follow all other [[Tor_Browser#Unsafe_Tor_Browser_Habits|Whonix recommendations for safe use]] of  [[Tor_Browser|Tor Browser]].
+
+=== VirtualBox ===
+
+'''Non-Qubes-Whonix Only'''
+
+* Remove a host of [[Security_Guide#VirtualBox_Hardening|VirtualBox features]] to reduce the attack surface.
+* Take regular, clean [[Security_Guide#VM_Snapshots|VM snapshots]] that are not used for any activities.
+* Spoof the initial [[Advanced_Security_Guide#Spoof_the_Initial_Virtual_Hardware_Clock_Offset|virtual hardware clock offset]].
+
+=== Whonix Updates ===
+
+* Consider installing [[Security_Guide#Tor_Versioning|newer Tor versions]] via the Whonix stable-proposed-updates repository or directly from The Tor Project repository.
+
+== Moderate ==
+
+=== Create a USB Qube ===
+
+'''Qubes-Whonix Only'''
+
+* Prepare and utilize a [https://www.qubes-os.org/doc/usb/ USB qube]. USB keyboards and mice expose dom0 to attacks, and all USB devices are potential [https://en.wikipedia.org/wiki/Side-channel_attack side channel attack vectors].
+
+=== Host Operating System Distribution ===
+
+'''Non-Qubes-Whonix Only'''
+
+* [[Computer_Security_Education#Host_Operating_System|Install GNU/Linux]] as the only serious option for a private host operating system. [https://www.gnu.org/proprietary/malware-microsoft.html Windows] and [https://www.gnu.org/proprietary/malware-apple.en.html MacOS] are surveillance platforms that do not respect user freedom or privacy.
+* The [[Computer_Security_Education#Recommended_GNU.2FLinux_Distribution|Debian distribution]] is recommended by Whonix as providing a reasonable balance of security and usability.
+
+=== Host Operating System Hardening ===
+
+'''Non-Qubes-Whonix Only'''
+
+* [[Advanced_Security_Guide#Harden_Debian|Harden]] the host Debian Linux OS.
+* Use [[Advanced_Security_Guide#Full_Disk_Encryption|Full Disk Encryption (FDE)]] on the host.
+* Apply a [[Advanced_Security_Guide#BIOS_password|BIOS password]] for BIOS setup and boot.
+* [[Advanced_Security_Guide#torify_apt-get_traffic|Torrify apt-get traffic]] on the host to prevent fingerprinting and leakage of sensitive security information.
+* Follow all other Whonix recommendations to [[Advanced_Security_Guide#Host_Security|further harden the host OS]] against [[Advanced_Security_Guide#Physical_Attacks|physical attacks]].
+
+=== Networking ===
+
+'''On both platforms:'''
+* If possible, use a [[Advanced_Security_Guide#Dedicated_connection|dedicated network connection]] (LAN, WiFi etc.) that is not shared with other potentially compromised computers.
+* If using a shared network via a common cable modem/router or ADSL router, configure a [[Advanced_Security_Guide#DMZ|de-militarized zone]] (perimeter network) to restrict Whonix-Gateway accessibility to/from other nodes on the network e.g. printers, phones and laptops.
+* Test the [[Advanced_Security_Guide#Port_Scan|LAN's router/firewall]] with either an internet port scanning service or preferably a port scanning application from an external IP address.
+* Change the default administration password on the router to a unique, random, and suitably long [https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases Diceware passphrase] to prevent bruteforcing attacks.
+* WiFi users should default to the [https://en.wikipedia.org/wiki/Wi-Fi_Protected_Access WPA2-AES standard] which provides the safest protocol and strongest encryption. Do not rely on WiFi Protected Set-up (WPS), which has [https://en.wikipedia.org/wiki/Wi-Fi_Protected_Setup major security flaws].
+* Follow all other Whonix recommendations to [[Computer_Security_Education#Recommended_Router_Settings|lock down the router]].
+
+
+'''In Qubes-Whonix:'''
+* Use the Debian-8 Template for networking (sys-net and sys-firewall) since it is [https://github.com/QubesOS/qubes-issues/issues/1781 minimal in nature] and does not 'ping home', unlike the Fedora Template. <ref>https://forums.whonix.org/t/disable-sys-net-pings-to-fedoraproject-org/1952</ref>
+* For greater security, higher performance and a lower resource footprint, consider using an experimental [https://github.com/talex5/qubes-mirage-firewall MirageOS-based unikernel firewall] that can run as a QubesOS ProxyVM.
+
+=== Newer Kernels ===
+
+'''Qubes-Whonix Only'''
+
+* [https://www.qubes-os.org/doc/software-update-dom0/ Install newer kernels] to benefit from additional protections (including [https://www.grsecurity.net/ grsecurity elements]) being mainlined by the [http://kernsec.org/wiki/index.php/Kernel_Self_Protection_Project kernel hardening project].
+
+=== Onionizing Repositories ===
+
+* Default the Debian, Whonix and Qubes package updates to [[Security_Guide#Onionizing_Repositories|Tor hidden service repositories]].
+
+=== Sandboxing ===
+
+* Use the [[Tor_Browser/Advanced_Users#Sandboxed_Tor_Browser|alpha sandbox]] to restrict Tor Browser. <ref>This is not possible until Whonix 14 is released.</ref>
+* Use [[Security_Guide#Firejail|Firejail]] to restrict Firefox-ESR, VLC and other regularly used applications.
+
+=== Secure Back-ups ===
+
+'''Qubes-Whonix Only'''
+
+* [https://github.com/QubesOS/qubes-issues/issues/971 Store encrypted back-ups] on a separate back-up disk that is already encrypted with LUKS.
+
+=== Spoof MAC Addresses ===
+
+Note: This is only necessary if you expect to travel with your laptop or PC. It is not required for home PCs that do not change locations.
+
+* In Qubes-Whonix, [https://www.qubes-os.org/doc/anonymizing-your-mac-address/ follow these steps] to spoof the MAC address on the Debian or Fedora TemplateVM used for network connections.
+* In Non-Qubes-Whonix, follow [[Computer_Security_Education#Changing_MAC_Addresses|these steps]] to spoof the MAC address of the network card on a Linux, Windows or macOS host.
+
+=== Time Stamps and NTP Clients ===
+
+'''Non-Qubes-Whonix Only'''
+
+* [[Computer_Security_Education#Disable_ICMP_Timestamps|Disable ICMP timestamps]] and [[Computer_Security_Education#Disable_TCP_Timestamps|TCP timestamps]] on the host operating system to prevent leakage of: system information, host time, system uptime, and fingerprinting of devices behind a router.
+* [[Time_Attacks#Clock-Leak_Vectors|Uninstall the NTP client]] on the host operating system and disable systemd's timdatectl NTP synchronization feature. This prevents time-related attack vectors which rely on leakage of the host time.
+
+== Difficult ==
+
+=== Anti-Evil Maid ===
+
+'''Qubes-Whonix Only'''
+
+* If a Trusted Platform Module is available, use [https://www.qubes-os.org/doc/anti-evil-maid/ AEM protection] to attest that only desired (trusted) components are loaded and executed during the system boot. Unauthorized modifications to BIOS or the boot partition will be notified.
+
+=== Chaining Anonymizing Tunnels ===
+
+* Avoid this course of action. The [[Tunnels/Introduction|anonymity benefits are unproven]] and it may actually hurt a user's anonymity and security goals.
+
+=== DisposableVMs ===
+
+'''Qubes-Whonix Only'''
+
+* Run all instances of Tor Browser in a [[Qubes/Disposable_VM|DisposableVM]] which is preferably uncustomized to resist fingerprinting.
+
+=== Email ===
+
+'''In Qubes-Whonix:'''
+* Use [https://www.qubes-os.org/doc/split-gpg/ split-GPG] for email to reduce the risk of key theft used for encryption / decryption and signing.
+* Create an AppVM that is exclusively used for email and  change the VM's firewall settings to only allow network connections to the email server and nothing else ('Deny network access except...').
+* Only open [https://micahflee.com/2016/07/how-qubes-makes-handling-pdfs-way-safer/ untrusted email attachments] in a DisposableVM to prevent possible infection.
+
+
+'''On both platforms:'''
+* Follow the [[E-Mail#Anonymity_Friendly_E-Mail_Provider_List|Whonix recommendations]] to select an email provider compatible with privacy and anonymity:
+** Do not use [http://marketingland.com/yahoo-email-scan-microsoft-scroogled-46416 Yahoo] and [https://www.theguardian.com/technology/2014/apr/15/gmail-scans-all-emails-new-google-terms-clarify Gmail], which use automated software to scan emails for keywords to tailor advertising and sell products. 
+** Do not rely on [https://www.nytimes.com/2014/03/21/technology/microsofts-software-leak-case-raises-privacy-issues.html?_r=0 Hotmail], which has a history of reading private emails and messages.
+* Prefer email providers that are: free, support GPG encryption and key management, have encrypted inboxes by default, are outside [https://en.wikipedia.org/wiki/UKUSA_Agreement#9_Eyes.2C_14_Eyes.2C_and_other_.22third_parties.22 Fourteen Eyes] jurisdictions, and have desktop email compatibility with [[E-Mail#Icedove_.28Mozilla_Thunderbird.29_with_Enigmail_.2B_TorBirdy|Icedove]] (Mozilla Thunderbird).
+
+=== Multi-Factor User Authentication ===
+
+'''Qubes-Whonix Only'''
+
+* Use a [https://www.qubes-os.org/doc/yubi-key/ Yubikey] to enhance the security of Qubes user authentication, mitigate the risk of password snooping, and to improve USB keyboard security.
+
+=== Whitelisting Tor Traffic ===
+* [[Qubes-Whonix]]: Configure sys-whonix to use [[Corridor|corridor]] as a filtering gateway to ensure only connections to Tor relays pass through. This provides an additional fail-safe to protect from accidental clearnet leaks that might arise from hypothetical Whonix bugs, but does not address potential Qubes ProxyVM leaks. <ref>https://github.com/rustybird/corridor</ref>
+* [[Non-Qubes-Whonix]] or Qubes-Whonix: Use a standalone [https://github.com/rustybird/corridor corridor] as a filtering gateway.
+
+== Expert ==
+
+=== Disable Intel ME Blobs ===
+
+* It is possible to [http://hardenedlinux.org/firmware/2016/11/17/neutralize_ME_firmware_on_sandybridge_and_ivybridge.html partially deblob] Intel's despicable ME firmware image by [https://github.com/corna/me_cleaner/blob/master/me_cleaner.py removing unnecessary partitions] from it. '''Warning:''' high risk of bricking your computer!
+
+=== Flash the Router with Opensource Firmware ===
+
+* Flash the insecure, limited-utility, proprietary firmware on the router with a [[Computer_Security_Education#Router_Firmware|powerful, open-source GNU/Linux alternative]]. '''Warning:''' risk of bricking your router!
+
+=== Install Libreboot ===
+
+* [https://libreboot.org/ Libreboot] is a free, opensource BIOS or UEFI replacement (firmware) that initializes the hardware and starts the bootloader for your OS. '''Warning:''' incompatible with newer architectures - risk of bricking your computer!
+
+=== Physical Isolation ===
+
+'''Non-Qubes-Whonix Only'''
+
+* If additional hardware is available, consider [[Dev/Build_Documentation/Physical_Isolation|physical isolation]] in Non-Qubes-Whonix. Using two different computers and virtualization is one of the most secure configurations available, but may be less secure than [http://invisiblethingslab.com/resources/2014/Software_compartmentalization_vs_physical_separation.pdf Qubes' approach] (software compartmentalization).
