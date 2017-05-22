@@ -1,32 +1,103 @@
+<translate>
+
 {{Header}}
 {{#seo:
 |description=How to safely download files. How to defeat web encryption stripping attacks (sslstrip).
 }}
 
-Secure downloading of files is a complex subject and the potential security implications are poorly understood by most users.
+Whonix users will frequently want to download files from the Internet in order to achieve desired aims. Secure downloading of files is a complex subject and the potential security implications are poorly understood by most users.
 
-Whonix users will frequently want to download files from the Internet in order to achieve desired aims. Unfortunately, resorting to the simple wget command is ill-advised, because it is [https://lists.gnu.org/archive/html/bug-wget/2012-07/msg00015.html buggy]. For example, if users do not force a request to use SSL encryption, wget can [https://stackoverflow.com/a/38835162 fail silently]. Even when SSL is enforced with a command line option, this can [https://www.gnu.org/software/wget/manual/html_node/HTTPS-0028SSL002fTLS_0029-Options.html break interoperability with some sites] that use self-signed, expired or invalid certificates. Users could potentially ignore certificate verification warnings and proceed with downloads where the site's authenticity is in question.
+= Downloads with scurl - SSL Command Line Downloader =
 
-To provide greater security when downloading, Whonix has implemented a scurl script. This invokes the usage of [https://packages.debian.org/jessie/curl curl] with the following additional command line parameters:
+'''Note:''' This is for advanced users. In all cases, users should avoid downloading files over plain HTTP.
 
-* <code>--tlsv1.2 --proto =https</code> to enforce strong encryption.
-* <ref>In Whonix 14 it will also use:
-<code>--remote-name</code> to simplify naming conventions for downloaded files.
-</ref>
-<br />
-Scurl is not vulnerable to [https://security.stackexchange.com/questions/41988/how-does-sslstrip-work SSLstrip]. This is a man-in-the-middle attack which forces a user's browser to communicate with the adversary in plain-text over HTTP (poisoning the download).
+== Introduction ==
 
-Unfortunately, scurl is mostly only available in Whonix and the command will generally not work in other distributions. To use scurl, simply run (replace "httpsURL" with the actual file location).
+When using the command line to download files, resorting to the simple wget command is ill-advised, because it is [https://lists.gnu.org/archive/html/bug-wget/2012-07/msg00015.html buggy]. For example, if users do not force a request to use SSL encryption, wget can [https://stackoverflow.com/a/38835162 fail silently]. Even when SSL is enforced with a command line option, this can [https://www.gnu.org/software/wget/manual/html_node/HTTPS-0028SSL002fTLS_0029-Options.html break interoperability with some sites] that use self-signed, expired or invalid certificates. Users could potentially ignore certificate verification warnings and proceed with downloads where the site's authenticity is in question.
+
+To provide greater security when downloading, scurl comes pre-installed in Whonix and provides a simple wrapper around [https://packages.debian.org/jessie/curl curl]. {{Code|/usr/bin/scurl}} simply adds <code>{{Curl Secure}}</code> to all curl instances to enforce strong encryption. It also has [[Stream Isolation]] in Whonix, because {{Code|/usr/bin/curl}} is a {{Code|uwt wrapper}} symlinked to {{Code|/usr/lib/whonix/uwtwrapper}}, which will ultimately run {{Code|/usr/bin/curl.real}}. <ref>In Whonix 14 it will also use:
+<code>--remote-name</code> to simplify naming conventions for downloaded files.</ref>
+
+scurl is not vulnerable to [https://security.stackexchange.com/questions/41988/how-does-sslstrip-work SSLstrip]. This is a man-in-the-middle attack which forces a user's browser to communicate with the adversary in plain-text over HTTP (poisoning the download). At present, scurl is mostly only available in Whonix and the command will generally not work in other distributions. 
+
+== How-to: Invoke scurl ==
+
+Note: In the examples below, the file will be saved in the user's current working directory. If the file should be saved elsewhere, change the current working directory before running scurl.
+
+Also, if the <code>--remote-name</code> parameter is used, scurl will [https://curl.haxx.se/docs/manpage.html#-O write output to a local file with the same name as the remote file retrieved]. Only the file part of the remote file is used and the path is cut off.
+
+To invoke scurl to download a file, simply run (replace the https:// example with the actual file location).
 
 {{CodeSelect|code=
-scurl --remote-name httpsURL
+scurl --remote-name https://www.torproject.org/dist/torbrowser/6.5.2/tor-browser-linux64-6.5.2_en-US.tar.xz
 }}
 
-In all cases, users should avoid downloading files over plain HTTP.
+This will download <i>tor-browser-linux64-6.5.2_en-US.tar.xz</i> to the user's current working directory.
+
+To invoke scurl to download a web page, run (replace the https:// example with the actual webpage).
+
+{{CodeSelect|code=
+scurl https://check.torproject.org
+}}
+
+All other curl/Linux features continue to work, such as storing the input inside of a file (change <i>index.html</i> to the desired file name).
+
+{{CodeSelect|code=
+scurl https://check.torproject.org > index.html
+}}
+
+== scurl Errors ==
+
+As expected, attempting scurl with plain HTTP will fail. 
+
+{{CodeSelect|code=
+scurl http://check.torproject.org
+}}
+
+This will result in the following output.
+
+<pre>curl: (1) Protocol http not supported or disabled in libcurl</pre>
+
+Similarly, scurl fails with the following attempt.
+
+{{CodeSelect|code=
+scurl check.torproject.org
+}}
+
+Returning the following output.
+
+<pre>curl: (1) Protocol http not supported or disabled in libcurl</pre>
+
+Running scurl against a self-signed or invalid SSL certificate also fails.
+
+{{CodeSelect|code=
+scurl https://www.debian-administration.org
+}}
+
+This results in the an error, for example.
+
+<pre>
+curl: (60) SSL certificate problem: self signed certificate
+More details here: http://curl.haxx.se/docs/sslcerts.html
+
+curl performs SSL certificate verification by default, using a "bundle"
+ of Certificate Authority (CA) public keys (CA certs). If the default
+ bundle file is not adequate, you can specify an alternate file
+ using the --cacert option.
+If this HTTPS server uses a certificate signed by a CA represented in
+ the bundle, the certificate verification probably failed due to a
+ problem with the certificate (it might be expired, or the name might
+ not match the domain name in the URL).
+If you'd like to turn off curl's verification of the certificate, use
+ the -k (or --insecure) option.
+</pre>
+
+= Secure Downloads with Tor Browser =
+
+TODO: Instructions as per https://phabricator.whonix.org/T677#13318
 
 = Footnotes =
 <references />
-
-{{Footer}}
-
 [[Category:Documentation]]
+{{Footer}}
+</translate>
