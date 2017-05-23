@@ -548,65 +548,13 @@ In conclusion, the main repository gets most attention and security updates. It 
 <!--T:350-->
 Whonix currently doesn't do that by default and it is an open question for research if that really improves security. 
 
-== grsecurity ==
+== Hardened Kernels ==
 
-=== About grsecurity === <!--T:352-->
-<translate>
-Linux kernel is not a secure OS, Linus himself made it pretty clear that he doesn't think highly of the "security community"<tvar|282><ref>http://www.networkworld.com/article/2274866/lan-wan/torvalds--fed-up-with-the--security-circus-.html</ref></>. His threat model and a Tor User threat model don't have much in common. Good that Linux is open source and if we disagree with a policy or politics we can just patch or fork it... Grsecurity/PaX is the most comprehensive kernel patch providing much needed security hardening both for the kernel itself and for making userland protections more effective. 
-</translate>
+The upstream Kernel Self Protection Project<ref>http://www.openwall.com/lists/kernel-hardening</ref> (KSPP) was started in 2015 with the goal of introducing more hardening features into mainline Linux, including many features from the formerly publicly available patchset Grsecurity. The good side is users no longer need to compile and tweak settings to get a secure kernel as that will be the default. 
 
-<!--T:353-->
-<translate>
-Sadly Debian does not ship a grsecurity kernel. <tvar|283><ref>https://wiki.debian.org/grsecurity</ref></> That means either a packager/maintainer of Whonix needs to compile them EVERY TIME there is a security update to the kernel (which is pretty frequently) or the Whonix users themselves need to compile and update their kernels. This is undesirable because kernel compilation is not set and forget, you need a bit of knowledge, it takes a while, especially in a resource restricted VM and you need to keep updated about new releases via mailing lists or similar because your software updater doesn't automatically handle custom kernels (even emerge in hardened gentoo doesn't). All this would most likely only result in users running old, outdated kernel versions.
-</translate>
+The Hardened Kernel Project is a collaborative effort between Arch and Gentoo devs who handled Grsecurity packaging in their respective distros with the goal of accelerating mainlining of the patchset. <ref>https://wiki.gentoo.org/wiki/Hardened/Hardened_Kernel_Project</ref><ref>https://github.com/thestinger/linux-hardened</ref>
 
-<!--T:354-->
-Furthermore, for Whonix-Gateway and the Identity/Location TCB grsecurity only addresses a subset of security risks: It can mitigate ''some'' kernel vulnerabilities (and we only really care about the networking stack which is pretty secure judging from its track record). '''Maybe''' '''''some''''' (memory corruption) vulnerabilities in apt-get and Tor that aren't already mitigated by the existing userland hardening done by Ubuntu. It can't protect against backdoors or security issues related to design, policy or yet unknown classes of exploits. We feel that these relatively small advantages outweigh the issues introduced by using a custom compiled kernel. <s>We hope a binary distro will step forward and start using grsecurity. In that case we'll most likely switch Whonix-Gateway to that distro as soon as possible.</s>
-
-<!--T:355-->
-For Whonix-Workstation the benefits are even more doubtful. To be effective grsecurity needs to lock down some functions that are needed by Xorg, JIT compilers... but we need those to be working. To solve this we'd have to write a restrictive RBAC policy which is far from trivial. We think accepting that Whonix-Workstation will be exploitable and acting accordingly (using snapshots and rolling back to clean state) is the right approach for a desktop system.
-
-<!--T:356-->
-If you disagree with this assessment or have any suggestions how to improve the current situation please let us know.
-
-<!--T:357-->
-<translate>
-Experts only: There is also Hardened Gentoo based Whonix-Gateway. Outdated, needs maintainer. See [<tvar|284>https://www.whonix.org/wiki/Hardened_Gentoo_TG</> Hardened Gentoo TG] . 
-</translate>
-
-<!--T:358-->
-Updates:
-* <translate>There's Alpine Linux, where Tor is in testing. [<tvar|285>http://bugs.alpinelinux.org/issues/1067</> Package Request: Tor].</ref></translate>
-* <translate>Arch Linux offers a grsecurity kernel. <tvar|286><ref>https://wiki.archlinux.org/index.php/Grsecurity</ref></></translate>
-
-<!--T:359-->
-Footnotes:
-
-<references/>
-
-=== Installation ===
-Try these instructions: [[grsecurity]]
-
-Or...
-
-'''Advanced users only!'''<br />
-These instructions are not in a state yet where they are easily usable by anyone.
-
-Install {{Code2|[https://github.com/Whonix/genmkfile genmkfile]}}. See instructions for {{Code2|[[Dev/Build_Documentation/apparmor-profile-torbrowser|apparmor-profile-torbrowser]]}} but replace {{Code2|apparmor-profile-torbrowser}} with {{Code2|genmkfile}}.
-
-Install {{Code2|[https://github.com/Whonix/grsecurity-installer grsecurity-installer]}}. See instructions for {{Code2|[[Dev/Build_Documentation/apparmor-profile-torbrowser|apparmor-profile-torbrowser]]}} but replace {{Code2|apparmor-profile-torbrowser}} with {{Code2|grsecurity-installer}}.
-
-To speed up compilation, you might want to assign additional CPU cores and more RAM to your virtual machine.
-
-Run {{Code2|grsecurity-installer}} to download kernel sources, grsecurity patch, compile and install the grsecurity kernel.
-
-{{CodeSelect|code=
-sudo bash -x grsecurity-installer
-}}
-
-During {{Code2|make menuconfig}} you need to enable grsecurity.
-
-TODO: expand
+Note that while important, a hardened kernel only addresses a subset of security risks. It can't protect against backdoors or security issues related to design, policy or yet unknown classes of exploits.
 
 == Vulnerabilities at Install Time == <!--T:360-->
 === Introduction ===
