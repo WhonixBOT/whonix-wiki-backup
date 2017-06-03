@@ -708,6 +708,7 @@ Libvirt supports passing through a computer's integrated webcam or any other USB
 
 '''WARNING: You should only connect USB devices to Whonix-Workstation when its in a clean trusted state. The only safe and recommended way to move files out of a VM is through Shared Folders.'''
 
+
 While Whonix-Workstation is shut down, add two USB redirection devices:
 
 <pre>
@@ -729,6 +730,50 @@ Whonix-Workstation viewer window -> File -> Redirect USB -> Choose: Webcam (or a
 </pre>
 
 Note that the last step needs to be done on demand as the device passed through is not set permanently across reboots. This prevents mistakes like USB passthrough when the VM is in an untrusted state.
+
+
+
+=== Sandboxing Untrusted USB Drives ===
+
+Apply these steps before the instructions above to auto-sandbox untrusted USB flash drives. USB auto-redirection is disabled by default by Debian maintainers to prevent accidental passthrough of clean USB devices to untrusted guests.<ref>https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=765016</ref><ref>https://anonscm.debian.org/cgit/pkg-libvirt/virt-manager.git/commit/?id=d81fd3c3af1abde1fa0e2bf3b79643f36836f45b</ref>  so they must be reverted temporarily. Once you are done, change them back to safe defaults by going through the steps in reverse order.
+
+
+'''Limitations'''
+
+These steps apply to USB storage devices only. Portable devices such as phones and tablets are problematic and may not be successfully auto-redirected.
+
+The USB drive will only be isolated as long as the Whonix-Workstation is running. This isolation method is not fool-proof as a sophisticated attacker can tweak their BadUSB payload to crash the guest and cause the host to take control of the device and parse its malicious code. An untested workaround is to add a ''Watchdog'' virtual device to guard against unexpected guest crashes.
+
+
+
+Edit the libvirt glib-2.0 schema:
+
+<pre>
+kdesudo kate /usr/share/glib-2.0/schemas/10_virt-manager.gschema.override
+</pre>
+
+
+Change default contents:
+
+<pre>
+[org.virt-manager.virt-manager.console]
+auto-redirect=false
+</pre>
+
+to 
+
+<pre>
+[org.virt-manager.virt-manager.console]
+</pre>
+
+
+Recompile for them to take effect<ref>https://developer.gnome.org/gio/stable/glib-compile-schemas.html</ref>:
+<pre>
+sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
+</pre>
+
+
+Add the USB Redirection devices as specified in previous instructions then boot Whonix-Workstation and connect the USB thumbdrive. It should be automatically seen in the guest only.
 
 == Editing an imported Machine's XML Configuration ==
 Eventually configure your faviorite editor to make changes. Set visual to your favorite editor (must be installed, examples are kwrite, leafpad, kate, vi, nano, vim, etc.).
