@@ -209,8 +209,75 @@ In its default configuration, pEp does not rely on a web of trust or any form of
 
 For further information on the project's check their [https://prettyeasyprivacy.com/faq/ milestones] [https://pep.foundation/pep-software/index.html pages].
 
-= Bitmessage =
-[https://bitmessage.org Bitmesage] might be another alternative to e-mail. Not yet tested by Whonix developers<s>, because [https://github.com/Bitmessage/PyBitmessage/issues/108 Bitmessage developers do not yet sign their their source code]</s>.
+= BitMessage =
+
+== Intro ==
+[https://bitmessage.org BitMessage] is a P2P asynchronous communications protocol used to send encrypted messages to another person or to many subscribers. The PyBitmessage client is in Python with a Qt GUI. It is decentralized and trustless, meaning that you need-not inherently trust any entities like root certificate authorities. It uses strong self-authenticating Bitcoin style addresses which means that the sender of a message cannot be spoofed. Messages for offline recipients are stored for up to 28 days before being deleted. It relies on Proof-of-Work to prevent spamming. Development of Android clients has stalled. Connecting with a mobile client needs a full node running on a user's PC. 
+
+BitMessage hides sender/recipient metadata by broadcasting everybody's messages to everybody, acting as a simple private information retrieval (PIR) system. For the best possible anonymity run it in Whonix.
+
+Some features include subscription support and Chans (Decentralized Mailing Lists) <ref>https://bitmessage.org/wiki/Decentralized_Mailing_List</ref> For other use-cases see the Arch [https://wiki.archlinux.org/index.php/Bitmessage wiki] on BitMessage.
+
+Bridging services between the BitMessage network and legacy/regular E-mail exist. The most popular is [https://bitmessage.ch/ bitmessage.ch].
+See [https://bitmessage.ch/setup.html setup instructions] to setup an account then [https://bitmessage.ch/register register]. Note that GPG needs to be used for confidentiality when communicating with e-mail users.
+
+For comparison between it and other open source communications software see the [https://bitmessage.org/wiki/FAQ#How_does_Bitmessage_compare_to_other_messaging_methods FAQ].
+
+No professional audit has been done for BitMessage to date. While we never condone criminal abuse of technology, its past use by criminals running a ransomware operation (over Tor) without getting caught, shows that it is somewhat "battle-tested". We hope that dissidents in rogue nations could profit from that experiment.<ref>https://www.bleepingcomputer.com/news/security/chimera-ransomware-uses-a-peer-to-peer-decryption-service/</ref>
+
+
+== Install ==
+The following instructions are for compiling/starting BitMessage and upgrading.<ref>https://bitmessage.org/wiki/Compiling_instructions</ref> [https://github.com/Bitmessage/PyBitmessage/issues/108 Bitmessage developers sign their their source code] TO-DO: Add instructions to verfy git tags.
+
+<pre>
+sudo apt-get install git python openssl libssl-dev git python-msgpack python-qt4
+</pre>
+
+<pre>
+git clone https://github.com/Bitmessage/PyBitmessage $HOME/PyBitmessage
+</pre>
+
+<pre>
+~/PyBitmessage/src/bitmessagemain.py
+</pre>
+
+=== Upgrade ===
+To upgrade Bitmessage run the following commands:
+
+<pre>
+cd $HOME/PyBitmessage
+git pull
+</pre>
+
+
+== Send Attachments ==
+While explicitly attaching files is not supported, technically any file can be sent within he message body.<ref>https://tedjonesweb.blogspot.fr/2013/06/how-to-send-files-like-e-mail.html</ref>
+
+First convert your file with base64 and then copy and paste the contents of the text file.
+
+<pre>
+base64 < binary.file > text.file
+</pre>
+
+Don't forget to include instructions to the receiver how to decode it. In order to decode the file, the recipient can copy and paste the code into file and convert it with this command:
+
+<pre>
+base64 -d < text.file > binary.file
+</pre>
+ 
+ 
+Note that it is not very practical to send large files with BitMessage. Alternatively you can encrypt and file or archive containing a collection with GPG and upload it to un-trusted cloud storage and send recipients the link. Encryption can be done to a contact's public key or with symmetric encryption requiring a password which you send in BitMessage. For GPG symmetric encryption follow this example:
+
+<pre>
+gpg -vv -c --cipher-algo AES256 your-file.tar.gz
+</pre>
+
+Note that you can use the extended output of <code>pwgen</code> (pre-installed in Whonix 14+) for secure passwords.
+
+== User Data Back-Up ==
+To backup the BitMessage profile and all user-generated program data, copy the folder under this path to your shared folder: <code>/home/user/.config/PyBitmessage</code>. Private keys are stored in '''keys.dat'''<ref>https://bitmessage.org/wiki/Keys.dat</ref> and other data such as inbox contents, contacts and black/white-list info is stored in the '''messages.dat'''<ref>https://bitmessage.org/wiki/Messages.dat</ref> database file. Copy the folder to this location to restore BitMessage data for new installs.
+
+To maintain separate BitMessage identities, the safest way is to run each with its own BitMessage instance in separate Whonix-Workstations.
 
 = Freemail =
 Freemail<ref>https://github.com/freenet/plugin-Freemail/blob/master/docs/spec/spec.tex</ref> is an email system implemented upon the anonymous data distribution network [[Freenet|Freenet]]. It is most similar to I2P-Bote, another anonymous and distributed email solution.  
