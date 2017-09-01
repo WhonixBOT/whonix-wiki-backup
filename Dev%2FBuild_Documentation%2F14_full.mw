@@ -84,58 +84,6 @@ sudo apt-get install git curl
 * [[Dev/Get_Whonix_Source_Code|Get Whonix source code]].
 * [[Template:Build_Configuration|OPTIONAL build configuration]]
 
-= onion sources =
-If you are building behind a Tor transparent proxy such as Whonix-Gateway, you can skip the following steps.
-
-{{mbox
-| image   = [[File:Ambox_notice.png|40px]]
-| text       =
-If you skip these steps of setting up a torified apt-cacher-ng, you must below drop and not use  <code>REPO_PROXY=http://127.0.0.1:3142</code>.
-}}
-
-{{mbox
-| image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       = 
-Note, this neither torifies all of the build script's connections nor hides Tor from your ISP!
-}}
-
-Install apt-cacher-ng-, torsocks and tor.
-
-<pre>
-sudo apt-get install apt-cacher-ng torsocks tor
-</pre>
-
-Create folder apt-cacher-ng systemd drop-in folder <code>/lib/systemd/system/apt-cacher-ng.service.d</code>.
-
-<pre>
-sudo mkdir -p /lib/systemd/system/apt-cacher-ng.service.d
-</pre>
-
-{{Open with root rights|
-filename=/lib/systemd/system/apt-cacher-ng.service.d/50_user.conf
-}}
-
-Add.
-
-<pre>
-[Service]
-ExecStart=torsocks /usr/sbin/apt-cacher-ng SocketPath=/run/apt-cacher-ng/socket -c /etc/apt-cacher-ng ForeGround=1
-</pre>
-
-Save.
-
-Reload systemd.
-
-<pre>
-sudo systemctl daemon-reload
-</pre>
-
-Restart apt-cacher-ng.
-
-<pre>
-sudo systemctl apt-cacher-ng restart
-</pre>
-
 = VM Creation =
 <!--
 EDITORS NOTE:
