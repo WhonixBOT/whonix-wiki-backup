@@ -31,18 +31,16 @@ The [[Software|Whonix software]] page lists:
 
 = Best Practices =
 == Prefer APT ==
-It's generally the safest option to stick with Debian's official package manager <code>APT</code> which is referenced many times in this wiki by running <code>apt-get</code> It is a secure package manager running metadata verification and expiration detection which passes the TUF threat model. <ref name=tufaaw>https://github.com/theupdateframework/tuf/blob/develop/SECURITY.md http://www.webcitation.org/6F7Io2ncN</ref> <ref>
+Generally, the safest option is to stick with Debian's official package manager <code>APT</code>. This is referenced throughout the wiki whenever the user runs <code>apt-get</code>. <code>APT</code> is a secure package manager which passes the TUF threat model, since it features metadata verification and expiration detection. <ref name=tufaaw>https://github.com/theupdateframework/tuf/blob/develop/SECURITY.md http://www.webcitation.org/6F7Io2ncN</ref> <ref>
 https://www2.cs.arizona.edu/stork/packagemanagersecurity/attacks-on-package-managers.html
 </ref>
 
 == Avoid Third Party Package Managers ==
-There are many third party package managers besides <code>APT</code>, however they lack the security safeguards that are standard in Debian. Popular examples are <code>pip</code> and <code>node.js</code>. The security concern with them is that they have no notion of verifying that the code comes from the author. Essentially you are running a process that pulls untrusted code from the internet and performs operations on it as root. Its not recommended if you want a trusted Workstation VM for sensitive use cases such as a Bitcoin wallet.<ref>https://web.archive.org/web/20170919173146/https://arstechnica.com/information-technology/2017/09/devs-unknowingly-use-malicious-modules-put-into-official-python-repository/</ref><ref>The pip devs refused to implement any type of proper GPG sig verification, opting to support server HTTPS instead which is a lot weaker: https://github.com/pypa/pip/issues/1035 . While the TUF secure updater project has implemented a safe version of pip, its not clear how wide the adoption is or will be: https://theupdateframework.github.io/</ref>
+There are many third party package managers besides <code>APT</code>, however they lack the security safeguards that are standard in Debian. Popular examples are <code>pip</code> and <code>node.js</code>. The security concern with third party options is they do not verify the code comes from the author. When used, these package managers will run processes that pull untrusted code from the Internet and perform operations with root level permissions. The user should avoid third party package managers if a trusted Workstation VM for sensitive use cases such as a Bitcoin wallet is required. <ref>https://web.archive.org/web/20170919173146/https://arstechnica.com/information-technology/2017/09/devs-unknowingly-use-malicious-modules-put-into-official-python-repository/</ref> <ref>The pip devs refused to implement any type of proper GPG signature verification, opting to support server HTTPS instead which is a lot weaker: https://github.com/pypa/pip/issues/1035 . While the TUF secure updater project has implemented a safe version of pip, it is not clear how wide the adoption is or will be: https://theupdateframework.github.io/</ref>
 
 == Avoid Manual Software Installation ==
 
-Generally refrain from manually installing packages, even trusted ones. In practice that means only installing software with apt-get, since manually installed packages tend not to be updated by users in a timely fashion.
-
-apt-get uses OpenPGP verification to ensure packages are not maliciously altered during transit. This security benefit is often overlooked by users who manually install software. Many will proceed with installations even though the software vendor has not provided OpenPGP signatures which provide cryptographic verification of authenticity.
+Generally avoid manually installing packages (even trusted ones). That means, avoid installing software without using apt-get. This is because they tend not to get updated by the user in a timely fashion.
 
 == Prefer Packages from Debian Stable Repository ==
 
@@ -63,15 +61,15 @@ Since there is typically over 1 year between releases you might find that stable
 On the other hand, packages in testing or unstable can have hidden bugs, security holes etc., Moreover, some packages in testing and unstable might not be working as intended.
 </blockquote>
 
-Only advanced users should mix packages from Debian testing or Debian unstable because it could lead to a [[#Dependency Hell|dependency hell]], that is, breaking of APT's package management which is very difficult to fix.
+Mixing with packages from Debian testing or Debian unstable should only be done by advanced users because it could lead to a [[#Dependency Hell|dependency hell]], i.e. to breaking the APT package management which is very difficult to fix.
 
-When newer package versions are required, Debian backports <ref>[http://backports.debian.org Debian Backports]</ref> is a far better alternative than packages from Debian testing or unstable. That said, Debian backports should be used conservatively:
+Debian backports <ref>[http://backports.debian.org Debian Backports]</ref> are a much better alternative of mixing newer package versions than mixing with Debian testing or unstable. However, Debian backports should be used conservatively:
 
 <blockquote>
 Backports cannot be tested as extensively as Debian stable, and backports are provided on an as-is basis, with risk of incompatibilities with other components in Debian stable. Use with care!
 </blockquote>
 
-For instructions on how to use backports, see [[#Backports|Debian Backports]].
+You can find instructions on how to use backports under [[#Backports|Debian Backports]].
 
 = GUI Applications with Root Rights =
 Never login as {{Code2|root}} user ({{Code2|sudo su}}) or run GUI applications using {{Code2|sudo application}}. This will fail and is a limitation inherited from Debian. If a user attempts this action, error messages like those below will appear.
