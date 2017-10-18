@@ -229,38 +229,60 @@ Firejail works in both [[Qubes-Whonix]] and [[Non-Qubes-Whonix]]. Before complet
 '''1. Boot the Whonix-Workstation ({{Code2|whonix-ws}}) TemplateVM'''
 
 '''2. Add jessie-backports to sources.list'''
-<pre>
+{{CodeSelect|code=
 sudo su -c "echo -e 'deb http://http.debian.net/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
-</pre>
+}}
 Or alternatively use the <i>.onion</i> mirror.
-<pre>
+{{CodeSelect|code=
 sudo su -c "echo -e 'deb http://vwakviie2ienjx6t.onion/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
-</pre>
+}}
 '''3. Use Apt-pinning Before Installing Dependencies'''
 
+Note: this step is no longer required.
 {{Apt-Pinning}}
-
 '''4. [[Update#Updates|Update]] the Package Lists'''
-<pre>
+
+{{CodeSelect|code=
 sudo apt-get update
-</pre>
+}}
 '''5. Install Firejail'''
-<pre>
+
+{{CodeSelect|code=
 sudo apt-get -t jessie-backports install firejail
-</pre>
+}}
 '''6. Launch Firejail'''
 
 Note: In [[Qubes-Whonix]], a new Whonix-Workstation AppVM based on the modified template should be created before running any applications. Never launch programs in your Whonix-Workstation TemplateVM.
 
 To run sandboxed applications, simply prefix your program command with "firejail" in a terminal. For example: 
-<pre>
+{{CodeSelect|code=
 firejail evince
 
 firejail vlc
-</pre>
-There is no secure and reliable way to create start menu entries / desktop shortcuts using Firejail. In the meantime, start firejailed applications from the command line. 
+}}
 
-For a list of command line options, refer to the official Firejail documentation: https://firejail.wordpress.com/features-3/man-firejail/ For a further technical discussion of Firejail, see: https://forums.whonix.org/t/firejail-seccomp-more-options-for-program-containment
+'''7. ''Optional'': Use Additional Firejail Command Line Options'''
+
+The full list of command line options can be found in the [https://firejail.wordpress.com/features-3/man-firejail/ official Firejail documentation]. Alternatively, run the following command in konsole in the Whonix-Workstation AppVM.
+{{CodeSelect|code=
+man firejail
+}}
+
+The interested reader should note the host of additional security features. For instance, VLC could be run while blocking access to the internet as follows.
+{{CodeSelect|code=
+firejail --net=none vlc
+}}
+
+Similarly, the following commands would run Firefox or Tor Browser with seccomp restrictions and debug output. <ref>Preliminary tests of other security features reveals they are not yet functional in Whonix, for instance {{code|--apparmor}}, {{code|--private}}, and {{code|--overlay-tmpfs}}. If the user does not specify a path to a specific profile when running Firejail, it will search for any relevant profile automatically. If a profile is not found, a default profile will be used.</ref>
+{{CodeSelect|code=
+firejail --debug --seccomp firefox
+
+firejail --debug --seccomp torbrowser
+}}
+
+For a further technical discussion of Firejail, see [https://forums.whonix.org/t/firejail-seccomp-more-options-for-program-containment here].
+
+Note: There is no secure and reliable way to create start menu entries / desktop shortcuts using Firejail. In the meantime, start firejailed applications from the command line.
 
 ====Sandboxing Tor Browser====
 The [[Tor_Browser/Advanced_Users#Sandboxed_Tor_Browser|sandboxed Tor Browser]] cannot be used until [[About#Whonix_version|Whonix 14 is released]]. In the meantime, consider using Firejail as an interim sandboxing measure to restrict the Tor Browser process. 
