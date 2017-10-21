@@ -37,6 +37,77 @@ If that is too much to read, then just take a glimpse at the graphics:
 * [https://krebsonsecurity.com/wp-content/uploads/2012/10/HackedPC2012.png The Scrap Value of a Hacked PC, Revisited (picture).]
 * [https://krebsonsecurity.com/wp-content/uploads/2013/06/HE-1-600x333.jpg The Value of a Hacked Email Account (picture).]
 
+= Virtualization Platform =
+== Type 1 vs Type 2 Hypervisors ==
+
+According to qubes-os.org: <ref>https://www.qubes-os.org/intro/</ref>
+
+<blockquote>Not all virtual machine software is equal when it comes to security. You may have used or heard of VMs in relation to software like VirtualBox or VMware Workstation. These are known as “Type 2” or “hosted” hypervisors. (The hypervisor is the software, firmware, or hardware that creates and runs virtual machines.) These programs are popular because they’re designed primarily to be easy to use and run under popular OSes like Windows (which is called the host OS, since it “hosts” the VMs). However, the fact that Type 2 hypervisors run under the host OS means that they’re really only as secure as the host OS itself. If the host OS is ever compromised, then any VMs it hosts are also effectively compromised.
+
+By contrast, Qubes uses a “Type 1” or “bare metal” hypervisor called Xen. Instead of running inside an OS, Type 1 hypervisors run directly on the “bare metal” of the hardware. This means that an attacker must be capable of subverting the hypervisor itself in order to compromise the entire system, which is vastly more difficult.</blockquote>
+
+The take-home message is that [[Qubes-Whonix|Qubes-Whonix]] is more secure than the default Whonix configuration using a Type 2 hypervisor like VirtualBox. Therefore, it is recommended to install Qubes-Whonix if users have suitably [https://www.qubes-os.org/doc/system-requirements/ modern hardware].
+
+== Qubes-Whonix vs Physically-Isolated Non-Qubes-Whonix ==
+
+In [[Non-Qubes-Whonix]], using a separate computer for [[Dev/Build_Documentation/Physical_Isolation|physical isolation]] is certainly more secure than using the same computer for everything in the standard host OS / Type 2 hypervisor configuration. However, it is not clear this is superior to Qubes' [http://invisiblethingslab.com/resources/2014/Software_compartmentalization_vs_physical_separation.pdf compartmentalized software approach].
+
+Consider the pros and cons of physical isolation relative to Qubes: <ref>https://www.qubes-os.org/intro/</ref>
+
+<blockquote>Pros
+
+* Physical separation doesn’t rely on a hypervisor. (It’s very unlikely that an attacker will break out of Qubes’ hypervisor, but if one were to manage to do so, one could potentially gain control over the entire system).
+* Physical separation can be a natural complement to physical security. (For example, you might find it natural to lock your secure laptop in a safe when you take your unsecure laptop out with you).
+</blockquote>
+
+<blockquote>Cons
+
+* Physical separation can be cumbersome and expensive, since we may have to obtain and set up a separate physical machine for each security level we need.
+* There’s generally no secure way to transfer data between physically separate computers running conventional OSes. (Qubes has a secure inter-VM file transfer system to handle this).
+* Physically separate computers running conventional OSes are still independently vulnerable to most conventional attacks due to their monolithic nature.
+* Malware which can bridge air gaps has existed for several years now and is becoming increasingly common.</blockquote>
+
+In summary, the relative merits of physical isolation do not necessarily provide any more protection than Qubes' approach. Physical isolation is relatively difficult, still experimental, inconvenient, and requires a significant time investment. On the other hand, Qubes is relatively easy to install, has fully integrated Whonix, and is convenient for most activities. 
+
+Qubes also supports [[Qubes/Why_use_Qubes_over_other_Virtualizers|a host of features]] unavailable in the physically-isolated model, such as: DisposableVMs, a USB VM, secure copy / paste operations between VMs, secure copying and transfers of files between VMs, and sanitization of PDFs and images.
+
+For these reasons, [[Qubes-Whonix]] is recommended for the majority of users seeking a higher-security solution.
+
+== Qubes-Whonix Hardware Requirements ==
+For Qubes-Whonix hardware requirements, see [[System_Requirements|here]].
+
+== VirtualBox Hardening ==
+
+For an overview on VM security risks in general, see: [http://security.stackexchange.com/questions/3056/how-secure-are-virtual-machines-really-false-sense-of-security How secure are Virtual Machines really?]
+
+The less features enabled, the smaller the [http://en.wikipedia.org/wiki/Attack_surface attack surface]. The following features can be removed or disabled without impacting core functionality:
+
+* Disable Audio.
+* Do not enable Shared Folders.
+* Do not enable video acceleration.
+* Do not enable 3D acceleration. <ref>
+Quote http://www.virtualbox.org/manual/ch04.html#guestadd-3d
+<blockquote>
+Untrusted guest systems should not be allowed to use VirtualBox's 3D acceleration features, just as untrusted host software should not be allowed to use 3D acceleration. Drivers for 3D hardware are generally too complex to be made properly secure and any software which is allowed to access them may be able to compromise the operating system running them. In addition, enabling 3D acceleration gives the guest direct access to a large body of additional program code in the VirtualBox host process which it might conceivably be able to use to crash the virtual machine.
+</blockquote>
+</ref> <ref>
+Quote https://hsmr.cc/palinopsia/
+<blockquote>
+If the "3D-Acceleration" feature of VirtualBox is activated, running the proof-of-concept code from inside the VM provides the ability to read framebuffers from the host system. 
+</blockquote>
+</ref>
+* Do not enable the Serial Port.
+* Remove the Floppy drive.
+* Remove the CD/DVD drive.
+* Do not attach USB devices.
+* Disable the USB controller which is enabled by default. Set the Pointing Device to "PS/2 Mouse" or changes will revert.
+* Do disable Advanced Configuration and Power Interface (ACPI). ACPI information is passed to guest OS by default, which allow guest OS to obtain battery status and manufacturer information.
+* Do not enable the Remote Display server.
+* Enable PAE/NX (NX is a security feature).
+
+
+Not enabling IO APIC, EFI may also provide some protection, but this requires further investigation.
+
 = Operating System =
 
 {{Anchor|Recommendation to install latest security updates on all systems}}
@@ -53,6 +124,14 @@ If that is too much to read, then just take a glimpse at the graphics:
 '''<u>Be sure to read and understand [[CVE-2016-1252|CVE-2016-1252 secure apt-get upgrading]].</u>'''
 
 {{Operating_System_Updates}}
+
+== Updating with Extra Care ==
+
+See [[Install_Software#How-to:_Install_or_Update_with_Utmost_Caution|How-to: Install or Update with Utmost Caution]].
+
+== Installing Additional Software ==
+
+See [[Install Software]].
 
 = Whonix-Gateway Security =
 == General ==
@@ -101,6 +180,23 @@ ConnectionPadding 1
 </pre>
 
 Save and exit.
+
+== AppArmor ==
+According to debian.org: <ref>https://wiki.debian.org/AppArmor</ref>
+
+<blockquote>AppArmor is a Mandatory Access Control framework. When enabled, AppArmor confines programs according to a set of rules that specify what files a given program can access. This proactive approach helps protect the system against both known and unknown vulnerabilities.</blockquote>
+
+AppArmor provides a number of advantages: <ref>http://wiki.apparmor.net/index.php/Main_Page</ref>
+
+* It protects the operating system and applications from external or internal threats, including zero-day attacks.
+* "Good behavior" is enforced and it mitigates exploits via unknown application flaws.
+* AppArmor security policies define the system resources that individual applications can access, and with what privileges. For instance:
+** Network access.
+** Raw socket access.
+** Read, write or execute file permissions on specific paths.
+
+
+Strongly consider using the [[AppArmor|Whonix AppArmor profiles]] which are available for various programs which run in both the Whonix-Gateway and Whonix-Workstation, such as Tor, Tor Browser, Icedove and others. The profiles are easily applied and provide a considerable security benefit.
 
 == Warning: Bridged Networking ==
 Do not change Whonix-Gateway's first or second network interface to a bridged network. This is untested and should not be necessary. Users who feel it is necessary in their circumstances should get in [[contact]].
@@ -232,26 +328,33 @@ For safer use, it is recommended to:
 == Hardening ==
 Whonix does not yet improve host security. It is recommended to use a secure host operating system like [[Computer_Security_Education#Host_Operating_System|Debian]] [[Computer_Security_Education#Which_GNU.2FLinux_Distribution_do_you_recommend.3F|GNU/Linux]] and manually [[Advanced_Security_Guide#Harden_Debian|harden]] it. Also follow relevant steps in the [[Security_Guide#System_Hardening_Checklist|system hardening checklist]] for greater security.
 
-== Mandatory Access Control ==
-=== AppArmor ===
-According to debian.org: <ref>https://wiki.debian.org/AppArmor</ref>
+= Whonix-Workstation Security =
 
-<blockquote>AppArmor is a Mandatory Access Control framework. When enabled, AppArmor confines programs according to a set of rules that specify what files a given program can access. This proactive approach helps protect the system against both known and unknown vulnerabilities.</blockquote>
-
-AppArmor provides a number of advantages: <ref>http://wiki.apparmor.net/index.php/Main_Page</ref>
-
-* It protects the operating system and applications from external or internal threats, including zero-day attacks.
-* "Good behavior" is enforced and it mitigates exploits via unknown application flaws.
-* AppArmor security policies define the system resources that individual applications can access, and with what privileges. For instance:
-** Network access.
-** Raw socket access.
-** Read, write or execute file permissions on specific paths.
+== Introduction ==
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = '''Tip:''' Whonix implementation examples are based on Debian. To use a customized Whonix-Workstation VM based on other operating systems, see [[Other_Operating_Systems|here]]. For technical design notes, see [[Operating_System|here]].
+}}
 
 
-Strongly consider using the [[AppArmor|Whonix AppArmor profiles]] which are available for Tor Browser, Icedove and various other programs. The profiles are easily applied and provide a considerable security benefit.
+If the Whonix-Workstation VM is ever compromised, the attacker has access to the data it contains, including all credentials, browser data and passwords. The IP address is never leaked, since this requires a compromise of the Whonix-Gateway VM, but this information may still result in identity disclosure.
 
-=== Firejail ===
-==== Introduction ====
+In [[Non-Qubes-Whonix|Non-Qubes-Whonix]]:
+
+The best practice is to keep a clean master copy of the Whonix-Workstation VM, make snapshots / clones of the master, and then only use these for internet activity. The user can then 'rollback' (use a new clean clone / snapshot VM) after risky activity, or if they suspect the integrity of the system has been compromised. See the [[Security_Guide#VM_Snapshots|multiple VM snapshots recommendation]] below.
+
+In [[Qubes-Whonix|Qubes-Whonix]]:
+
+The best practice is to use [[Qubes/Disposable_VM|DisposableVMs]] for all your internet activity. Alternatively, periodically delete your Whonix-Workstation AppVM(s) and create fresh instances from the Whonix-Workstation TemplateVM.
+
+{{Anchor|Recommendation to use multiple VM Snapshots}}
+
+== AppArmor ==
+Strongly consider using the [[AppArmor|Whonix AppArmor profiles]] which are available for various programs which run in both the Whonix-Gateway and Whonix-Workstation, such as Tor, Tor Browser, Icedove and others. The profiles are easily applied and provide a considerable security benefit.
+
+== Firejail ==
+=== Introduction ===
 According to the Firejail project page: <ref>https://firejail.wordpress.com/</ref>
 
 <blockquote>Firejail is a SUID program that reduces the risk of security breaches by restricting the running environment of untrusted applications using Linux namespaces and seccomp-bpf. It allows a process and all its descendants to have their own private view of the globally shared kernel resources, such as the network stack, process table, mount table.
@@ -260,7 +363,7 @@ Written in C with virtually no dependencies, the software runs on any Linux comp
 
 Firejail has built-in profiles for a large number of popular Linux programs, including many which are used in Whonix. A small sample of the 100+ profiles includes: Chromium, CryptoCat, Dolphin, Evince, Firefox, HexChat, Icedove, LibreOffice, Okular, Thunderbird, Transmission, VirtualBox, VLC and wget. <ref>https://github.com/netblue30/firejail/tree/master/etc</ref>
 
-====Installing Firejail====
+=== Installing Firejail ===
 {{mbox
 | type      = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
@@ -323,7 +426,7 @@ For a further technical discussion of Firejail, see [https://forums.whonix.org/t
 
 Note: There is no secure and reliable way to create start menu entries / desktop shortcuts using Firejail. In the meantime, start firejailed applications from the command line.
 
-====Sandboxing Tor Browser====
+=== Sandboxing Tor Browser ===
 {{mbox
 | type      = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
@@ -366,7 +469,7 @@ The output should show Tor Browser is now running in a Firejail container.
     XXXX:user:bash /home/user/.tb/tor-browser/Browser/start-tor-browser --all
     XXXX:user:./firefox --class Tor Browser -profile TorBrowser/Data/Browse
 
-====Running Firefox-ESR in a Firejail Sandbox (Qubes Debian Template)====
+=== Running Firefox-ESR in a Firejail Sandbox (Qubes Debian Template) ===
 {{mbox
 | type      = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
@@ -403,99 +506,6 @@ Open another terminal and run.
 The output should confirm Firefox-ESR is now running in a firejail container.
 
     XXXX:user:firejail /usr/lib/firefox-esr/firefox-esr
-
-= Virtualization Platform =
-== Type 1 vs Type 2 Hypervisors ==
-
-According to qubes-os.org: <ref>https://www.qubes-os.org/intro/</ref>
-
-<blockquote>Not all virtual machine software is equal when it comes to security. You may have used or heard of VMs in relation to software like VirtualBox or VMware Workstation. These are known as “Type 2” or “hosted” hypervisors. (The hypervisor is the software, firmware, or hardware that creates and runs virtual machines.) These programs are popular because they’re designed primarily to be easy to use and run under popular OSes like Windows (which is called the host OS, since it “hosts” the VMs). However, the fact that Type 2 hypervisors run under the host OS means that they’re really only as secure as the host OS itself. If the host OS is ever compromised, then any VMs it hosts are also effectively compromised.
-
-By contrast, Qubes uses a “Type 1” or “bare metal” hypervisor called Xen. Instead of running inside an OS, Type 1 hypervisors run directly on the “bare metal” of the hardware. This means that an attacker must be capable of subverting the hypervisor itself in order to compromise the entire system, which is vastly more difficult.</blockquote>
-
-The take-home message is that [[Qubes-Whonix|Qubes-Whonix]] is more secure than the default Whonix configuration using a Type 2 hypervisor like VirtualBox. Therefore, it is recommended to install Qubes-Whonix if users have suitably [https://www.qubes-os.org/doc/system-requirements/ modern hardware].
-
-== Qubes-Whonix vs Physically-Isolated Non-Qubes-Whonix ==
-
-In [[Non-Qubes-Whonix]], using a separate computer for [[Dev/Build_Documentation/Physical_Isolation|physical isolation]] is certainly more secure than using the same computer for everything in the standard host OS / Type 2 hypervisor configuration. However, it is not clear this is superior to Qubes' [http://invisiblethingslab.com/resources/2014/Software_compartmentalization_vs_physical_separation.pdf compartmentalized software approach].
-
-Consider the pros and cons of physical isolation relative to Qubes: <ref>https://www.qubes-os.org/intro/</ref>
-
-<blockquote>Pros
-
-* Physical separation doesn’t rely on a hypervisor. (It’s very unlikely that an attacker will break out of Qubes’ hypervisor, but if one were to manage to do so, one could potentially gain control over the entire system).
-* Physical separation can be a natural complement to physical security. (For example, you might find it natural to lock your secure laptop in a safe when you take your unsecure laptop out with you).
-</blockquote>
-
-<blockquote>Cons
-
-* Physical separation can be cumbersome and expensive, since we may have to obtain and set up a separate physical machine for each security level we need.
-* There’s generally no secure way to transfer data between physically separate computers running conventional OSes. (Qubes has a secure inter-VM file transfer system to handle this).
-* Physically separate computers running conventional OSes are still independently vulnerable to most conventional attacks due to their monolithic nature.
-* Malware which can bridge air gaps has existed for several years now and is becoming increasingly common.</blockquote>
-
-In summary, the relative merits of physical isolation do not necessarily provide any more protection than Qubes' approach. Physical isolation is relatively difficult, still experimental, inconvenient, and requires a significant time investment. On the other hand, Qubes is relatively easy to install, has fully integrated Whonix, and is convenient for most activities. 
-
-Qubes also supports [[Qubes/Why_use_Qubes_over_other_Virtualizers|a host of features]] unavailable in the physically-isolated model, such as: DisposableVMs, a USB VM, secure copy / paste operations between VMs, secure copying and transfers of files between VMs, and sanitization of PDFs and images.
-
-For these reasons, [[Qubes-Whonix]] is recommended for the majority of users seeking a higher-security solution.
-
-== Qubes-Whonix Hardware Requirements ==
-For Qubes-Whonix hardware requirements, see [[System_Requirements|here]].
-
-== VirtualBox Hardening ==
-
-For an overview on VM security risks in general, see: [http://security.stackexchange.com/questions/3056/how-secure-are-virtual-machines-really-false-sense-of-security How secure are Virtual Machines really?]
-
-The less features enabled, the smaller the [http://en.wikipedia.org/wiki/Attack_surface attack surface]. The following features can be removed or disabled without impacting core functionality:
-
-* Disable Audio.
-* Do not enable Shared Folders.
-* Do not enable video acceleration.
-* Do not enable 3D acceleration. <ref>
-Quote http://www.virtualbox.org/manual/ch04.html#guestadd-3d
-<blockquote>
-Untrusted guest systems should not be allowed to use VirtualBox's 3D acceleration features, just as untrusted host software should not be allowed to use 3D acceleration. Drivers for 3D hardware are generally too complex to be made properly secure and any software which is allowed to access them may be able to compromise the operating system running them. In addition, enabling 3D acceleration gives the guest direct access to a large body of additional program code in the VirtualBox host process which it might conceivably be able to use to crash the virtual machine.
-</blockquote>
-</ref> <ref>
-Quote https://hsmr.cc/palinopsia/
-<blockquote>
-If the "3D-Acceleration" feature of VirtualBox is activated, running the proof-of-concept code from inside the VM provides the ability to read framebuffers from the host system. 
-</blockquote>
-</ref>
-* Do not enable the Serial Port.
-* Remove the Floppy drive.
-* Remove the CD/DVD drive.
-* Do not attach USB devices.
-* Disable the USB controller which is enabled by default. Set the Pointing Device to "PS/2 Mouse" or changes will revert.
-* Do disable Advanced Configuration and Power Interface (ACPI). ACPI information is passed to guest OS by default, which allow guest OS to obtain battery status and manufacturer information.
-* Do not enable the Remote Display server.
-* Enable PAE/NX (NX is a security feature).
-
-
-Not enabling IO APIC, EFI may also provide some protection, but this requires further investigation.
-
-= Whonix-Workstation Security =
-
-== Introduction ==
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = '''Tip:''' Whonix implementation examples are based on Debian. To use a customized Whonix-Workstation VM based on other operating systems, see [[Other_Operating_Systems|here]]. For technical design notes, see [[Operating_System|here]].
-}}
-
-
-If the Whonix-Workstation VM is ever compromised, the attacker has access to the data it contains, including all credentials, browser data and passwords. The IP address is never leaked, since this requires a compromise of the Whonix-Gateway VM, but this information may still result in identity disclosure.
-
-In [[Non-Qubes-Whonix|Non-Qubes-Whonix]]:
-
-The best practice is to keep a clean master copy of the Whonix-Workstation VM, make snapshots / clones of the master, and then only use these for internet activity. The user can then 'rollback' (use a new clean clone / snapshot VM) after risky activity, or if they suspect the integrity of the system has been compromised. See the [[Security_Guide#VM_Snapshots|multiple VM snapshots recommendation]] below.
-
-In [[Qubes-Whonix|Qubes-Whonix]]:
-
-The best practice is to use [[Qubes/Disposable_VM|DisposableVMs]] for all your internet activity. Alternatively, periodically delete your Whonix-Workstation AppVM(s) and create fresh instances from the Whonix-Workstation TemplateVM.
-
-{{Anchor|Recommendation to use multiple VM Snapshots}}
 
 == VM Snapshots ==
 {{mbox
@@ -597,14 +607,6 @@ If it is necessary to SSH or VNC into the Whonix-Workstation, then:
 
 
 Note: The last two methods are <i>not</i> recommended. They risk weakening isolation between the host and Whonix-Workstation.
-
-= Installing Additional Software =
-
-See [[Install Software]].
-
-= Updating with Extra Care =
-
-See [[Install_Software#How-to:_Install_or_Update_with_Utmost_Caution|How-to: Install or Update with Utmost Caution]].
 
 = Onionizing Repositories =
 When Whonix, Debian and Qubes packages are installed or updated, default settings point to repositories with a http:// URI. <ref>https://www.whonix.org/wiki/Whonix-APT-Repository#Repository_Location_URI</ref> However, experimental Tor hidden services are already available for the Whonix, Debian and Qubes packages.
