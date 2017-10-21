@@ -66,6 +66,42 @@ If the Whonix-Gateway VM is ever compromised, the attacker can discover: the use
 
 Before installing any extra packages on the Whonix-Gateway, first consult the developers to check whether that is  necessary and wise.
 
+== Seccomp ==
+According to Mozilla: <ref>https://wiki.mozilla.org/Security/Sandbox/Seccomp</ref>
+
+<blockquote>Seccomp stands for secure computing mode. It is a simple sandboxing tool in the Linux kernel, available since Linux version 2.6.12. When enabling seccomp, the process enters a "secure mode" where a very small number of system calls are available (exit(), read(), write(), sigreturn()). Writing code to work in this environment is difficult; for example, dynamic memory allocation (using brk() or mmap(), either directly or to implement malloc()) is not possible.</blockquote>
+
+Strongly consider enabling seccomp on Whonix-Gateway ([[Qubes-Whonix]]: Whonix-Gateway ProxyVM; sys-whonix), since it is easily applied and provides additional sandboxing protection for the Tor process.
+
+{{Open /etc/tor/torrc}}
+
+Add.
+
+<pre>
+Sandbox 1
+</pre>
+
+Save and exit.
+
+== Tor Connection Padding ==
+Connection padding is available for the Tor process from version 0.3.1.7 onward. This helps to resist traffic analysis, as The Tor Project explains: <ref>https://blog.torproject.org/tor-0317-now-released</ref> <ref>At the time of writing, the Jessie proposed updates repository in Whonix supports this Tor version.</ref>
+
+<blockquote>Connections between clients and relays now send a padding cell in each direction every 1.5 to 9.5 seconds (tunable via consensus parameters). This padding will not resist specialized eavesdroppers, but it should be enough to make many ISPs’ routine network flow logging less useful in traffic analysis against Tor users.</blockquote>
+
+<blockquote>Padding is negotiated using Tor’s link protocol, so both relays and clients must upgrade for this to take effect. Clients may still send padding despite the relay’s version by setting ConnectionPadding 1 in torrc, and may disable padding by setting ConnectionPadding 0 in torrc.</blockquote>
+
+Consider enabling ConnectionPadding client-side by following these steps.
+
+{{Open /etc/tor/torrc}}
+
+Add.
+
+<pre>
+ConnectionPadding 1
+</pre>
+
+Save and exit.
+
 == Warning: Bridged Networking ==
 Do not change Whonix-Gateway's first or second network interface to a bridged network. This is untested and should not be necessary. Users who feel it is necessary in their circumstances should get in [[contact]].
 
@@ -213,23 +249,6 @@ AppArmor provides a number of advantages: <ref>http://wiki.apparmor.net/index.ph
 
 
 Strongly consider using the [[AppArmor|Whonix AppArmor profiles]] which are available for Tor Browser, Icedove and various other programs. The profiles are easily applied and provide a considerable security benefit.
-
-=== Seccomp ===
-According to Mozilla: <ref>https://wiki.mozilla.org/Security/Sandbox/Seccomp</ref>
-
-<blockquote>Seccomp stands for secure computing mode. It is a simple sandboxing tool in the Linux kernel, available since Linux version 2.6.12. When enabling seccomp, the process enters a "secure mode" where a very small number of system calls are available (exit(), read(), write(), sigreturn()). Writing code to work in this environment is difficult; for example, dynamic memory allocation (using brk() or mmap(), either directly or to implement malloc()) is not possible.</blockquote>
-
-Strongly consider enabling seccomp, since it is easily applied and provides additional sandboxing protection for the Tor process.
-
-{{Open /etc/tor/torrc}}
-
-Add.
-
-<pre>
-Sandbox 1
-</pre>
-
-Save and exit.
 
 === Firejail ===
 ==== Introduction ====
