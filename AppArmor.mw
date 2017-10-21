@@ -111,11 +111,65 @@ Need to know the names of the profiles, have a look above [[#If you only want to
 </div>
 </div>
 
-=== More Profiles ===
-Only as additional inspiration. Profiles by other vendors than Whonix. Unsupported by Whonix developers. Don't bother installing an AppArmor profile for applications that you are not going to use anyhow. For example, it is a waste of time to install the dovecot AppArmor profile if you are never going to use dovecot.
+== Maintain a Functional Tor Browser ==
 
-* Debian has packages that you can easily install from Debian's apt repository - https://wiki.debian.org/AppArmor/HowToUse#Enable_.2F_install_more_profiles
-* Ubuntu also provides profiles. Not so easily downloadable as package to be installed in Debian. The profiles may or may not differ or compleement from the above. http://bazaar.launchpad.net/~apparmor-dev/apparmor-profiles/master/files/head:/ubuntu/16.04/
+Tor Browser upgrades frequently break the Whonix AppArmor profile used to contain it. Even when AppArmor related fixes are confirmed in Phabricator, most often the packages are not made available to Whonix stable or even the developer version. This means manual profile fixes are required until [[About#Whonix_Version|the next Whonix version is released]].
+
+At the time of writing, Tor Browser is non-functional with the available profile in the repositories. Advanced users can follow these steps to rectify the problem.
+
+'''1. Open a terminal in the Whonix-Workstation TemplateVM.'''
+
+<code>Whonix-WS TemplateVM</code> -> <code>Konsole</code>
+
+'''2. List the available AppArmor profiles.'''
+
+{{CodeSelect|code=
+ls /etc/apparmor.d/
+}}
+
+'''3. Edit the Tor Browser AppArmor profile.'''
+
+Note: change the name of the file to match whatever version is installed on the system.
+
+{{CodeSelect|code=
+sudo nano /etc/apparmor.d/home.*.tor-browser_*Browser.firefox
+}}
+
+'''4. Navigate to the Whonix Github resource for AppArmor.'''
+
+The latest git commits can be found [https://github.com/Whonix/apparmor-profile-torbrowser here].
+
+Select <code>Code</code> -> <code>etc/apparmor.d</code> -> <code>home.tor-browser.firefox</code>
+
+Cut and paste the profile text into the old Tor Browser profile which is open in nano. Save and exit.
+
+'''5. Enforce the new Tor Browser profile.'''
+
+In the Whonix-Workstation TemplateVM, run.
+
+{{CodeSelect|code=
+sudo aa-enforce /etc/apparmor.d/home.*.tor-browser_*.Browser.firefox
+}}
+
+'''6. Shutdown any running instances of the the Whonix-Workstation AppVM and the Whonix-Workstation TemplateVM.'''
+
+'''7. Restart the Whonix-Workstation AppVM and run Tor Browser.'''
+
+If everything has been applied correctly, Tor Browser will have full functionality.
+
+To check AppArmor is really running and enforced, in a terminal run.
+
+{{CodeSelect|code=
+sudo aa-status
+}}
+
+The output should show the Tor Browser profile is loaded and in enforce mode.
+
+=== More Profiles ===
+Users can also utilize profiles by other vendors, but this is unsupported by Whonix developers. It is not necessary to install an AppArmor profile for applications that will not be used. For example, it is unnecessary to install the dovecot AppArmor profile if it will never be used.
+
+* Debian has packages that you can be easily installed from the apt repository - https://wiki.debian.org/AppArmor/HowToUse#Enable_.2F_install_more_profiles
+* Ubuntu also provides profiles. These are not so easy to download as a package to be installed in Debian. The profiles may or may not differ or complement those profiles listed further above. http://bazaar.launchpad.net/~apparmor-dev/apparmor-profiles/master/files/head:/ubuntu/16.04/
 
 === Support ===
 * Need help? Go to [https://forums.whonix.org/c/apparmor Whonix AppArmor Forum].
