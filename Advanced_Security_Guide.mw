@@ -560,54 +560,65 @@ sudo apt-get install gnome-disk-utility
 }}
 
 === Encrypted Guest Images ===
-Primarily, full disk encryption should be applied [[#On the Host|on the host]]. That's a much more important place where and the only one where it is effective.
 
-This encrypted images chapter is mostly theoretic at this point, because it contains many open research questions and is currently [[FAQ#What_do_you_mean_by_unsupported.3F|unsupported]].
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = This encrypted images chapter is mostly theoretical at this point, because it contains numerous open research questions and is currently [[FAQ#What_do_you_mean_by_unsupported.3F|unsupported]].
+}}
 
-The threat model here is the following:
 
-* Host is currently running while an adversary gets access to it or the host is unencrypted.
-* VM is powered down. (Otherwise the adversary would already have access to it anyhow.) 
+The greatest security benefit comes from applying full disk encryption [[#On the Host|on the host]] because that is the only place where it is most effective. Nevertheless, for the interested reader this section makes recommendations to deal with the following threat model:
 
-{{Code2|The following security considerations are based on modified quotes by [http://security.stackexchange.com/users/953/iszi Iszi] from its answer on [http://security.stackexchange.com/a/29538 security.stackexchange.com], which was a user contribution to stackexchange, licensed under [http://creativecommons.org/licenses/by-sa/3.0/ cc by-sa 3.0] with [https://blog.stackexchange.com/2009/06/attribution-required/ attribution required].}}
+* The host is running when an adversary gets access to it, or the host is unencrypted.
+* The VM is powered down (otherwise the adversary would already have access to it).
 
-* Whole-disk encryption within the VM.
-** a) Never save (suspend/pause) the VM machine state - always shut it down completely. Otherwise the saved machine state could be stored outside of the encrypted image. Including a RAM dump, which contains the encryption key required to decrypt the image. Upon resuming the VM, that file does not necessarily get securely deleted. Virtualizer specific. In case of [[VirtualBox]], the file could end up in the folder {{Code2|~/.virtualbox}}. Getting more definitive answers requires further research.
-** b) Do not use the host system's sleep, suspend, or hibernate functions while the VM is running. Otherwise something very similar to the above a) would happen. This time not the VM's RAM dump would end up on disk, but the host's, which contains the same sensitive data (including encryption keys).
-* Wrap the VM files in an encrypted container (such as LUKS container). Newer native support for LUKS encryption of disk images is available as of libvirt 2.10<ref>https://libvirt.org/formatstorageencryption.html#StorageEncryptionLuks</ref>
-** a) and b) equally apply.
-* Whole-disk encryption of the host system.
-** a) and b) equally apply.
-** Do not use the host system's sleep or suspend functions - always shut down.
 
-Each of these can be used independently or in conjunction with any or all of the others. However, keep in mind that multiple layers of encryption may begin to significantly impact performance. {{Code2|End modified quote by Iszi.}}
+{{Code2|The following security considerations are based on modified quotes by [http://security.stackexchange.com/users/953/iszi Iszi] from the answer posted on [http://security.stackexchange.com/a/29538 security.stackexchange.com], which was a user contribution to stackexchange, licensed under [http://creativecommons.org/licenses/by-sa/3.0/ cc by-sa 3.0] with [https://blog.stackexchange.com/2009/06/attribution-required/ attribution required].}}
 
-Other security considerations:
+==== Full Disk Encryption within the Virtual Machine ====
 
-* Swap is an issue. Encrypted swap does not help you as long as the host is powered up. (Key naturally still in RAM.)
-* Disabling swap would require to wipe (special secure delete) the existing swap. It might be the safest to never have used swap before.
-* Memory dumps caused by BSOD or kernel crashes can still leave unintended traces on the host.
-* When a VM has been powered down, the RAM that previously contained the VM's encryption key might not have been wiped yet. Memory pages belonging to a terminated process don't get their contents wiped (zeroed) until they are about to be used by another process. <ref>
+When using FDE within the VM, never save (suspend/pause) the VM machine state, but instead shut it down completely. If this advice is ignored, the saved machine state could be stored outside of the encrypted image. This includes a RAM dump, which contains the encryption key required to decrypt the image. Upon resuming the VM, that stored file is not necessarily securely deleted, since it is virtualizer-specific. <ref>In the case of [[VirtualBox]], the file could end up in the folder {{Code2|~/.virtualbox}}. A definitive answer requires further research.</ref>
+
+While the VM is running, users should not use the host system's sleep, suspend, or hibernate functions. Similar to the first scenario, these actions leave a RAM dump on disk, but this time it belongs to the host. This also contains sensitive data, such as encryption keys.
+
+==== Virtual Machine Files in an Encrypted Container ====
+
+VM files can also be stored in an encrypted container, such as a LUKS container. Newer and native support for LUKS encryption of disk images is available as of libvirt 2.10 <ref>https://libvirt.org/formatstorageencryption.html#StorageEncryptionLuks</ref>
+The same precautions should be taken as outlined in the previous section, as the risks equally apply.
+
+FDE within the VM, LUKS encrypted containers for VM images, and FDE on the host can all be used independently, or in conjunction. However, increasing the layers of encryption may begin to significantly degrade performance. {{Code2|End modified quote by Iszi.}}
+
+==== Other Security Considerations ====
+
+Encryption is an area with many pitfalls. The user should also consider the following:
+
+* <u>Swap</u>. An encrypted swap provides no protection so  long as the host is powered up, because the key is still in RAM.
+* <u>Disabling swap</u>. This action requires a special, secure wiping of the existing swap. It is safer to have never used swap before.
+* <u>Memory dumps</u>. These are caused by BSOD or kernel crashes, and can leave unintended traces on the host.
+* <u>Powered down VMs</u>. After a VM has shutdown, the RAM that previously contained the VM's encryption key might not have been wiped yet. Memory pages belonging to a terminated process do not have their contents wiped (zeroed) until they are about to be used by another process. <ref>
 https://security.stackexchange.com/a/42186 : "Linux zeroes out (i.e. fills with zeros) all pages of memory not when they are released, but when they are given to another process. Thus, no process may obtain data excerpts from another process. However, the pages will retain their old contents until they are reused."
-</ref><ref>https://superuser.com/a/894936</ref><ref>https://askubuntu.com/a/721207</ref> Similar to [[#Cold Boot Attacks|cold boot attacks]], but in this case it might even be a "warm" attack, because under this threat model, the machine and RAM is still powered. [http://en.wikibooks.org/wiki/Grsecurity/Appendix/Grsecurity_and_PaX_Configuration_Options#Sanitize_all_freed_memory PAX_MEMORY_SANITIZE] and its [https://github.com/thestinger/linux-hardened/wiki#sanitize-all-freed-memory KSPP successor] could mitigate this but at the cost of a non-trivial performance hit.
-* KVM: Can a KVM guest access data from other process' memory pages because of memory ballooning? KVM guests are Linux processes and subject to Linux memory allocation rules. Its not possible that a VM process accesses the data of memory pages that belonged to another process.
-* Xen: Memory ballooning in Xen has privacy concerns because it exposes memory contents of other VMs if ballooning is enabled.<ref>http://docs.openstack.org/security-guide/content/data-privacy-concerns.html : Xen explicitly assigns dedicated memory regions to instances and scrubs data upon the destruction of instances (or domains in Xen parlance). KVM depends more greatly on Linux page management; A complex set of rules related to KVM paging is defined in the KVM documentation. It is important to note that use of the Xen memory balloon feature is likely to result in information disclosure. We strongly recommended to avoid use of this feature.</ref>
-* Therefore unrealistic operational rules?
-
-Security research questions:
-
-* With swap and crash dumps disabled, could it still happen, that the virtualizer writes [parts] of the VM's RAM's content to the disk? Virtualizer specific. TODO: Specifically ask virtualizer vendors about this.
-
-Setup ideas:
-
-* Theoretically, one could install a full disk encrypted operating system (currently: Debian) inside a VM and then build Whonix using '--target root' inside a VM. Similar to [[Dev/Build_Documentation/Physical_Isolation|physical isolation]]. Secure VM settings would be missing. (Similar to [[Manually Create Whonix VM Settings]].)
-* Or add an encryption feature to grml-debootstrap and/or Whonix's build script. There was an [https://forums.whonix.org/t/whonix-container-encryption-options/193] to do that, which stalled.
-* cryptsetup-reencrypt could be used. Encrypted Whonix images could be shipped. The master key and the password (perhaps empty if possible) would be known to the public at first but users could use cryptsetup-reencrypt to fix the master key and password, i.e. to make the encryption effective.
+</ref> <ref>https://superuser.com/a/894936</ref> <ref>https://askubuntu.com/a/721207</ref> <ref>The threat is similar to [[#Cold Boot Attacks|cold boot attacks]], but in this case it might even be a "warm" attack, because under this threat model, the machine and RAM is still powered. [http://en.wikibooks.org/wiki/Grsecurity/Appendix/Grsecurity_and_PaX_Configuration_Options#Sanitize_all_freed_memory PAX_MEMORY_SANITIZE] and its [https://github.com/thestinger/linux-hardened/wiki#sanitize-all-freed-memory KSPP successor] may mitigate this, but at the cost of a non-trivial performance hit.</ref>
+* <u>KVM</u>. It is not ''expected'' that KVM guests could access data from other process' memory pages via [https://www.techopedia.com/definition/30466/memory-ballooning memory ballooning], since KVM guests are Linux processes and subject to Linux memory allocation rules. <ref>https://www.techopedia.com/definition/30466/memory-ballooning : "Memory ballooning is a memory management feature used in most virtualization platforms which allows a host system to artificially enlarge its pool of memory by taking advantage or reclaiming unused memory previously allocated to various virtual machines."</ref>
+* <u>Xen</u>. Memory ballooning in Xen creates privacy concerns because it exposes the memory contents of other VMs if ballooning is enabled. <ref>http://docs.openstack.org/security-guide/content/data-privacy-concerns.html : Xen explicitly assigns dedicated memory regions to instances and scrubs data upon the destruction of instances (or domains in Xen parlance). KVM depends more greatly on Linux page management; A complex set of rules related to KVM paging is defined in the KVM documentation. It is important to note that use of the Xen memory balloon feature is likely to result in information disclosure. We strongly recommended to avoid use of this feature.</ref>
 
 
-Forum discussion about this encrypted images chapter:<br />
-* [https://forums.whonix.org/t/how-useful-is-in-guest-encryption/1253 How Useful is In-Guest Encryption?]
-* Running Whonix as a live OS in a VM is an attractive [https://forums.whonix.org/t/whonix-live-mode/3894/9 alternative] as it prevents data-remnance in the first place.
+The host of security considerations suggest that an unrealistic set of operational rules are required to defend the integrity of a purely encrypted guest image, without host FDE.
+
+==== Open Security Research Questions ====
+
+The following questions and configurations require further research:
+
+* With swap and crash dumps disabled, it is unknown whether the virtualizer writes parts of the VM's RAM contents to the disk. TODO: Specifically ask virtualizer vendors about this possibility.
+* Potential setup configurations:
+** Theoretically, a fullly encrypted operating system (currently: Debian) could be installed inside a VM and Whonix could be built using <code>--target root</code> inside another VM. This is analogous to the [[Dev/Build_Documentation/Physical_Isolation|physical isolation]] model, but secure VM settings would be missing (similar to [[Manually Create Whonix VM Settings]]).
+** An encryption feature could be added to grml-debootstrap and/or the Whonix build script. There was an  [https://forums.whonix.org/t/whonix-container-encryption-options/193 attempt] to already do that, but this has stalled.
+** cryptsetup-reencrypt could be used, allowing for the shipping of encrypted Whonix images. The master key and the password (potentially blank) would be known to the public at first. Later, users would use cryptsetup-reencrypt to fix the master key and password, that is, to make the encryption effective.
+
+
+'''Further Reading'''
+
+For further information about encrypted images, see [https://forums.whonix.org/t/how-useful-is-in-guest-encryption/1253 How Useful is In-Guest Encryption?]. Users interested in running Whonix as a live OS, should read [https://forums.whonix.org/t/whonix-live-mode/3894/9 this entry]. <ref>Live OS systems are designed to not leave traces of user activity on disk.</ref>
 
 == Side Channel Attacks == <!--T:324-->
 
