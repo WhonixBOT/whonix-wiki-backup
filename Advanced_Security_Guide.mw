@@ -511,18 +511,31 @@ USBKill can also be configured to exclude all devices from being attached. In an
 * https://phabricator.whonix.org/T552</ref>
 
 ==== Protection Against Lesser Adversaries ====
-The nuke patch for cryptsetup, (written by the Kali pen-testing distro team <ref>https://www.kali.org/tutorials/emergency-self-destruction-luks-kali/</ref>) adds the option to nuke all keyslots given a certain passphrase. <ref>
-https://github.com/offensive-security/cryptsetup-nuke-keys
-</ref> Note that under most emergency conditions, you won't have enough time to reboot your computer and enter the dead-man switch passphrase. Supplying this as your "real passphrase" to the interceptors of your machine is unlikely an effective strategy. It is standard forensics procedure to create multiple images of the drive beforehand.
 
-The TRESOR kernel patch that keep the disk encryption key outside of the RAM (by storing it inside the CPU) could also be useful.<ref>
-https://en.wikipedia.org/wiki/TRESOR </ref> <ref>
-https://www1.cs.fau.de/tresor
-</ref> Limitations of TRESOR include: its x86 architecture specific and complicates software debugging by disabling DR registers for security reasons. <ref>https://security.stackexchange.com/a/119835</ref> A specialized attacker who reverses hardware designs will be able to extract secrets held in processor caches or specialized chips like TPMs.
+The reader is reminded that advanced attackers have virtually limitless possibilities to infect a computer under their physical control, such as flashing low-level firmware or adding physical implants.
 
-When using FDE on the host, you shouldn't keep any unencrypted files on that same physical media. It is advisable to move the /boot partition to separate USB media and install Grub, the bootloader, to it. See [https://twopointfouristan.wordpress.com/2011/04/17/pwning-past-whole-disk-encryption/ Pwning Past Whole Disk Encryption]. Advanced attackers have virtually limitless possibilities to infect a machine under their physical control such as flashing low-level firmware or adding physical implants.
+It may be possible to get plausible deniability on Linux hosts using methods other than thosed listed below, but the topic is a rabbit hole (see footnotes in this section). <ref>https://evilzone.org/operating-system/plausible-deniability-in-qubes-os/msg86174</ref> Plausible deniability and FDE are also useless if the user is subject to physical abuse by a captor.
 
-Perhaps it is possible to get plausible deniability on Linux hosts? That topic is a rabbit hole. See footnote. <ref>https://evilzone.org/operating-system/plausible-deniability-in-qubes-os/msg86174</ref> If physical torture is an option on the table, plausible deniability and FDE will not be of much help.
+'''Nuke Patch for cryptsetup'''
+
+The Kali penetration testing distro team has written a [https://www.kali.org/tutorials/emergency-self-destruction-luks-kali/ nuke patch for cryptsetup], which adds the option to nuke all keyslots after a certain passphrase is entered.  <ref>https://github.com/offensive-security/cryptsetup-nuke-keys
+</ref> 
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Under most emergency conditions, the user will not have enough time to reboot the computer and enter the dead-man switch passphrase.
+}} 
+
+
+Supplying the dead-man switch as the "real passphrase" to the interceptors of the machine is unlikely to be an effective strategy. It is standard forensics procedure to create multiple images of the drive beforehand.
+
+'''TRESOR Kernel Patch'''
+
+Another useful protection is the [https://en.wikipedia.org/wiki/TRESOR TRESOR] [https://www1.cs.fau.de/tresor kernel patch], which keeps the disk encryption key outside of RAM by storing it inside the CPU. TRESOR does have several limitations. It is only available for the x86 architecture, and it complicates software debugging by disabling DR registers for security reasons. <ref>https://security.stackexchange.com/a/119835</ref> Moreover, a specialized attacker who can reverse engineer hardware designs is also capable of extracting secrets held in processor caches or specialized chips like TPMs.
+
+'''Separate /boot Partition'''
+
+When FDE is used on the host, it is inadvisable to keep any unencrypted files on that same physical media. High-risk users are recommended to move the /boot partition to a separate USB media. The bootloader (Grub) should then also be installed on the separate USB. To read more on this subject, see [https://twopointfouristan.wordpress.com/2011/04/17/pwning-past-whole-disk-encryption/ Pwning Past Whole Disk Encryption].
 
 ==== Special Advice for SSDs ====
 In the case of flash based storage like SSDs and USBs, never storing data unencrypted in the first place is the only solution to protecting data.
