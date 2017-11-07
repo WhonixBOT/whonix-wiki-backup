@@ -102,6 +102,21 @@ Keeping Tor Browser updated in a (customized) DisposableVM can be [https://forum
 When using DisposableVMs, use the [[Tor_Browser#Tor_Browser_Internal_Updater|Tor Browser Internal Updater]] daily to check the browser is up to date. Tor Browser's version number can also be checked manually: <code>Tor Browser</code> -> <code>Menu</code> -> <code><u>H</u>elp</code> -> <code>About Tor Browser</code>. See [[Qubes/Disposable_VM#Updating_Tor_Browser]] for more information.
 }}
 
+==== Warning: Avoid Ephemeral Whonix-Gateway ProxyVMs in Qubes R4 ====
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = Using disposable Whonix-ProxyVMs in Qubes R4 makes the user ''less'' anonymous due to the configuration having [https://www.whonix.org/wiki/Tor#Always_Non-Persistent_Entry_Guards|non-persistent entry guards!
+}}
+
+
+Some Whonix users have the mistaken belief that disposableVMs for both the Whonix-Gateway and Whonix-Workstation in Qubes R4 is the ultimate configuration: increasing their security, without any corresponding privacy downside. This reasoning is incorrect for the following reasons: <ref>kkkkkkkkkk63ava6.onion/wiki/Qubes/DisposableVM#Warning:_DisposableVMs_are_not_Amnesic</ref> <ref>https://github.com/QubesOS/qubes-issues/issues/904</ref> <ref>http://kkkkkkkkkk63ava6.onion/wiki/Tor#Entry_Guards</ref>
+* DisposableVMs are not amnesic. In practice this means traces of their activity can be left on storage or in memory, making them vulnerable to forensic operations. <ref>This is another reminder of why full disk encryption should always be used on the host.</ref>
+* Using a disposableVM for the Whonix-Gateway results in non-persistent entry guards to the Tor network; behavior unlike the default configurations for Whonix, Tor, and the Tor Browser Bundle. Mathematically speaking, end-to-end correlation attacks are ''more'' likely to succeed when a user chooses many random entry and exit points to the Tor network, rather than semi-permanent entry guards which are only rotated every few months. <ref>https://trac.torproject.org/projects/tor/ticket/8240</ref> <ref>The reason is there are both malicious and benign guards in the Tor network. The more often the user "rolls the dice" (changes guards), the greater the chance of striking out.</ref>
+
+
+The solution to the first problem is only allowing [https://github.com/QubesOS/qubes-issues/issues/904 in-RAM execution of DisposableVMs], but this is not planned for implementation in the short-term. There is no perfect solution to the second problem. That said, there is an actual unstated security-privacy trade-off by running this configuration. Theoretically, an ephemeral Whonix-Gateway ProxyVM is only able to be infected for a single session (via the /home and /rw directories), since it is discarded upon shutdown. This provides a counterbalance to the increased threat of malicious guards, as [https://tails.boum.org/blueprint/persistent_Tor_state/ Whonix becomes more "Tails-like"].
+
 ----
 
 == Setup ==
