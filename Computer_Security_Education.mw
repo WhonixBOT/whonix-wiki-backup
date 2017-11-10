@@ -129,19 +129,25 @@ For greater security, advanced users should consider configuring the OS to avoid
 
 A commonly decried hardware feature on modern platforms is the [https://software.intel.com/en-us/blogs/2011/12/14/intelr-amt-and-the-intelr-me/ Intel Management Engine (ME) and Active Management Technology (AMT)]. 
 
-'''Out-of-band Management Design'''
+==== Out-of-band Management Design ====
 
 Out-of-band management has been around since 1998, when it was dubbed the Intelligent Platform Management Interface (IPMI) framework. <ref>https://en.wikipedia.org/wiki/Ipmi</ref> It consists of a proprietary firmware running on the Baseboard Management Controller (BMC), <ref>https://en.wikipedia.org/wiki/Baseboard_management_controller#Baseboard_management_controller</ref> which is a dedicated micro-controller in enterprise NICs to allow complete remote control over a machine despite its power state. <ref>Facebook has put out OpenBMC, an interesting implementation that theoretically can be placed on BMCs. Problematically, most vendors (HP, Dell, IBM and so on) will not let users install firmware that is not signed by them. In addition to permission issues, without available low-level drivers and publicly available hardware that will run the firmware, the user is simply out of luck.</ref>
 
 Modern Intel ME is a firmware running on a dedicated micro-controller in all machines, while Intel AMT is the remote access feature introduced as part of the vPro platform. Most Intel hardware produced in the last ten years supports ME and AMT "features". <ref>https://archive.org/download/IntelCentrino2WithVproTechnologyAndIntelCore2Processor/IntelCentrino2WithVproTechnologyAndIntelCore2ProcessorWithVproTechnology.pdf</ref> This includes: desktops, servers, ultrabooks, tablets, and laptops with the Intel Core vPro processor family (Intel Core i3, i5, i7, and Intel Xeon processor E3-1200 product family). <ref>https://en.wikipedia.org/wiki/Intel_Active_Management_Technology</ref> Other popular hardware manufacturers also have an analogous feature to ME. For instance, AMD's "Secure Processor" (formerly "Platform Security Processor") is based in turn on ARM TrustZone technology. <ref>www.amd.com/en-us/innovations/software-technologies/security</ref>
 
-'''Out-of-band Management Functionality'''
+==== Out-of-band Management Functionality ====
 
 The Electronic Frontier Foundation (EFF) states: <ref>https://www.eff.org/deeplinks/2017/05/intels-management-engine-security-hazard-and-users-need-way-disable-it</ref>
 
 <blockquote>The ME is a largely undocumented master controller for your CPU: it works with system firmware during boot and has direct access to system memory, the screen, keyboard, and network.</blockquote>
 
-If the Intel ME is shipped with the AMT module which is both enabled and provisioned, then <i>potentially</i> (see below) any vulnerabilities present could allow attackers to bypass password authentication for the module. Attackers would then be able to: <ref>https://www.eff.org/deeplinks/2017/05/intels-management-engine-security-hazard-and-users-need-way-disable-it</ref>
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = If the Intel ME is shipped with the AMT module which is both enabled and provisioned, then <i>potentially</i> any vulnerabilities present could allow attackers to bypass password authentication for the module.
+}}
+
+
+Attackers who bypass password authentication can: <ref>https://www.eff.org/deeplinks/2017/05/intels-management-engine-security-hazard-and-users-need-way-disable-it</ref>
 
 * Interact with the screen or console in a fashion identical to a user.
 * Boot arbitrary operating systems or install new operating systems.
@@ -150,7 +156,7 @@ If the Intel ME is shipped with the AMT module which is both enabled and provisi
 
 If a system is vulnerable, the effect of this Intel technology is administrators (or hackers) can remotely monitor, maintain, update, upgrade and repair (or sabotage) computers, even while they are sleeping. This activity is distinct from software-based (in-band) management, since hardware-based management uses TCP/IP stack communication channels (bypassing any firewalls present), and the presence of an OS or locally installed management agent is not required. <ref>https://en.wikipedia.org/wiki/Intel_Active_Management_Technology#Security</ref> 
 
-'''Exploitation Risk'''
+==== Exploitation Risk ====
 
 Unfortunately, Intel ME and AMT have created serious security risks, because faults in the design potentially allow remote attackers to access the user's computer secretly and have full control and awareness. <ref>https://semiaccurate.com/2017/05/01/remote-security-exploit-2008-intel-platforms/</ref> On 1 May 2017, these fears were realized when Intel confirmed and patched a Remote [https://security-center.intel.com/advisory.aspx?intelid=INTEL-SA-00075&languageid=en-fr Elevation of Privilege bug (CVE-2017-5689)] in the ME technology. 
 
@@ -162,7 +168,7 @@ Not every machine is susceptible to this attack, even though every Intel platfor
 
 The safest course of action is for users to disable the AMT module if possible in BIOS and to make sure that LMS is not installed. Failing that, the Intel firmware image should be updated to remove the security vulnerability. <ref>https://www.eff.org/deeplinks/2017/05/intels-management-engine-security-hazard-and-users-need-way-disable-it</ref>
 
-'''General Privacy and Security Concerns'''
+==== General Privacy and Security Concerns ====
 
 The concerns posed by Intel (and partially AMD) firmware is comparable to any other proprietary firmware blob running on a user's system or all its peripherals. Almost every component in a modern computer has firmware running on auxiliary processors of varying architectures, all of which have privileged machine access. The inner workings of firmware binaries can still be investigated and examined for malware via reverse engineering. <ref>http://xvilka.me/h2hc2014-reversing-firmware-radare-slides.pdf</ref> <ref>https://recon.cx/2014/slides/Recon%202014%20Skochinsky.pdf</ref>
 
@@ -172,13 +178,13 @@ The problem with out-of-band management is exemplified by the recent Intel secur
 
 In principle, the concept of out-of-band management has its place in data centers, not on personal home computers. Even in the former case, without Libre software the owner of the machine(s) cannot be sure they are the only person with remote access control, in order to patch security vulnerabilities on demand. <ref>Libre software can also contain bugs, but it at least gives users the freedom to fix them.</ref> While the functionality is not secret, running a network-facing, bug-ridden proprietary OS and giving hardware privileged access to a machine has proven a [http://fish2.com/ipmi/itrain-gz.html horrible] [https://en.wikipedia.org/wiki/Intel_AMT#Known_vulnerabilities_and_exploits idea]. 
 
-'''Hardware Recommendations'''
+==== Hardware Recommendations ====
 
 When buying new hardware, the user should avoid Intel hardware that has AMT. Unfortunately that rules out most modern Intel hardware produced in the last ten years. AMD chipsets do not contain fully featured out-of-band management like AMT. However, there are other comparable problems (from a freedom perspective) with hardware produced by both Intel and AMD. <ref>https://www.fsf.org/blogs/community/active-management-technology</ref>
 
 It has been recently discovered that ME can be disabled and mostly erased with a simple python script. The functionality of systems running both Libre and proprietary BIOS firmwares were unaffected, including recent CPU generations. Only experts should attempt this procedure, since the computer may become "bricked" (unusable) if the procedure is completed incorrectly. <ref>https://phoronix.com/scan.php?page=news_item&px=Intel-ME-Cleaning</ref> <ref>https://github.com/corna/me_cleaner/wiki/me_cleaner-status</ref> <ref>https://github.com/corna/me_cleaner</ref>
 
-'''Avoid Other Out-of-band Features'''
+==== Avoid Other Out-of-band Features ====
 
 Users should also avoid or disable the commonly deployed PXE boot <ref>https://en.wikipedia.org/wiki/Preboot_Execution_Environment#Acceptance</ref> and Wake-on-Lan (WoL) "features". PXE is implemented either as a Network Interface Card (NIC) BIOS extension or as UEFI code in modern devices (where it can be easily disabled). <ref>https://www.techwalla.com/articles/how-to-disable-pxe</ref> <ref>https://en.wikipedia.org/wiki/Preboot_Execution_Environment#Overview</ref> On most systems, WoL hardware functionality is usually blocked by default and explicitly needs to be enabled using the system BIOS or UEFI. <ref>https://en.wikipedia.org/wiki/Wake-on-LAN#Respond_to_the_Magic_Packet_and_restore_full_power</ref> <ref>https://en.wikipedia.org/wiki/Wake-on-LAN#Hardware_implementations</ref> 
 
