@@ -713,24 +713,46 @@ It should be noted that there are [https://www.technibble.com/how-to-bypass-or-r
 == Cold Boot Attacks == <!--T:331-->
 
 <!--T:332-->
-Due to how modern computing works, basically everything that you have done during a session is stored in the RAM. If an attacker has physical access to your computer when you are running Whonix, it may enable her to recover everything that have been achieved during the session - even if you are using Full Disk Encryption. From typed texts to saved files, including passwords and encryption keys. The more recent the activity, the more likely it is that it is still in the RAM.
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = Due to how modern computers function, nearly all the data manipulated during a session is temporarily written to RAM. This can include texts, saved files, passwords, and encryption keys! Data from more recent activities is more likely to still reside in RAM. <ref>https://tails.boum.org/doc/advanced_topics/cold_boot_attacks/index.en.html</ref> 
+}}
+
+
+Modern computer architecture poses a significant risk to Whonix users. Adversaries with physical access to a computer running Whonix may be able to recover all session activities, even if FDE is enabled.
 
 <!--T:333-->
-Furthermore, it has been shown that the data present in the RAM might be recoverable for seconds or even minutes after the computer is powered off using a cold boot attack.
+Even when a computer is powered off, the data in RAM does not immediately disappear. Depending on the circumstances, data can survive for up to several minutes. For example, this occurs when a computer loses power abruptly and does not go through the normal shutdown cycle. <ref>https://darkwebnews.com/security-guide/cold-boot-attacks-unencrypted-ram-extraction/</ref> If an adversary has immediate physical access to a computer, a [https://en.wikipedia.org/wiki/Cold_boot_attack cold boot attack] can be mounted.
 
 <!--T:334-->
-In both cases the RAM contents can be analyzed in a computer forensics laboratory which might turn into a major disaster depending on what they find.
+Forensic experts have two main methods of extracting data from RAM: <ref>https://en.wikipedia.org/wiki/Cold_boot_attack</ref>
+* The running computer is cold-booted and a lightweight operating system is booted from a removable disk. A tool is used to dump pre-boot physical memory contents to a file.
+* The memory modules are quickly removed from the original system and placed in another computer under the adversary's control. The machine is then booted to access the memory contents.
+
+
+In both cases, the RAM contents can be analyzed in a computer forensics laboratory. Depending on what is found, the user may be in serious peril. Notably, cold boot attacks have proven effective against Trusted Platform Modules (TPMs), as well as full disk encryption regardless of the vendor or operating system. For certain memory modules, the time window for an attack can be extended to several hours by cooling them with a refrigerant. <ref>https://en.wikipedia.org/wiki/Cold_boot_attack</ref>
 
 <!--T:335-->
-As far as the authors know, cold boot attacks are very uncommon, but it might still be good to be prepared and stay on the safe side.
+Cold boot attacks are thought to be a very uncommon method of recovering data, but high-risk users should be prepared for such a contingency to stay on the safe side. So long as a cold boot attack is not mounted directly after shutdown, then contents of RAM should be emptied within minutes. <ref>https://tails.boum.org/doc/advanced_topics/cold_boot_attacks/index.en.html</ref>
 
 <!--T:336-->
+=== Preventative Measures ===
 <translate>
-Wipe RAM on shutdown (e.g. using a kexec script) - or do not leave the computer unattended immediately after shutdown. Unfortunately there is not yet an upstream script, to implement wiping the RAM on shutdown. We can not provide a solution for this attack, this is solved nowhere but [<tvar|270>https://tails.boum.org/contribute/release_process/test/erase_memory_on_shutdown/</> partially] in Tails and Liberte Linux (not checked), waiting for upstream solution, see [[<tvar|271>Dev#SECURITY_Wipe_RAM_panic_script_OPEN_NEEDS_RESEARCH_NEEDS_CODE|</> Dev#Wipe RAM panic script]]. It is up to you to implement a panic button which will wipe the RAM, please [<tvar|272>https://www.whonix.org/wiki/Contribute</> Contribute]. The least you can do is [[<tvar|273>Contribute#Vote|</> Vote]] at upstream for the feature.    
+Whonix does not yet provide an analogous feature to Tails, which [https://tails.boum.org/contribute/design/memory_erasure/ wipes RAM on shutdown] by overwriting it with random data. Possible interim solutions include:
+
+* Not leaving the computer unattended immediately after shutdown.
+* Configuring a computer to automatically shut down after a set period of inactivity.
+* Soldering memory modules onto the motherboard.
+* Using a kexec script to wipe RAM on shutdown. <ref>Unfortunately, an upstream script does not yet exist to implement this feature, so Whonix is currently unable to provide a solution for this attack.</ref> <ref> [https://tails.boum.org/contribute/release_process/test/erase_memory_on_shutdown/ Tails] and Liberte Linux have partially solved this problem.</ref> <ref>Instead of waiting for an upstream solution, see the [[Dev#SECURITY_Wipe_RAM_panic_script_OPEN_NEEDS_RESEARCH_NEEDS_CODE|Dev#Wipe RAM panic script]]. The user would need to implement a panic button which will wipe the RAM. Please [https://www.whonix.org/wiki/Contribute contribute] if you code this feature or consider [[Contribute#Vote|voting]] for this feature upstream.</ref>
+* Waiting for [https://en.wikipedia.org/wiki/Cold_boot_attack#Full_memory_encryption full memory encryption].
+* [https://en.wikipedia.org/wiki/Cold_boot_attack#Dismounting_encrypted_disks Dismounting encrypted disks].
+* Using [https://en.wikipedia.org/wiki/Cold_boot_attack#TCG-compliant_systems TCG-compliant] computer hardware.
+* Using the [https://en.wikipedia.org/wiki/TRESOR TRESOR Linux kernel patch] so CPU registers store encryption keys. <ref>https://en.wikipedia.org/wiki/Cold_boot_attack#Register-based_key_storage</ref>
 </translate>
 
+
 <!--T:337-->
-'''Hypothetical...''' So, what should you do when you hear an attacker knocking at your door? You could just press the hypothetical panic button on the host. It would start to wipe the contents of the RAM by filling it out with random junk, thus erasing everything that was stored there before, including the encryption key of the encrypted storage devices you might use and the traces of your session. Then you would wait, possibly trying to buy valuable time by barricading your door.
+Cold boot attacks are a clear and present danger for high-risk users due to the limited countermeasures available. In the purely hypothetical situation where an adversary is knocking earnestly on the door, best would be pressing the panic button on the host, leading to the contents of RAM being quickly wiped. Failing that, the computer should be immediately shut down, and access to the computer delayed as long as possible.
 
 == Evil Maid Attack == <!--T:338-->
 
