@@ -1,15 +1,46 @@
+yubikey authentication to arbitrary web sites that don't explicitly support yubikey (U2F or similar) by themselves archived. Some notes:
+
+* yubikey https://packages.debian.org/search?keywords=yubikey-personalization-gui
+** backups are sorted in case a yubykey breaks or gets lost
+** because the same HMAC-SHA1 secret can be written to all yubikeys
+** used "configuration slot 2", which somehow works with short touch as well
+** "configuration slot 1" can be used for something else
+
+* keepassxc installation hints
+**https://www.whonix.org/wiki/Keepassxc
+
+* enable keepassxc browser integration
+* set keepassxc to close its database when closed (minimized to tray)
+* set keepassxc to always save the database on changes
+* a rather simplistic add-on without configuration gui but it works - https://addons.mozilla.org/en-US/firefox/addon/passifox/
+* result: Firefox's password manager uses keepassxc as backend. And keepassxc's database gets unlocked by password plus yubikey.  (It's and/or. Would also be possible only password or only yubikey.)
+* (Or keyfiles, but keyfiles make no sense since when using yubikeys.)
+* (Qubes and Qubes USBVM compatible.)
+
+* All implemented using Free, Open Source and Libre Software.
+
+In total there  are3 factor authentication to arbitrary websites etc.:
+
+* first factor: password (to unlock keepassxc database) ("something you know")
+* second factor: yubikey with key press (to unlock keepassxc database) (HMAC-SHA1) ("something you have")
+* third factor: google authentication / AndOTP (HTOP one time passwords) ("something you have")
+
+(Currently there is no factor "something you are", but I wouldn't know how to implement it for arbitrary websites. Above authentication setup should be complex [read breakage, difficult, lockout oneself] and secure enough. Rather than trying to hack these three factors, [[Malware]] would rather just hijack the web login session.)
+
+-----
+
 yubikey info:
 
-- Configured yubikey configuration slot 1 with static password and configured yubkkey configuration slot 2 with challenge response. (google) U2F still working. Pretty awesome.
+* Configured yubikey configuration slot 1 with static password and configured yubkkey configuration slot 2 with challenge response. (google) U2F still working. Pretty awesome.
 
-- Could even enter my BIOS password using yubikey using a static yubikey password.
+* Could even enter my BIOS password using yubikey using a static yubikey password.
 
-- Static password works even for full disk encryption password entry. Either as a single factor or to increase the lenght of the password. It acts as a USB keyboard. Even works with Qubes. (2FA vs BadUSB.)
+* Static password works even for full disk encryption password entry. Either as a single factor or to increase the lenght of the password. It acts as a USB keyboard. Even works with Qubes. (2FA vs BadUSB.)
 
-- Yubikey U2F - no backup possible. (But U2F supporting services might support alternative login methods or multiple U2F (yubikey) keys.) Not an issue, since we won't be using yubikey for U2F.
+* Yubikey U2F - no backup possible. (But U2F supporting services might support alternative login methods or multiple U2F (yubikey) keys.) Not an issue, since we won't be using yubikey for U2F.
 
-- Yubikey static passwords / HMAC-SHA1 challenge response: (paper) backup easily possible.
+* Yubikey static passwords / HMAC-SHA1 challenge response: (paper) backup easily possible.
 
-- It might have a bug resetting keyboard layout to en-US but it's not a big deal.
+* It might have a bug resetting keyboard layout to en-US but it's not a big deal.
 
-- Yubikeys supports storing OpenPGP (GnuPG / gpg) keys, OpenSSH keys, but I wouldn't trust it. Another yubikey model had a PIN bypass bug. ( https://developers.yubico.com/ykneo-openpgp/SecurityAdvisory%202015-04-14.html )
+* Yubikeys supports storing OpenPGP (GnuPG / gpg) keys, OpenSSH keys, but I wouldn't trust it. Another yubikey model had a PIN bypass bug. ( https://developers.yubico.com/ykneo-openpgp/SecurityAdvisory%202015-04-14.html )
