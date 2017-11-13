@@ -44,3 +44,28 @@ yubikey info:
 * It might have a bug resetting keyboard layout to en-US but it's not a big deal.
 
 * Yubikeys supports storing OpenPGP (GnuPG / gpg) keys, OpenSSH keys, but I wouldn't trust it. Another yubikey model had a PIN bypass bug. ( https://developers.yubico.com/ykneo-openpgp/SecurityAdvisory%202015-04-14.html )
+
+-----
+
+protection goal:
+
+* deny unauthorized decryption of notebok full disk encryption when notebok gets stolen and user password has been sniffed
+
+adversary capabilities:
+
+* [a] temporarily grab yubikey for a momment, temporarily attach to a smartphone or so, press yubikey button, therefore steal the static password ("very easy")
+* [b] temporarily grab yubikey for a momment, extract challange response secret key from smart chip through side channel or exploit ("harder")
+* [c] unauthorized access to notebook plus sniff (or break) user entered password
+
+boot full disk encryption authentication:
+
+* yubikey static password: can be broken by adversary capatility [A] plus [C]
+* yubikey static password: can be broken by adversary capatility [B] plus [C]
+* yubikey challange response: safe against adversary capatilit [A] plus [C]
+* yubikey challange response: fails against adversary capatility [B] plus [C]
+
+Both authentication methods are easy to program into yubikey, allow easy legitimate clones to other yubikeys and (paper) backups.
+
+In other words, yubikey static password fails when an adversary can get a moment of access to it easily. yubikey challange response is clearly superior.
+
+However, yubikey challange response is much more complex (speak: lockout risk) and time consuming to research, setup.
