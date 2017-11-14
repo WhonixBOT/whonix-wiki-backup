@@ -769,7 +769,35 @@ If the user has a TPM chip, see [<tvar|275>http://theinvisiblethings.blogspot.se
 == Problematic Interfaces == <!--T:341-->
 
 <!--T:342-->
-Some interfaces such as ExpressCard, PCMCIA, FireWire or Thunderbolt may depending on the host operating system settings allow an attacker with physical access to read the RAM. You are advised to securely configure those interfaces, to disable them or to remove them.
+There are a number of computer interfaces that pose the risk of a [https://en.wikipedia.org/wiki/DMA_attack direct memory access (DMA) attack]. Potentially exploitable interfaces include ExpressCard, PCMCIA, FireWire, PCI, PCI Express or Thunderbolt.
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = High-speed expansion ports allow attackers to penetrate computers and other peripherals because the connected devices have direct hardware access to enable maximum throughput.
+}}
+
+
+In practice, attached devices are permitted to read and write directly to memory, often without supervision of the operating system. This is in contrast to user-mode applications that are usually prevented from accessing memory locations that are not explicitly authorized by virtual memory controllers. <ref>https://en.wikipedia.org/wiki/DMA_attack</ref>
+
+A successful DMA attack on an unattended, live computer allows the adversary to: <ref>http://louwrentius.com/firewire-the-forgotten-security-risk.html</ref> <ref>https://en.wikipedia.org/wiki/DMA_attack</ref> <ref>https://privatecore.com/resources-overview/physical-memory-attacks/index.html</ref> <ref>http://www.delaat.net/rp/2011-2012/p14/report.pdf</ref>
+
+* Partially or fully read the memory address space.
+* Unlock screensavers without a passphrase.
+* Read documents, files or other digital traces present in memory.
+* Access sensitive cryptographic material in memory.
+* Circumvent FDE.
+* Inject executable code.
+* Take control of the entire system, for example via the network.
+
+
+DMA attack software tools which mimic the [https://en.wikipedia.org/wiki/FinFireWire abilities of state-level adversaries] are even available on [https://github.com/carmaa/inception GitHub]! <ref>This is not an endorsement for the use of hacking tools.</ref> Mitigating the threat of a DMA attack requires mostly physical security countermeasures; it is recommended to:
+
+* Securely configure these interfaces.
+* Disable them in BIOS or UEFI.
+* Consider blocking or removing them completely.
+* Never allow unknown and potentially malicious devices to be inserted into these ports. <ref>This is another reason why high-risk users should never leave their devices unattended.</ref>
+* Use linux kernel options to disable DMA by Firewire devices.
+* Use [https://en.wikipedia.org/wiki/IOMMU IOMMU] technology where available and software which supports it, like Qubes. <ref>IOMMU maps device-visible virtual addresses to physical addresses. The security benefit is that operating systems that are run in guest virtualized machines - AppVMs in Qubes - do not know the physical memory addresses on the host that are being accessed. This makes DMA attacks very difficult and can lead to memory corruption if attempted.</ref>
 
 = Operating System = <!--T:343-->
 == About Debian ==
