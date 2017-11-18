@@ -48,33 +48,36 @@ In total there  are3 factor authentication to arbitrary websites etc.:
 
 * Yubikeys supports storing OpenPGP (GnuPG / gpg) keys, OpenSSH keys, but I wouldn't trust it. Another yubikey model had a PIN bypass bug. ( https://developers.yubico.com/ykneo-openpgp/SecurityAdvisory%202015-04-14.html )
 
-= Threat Model =
+= Static Password vs Challenge Response =
 protection goal:
 
 * deny unauthorized decryption of notebook full disk encryption when notebook is powered off, gets stolen and user password has been sniffed
 
+
 adversary capabilities:
 
-* [A] temporarily grab yubikey for a moment, temporarily attach to a smartphone or so, press yubikey button, therefore steal the static password ("very easy")
-* [B] temporarily grab yubikey for a moment, extract challenge response secret key from smart chip through side channel or exploit ("harder")
+* [A] temporarily grab YubiKey for a moment, temporarily attach to a smartphone or so, press YubiKey button, therefore steal the static password ("very easy")
+* [B] temporarily grab YubiKey for a moment, extract challenge response secret key from smart chip through side channel or exploit ("harder")
 * [C] bruteforce or sniff (camera / side channel) user entered password
 * [D] unauthorized access to notebook (theft)
+
 
 We assume the adversary has succeeded with [C] plus [D].
 
 boot full disk encryption authentication methods:
-* yubikey static password   : fails against adversary capability [A]
-* yubikey static password   : fails against adversary capability [B]
-* yubikey challenge response:  safe against adversary capability [A]
-* yubikey challenge response: fails against adversary capability [B]
+* YubiKey static password   : fails against adversary capability [A]
+* YubiKey static password   : fails against adversary capability [B]
+* YubiKey challenge response:  safe against adversary capability [A]
+* YubiKey challenge response: fails against adversary capability [B]
 
-Both authentication methods are easy to program into yubikey, allow easy legitimate clones to other yubikeys and (paper) backups.
 
-In other words, yubikey static password fails when an adversary can get a moment of access to it easily. yubikey challenge response is clearly superior.
+Both authentication methods are easy to program into YubiKey, allow easy legitimate clones to other YubiKey and (paper) backups.
 
-However, yubikey challenge response is much more complex (speak: lockout risk) and time consuming to develop, research, and setup for Qubes OS.
+In other words, YubiKey static password fails when an adversary can get a moment of access to it easily. YubiKey challenge response is clearly superior.
 
-Qubes OS yubikey luks challenge response:
+However, YubiKey challenge response is much more complex (speak: lockout risk) and time consuming to develop, research, and setup for Qubes OS.
+
+Qubes OS YubiKey luks challenge response:
 
 https://github.com/the2nd/ykluks
 
