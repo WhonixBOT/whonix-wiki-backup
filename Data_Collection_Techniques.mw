@@ -97,15 +97,32 @@ In Whonix, learning the IP address wouldn't give an adversary any meaningful res
 
 == JavaScript ==
 
-The browser is a bit better protected against attacks on your privacy using ''JavaScript'' ("scripts", "active scripting") than against those using the aforementioned plugins. but also it is not completely safe, though. Do not confuse JavaScript with ''Java'' or the ''active Java plugin'', respectively, which is a completely different thing despite the similar name (see above).
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Do not confuse JavaScript with [https://www.java.com/en/download/faq/java_javascript.xml Java] or the active [https://stackoverflow.com/questions/11568648/difference-between-jre-and-java-plugin Java plugin], which are [http://www.differencebetween.com/difference-between-java-and-javascript/ completely different things] despite the similar name (see above). <ref>In short, JavaScript is not part of the Java platform and is a scripting language, while Java is an object-oriented programming language. The Java plugin is bundled with Java runtime and runs inside the browser; allowing Java code to run inside a client's browser process.</ref>
+}}
 
-It is possible to compromise the browser or operating system using software exploits or a maliciously-crafted website. An attacker can, for example, inject malicious JavaScript code by [http://en.wikipedia.org/wiki/Cross-site_scripting Cross Site Scripting] and thus try phishing for login creditials, bank accounts or other sensitive data.
+=== Introduction ===
 
-Using JavaScript, it is possible for web masters to access lots of information about your browser, your desktop settings, and your hardware. All this information may be accumulated into an individual fingerprint of a particular user. A user may be recognized by this fingerprint. The anonymity test [http://ip-check.info/?lang=en ip-check.info] shows '''only some examples''' of values which may be gathered (JavaScript needs to be enabled). It demonstrates the labeling of users by JavaScript, too (same effect as cookies).
+[https://en.wikipedia.org/wiki/JavaScript JavaScript] is one of the fundamental core technologies for Internet content production, alongside [https://en.wikipedia.org/wiki/HTML HTML] and [https://en.wikipedia.org/wiki/CSS CSS]. It allows sites to be interactive and dynamic, as well as provide for online applications such as video games. In contrast, HTML is a markup language that is used to create static content on sites, and Cascading Style Sheets (CSS) are designed for user formatting like interfaces, layout, colors and fonts. Modern browsers frequently use JavaScript ("scripts", "active scripting") and it is marginally safer against security and privacy vulnerabilities compared to the aforementioned plugins.
 
-[https://anonymous-proxy-servers.net/forum/viewtopic.php?f=10&t=7319 ip-check.info returns some false values and confuses TBB users] ([http://www.webcitation.org/6cJ0l5mvC w])
+In the past, JavaScript has been responsible for an estimated 84% of all security vulnerabilities on the Internet via [http://en.wikipedia.org/wiki/Cross-site_scripting cross-site scripting]. This attack allows adversaries to inject malicious client-side script into web pages, leading to users redirecting to malicious sites that phish for login credentials, bank accounts, personal information, or other sensitive data. <ref>https://gizmodo.com/why-are-javascript-attacks-so-dangerous-1453269240</ref> Similarly, JavaScript can be used by web hosts to access detailed information about a user's browser, desktop setting, operating system and hardware specifications, which forms a unique digital fingerprint of an individual. <ref> Refer to the following [http://ip-check.info/?lang=en ip-check.info anonymity test] to view some sample values which can be gathered via JavaScript (if enabled).</ref> <ref>[https://anonymous-proxy-servers.net/forum/viewtopic.php?f=10&t=7319 ip-check.info returns some false values and confuses TBB users] ([http://www.webcitation.org/6cJ0l5mvC w])</ref>
 
-<s>Therefore, we recommend you only activate JavaScript if needed and to block it by default.</s> <font size=-3>However, there are fingerprinting concerns about disabling JavaScript. See [https://lists.torproject.org/pipermail/tor-talk/2012-May/024224.html Tor Browser disabling Javascript anonymity set reduction]</font>
+=== JavaScript Attack Classification ===
+
+JavaScript is essential to a fully functional browsing experience, but several classes of attacks rely upon it and are often successful: <ref>https://www.sophos.com/en-us/security-news-trends/security-trends/malicious-javascript.aspx</ref> <ref>http://worldcomp-proceedings.com/proc/p2016/SAM9734.pdf</ref> <ref>https://en.wikipedia.org/wiki/Cross-site_scripting#Related_vulnerabilities</ref>
+
+* <b>Malicious JavaScript email attachments:</b> When a harmless looking document is opened by the user, ransomware is downloaded to the HDD/SSD, later encrypting the computer and demanding a ransom to unlock the files.
+* <b>Drive-by download attacks:</b> When users visit a compromised website running malicious code, <ref>82% of malicious sites are hacked legitimate ones</ref> users are redirected to another site controlled by the attackers. Attackers then run code in the victim's web browser that loads an exploit kit which probes the user's OS, browser and software to find vulnerabilities. Payloads/malware are then downloaded that access personal data, encrypt the computer or other intended criminal activity.
+* <b>[https://en.wikipedia.org/wiki/Cross-site_scripting Cross-site scripting]:</b> Since the 1990s it has been possible to inject client-side into web-based applications, servers or plug-in systems, bypassing the [https://en.wikipedia.org/wiki/Same-origin_policy same-origin policy]. After successful exploitation, users visiting the compromised site are served malicious content which is presumed to be from a trusted source. Attackers can then access sensitive page content, session cookies and other information.
+* <b>Universal cross-site scripting:</b> Vulnerabilities in the browser or plugins are exploited to take control over the network. For example Firefox and other browsers, as well as plugins like Flash and ActiveX controls, all have flaws which can lead to [https://en.wikipedia.org/wiki/Buffer_overflow buffer overflows]. These are often exploitable via JavaScript and allows attackers to gain access to to OS's [https://en.wikipedia.org/wiki/API Application Programming Interface (API)] with root privileges. <ref>Sandbox implementation errors can also lead to Javascript running outside of the sandbox and with elevated privileges e.g. create or delete files.</ref>
+* <b>[https://en.wikipedia.org/wiki/Cross-site_request_forgery Cross-site request forgery]:</b> Unauthorized commands are transmitted from a user by trusted web applications. Malicious websites can use specially crafted image tags, hidden forms, and JavaScript XMLHttpRequests for this purpose. Depending on the specific vulnerability, when these elements are clicked by the user, the attacker may be able to: 
+** Execute remote code with root privileges.
+** Forge login requests and view private information.
+** Change personal information or fully compromise online accounts.
+** Conduct illicit money transfers.
+** Performance nearly all actions of a logged in user.
 
 === Session Replay Scripts ===
 
@@ -126,7 +143,15 @@ The same tracking companies often use insecure HTTP pages to deliver the recordi
 
 === Conclusion ===
 
-It is unwise to browse the Internet without a well secured browser, otherwise there is a danger of a browser exploit leading to an infected system. Personally configuring a browser to be secure is an enormous effort requiring expertise and significant trial and error. The safer path is to use [[Tor Browser]], preferably on a Whonix platform, since it is already hardened against data leakage. As noted in the [[Tor Browser]] chapter:
+==== Enabling or Disabling JavaScript ====
+
+JavaScript is a clear and present danger for a host of attack vectors, however, there is a [[Tor_Browser#Security_vs_Usability_Trade-off|security versus privacy trade-off]] to consider before disabling JavaScript completely: <ref>See also [https://lists.torproject.org/pipermail/tor-talk/2012-May/024224.html Tor Browser disabling JavaScript anonymity set reduction].</ref>
+
+<blockquote>The take-home message is disabling all JavaScript with white-list based, pre-emptive script-blocking may better protect against vulnerabilities (many attacks are based on scripting), but it reduces usability on many sites and acts as a fingerprinting mechanism based on the select sites where it is enabled. On the other hand, allowing JavaScript by default increases usability and the risk of exploitation, but the user also has a fingerprint more in common with the larger pool of users.</blockquote>
+
+==== Safest Browser Against Exploitation ====
+
+It is clearly unwise to browse the Internet without a well secured browser, otherwise there is a danger of a browser exploit leading to an infected system. Personally configuring a browser to be secure is an enormous effort requiring expertise and significant trial and error. The safer path is to use [[Tor Browser]], preferably on a Whonix platform, since it is already hardened against data leakage. As noted in the [[Tor Browser]] chapter:
 
 <blockquote>Tor Browser is a fork of the Mozilla Firefox web browser. It is developed by The Tor Project and optimized and designed for Tor, anonymity and security.<br />
 ... <br />
