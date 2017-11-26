@@ -169,15 +169,82 @@ In stark contrast to regular browsers, Tor Browser is optimized for anonymity an
 
 Tor Browser blocks most dangerous technologies by default, but most popular websites like Youtube will still resolve correctly. For media portals which rely on Flash or alternative plugins, the user can download the relevant files with special software and then view it with an open source media player like [[Software#Media_Player|VLC]]. Websites should be avoided if they insist on the use of active plugins, see [[Browser Plugins]].
 
-== Fingerprinting of Browser (HTTP) Header ==
+== Browser Fingerprinting ==
 
-With every request for a webpage, browsers send information within the framework of the HTTP protocol that can be analyzed by the visited site: language, browser name and version, operating system and version, supported character sets, files, codecs and the last visited webpage. Sending these headers is usually not necessary for rendering websites, but it can be exploited for reidentifying, profiling, and analyzing websurfers. The EFF's [http://panopticlick.eff.org Panopticlick] project demonstrated browser fingerprinting. Most surfers are traceable by a unique browser fingerprint.
+Research from a pool of 500,000 Internet users has shown that the vast majority (84%) have unique browser configurations and version information which makes them trackable across the Internet. When Java or Flash is installed, this figures rises to 94%. <ref>https://www.eff.org/deeplinks/2010/05/every-browser-unique-results-fom-panopticlick</ref> Considering this research relied only on a relatively small number of variables, <ref>Supercookie test, hash of canvas fingerprint, screen size and color depth, browser plugin details, time zone, DNT header enabled, HTTP_Accept headers, has of WebGL fingerprint, language, system fonts, platform, user agent, touch support, cookies enabled.</ref> companies with advanced fingerprinting capabilities may be approaching 100%, particularly in combination with cookies.
 
-Of late, different filter applications and services have been developed that allow hiding or changing problematic browser headers (e.g. Privoxy). Unfortunately, these applications cannot filter encrypted connections: once you load a presumably "secure" website (HTTPS) all filtering fails. Plus, these programs allow every user to define the header data himself. But setting an individual browser type in itself is what renders you perfectly trackable. [TorBrowser] always sends the same profile for encrypted connections too. This guarantees that websites may at most realize that it is a Tor Browser user visiting; it will not be able to tell who the user is or what the user is visiting.
+=== Fingerprinting and Anonymity ===
 
-<font size="-3"> [https://blog.torproject.org/blog/effs-panopticlick-and-torbutton Tor Blog: EFF's Panopticlick and Torbutton] </font>
+Academics suggest that around 33 bits of information is required to positively identify one person out of several billion. <ref>https://33bits.wordpress.com/about/</ref> For anonymity, it is necessary to reduce the number of bits of information (entropy) the browser provides to an acceptable lower bound; for instance, 18.1 bits of entropy means that a browser chosen at random will share the fingerprint with one in 286,777 other browsers. <ref>https://wiki.mozilla.org/Fingerprinting</ref> Browser uniqueness research has revealed the entropy associated with various pieces of browser information: <ref>https://panopticlick.eff.org/browser-uniqueness.pdf</ref>
 
-Fingerprinting defense is not perfect yet in any browser. There are still open bugs. <font size="-3">(See [https://trac.torproject.org/projects/tor/query?status=accepted&status=assigned&status=needs_information&status=needs_review&status=new&status=reopened&order=priority&col=id&col=summary&col=keywords&col=status&col=owner&col=type&col=priority&keywords=tbb-linkability tbb-linkability] and [https://trac.torproject.org/projects/tor/query?status=accepted&status=assigned&status=needs_review&status=needs_revision&status=new&status=reopened&order=priority&col=id&col=summary&col=keywords&col=status&col=owner&col=type&col=priority&keywords=tbb-fingerprinting tbb-fingerprinting].)</font>
+{| class="wikitable"
+|-
+! scope="col"| Variable
+! scope="col"| Entropy (bits)
+|-
+! scope="row"| Plugins
+|     15.4
+|-
+! scope="row"| Fonts
+|     13.9
+|-
+! scope="row" | User agent
+|     10.0
+|-
+! scope="row" | HTTP accept
+|     6.09
+|-
+! scope="row" | Screen resolution
+|     4.83
+|-
+! scope="row" | Time zone
+|     3.04
+|-
+! scope="row" | Supercookies
+|     2.12
+|-
+! scope="row" | Cookies enabled
+|     0.353
+|-
+|}
+
+The primary browser fingerprinting methods that are used include: <ref>Many require active JavaScript code.</ref>  <ref>https://wiki.mozilla.org/Fingerprinting</ref>
+
+* <b>Plugins:</b> The PluginDirect JavaScript library checks for common plugins on the respective platform, and code is run to check for the Acrobat Reader version. Other information may be leaked, including the CPU type.
+* <b>Fonts:</b> System fonts are collected by Flash or Java applets, or by CSS introspection.
+* <b>User Agent string:</b> When websites are visited, the browser sends precise information on the operating system and web browser being used. <ref>Research suggests this is useful for profiling and tracking Internet users, as it reveals [https://www.eff.org/deeplinks/2010/01/tracking-by-user-agent 10.5 bits of identifying information] on average. This means only one person in 1,500 shares the same User Agent.</ref>
+* <b>HTTP Accept headers:</b> With every webpage request, the browser sends information within the HTTP protocol framework that can be analyzed. This includes language, browser type and version, operating system and version, supported character sets, files codecs, and the last visited webpage.
+* <b>Screen resolution:</b> The exact resolution is revealed to websites, for example <code>1280x800x24</code>. <ref>In Tor Browser, Torbutton reduces the available entropy by quantising AvailWidth and AvailHeight, and setting the actual Width and Height to the values of AvailWidth and AvailHeight.</ref>
+* <b>Supercookies:</b> Reported entropy depends on whether the following are enabled: DOM localStorage, DOM sessionStorage, userData, Flash LSOs, Silverlight cookies, HTML5 databases, or DOM globalStorage.
+* <b>Clock skew/precision measurements:</b> Differential parameters are used to measure the time difference (down to milliseconds) between a user's computer and that of the server. Clock precision measurements rely upon how long operations take on a partricular system.
+* <b>HTML5 canvas:</b> A precise fingerprint is provided by the rendering of WebGL, font and color data to a canvas element. This is then extracted from the image buffer, and an identifying hash is computed. For more information, see [[Data_Collection_Techniques#HTML5_Canvas_Image_Data|here]].
+
+=== Fingerprinting Resistance ===
+
+The [https://www.eff.org/deeplinks/2010/05/every-browser-unique-results-fom-panopticlick EFF has found] that while most browsers are uniquely fingerprintable, resistance is afforded via four methods:
+
+* Disabling JavaScript with tools like [http://www.noscript.net/ NoScript].
+* Use of [https://www.torproject.org/docs/torbutton/index.html.en Torbutton], which is bundled with Tor Browser and enabled by default. <ref>Torbutton automatically disables many types of active content.</ref>
+* Use of mobile devices like Android and iPhone.
+* Corporate desktop machines which are clones of one another.
+
+
+With JavaScript disabled, [[Tor Browser]] provides significant resistance to browser fingerprinting: <ref>https://blog.torproject.org/effs-panopticlick-and-torbutton</ref>
+
+* The User Agent is uniform for all Torbutton users.
+* Plugins are blocked. 
+* The screen resolution is rounded down to 50 pixel multiples.
+* The timezone is set to GMT.
+* DOM Storage is cleared and disabled.  
+
+
+At the time of writing, [https://panopticlick.eff.org Panopticlick] only returns 6.63 bits of information for Tor Browser with JavaScript disabled. This is equivalent to sharing the same fingerprint as 1 in 99 other browsers due to the 3 million strong pool of near-identical users. That said, fingerprinting defense is not perfect in any browser and there are still open bugs, see [https://trac.torproject.org/projects/tor/query?status=accepted&status=assigned&status=needs_information&status=needs_review&status=new&status=reopened&order=priority&col=id&col=summary&col=keywords&col=status&col=owner&col=type&col=priority&keywords=tbb-linkability TBB-linkability] and [https://trac.torproject.org/projects/tor/query?status=accepted&status=assigned&status=needs_review&status=needs_revision&status=new&status=reopened&order=priority&col=id&col=summary&col=keywords&col=status&col=owner&col=type&col=priority&keywords=tbb-fingerprinting TBB-fingerprinting].
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Users should not rely solely on different filtering applications and services that hide or change problematic headers, like Privoxy. <ref>Privoxy manipulates cookies and modifies web page data and HTTP headers before the page is rendered.</ref> They cannot filter encrypted (HTTPS) connections and the setting of special values for variables actually ''worsens'' the user's fingerprint.
+}}
 
 == Browser History and Cache ==
 
