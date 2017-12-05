@@ -58,19 +58,19 @@ Disabling Tor means your traffic will not be routed through the Tor network. You
 * '''Windows:'''
 * '''macOS:'''
 * '''Linux:''' Go to <code>~/.local/share/torbrowser/tbb/x86_64/tor-browser_en-US/Browser/Tor Browser/Data/Browser/profile.default/</code>. (<code>x86_64/tor-browser_en-US</code> may vary depending on locale and processor architecture.)</li>
-<li><p>Create a new file named <code>user.js</code> with the following contents and save it to that directory.<ref name="set manually">This method utilizes a [http://kb.mozillazine.org/User.js_file <code>user.js</code> file] to set the preferences listed in [https://superuser.com/questions/1117383/can-i-use-tor-browser-without-using-tor-network these instructions for setting them manually]. If you set them manually you must (since Tor Browser 7.0) also disable the TorLauncher extension: Click on the three horizontal bars in the upper-right corner of the Tor Browser window. Select 'Add-ons' in the menu that pops up. Click the 'Disable' button to the right of TorLauncher. Select the 'Restart now' option that pops up.</ref></p>
-<pre>// Disable proxying
-user_pref(&quot;network.proxy.socks_remote_dns&quot;, false);
-user_pref(&quot;network.proxy.type&quot;, 0);
+<li><p>Create a new file named <code>user.js</code> with the following contents and save it to that directory. Changes to Tor Browser's extensions<ref name="use nontor proxy">The user preference "extensions.torbutton.use_nontor_proxy" is a hidden preference that will allow user-configured proxy configurations. It will disable Tor Browser's stream isolation, but in this configuration Tor is already disabled. See [https://trac.torproject.org/projects/tor/ticket/16917#comment:11 Tor's bug tracker] for more information.</ref> can be entered here, but further changes will need to be made in Tor Browser.</p>
+<pre>// Allow user-configured proxy settings
+user_pref("extensions.torbutton.use_nontor_proxy", true);
 // Disable TorLauncher extension
-user_pref(&quot;extensions.torlauncher.prompt_at_startup&quot;, false);
-user_pref(&quot;extensions.torlauncher.start_tor&quot;, false);</pre></li>
-<p>See the previous reference<ref name="set manually" /> if you want to set the preferences manually in Tor Browser instead.</p>
+user_pref("extensions.torlauncher.prompt_at_startup", false);
+user_pref("extensions.torlauncher.start_tor", false);
+</pre></li>
+<p>If you want to set the preferences manually, you can set them in about:config in Tor Browser's address bar. The preferences  that need changing are in quotes in the <code>user.js</code> above. The values they need to be set to are beside them.</p>
 <li><p>Start Tor Browser.</p>
 * '''Windows:''' Change the icon.
 * '''macOS:'''
 * '''Linux:''' Run <code>~/.local/share/torbrowser/tbb/x86_64/tor-browser_en-US/Browser/start-tor-browser</code>.
-<p>You will now be welcomed by 'Something Went Wrong! Tor is not working in this browser.' Confirm that this is the case by going to https://check.torproject.org, which should tell you that you are not using Tor.</p></li>
+<p>You will now need to change the proxy configuration. In about:config, change "network.proxy.socks_remote_dns" to false and "network.proxy.type" to 0. Check your settings by going to about:tor and clicking the "Test Tor Network Settings" link. You should be greeted with a page saying "Sorry. You are not using Tor." If you get an error page informing you that the proxy server is refusing connections, something is wrong with the proxy settings.</p></li>
 </ol>
 
 === Optional steps ===
