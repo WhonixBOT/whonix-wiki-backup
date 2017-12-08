@@ -1,1 +1,395 @@
-reverse lookup cell phone free christian louboutin shoes you are bdadffddeegdgbgg
+<translate>{{Header}}
+{{#seo:
+|description=Anonymize any Operating System! Your operating system tunneled through the Tor Anonymity Network! Create your Custom-Whonix-Workstation!
+|image=https://www.whonix.org/w/images/9/99/Board-832155640.jpg
+}}
+
+= Introduction =
+Whonix-Gateway supports torification of any operating system, including Microsoft Windows and others.
+
+'''''Using a default workstation is easier and provides more Security out of the box!''''' It is your responsibility to get the same security features for a Whonix-Custom-Workstation, see [[Other_Operating_Systems#Security_Comparison:_Whonix-Download-Workstation_vs._Whonix-Custom-Workstation|Security Comparison: Whonix-Download-Workstation vs. Whonix-Custom-Workstation]] at the bottom of the page for details.
+
+Also note that its strongly discouraged to anonymize VMs that have once connected to the clearnet. It could be the case that they might have leaked an identifier or created some network fingerprint that is still recognizable even when running it with Tor. Using it would unmask your traffic.
+
+= Windows-Whonix-Workstation =
+== Introduction ==
+XP, Vista and Windows are known to work behind Whonix-Gateway. While it is possible, it is not recommended and only for advanced users. This is because, there are issues with Windows. Those are not Whonix issues. Whonix developers cannot fix those issues. One issue is, that Windows is closed source. Rather, Windows is affected by [https://trac.torproject.org/projects/tor/wiki/doc/TransparentProxyLeaks Transparent Proxy Leaks] and [[Computer Security Education#Windows Hosts|other issues]]. For more information and depending on your security requirements, read the following chapters.
+
+== Easy ==
+{{VM Settings Easy Common}}
+
+'''Configure network.'''
+
+For {{Code2|Windows}} 7 (similar in {{Code2|Windows}} XP): In Control Panel -> Network and Sharing Center: click on "Change adapter settings" Right-click on local area connection > properties In property window: double-click Internet Protocol Version 4, use the following settings:
+
+<pre>
+# increment last octet of IP address on additional workstations
+IP address 10.152.152.50
+Subnet netmask 255.255.192.0
+Default gateway 10.152.152.10
+Preferred DNS server 10.152.152.10
+</pre>
+
+'''Download operating system updates.'''
+
+= Whonix-FreeBSD-Workstation =
+
+'''Create a new FreeBSD VM on VirtualBox'''
+
+VirtualBox -> Machine -> New -> Next -> Enter Name (for example: myVM) -> Enter Operating System and Version -> Next -> define RAM -> Next -> create a new hdd (or not) -> Next -> disk format doesn't matter, VDI works fine however -> Next -> dynamically or fixed size is a matter of preference -> Next hdd size and location is a matter of preference -> Next -> Create 
+
+'''Install FreeBSD and upgrade it'''
+
+This is necessary as freebsd-update or pkg do not support socks.
+<pre>
+#Base OS patches as root
+root_shell> freebsd-update fetch install 
+
+#Application updates
+root_shell> pkg upgrade
+</pre>
+
+You will need a http proxy chained to tor gateway to torify pkg or freebsd-update, else you risk loosing patches.
+Use one of privoxy/proxychains/tsocks when using the Whonix-Gateway.
+
+Install necessary applications.
+<pre>
+root_shell> pkg install privoxy 
+</pre>
+After this shutdown the VM.
+<pre>
+root_shell> shutdown -p now
+</pre>
+
+'''Change the VirtualBox VM settings'''
+
+Choose the newly created VM (for example: myVM) -> Settings -> System -> Motherboard -> Hardware Clock in UTC
+
+System -> Motherboard -> Pointing Device -> PS/2 Mouse (required so that USB controller may be disabled)
+
+System -> Processor -> Enable PAE/NX if available
+
+Network -> Adapter 1 -> attached to Internal Network (Important!)
+
+Network -> Adapter 1 -> Name (of Internal Network) (Important!): Whonix
+
+(Note: It is Whonix, not whonix. Case sensitive. Capital W.)
+
+USB -> uncheck Enable USB controller
+
+-> OK 
+
+Start VM and proceed to configure the OS inside the VM.
+
+'''Configure network.'''
+
+In your Custom-Workstation. Open a terminal and edit as a privileged user {{Code|/etc/rc.conf}}
+
+You need to configure a single interface, here it is em0, there should not be any other 'ifconfig' statements:
+
+<pre>
+#Increment the octect of IP address for configuring other workstations.
+ifconfig_em0="inet 10.152.152.12 netmask 255.255.192.0"
+defaultrouter="10.151.152.10"
+</pre>
+
+
+For the address resolution to work. {{Open with root rights|
+filename=/etc/resolv.conf
+}}
+
+and delete everything, then add
+
+<pre>
+nameserver 10.152.152.10
+</pre>
+
+Restart network service:
+<pre>
+root_shell> service netif restart
+</pre>
+
+Confirm changes by running ifconfig.
+
+= Whonix-GNU/Linux-Workstation =
+== Easy ==
+{{VM Settings Easy Common}}
+
+'''Configure network.'''
+
+<u>For [[Qubes|Qubes-Whonix]]</u>, you do not have to configure the network.
+
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+<u>For [[Non-Qubes-Whonix]]</u>, click on expand on the right.
+<div class="mw-collapsible-content">
+In your Custom-Workstation.
+
+{{Open with root rights|filename=
+/etc/network/interfaces
+}}
+
+You only need to configure eth0:
+
+{{CodeSelect|code=
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+# The loopback network interface, leave as it is
+auto lo
+iface lo inet loopback
+
+auto eth0
+#iface eth0 inet dhcp
+iface eth0 inet static
+# increment last octet of IP address on additional workstations
+       address 10.152.152.12
+       netmask 255.255.192.0
+       #network 10.152.152.0
+       #broadcast 10.152.152.255
+       gateway 10.152.152.10
+}}
+
+In your Custom-Workstation. {{Open with root rights|
+filename=/etc/resolv.conf
+}}
+
+and delete everything, then add
+
+{{CodeSelect|code=
+nameserver 10.152.152.10
+}}
+</div>
+</div>
+
+'''Download operating system updates.'''
+
+For Debian based Linux, such as Ubuntu, see [[Security_Guide#Updates|updates]].
+
+= Whonix-Android-Workstation =
+== Easy ==
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px|alt=Android warning]]
+| text       = 
+'''Warning''':<br />
+The following instructions are user contributed, untested by Whonix maintainers, and require a DHCP server to be installed on Whonix-Gateway. [https://phabricator.whonix.org/T239 Whonix maintainers have not researched yet, if there is any feature in DHCP servers that would be problematic in the use case of anonymity distributions that use a two machine isolation approach. (Help welcome!)] Maybe there is such a feature, maybe not. If it exists, maybe it could be easily disabled, maybe not. What is the attack surface here: once an attacker has compromised Whonix-Workstation, an attempt to exploit the DHCP server on Whonix-Gateway could be tried. Worse, maybe DHCP has a feature such as "please tell me the IP address of your upstream router", and that would be your real external IP address and DHCP would answer. To find out if this is actually the case, one would have to read the whole [https://www.ietf.org/rfc/rfc2131.txt DHCP protocol]. [https://forums.whonix.org/t/dhcp-server-on-the-gateway Forum discussion]. If you are interested anyway, please click on expand on the right side.
+}}
+<div class="mw-collapsible-content">
+VM settings are the same: attach the network adapter to the internal network named '''Whonix'''
+
+Android x86 doesn't seem to support static IPs for Ethernet, so a DHCP server needs to be set up on Whonix-Gateway.
+
+Install a DHCP server package:
+
+{{CodeSelect|code=
+sudo apt-get install isc-dhcp-server
+}}
+
+Note that it won't start, because it is not configured yet
+
+Modify '''/etc/dhcp/dhcpd.conf''' to look like this:
+
+<pre>
+
+option domain-name "whonix";
+option domain-name-servers 10.152.152.10;
+subnet 10.152.128.0 netmask 255.255.192.0 {
+        range 10.152.152.12 10.152.152.15;
+        option subnet-mask 255.255.192.0;
+        option broadcast-address 10.152.191.255;
+        option routers 10.152.152.10;
+}
+default-lease-time 600;
+max-lease-time 7200;
+
+</pre>
+
+Run
+
+{{CodeSelect|code=
+sudo dpkg-reconfigure isc-dhcp-server
+}}
+
+and choose '''eth1''' as interface for the DHCP server to run on.
+
+After this the DHCP server on workstation starts properly and the Whonix
+Gateway is ready to serve a dynamic IP to the Android x86 Whonix-Workstation.
+</div>
+</div>
+
+= More security =
+
+Recommendations:
+
+* Verify operating system installation CD, compare with sha256 hash or even better verify the gpg signature, if available.
+* Install while the Virtual Machine has no internet connection.
+* Set your username to ''user''.
+* Disable Internet Time Syncing.
+* Set your Time Zone to ''UTC''.
+* Set up a static IP.
+* In case you want to run more than one Whonix-Workstation at the same time, it is recommended reading the Introduction in the [[Multiple Whonix-Workstations]] article.
+* Read [[Security Guide]], [[Documentation]] and [[Design]] (which is Whonix-Example-Implementation-Workstation (based on Debian GNU/Linux) specific) and try to apply as much from it to Windows as possible.
+
+= Even more security =
+== General ==
+Recommendations:
+
+* Prevent [https://trac.torproject.org/projects/tor/wiki/doc/TransparentProxyLeaks Transparent Proxy Leaks] by disabling Whonix-Gateway's Transparent Proxy feature. Instead use your Windows Whonix-Workstation behind an [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO/IsolatingProxy Isolating Proxy]. See [[Stream Isolation]] for more information and instructions on how to [[Stream Isolation#Better Protection|disable the Transparent Proxy feature]].
+* Check your host clock out of band (use a watch or atomic clock).
+* Set your host and your Workstation clock to show seconds as well. After booting the Whonix-Windows-Workstation, add a random skew to your clock, maybe +/- 1 to 30 seconds. Optimal values are still under investigation. For reference, see [[TimeSync|Whonix's Secure And Distributed Time Synchronization Mechanism]], it is Whonix-Example-Implementation-Workstation (based on Debian GNU/Linux) specific, but most information also applies to Windows. Since we are not aware of a tails_htp alternative for Windows, you have to do it manually.
+
+== VM settings ==
+{{VM Settings Security Common}}
+
+== Whonix Packages ==
+[[Whonix_Debian_Packages|Whonix's Debian Packages]] ([https://github.com/Whonix overview]), such as for example [https://github.com/Whonix/uwt uwt], are available for installation [[Dev/Build_Documentation|from source]] and [[Whonix-APT-Repository|Whonix's apt repository]] ([https://github.com/Whonix/uwt#how-to-install-in-debian-using-apt-get example instructions]). Installation (of some) anonymity/security/privacy/usability related ones of them might be interesting for users of Debian and Debian derivatives.
+
+'''Note, that usage of these package outside of Whonix is untested and there is no maintainer that supports this use case.'''
+
+The current [[Authorship|Whonix team]] can only maintain a limited amount of things, has limited resources and focuses on other priorities. If you have developer skills, would you be interested to [[contribute]] by [[Contribute#Maintainer|co-maintaining]] one or another package for using them outside of Whonix?
+
+= Most security =
+
+Use the default Whonix VMs and build them yourself from source.
+
+= Ubuntu =
+* General: [[Ubuntu]]
+* [[Ubuntu#Guest_additions_for_Ubuntu]]
+
+= Debian =
+
+Whonix-Default/Download-Version is already based on Debian Wheezy / Stable. You may be interested to read:
+
+* How to obtain Debian safely: [[Debian|Debian ISO gpg verification]]
+
+= Security Comparison: Whonix-Download-Workstation vs. Whonix-Custom-Workstation =
+
+== Introduction ==
+
+Read first: [[Comparison_of_different_Whonix_variants | Comparison of different Whonix variants]]!
+
+Note: Whonix-BuildYourselfFromSource-Workstation is of course the same as Whonix-Download-Workstation.
+
+== Table ==
+
+{| class="wikitable" style="background-color: #fff; text-align: center"
+!
+! Whonix-Download-Workstation
+! Whonix-Custom-Workstation
+|-
+| align="left" | Based on
+| Debian Wheezy GNU/Linux
+| Any of your choice.
+|-
+| align="left" | Amnesic
+| {{No}}
+| {{No}}
+|-
+| align="left" | Protection against root exploits (Malware with root rights) on the Workstation <ref name=same_footnote_as>Same footnote(s) as in [[Comparison_with_Others|Comparison of Whonix, Tails, Tor Browser, Qubes OS TorVM and Corridor]] and [[Tor Browser]].</ref>
+| {{Yes}} <ref name=same_footnote_as />
+| {{Yes}} <ref name=same_footnote_as />
+|-
+| align="left" | IP/DNS protocol leak protection
+| style="background-color: {{Green}}"| Full <ref name=same_footnote_as />
+| style="background-color: {{Green}}"| Full <ref name=same_footnote_as />
+|-
+| align="left" | Takes advantage of Entry Guards
+| {{Yes}}
+| {{Yes}}
+|-
+| align="left" | Operating System Updates persist once updated
+| {{Yes}}
+| Depends if gets installed or is a Live CD.
+|-
+| align="left" | Hides hardware serials from malicious software
+| {{Yes}} <ref name=same_footnote_as />
+| {{Yes}} <ref name=same_footnote_as />
+|-
+| align="left" | Does not collects (virtual) hardware serials
+| {{Yes}}
+| Depends on the custom operating system
+|-
+| align="left" | Includes Tor Browser
+| {{Yes}}
+| {{Anchor|Your_Responsibility}}[[#Missing Documentation|Your responsibility]] to install Tor Browser. <ref name=tb>
+For help using Tor Browser without Tor over Tor (recommended), see:
+
+* Linux: [[Tor_Browser#Whonix-Custom-Linux-Workstation_specific]]
+* Windows: [[Tor_Browser#Windows_specific]]
+</ref> <ref>
+For explanation of the about:tor "Something went wrong" error, please see this [https://forums.whonix.org/t/torbrowser-on-ubuntu-14-04-64-bit forum thread].
+</ref>
+|-
+| align="left" | Includes Firefox privacy patches <ref>https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO/WebBrowsers</ref> and Tor Button (=Tor Browser)
+| {{Yes}}, because it uses Tor Browser (without Tor/Vidalia).
+| Your responsibility to install Tor Browser. <ref name=tb />
+|-
+| align="left" | Prevents [[DoNot#Prevent_Tor_over_Tor_scenarios.|Tor over Tor]] for Tor Browser
+| {{Yes}}
+|  Your responsibility to prevent Tor over Tor. <ref name=tb />
+|-
+| align="left" | Stream isolation to prevent identity correlation through circuit sharing
+| {{Yes}}
+| Your responsibility to use Stream Isolation.
+|-
+| align="left" | Stream isolation in Tor Browser
+| {{No}} <ref name=same_footnote_as />
+| {{No}} <ref name=same_footnote_as />
+|-
+| align="left" | Encryption
+| style="background-color: {{Yellow}}"| Should be applied on host.
+| style="background-color: {{Yellow}}"| Should be applied on host.
+|-
+| align="left" | Cold Boot Attack Protection <ref name=same_footnote_as />
+| {{No}}
+| {{No}}
+|-
+| align="left" | Secure Distributed Network Time Synchronization
+| {{Yes}}
+| Your responsibility to install it.
+|-
+| align="left" | Hides your time zone (set to UTC)
+| {{Yes}}
+| Your responsibility to set clock to UTC.
+|-
+| align="left" | Hides your operating system account name
+| {{Yes}}, set to user.
+| Your responsibility to set username to user.
+|-
+| align="left" | Hides your MAC address from websites
+| {{BlueBackground}} Invalid <ref name=same_footnote_as />
+| {{BlueBackground}} Invalid <ref name=same_footnote_as />
+|-
+| align="left" | Secures your MAC address from local LAN (sometimes ISP) <ref name=same_footnote_as />
+| {{No}}, planned, see. <ref name=same_footnote_as />
+| Your responsibility. <ref name=same_footnote_as />
+|-
+| align="left" | Hides your hosts MAC address from applications
+| {{Yes}} <ref name=same_footnote_as />
+| {{Yes}} <ref name=same_footnote_as />
+|-
+| align="left" | Secure gpg.conf
+| {{Yes}}
+| Your responsibility to use a secure gpg.conf.
+|-
+| align="left" | Privacy enhanced IRC client configuration.
+| {{Yes}}
+| Your responsibility to configure the IRC client for enhanced privacy.
+|}
+
+== Conclusion ==
+The Whonix-Download-Workstation is already preconfigured with all Whonix extra security features.
+
+A Whonix-Custom-Workstation ''can be made'' (Your responsibility!) as secure as a Whonix-Download-Workstation. If you simply create <ref>Install or use a Live CD/DVD into Whonix-Workstation.</ref> a Whonix-Custom-Workstation it has still ''some'' security advantages, for example full IP/DNS protocol leak protection, but ''not all'', for example it lacks Secure Distributed Network Time Synchronization. The details are listed in the table above.
+
+= Missing Documentation =
+You might wonder what "[[#Your_Responsibility|your responsibility]]" means. Some users are wondering, where the documentation for these aspects can be found. No documentation has been written yet. There is a lack of resources to maintain such instructions. I.e. writing them, and more so, keeping them up to date, testing them, answering support requests, fixing bugs and implementing feature requests. Please [[contribute]]. For more detailed explanation, see also [[#Whonix Packages|Whonix Packages]].
+
+= References =
+{{reflist}}
+
+{{Footer}}
+
+[[Category:Documentation]]
+</translate>
