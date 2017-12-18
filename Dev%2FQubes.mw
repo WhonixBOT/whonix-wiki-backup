@@ -908,6 +908,48 @@ https://demo.yubico.com/u2f
 * Googlemail (multiple yubikey's can be added as backups)
 
 = salt =
+This is what<code>sudo qubesctl state.sls qvm.anon-whonix dom0</code> does in effect. <ref>
+https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/
+</ref>
+
+* install packages from qubes-templates-community
+** install qubes-template-whonix-gw
+** install qubes-template-whonix-ws
+
+* create VM called sys-whonix
+** with label: black
+** with 500 MB memory
+** with <code>provides_network</code>
+** enables autostart
+
+* create a VM called anon-whonix
+** with label: red
+** with netvm: sys-whonix
+** default-dispvm: whonix-ws-dvm
+** add tag <code>anon-vm</code>
+
+* create a VM called whonix-ws-dvm
+**-as DispVM Template <ref><code>template-for-dispvms: true</code></ref>
+** with label: red
+** with netvm: sys-whonix
+** default-dispvm: whonix-ws-dvm
+** add tag <code>anon-vm</code>
+
+* dom0 config changes
+** prepend <code>/etc/qubes-rpc/policy/qubes.UpdatesProxy</code> with the following text
+
+{{CodeSelect|code=
+whonix-gw $default allow,target=sys-whonix
+whonix-gw $anyvm deny
+whonix-ws $default allow,target=sys-whonix
+whonix-ws $anyvm deny
+}}
+
+** prepend <code>/etc/qubes-rpc/policy/qubes.GetDate</code> with
+
+{{CodeSelect|code=
+$tag:anon-vm $anyvm deny
+}}
 
 = See Also =
 * [[Dev/Test|Dev/Test - How to "UnWhonix" - Instructions on how to remove Whonix Tor default networking for Whonix-Gateway. After applying these instructions, Whonix-Gateway will connect to clearnet.]]
