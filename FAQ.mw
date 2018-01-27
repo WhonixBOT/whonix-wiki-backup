@@ -237,24 +237,44 @@ See [[Browser Tests]].
 
 == New Identity and Tor Circuits ==
 
-The behavior of "New Identity" in context of TorButton and [[arm]] often misunderstood. First of all, there are various ways to issue a issue a "new identity". Here is a list:
+The behavior of "New Identity" in the context of TorButton and [[arm|Arm]] is often misunderstood. First of all, there are various ways to issue a issue a "New Identity":
 
-* [[Tor_Browser#New_Identity_Button|Tor Browser - TorButton]]
-* [[Tor_Browser#Get_New_Identity_without_Tor_ControlPort_Access|Tor Browser - Get New Identity without Tor ControlPort Access]]
-* [[Arm|Arm]]
-* [[Tor_Controller#tor-ctrl|tor-ctrl]]
-* [[Tor_Controller#netcat|netcat]]
-* and probably others
+* [[Tor_Browser#New_Identity_Button|Tor Browser - TorButton]].
+* [[Arm|Arm]].
+* [[Tor_Controller#tor-ctrl|tor-ctrl]].
+* [[Tor_Controller#netcat|netcat]].
+* And probably other methods.
 
-They got one in common. They send a Tor ControPort protocol command "signal newnym" to Tor's ControlPort. Tor circuit lifetimes the result of "signal newnym" is it often misunderstood. "signal newnym" uses a fresh circuit for new connections.
 
-Note, although chances are good that you are getting a new Tor exit relay, a new IP, a new circuit does not guarantee a new Tor exit relay. Tor may only have replaced the middle relay while using the same Tor exit relay. This is by design and Tor default.
+In all cases, the "New Identity" function sends the protocol command "signal newnym" to Tor's ControlPort. This clears the browser state, closes tabs, and obtains a fresh Tor circuit for future requests. <ref>https://blog.torproject.org/blog/torbutton-141-released</ref> 
 
-"signal newnym" won't interfere with long living connections such as for example an IRC connection.
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = '''Warning:''' The New Identity feature will ''likely'' create a new Tor exit relay and a new IP address, but this is not guaranteed.
+}}
 
-When you open https://check.torproject.org in your browser, then issue "signal newnym" using [[Arm|Arm]], then reload https://check.torproject.org it may still show the same IP. This is probably because the browser didn't close the connection to https://check.torproject.org in the first place. When you repeat that experiment with a small modification, chances are good you might see a new Tor exit IP. Open https://check.torproject.org in your browser, then issue "signal newnym" using [[Arm|Arm]], then close Tor Browser, then start Tor Browser again. then open https://check.torproject.org again, you might see a new Tor exit relay IP.
 
-Please note, "new identity" in most cases really only means "signal newnym". There are no guarantees about unlinking all sorts of protocol (browser etc.) states so you appear as a different identity. Tor Browser's TorButton New Identity Feature attempts this, but it is not perfect yet, for details see [[Tor_Browser#New_Identity_Button|Tor Browser - TorButton New Identity Feature documentation]].
+The impact of "signal newnym" on Tor circuit lifetimes is often misunderstood. "signal newnym" uses a fresh circuit for ''new'' connections. Sometimes Tor only replaces the middle relay while using the same Tor exit relay. This is by design and the Tor default. Further, "signal newnym" does not interfere with long-lived connections like an IRC connection.
+
+Interested readers can verify the effect of "signal newnym" as follows:
+
+# Open https://check.torproject.org in Tor Browser.
+# Issue "signal newnym" using [[Arm|Arm]].
+# Reload https://check.torproject.org. 
+# In some cases it will still show the same IP address, probably because the browser did not close the connection to https://check.torproject.org in the first place.
+
+
+Now repeat this experiment with a small modification which should result in a new Tor exit IP address:
+
+# Open https://check.torproject.org in Tor Browser.
+# Issue "signal newnym" using [[Arm|Arm]].
+# Close Tor Browser, then restart it. 
+# Open https://check.torproject.org again, and a new Tor exit relay IP address is (likely) visible.
+
+
+New Identity is not yet perfect and there are open bugs; this is not a Whonix-specific issue. "signal newnym" is not a guaranteed method of unlinking various protocol states (like the browser) so the user absolutely appears to be a different identity. {{Browser_Fingerprinting_Footnote}} Tor Browser's TorButton [[Tor_Browser/Advanced_Users#New_Identity_Design|New Identity feature]] attempts this, but it is not yet perfect.
+
+In general for greater security, it is better to completely close Tor Browser and restart it. In [[Qubes-Whonix]], the safest option is using a Whonix-Workstation [[Qubes/DisposableVM]] and closing it and recreating a new one after critical activities.
 
 = Trust =
 
