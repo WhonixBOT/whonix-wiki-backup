@@ -1,4 +1,4 @@
-{{Header}}
+<translate>{{Header}}
 {{#seo:
 |description=Using Whonix with VMware
 }}
@@ -69,7 +69,10 @@ Tweaks:
 
 == VMware ESX(i) ==
 Importing the .ova templates will simply not work. ESX(i) will not recognize the hardware family.
-However, there is a workaround - extracting .ova and editing .ovf. An example can be found here<ref>https://github.com/DartNecrON/WhonixESXi</ref>. Another way is to use extracted .vmdk (VM virtual disk).
+However, there are workarounds, either extracting the .ova and editing the .ovf files or using VMware Workstation.
+===Importing virtual disk files===
+One way Whonix can be made to run on ESXi is by extracting the .vmdk (VM virtual disk) files.
+An example can be found here<ref>https://github.com/DartNecrON/WhonixESXi</ref>. 
 
 Importing the appliances:
 * Create two virtual machines in ESX(i) with default settings, do not create a virtual disk for them.
@@ -78,16 +81,17 @@ Importing the appliances:
 * Upload both disk files to the datastore that you are using in ESX(i)
 * Attach the disk files to the appropriate virtual machines.
 
-
 Set the networking:
 * Make sure the Whonix-Gateway has '''two''' network adapters configured as a virtual machine, the Whonix-Workstation only '''one'''.
 * Attach the first Whonix-Gateway network adapter to your '''outside network vSwitch''' (this can be WAN, LAN, DMZ, ...)
 * Attach the second Whonix-Gateway network adapter to an '''isolated vSwitch'''. Preferably create a new vSwitch, which will be used only by Whonix-Gateway and Whonix-Workstation. '''Attach no physical NICs to this vSwitch!''' Make sure you create a new vSwitch, not simply a new portgroup. Promiscuous mode within a vSwitch might screw you over.
 * Attach the Whonix-Workstation network adapter to the isolated vSwitch from previous step.
 
-
 Once the machines boot, everything should come online nicely.
 '''Double check the vSwitch logic in your setup!'''
+
+===Using VMWare Workstation as intermediary===
+If VMware Workstation is available, another option that works without manual extraction and repacking is to import both VMs to VMware Workstation, check that all settings are properly applied (as per the guide above) and then either export the VMs to ovf and import them on the ESXi server or, if the server is connected to the Workstation instance, migrate via VMware Workstation. This generally works out of the box, although the networking should be reviewed and isolated as per the guide above.
 
 = Harden VMware products =
 See also [[Security Guide]] and [[Advanced_Security_Guide]].
