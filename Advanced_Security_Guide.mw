@@ -38,7 +38,6 @@ This wiki page contains material from the of the Tails Protection against cold b
 
 = Basics =
 
-<!--T:240-->
 
 Before reading or applying instructions in this section, users should first review the information outlined in the [[Pre_Install_Advice|Computer Security Education]] and [[Security_Guide|Security Guide]] chapters.
 
@@ -54,29 +53,22 @@ Before reading or applying instructions in this section, users should first revi
 
 '''Saving or Suspending the VM State'''
 
-<!--T:248-->
 When a user suspends or saves the VM state, the clock will stop and continue after resuming, leading to a time that lags behind the correct value. The Whonix-Gateway state should not be suspended or saved. It is far better to  power off the Whonix-Gateway if it is no longer needed. <ref>If this advice is ignored, Tor can become confused if the time is more than 1 hour in the past or more than 3 hours in the future. When this happens, Tor will only reconnect to the Tor network if the clock is manually fixed, or powered off and on again.</ref> Similarly, if users  suspend or save the Whonix-Workstation state, the clock will again lag behind the correct value. This can be manually fixed inside Whonix-Workstation by running: <code>Start Menu</code> -> <code>Applications</code> -> <code>System</code> -> <code>Whonix Timesync</code>.
 
 '''NTP Issues'''
 
-<!--T:249-->
 The host system clock synchronization mechanism still uses unauthenticated NTP from a single source. This is not optimal, but there is no real solution to this problem. <ref>See Design: [[Dev/TimeSync]].</ref> A potential attack vector is created by this NTP behavior; the ISP and/or time server could either inadvertently or maliciously introduce a significant clock skew, or the host clock could simply malfunction.
 
-<!--T:250-->
 If the host clock value is grossly inaccurate - more than one hour in the past or more than 3 hours in future - Tor cannot connect to the Tor network. <ref>In this case, Tor cannot verify the Tor consensus.</ref> This is easily solved by manually fixing the clock on the host, then powering the Whonix-Gateway off and on again.
 
-<!--T:251-->
 Another side effect of a significantly inaccurate host clock concerns operating system (OS) updates and cryptographic verification on the host. Until the host clock is manually fixed, it may no longer be possible to download updates or verify SSL certificates with the host browser.
 
-<!--T:252-->
 Users should always check whether a host clock defect relates to an empty battery before assuming the ISP is tampering with NTP.
 
 '''Disabling NTP'''
 
-<!--T:253-->
 If ISP tampering with NTP is ever confirmed, users are advised to disable NTP and manually update the host clock out of band, for example, using a watch or atomic clock. If the tampering is targeted and not just a widescale attack, then the user already has much bigger problems to worry about than NTP (see [[Warning#Confirmation attacks|Confirmation attacks]]).
 
-<!--T:254-->
 If users follow the advice above to disable NTP on the host and manually adjust the clock out of band, this might make clearnet traffic more fingerprintable. <ref>See the [https://www.whonix.org/wiki/Fingerprint Fingerprint] page to discover what fingerprinting means in this case.</ref> The reason is that it introduces a device issuing clearnet traffic (such as OS updates), but without the use of NTP. It is unknown how many people have NTP which is deactivated, broken, uninstalled, or never in fact installed in the first place. Also unknown is whether many people are using alternative time synchronization methods such as authenticated NTP, tails_htp, tlsdate or similar. However, search engine research suggests that very few people fall into both these categories. 
 
 == Spoof the Initial Virtual Hardware Clock Offset  ==
@@ -109,7 +101,6 @@ The <code>adjustment</code> attribute takes any arbitrary value for seconds. The
 <div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
 For [[VirtualBox]], click on Expand on the right.
 <div class="mw-collapsible-content">
-<!--T:243-->
 VirtualBox has a feature to spoof the initial virtual hardware clock offset by setting the clock X milliseconds in the future or past. The syntax is outlined below.
 
 {{CodeSelect|code=
@@ -117,7 +108,6 @@ VBoxManage modifyvm <name> --biossystemtimeoffset -<milliseconds>
 VBoxManage modifyvm <name> --biossystemtimeoffset +<milliseconds>
 }}
 
-<!--T:244-->
 It is prudent to add a random delay within the following range.
 
 {{CodeSelect|code=
@@ -125,7 +115,6 @@ VBoxManage modifyvm <name> --biossystemtimeoffset -60000
 VBoxManage modifyvm <name> --biossystemtimeoffset +60000
 }}
 
-<!--T:245-->
 A spoofing example is below. Users should select their own unique and random values for both the past (-) and future (+) within the specified range. Different values should be used for each distinct VM (on the host).
 
 {{CodeSelect|code=
@@ -136,7 +125,6 @@ VBoxManage modifyvm "Whonix-Workstation" --biossystemtimeoffset -35017
 VBoxManage modifyvm "Whonix-Workstation" --biossystemtimeoffset +27931
 }}
 
-<!--T:247-->
 Apart from this small <code>biossystemtimeoffset</code>, a clock skew always degrades privacy. <ref><code>biossystemtimeoffset</code> is used to unlink the virtualizer's initial clock synchronization of the VM from the host clock.</ref> <ref>After powering on a VM, it initially synchronizes the VM clock with the host clock until Whonix Timesync adjusts it.</ref> <ref>Clock skews can lead to linkability, meaning the user would be [[DoNot#Do_not_Confuse_Anonymity_with_Pseudonymity|pseudonymous rather than anonymous]].</ref>
 
 </div>
@@ -148,7 +136,6 @@ TODO
 Unfortunately, it is not yet possible to set a random clock offset for Qubes-Whonix VMs to prevent clock correlation attacks since it is [https://phabricator.whonix.org/T440 unsupported by Xen]. A related issue is [https://phabricator.whonix.org/T389 denying Qubes-Whonix access to "clocksource=xen"], which may not be possible without Linux kernel and/or Xen patches. For a detailed discussion of these issues, see [https://groups.google.com/forum/#!topic/qubes-devel/aN3IOv6JmKw here].
 
 == Summary ==
-<!--T:256-->
 In summary:
 
 * Only [[#Spoof the Initial Virtual Hardware Clock Offset|spoof the initial virtual hardware clock offset]] after importing the VM.
@@ -156,24 +143,19 @@ In summary:
 * Tor cannot connect if the host clock is grossly inaccurate. In this case, users should manually fix the host clock, before powering the Whonix-Gateway off and on again.
 * Users should periodically check the host clock to ensure that it is accurate, or approximately so.
 
-<!--T:257-->
 Users are suggested to read the [[Dev/TimeSync|Technical Design chapter]], even though it is a difficult topic.
 
-<!--T:258-->
 Interested users, developers and auditors should review the footnotes immediately below for additional information, or to explore design elements and the reasoning for this section.
 
 <references />
 
 == Deactivate Automatic TimeSync ==
-<!--T:260-->
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text       = 
 '''Warning:''' This action is recommended against and is usually not required. In all cases, first check with the Whonix developers.
 }}
 
-<!--T:261-->
-<!--T:262-->
 
 To deactivate sdwdate, run.
 
@@ -189,7 +171,6 @@ sudo systemctl mask sdwdate
 
 == Whonix Platform ==
 
-<!--T:272-->
 
 As noted in the [[Security_Guide#Qubes-Whonix_vs_Physically-Isolated_Non-Qubes-Whonix|Security Guide]], there are two platforms providing greater security than the standard host OS / Type 2 hypervisor Whonix configuration:
 
@@ -219,7 +200,6 @@ In contrast to Qubes-Whonix, physical isolation is:
 
 == Hardening ==
 
-<!--T:274-->
 === Key Hardening Steps ===
 
 For greater security, advanced users should harden the host OS as much as is practicably possible. This includes, but is not limited to applying relevant steps from the [[System_Hardening_Checklist|system hardening checklist]] and instructions found later in this chapter:
@@ -259,22 +239,17 @@ The attack surface concept deserves more consideration. Simply put, it is the su
 * Remove or shutdown software and services (channels, protocols) that are infrequently or rarely used.
 * Frequently patch security vulnerabilities.
 
-<!--T:275-->
 
-<!--T:276-->
 '''Proactive Defenses'''
 
 This includes, but is not limited to:
-<!--T:277-->
 * [http://wiki.debian.org/Hardening Compile time hardening]
 * [https://en.wikipedia.org/wiki/Mandatory_access_control Mandatory Access Control]
 * [https://en.wikipedia.org/wiki/Intrusion_prevention_system Intrusion Prevention Systems]
 
 
-<!--T:278-->
 '''Retroactive Defenses'''
 
-<!--T:279-->
 The usefulness of this approach is limited because it does not prevent security breaches; it can only help in making future breaches less probable:
 
 * [https://en.wikipedia.org/wiki/Rkhunter Rootkit Hunter (rkhunter)].
@@ -285,7 +260,6 @@ The usefulness of this approach is limited because it does not prevent security 
 * [[Computer_Security_Education#Malware|Anti-virus and anti-malware programs]].
 
 
-<!--T:280-->
 The programs listed in this section are only a very brief introduction to this topic. If interested, users should research these topics in depth on the Internet, as they are beyond the scope of this guide.
 
 == apt-transport-tor ==
@@ -301,33 +275,26 @@ The programs listed in this section are only a very brief introduction to this t
 }}
 
 
-<!--T:282-->
 This platform was developed and tested successfully for Whonix v0.1.3. 
 
-<!--T:283-->
 Basically, a user can use one VM instead of two, with Tor running on the host OS and a single client VM routing activities via Tor. This configuration has several advantages and disadvantages relating to security and other matters. For further information, see [[OneVM]]. 
 
 == Separate VirtualBox User Account ==
 
-<!--T:285-->
 Security-wise, it makes sense to create a separate user account solely for using [[VirtualBox]], which is not in the admin/sudo group.
 
 == DMZ ==
 
-<!--T:287-->
 If users have a shared network - such as a cable modem/router or ADSL/router setup that is used by others - then configuration of a [https://en.wikipedia.org/wiki/DMZ_%28computing%29 DMZ] for the Whonix-Gateway should be considered. 
 
-<!--T:288-->
 A properly configured DMZ restricts the Whonix-Gateway from accessing, and being accessible to, other nodes on the network like printers, phones, computers and laptops. This is true even if root access is somehow achieved on the Whonix-Gateway.
 
-<!--T:289-->
 Should an incursion take place, a DMZ prevents an adversary from exploring other systems and possibly compromising them. However, in this case a DMZ does not protect the user's anonymity, since the adversary could just ping a remote server and discover the real IP address. Another benefit of a DMZ is that should other systems be compromised, it is more difficult to compromise Whonix-Gateway.
 
 == Host Firewall ==
 
 === Installation ===
 
-<!--T:292-->
 
 {{mbox
 | type      = notice
@@ -337,35 +304,28 @@ Should an incursion take place, a DMZ prevents an adversary from exploring other
 
 === Port Scan ===
 
-<!--T:294-->
 Using an [https://www.grc.com/shieldsup Internet-based port scanner service] to test the local LAN's router/firewall is a sensible idea. Users must carefully research and find a legitimate service, since many companies only want to sell a product and will purposefully present false positives. A better alternative is to scan the local LAN with a port scanning application from an external IP address. To scan the home IP address, users can either login remotely (SSH) via an external machine, or proxy through an external IP address. Detailed instructions on accomplishing that are beyond the scope of this document.
 
-<!--T:295-->
 A special case is presented by users who share a LAN with other PCs (a stand-alone machine is not used). In this instance, the port scanning/testing service or a port scan application from an external IP address will actually only scan the local LAN's router/firewall and not the actual host's PC. If the latter is misconfigured, then the user could be susceptible to attacks from other machines within the LAN which sit behind the router, and a false sense of security could be the result.
 
-<!--T:296-->
 For example, if the user shares the LAN with flatmates who are not so sophisticated in computer security, then those foreign machines should be regarded as potentially malicious. There is every possibility they may have been infected with a botnet already, or other harmful programs. Therefore, the user cannot trust the output of a port scan application running on their machine. If there is no spare machine for testing, then foreign computers on the LAN can be booted from a live CD, and the user can scan their personal machine with a port scan application. Details on how to accomplish that task are also outside the scope of this document.
 
 === NAT Router ===
 
-<!--T:298-->
 Being behind an ordinary NAT router may provide a marginal layer of extra security. 
 
 Users should also review the relevant recommendations in the [[Computer_Security_Education#Suitable_Hardware_and_Router_Configurations|Computer Security Education]] chapter. This includes locking down router settings, purchase of a commercial-grade router, and for experts, flashing the router with an open-source GNU/Linux distribution.
 
 === Dedicated Connection ===
 
-<!--T:300-->
 If possible, it is safer to avoid sharing the network (LAN, Wi-Fi, hotspot) with other potentially compromised machines.
 
 === Filtering Ports ===
 
 ==== Introduction ====
 
-<!--T:303-->
 From time to time a user asks which incoming/outgoing ports are required by Whonix-Gateway. The answer is:
 
-<!--T:304-->
 * Incoming: none.
 * Outgoing: all.
 
@@ -375,7 +335,6 @@ An alternative technique for controlling ports might be [[Corridor|corridor (a T
 </ref>
 
 ==== Incoming ====
-<!--T:306-->
 Whonix-Gateway itself does not open any ports. Users are advised to close all ports on the host as outlined in the [[Pre_Install_Advice#Host_Firewall|Computer Security Education chapter (Host Firewall)]].
 
 ==== Outgoing ====
@@ -385,15 +344,12 @@ Whonix-Gateway itself does not open any ports. Users are advised to close all po
 }}
 
 
-<!--T:308-->
 Filtering outgoing ports is difficult, since Tor entry guards or bridges listen on a variety of different ports. Limiting ports Tor uses for outgoing traffic is still possible, but recommended against, since it reduces anonymity. The effect is fewer entry guards or bridges are made available to the user. If users wish to proceed despite the risk, follow the instructions below.
 
-<!--T:309-->
 On Whonix-Gateway.
 
 {{Open /etc/tor/torrc}}
 
-<!--T:311-->
 Add.
 
 {{CodeSelect|code=
@@ -407,7 +363,6 @@ Save.
 
 {{Reload Tor}}
 
-<!--T:313-->
 This issue has also been discussed [https://sourceforge.net/p/whonix/discussion/general/thread/3a0b673a/ in the old Whonix forum].
 
 == Tor Traffic Whitelisting Gateway ==
@@ -426,7 +381,6 @@ This approach is not necessarily more anonymous, but it is an additional fail-sa
 
 = Hardware Security =
 
-<!--T:315-->
 
 {{mbox
 | type      = notice
@@ -438,20 +392,17 @@ This approach is not necessarily more anonymous, but it is an additional fail-sa
 Trusted computer hardware is fundamental to anonymity and security. Users are recommended to purchase and use "clean" computers that have components manufactured by reputable companies. It is preferable to pay in cash so hardware IDs do not leak the user's identity.
 
 As outlined in the [[Computer_Security_Education#Using_a_Dedicated_Host_Operating_System_and_Computer|Computer Security Education]] chapter, it is safest to purchase a computer that is solely used for Whonix activities because this minimizes the risk of a prior hardware compromise.
-<!--T:316-->
 
 = Physical Attacks =
 
 == Introduction ==
 
-<!--T:319-->
 Physical attacks require adversaries to have direct access to a user's computer and cannot be conducted remotely.
 
 == Full Disk Encryption ==
 
 === On the Host ===
 
-<!--T:321-->
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text       = As outlined on the [[Warning#Whonix_is_not_Amnesic|Warning page]], Whonix has not been designed as an amnesic operating system. Traces of the installation and user activities will be written to disk. <ref>Until [https://github.com/QubesOS/qubes-issues/issues/904 in-RAM execution of disposableVMs] is implemented in Qubes-Whonix, this threat is not easily mitigated.</ref>
@@ -460,7 +411,6 @@ Physical attacks require adversaries to have direct access to a user's computer 
 
 ==== Protection Against Powerful Adversaries ====
 
-<!--T:322-->
 To protect against theft or robbery of personal information or data, users should apply FDE (Full Disk Encryption) on the host, and power off their computer when exposed to higher-risk situations like traveling. Laptop users should temporarily remove the laptop battery after powering off. This ensures that the RAM chips are completely powered down and that any encryption key/s in memory are erased. Hibernation is also a safe alternative, as the swap partition is encrypted in the default FDE configuration for various platforms (like Debian), provided the user did not  change anything. 
 
 Users should follow the standard advice for picking [[Security_Guide#Principles_for_Stronger_Passwords|strong and unique passwords]], so that the password cannot be feasibly brute-forced. If possible, computers should never be left unattended. 
@@ -606,7 +556,6 @@ For further information about encrypted images, see [https://forums.whonix.org/t
 
 == Side Channel Attacks ==
 
-<!--T:325-->
 
 {{mbox
 | type      = notice
@@ -634,14 +583,12 @@ The main side-channel attack classes are: <ref>https://en.wikipedia.org/wiki/Sid
 * <u>Optical</u>. Secrets and sensitive data are read by visual recordings with a high resolution camera, or other devices.
 
 
-<!--T:326-->
 While Whonix has [[Advanced_Deanonymization_Attacks|some limited countermeasures]] to side-channel attacks, in general it ''cannot'' provide protection against most classes, nor [https://en.wikipedia.org/wiki/Hardware_keylogger hardware keyloggers], TEMPEST, miniature cameras and so on. Full disk encryption is also helpless against these attacks.
 
 For further reading on this complex topic, see [https://www.owasp.org/images/c/cd/Side_Channel_Vulnerabilities.pdf here], [http://gauss.ececs.uc.edu/Courses/c653/lectures/SideC/intro.pdf here] and [http://scl.uconn.edu/courses/ece6095/lectures/side_channels.pdf here].
 
 == Screen Lock ==
 
-<!--T:328-->
 {{mbox
 | type      = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
@@ -668,7 +615,6 @@ To manually lock the screen: <ref>https://www.isunshare.com/windows-10/3-ways-to
 
 == BIOS Password ==
 
-<!--T:330-->
 {{mbox
 | type      = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
@@ -695,7 +641,6 @@ It should be noted that there are [https://www.technibble.com/how-to-bypass-or-r
 
 == Cold Boot Attacks ==
 
-<!--T:332-->
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text       = Due to the design of modern computers, nearly all the data manipulated during a session is temporarily written to RAM. This can include texts, saved files, passwords, and encryption keys! Data from more recent activities has a greater likelihood of still residing in RAM. <ref>https://tails.boum.org/doc/advanced_topics/cold_boot_attacks/index.en.html</ref> 
@@ -704,10 +649,8 @@ It should be noted that there are [https://www.technibble.com/how-to-bypass-or-r
 
 Modern computer architecture poses a significant risk to Whonix users. Adversaries with physical access to a computer running Whonix may be able to recover all session activities, even if FDE is enabled.
 
-<!--T:333-->
 Even when a computer is powered off, the data in RAM does not immediately disappear. Depending on the circumstances, data can survive for up to several minutes. For example, this occurs when a computer loses power abruptly and does not go through the normal shutdown cycle. <ref>https://darkwebnews.com/security-guide/cold-boot-attacks-unencrypted-ram-extraction/</ref> If an adversary has immediate physical access to a computer, a [https://en.wikipedia.org/wiki/Cold_boot_attack cold boot attack] can be mounted.
 
-<!--T:334-->
 Forensic experts have two main methods of extracting data from RAM: <ref>https://en.wikipedia.org/wiki/Cold_boot_attack</ref>
 * The running computer is cold-booted and a lightweight operating system is booted from a removable disk. A tool is used to dump pre-boot physical memory contents to a file.
 * The memory modules are quickly removed from the original system and placed in another computer under the adversary's control. The machine is then booted to access the memory contents.
@@ -715,10 +658,8 @@ Forensic experts have two main methods of extracting data from RAM: <ref>https:/
 
 In both cases, the RAM contents can be analyzed in a computer forensics laboratory. Depending on what is found, the user may be in serious peril. Notably, cold boot attacks have proven effective against Trusted Platform Modules (TPMs), as well as full disk encryption regardless of the vendor or operating system. For certain memory modules, the time window for an attack can be extended to several hours by cooling them with a refrigerant. <ref>https://en.wikipedia.org/wiki/Cold_boot_attack</ref>
 
-<!--T:335-->
 Cold boot attacks are thought to be a very uncommon method of recovering data, but high-risk users should be prepared for such a contingency to stay on the safe side. So long as a cold boot attack is not mounted directly after shutdown, then contents of RAM should be emptied within minutes. <ref>https://tails.boum.org/doc/advanced_topics/cold_boot_attacks/index.en.html</ref>
 
-<!--T:336-->
 === Preventative Measures ===
 
 Whonix does not yet provide an analogous feature to Tails, which [https://tails.boum.org/contribute/design/memory_erasure/ wipes RAM on shutdown] by overwriting it with random data. Possible interim solutions include:
@@ -733,20 +674,16 @@ Whonix does not yet provide an analogous feature to Tails, which [https://tails.
 * Using the [https://en.wikipedia.org/wiki/TRESOR TRESOR Linux kernel patch] so CPU registers store encryption keys. <ref>https://en.wikipedia.org/wiki/Cold_boot_attack#Register-based_key_storage</ref>
 
 
-<!--T:337-->
 Cold boot attacks are a clear and present danger for high-risk users due to the limited countermeasures available. In the purely hypothetical situation where an adversary is knocking earnestly on the door, best would be pressing the panic button on the host, leading to the contents of RAM being quickly wiped. Failing that, the computer should be immediately shut down, and access to the computer delayed as long as possible.
 
 == Evil Maid Attack ==
 
-<!--T:339-->
 See [https://www.schneier.com/blog/archives/2009/10/evil_maid_attac.html Evil Maid Attack]. 
 
-<!--T:340-->
 If the user has a TPM chip, see [http://theinvisiblethings.blogspot.se/2011/09/anti-evil-maid.html Anti Evil Maid].
 
 == Problematic Interfaces ==
 
-<!--T:342-->
 There are a number of computer interfaces that pose the risk of a [https://en.wikipedia.org/wiki/DMA_attack direct memory access (DMA) attack]. Potentially exploitable interfaces include ExpressCard, PCMCIA, FireWire, PCI, PCI Express or Thunderbolt.
 
 {{mbox
@@ -789,7 +726,6 @@ Since Whonix is based on Debian, it takes advantage of all the hard work done by
 <br />
 Experience has shown that "security through obscurity" does not work. Public disclosure allows for more rapid and better solutions to security problems. In that vein, this page addresses Debian's status with respect to various known security holes, which could potentially affect Debian.</blockquote>
 
-<!--T:344-->
 Users should consider subscribing to the Debian [https://lists.debian.org/debian-security-announce/ security announcement mailing list] to stay informed about the latest security advisories.
 
 === Harden Debian ===
@@ -800,18 +736,14 @@ Users should consider subscribing to the Debian [https://lists.debian.org/debian
 * Feel free to add other hardening resources here.
 
 
-<!--T:346-->
 Most hardening steps cannot be easily added to Whonix by default. Before attempting additional hardening measures, users need to understand them and apply steps carefully. This requires knowledge and effort, otherwise system errors or breakage is likely. This issue is still under investigation and the Whonix developers remain open to suggestions, as maintaining a secure operating system will always be an important topic.
 
 == Harden Software Repositories ==
-<!--T:348-->
 
 Many operating systems provide multiple repositories. Since the Whonix implementation is based on Debian, interested users should read [https://help.ubuntu.com/community/Repositories/ Ubuntu Repositories (similar to Debian)] and [http://www.debian.org/doc/debian-policy/ch-archive.html Debian Policy Manual Chapter 2 - The Debian Archive] as an introduction.
 
-<!--T:349-->
 In summary, the main repository receives the most developer attention and security updates. This suggests it would make sense to tweak ''/etc/apt/sources.list'' to only use software from the main repository, and only install security fixes and no other updates.
 
-<!--T:350-->
 Currently, Whonix does not do that by default and it is an open research question whether this will actually improve security.
 
 == Hardened Kernels ==
@@ -834,7 +766,6 @@ Various installation media expose users to vulnerabilities, including:
 
 The reason is that the latest stable releases sometimes contain vulnerable, remotely exploitable applications that are very likely to be used over untrusted networks <ref>Such as Tor exit relays.</ref> which are in a position to run [[Warning#Man-in-the-middle_attacks|man-in-the-middle attacks]]. One example of this in the recent past was vulnerability [[https://lists.debian.org/debian-security-announce/2014/msg00219.html CVE-2014-6273]], which affected apt-get.
 
-<!--T:361-->
 Readers are welcome to help research this issue further, and document sane and effective solutions. [https://forums.whonix.org/t/new-chapter-vulnerabilities-at-install-time-in-advanced-security-guide/538 Forum discussion]. 
 
 === Possible Solutions ===
@@ -843,14 +774,11 @@ Readers are welcome to help research this issue further, and document sane and e
 
 When using virtual machines, Whonix-Gateway could be configured to use the host apt-cache. [[Physical Isolation|Physically isolated]] Whonix-Gateways could use an apt-cache running on a separate machine. [https://packages.debian.org/wheezy/apt-cacher-ng apt-cacher-ng] is an example implementation of such an apt-cache.
 
-<!--T:363-->
 [[Security_Guide#Updates|Operating system updates]] would not be anonymized by default, which is a big disadvantage. <ref>This leaks a list of installed packages to ISP-level adversaries and update servers. For example, it is inadvisable to reveal that a webserver was installed when it is likely to be used to host a hidden web service and so forth.</ref> The user would need to figure out how to configure apt-cacher-ng on the host to force downloads through Tor.
 
-<!--T:364-->
 Eventually Whonix-Workstation could use an apt-cache that is running on Whonix-Gateway. Unfortunately, this would increase Whonix-Gateways's attack surface if/when Whonix-Workstation is compromised. On the other hand, it would decrease Whonix-Workstation's attack surface if/when a vulnerable apt-get is used to download via untrusted Tor exit relays.
 
 ==== apt-offline ====
-<!--T:366-->
 
 Another possibility is somehow using [https://packages.debian.org/wheezy/apt-offline apt-offline] to complete the initial updates of both Whonix-Gateway and Whonix-Workstation. 
 
@@ -868,33 +796,26 @@ If Whonix regularly released up-to-date builds, this would be an optimal solutio
 
 === Introduction ===
 
-<!--T:371-->
 [[VirtualBox]] is developed by Oracle, a company which has a reputation of not being very "open". In the past, concerns have been raised about how they announce security issues in their products and how well they communicate with each other, leading to a negative perception by the security community.
 
-<!--T:372-->
 VirtualBox is primarily a simple, "user-friendly", desktop solution and is most certainly not designed with the Whonix threat model in mind. Development is reported to be at a standstill and the author is not aware of any serious code audits having been completed. <ref>https://developers.slashdot.org/story/15/01/30/1530245/virtualbox-development-at-a-standstill/</ref> Whonix developers would like to recommend a different VM solution at least as an alternative, but many popular, open source options like KVM and Xen are not cross-platform. Further, the latter examples seem to still lack a reliable "internal networking" feature, which Whonix heavily depends upon. Any readers who have in-depth knowledge of this issue are encouraged to edit this paragraph accordingly.
 
 Users that have a strong preference for security should strongly consider using [[Qubes-Whonix]], if they have suitably modern hardware. In short, Qubes-Whonix is more secure than the default Whonix configuration using a [[Security_Guide#Type_1_vs_Type_2_Hypervisors|Type 2 hypervisor like VirtualBox]]. 
 
-<!--T:374-->
 Related VirtualBox Links:
 
-<!--T:375-->
 * [https://www.virtualbox.org/query?summary=~&col=id&col=summary&col=status&col=owner&col=type&col=priority&col=component&order=priority Custom Ticket Search]
 * [https://www.virtualbox.org/newticket New Ticket]
 
 
-<!--T:376-->
 See also:
 
-<!--T:377-->
 * [https://www.whonix.org/wiki/Dev/Virtualization_Platform Virtualization Platform] for licensing issues.
 * [[KVM#Why_Use_KVM_Over_VirtualBox.3F|Why Use KVM Over VirtualBox?]]
 * [[Qubes/Why_use_Qubes_over_other_Virtualizers|Why use Qubes over other Virtualizers?]]
 
 === Secure Labeling ===
 
-<!--T:381-->
 VirtualBox has a [https://www.virtualbox.org/manual/ch09.html#idm7848 secure labeling feature (VBoxSDL)] which has not yet been implemented in Whonix. <ref>Partially because it is not available on the MacOS X platform.</ref> This feature addresses the security risk of running in full screen mode:
 
 <blockquote>When running guest operating systems in full screen mode, the guest operating system usually has control over the whole screen. This could present a security risk as the guest operating system might fool the user into thinking that it is either a different system (which might have a higher security level) or it might present messages on the screen that appear to stem from the host operating system.
@@ -903,7 +824,6 @@ In order to protect the user against the above mentioned security risks, the sec
 
 Any readers who are knowledgeable in this area are encouraged to share their knowledge and edit this section accordingly.
 
-<!--T:382-->
 Before this feature could be implemented in Whonix, one prerequisite is that users do not end up with non-standard desktop resolution, as this degrades anonymity as per [https://www.whonix.org/wiki/Protocol-Leak-Protection_and_Fingerprinting-Protection Protocol-Leak-Protection and Fingerprinting-Protection].
 
 {{Anchor|Qubes OS}}
@@ -925,7 +845,6 @@ Whonix is by no means a perfectly hardened system. Additional hardening measures
 Learn more about [http://wiki.apparmor.net AppArmor], which helps to protect against vulnerabilities by confining a program's file access based upon strict rule-sets. It is recommended to apply the available Whonix [[AppArmor]] profiles, which are available for various programs which run in both the Whonix-Gateway and Whonix-Workstation, such as Tor, Tor Browser, Thunderbird and others.
 
 == Multiple Tor Browser Instances and Workstations ==
-<!--T:393-->
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text       = As the [[Warning]] page states, [[Warning#Whonix_doesn.27t_magically_separate_your_different_contextual_identities|Whonix does not magically separate different contextual identities]]. 
@@ -945,11 +864,6 @@ This method is less secure than using multiple Whonix-Workstations, which is out
 === Multiple Whonix-Workstations ===
 
 For tasks requiring different identities and/or additional software, users are recommended to utilize [[Multiple_Whonix-Workstations|two or more Whonix-Workstation VMs]] since different torified clients are isolated from each other. In this way, an exploit in Tor Browser in one Whonix-Workstation cannot simultaneously read the user's identity in another VM (for example, an IRC account). <ref>This does not protect against the sudden loss of networking, which could reveal to the attacker that two activities / accounts suddenly going off-line are probably related.</ref> Note that this method is less secure than using a [[Qubes/Disposable_VM|Whonix-Workstation DisposableVM]] with Tor Browser in [[Qubes-Whonix]].
-<!--T:394-->
-<!--T:395-->
-<!--T:396-->
-<!--T:397-->
-<!--T:398-->
 == Second Optional (Extra) Firewall ==
 
 There is a second, extra firewall available for Whonix-Workstation; it can be found inside Whonix-Workstation in {{WhonixFirewall}}. It is optional and disabled by default because it would otherwise risk breakage of user applications. 
@@ -960,7 +874,6 @@ The Whonix anonymity design does not require the Whonix-Workstation firewall be 
 * In the case of multiple Whonix-Workstations, attacks originating from other compromised Whonix-Workstations.
 
 
-<!--T:400-->
 Read the script comments and run <code>man whonix_firewall</code> before deciding to use it.
 
 = Whonix-Gateway Security =
@@ -968,7 +881,6 @@ Read the script comments and run <code>man whonix_firewall</code> before decidin
 == Static VirtualBox IP ==
 Instead of using DHCP to obtain the internal IP for the Whonix-Workstation eth0 NAT adapter, a static IP could be used instead. This might marginally improve security, since the DHCP package can then be removed.
 
-<!--T:402-->
 Open ''/etc/network/interfaces'' [https://github.com/Whonix/whonix-gw-network-conf/blob/master/etc/network/interfaces.d/30_non-qubes-whonix on github] and read the comments. Then, comment out DHCP and comment in Static VirtualBox IP. 
 
 == Disable Control Port Filter Proxy ==
@@ -992,7 +904,6 @@ If CPFP is disabled, the user will no longer receive helpful Whonix notification
 
 {{Firewall Settings}}
 
-<!--T:406-->
 Add the following content.
 
 {{CodeSelect|code=
@@ -1017,14 +928,12 @@ Stop CPFP.
 sudo service control-port-filter-proxy-python stop
 }}
 
-<!--T:409-->
 Disable autostart of CPFP.
 
 {{CodeSelect|code=
 sudo systemctl mask control-port-filter-proxy-python
 }}
 
-<!--T:410-->
 Reboot.
 
 Check if CPFP is still running or disabled.
@@ -1034,7 +943,6 @@ Check if CPFP is still running or disabled.
 ps aux | grep cpfpd
 }}
 
-<!--T:411-->
 If the following output appears, then disabling did not work.
 
 <pre>
@@ -1047,7 +955,6 @@ debian-+  1005  0.2  1.8  46096 13216 ?        Ss   20:46   0:00 /usr/bin/python
 /etc/whonix.d/50_user.conf
 }}
 
-<!--T:413-->
 Add the following content.
 
 {{CodeSelect|code=
@@ -1062,12 +969,10 @@ Save.
 
 Because it relies on CPFP.
 
-<!--T:415-->
 {{Open with root rights|filename=
 /etc/whonix.d/50_user.conf
 }}
 
-<!--T:416-->
 Add the following content.
 
 {{CodeSelect|code=
@@ -1085,7 +990,6 @@ Users can either uninstall or deactivate [https://github.com/Whonix/sdwdate-plug
 /etc/sdwdate.d/50_anon_dist_con_check_plugin_user
 }}
 
-<!--T:418-->
 Add the following content.
 
 {{CodeSelect|code=
@@ -1094,12 +998,10 @@ DISPATCH_PREREQUISITE=""
 
 Save.
 
-<!--T:419-->
 <ref>
 This will undo settings set by [https://github.com/Whonix/sdwdate-plugin-anon-shared-con-check/blob/master/etc/sdwdate.d/31_anon_dist_con_check_plugin /etc/sdwdate.d/31_anon_dist_con_check_plugin].
 </ref>
 
-<!--T:420-->
 Restart sdwdate.
 
 {{CodeSelect|code=
@@ -1128,15 +1030,12 @@ TB_NO_TOR_CON_CHECK="1"
 }}
 
 
-<!--T:423-->
 Deactivate the TransPort Test for better [[Stream Isolation]].
 
-<!--T:424-->
 {{Open with root rights|filename=
 /etc/whonix.d/50_user.conf
 }}
 
-<!--T:425-->
 Add the following content.
 
 {{CodeSelect|code=
@@ -1153,15 +1052,12 @@ Save.
 }}
 
 
-<!--T:427-->
 Deactivate SocksPort Test, TransPort Test and Tor Browser Update check.
 
-<!--T:428-->
 {{Open with root rights|filename=
 /etc/whonix.d/50_user.conf
 }}
 
-<!--T:429-->
 Add the following content.
 
 {{CodeSelect|code=
@@ -1180,15 +1076,12 @@ Save.
 }}
 
 
-<!--T:431-->
 This will prevent downloading of [[Download#Whonix_Version_Check_and_Whonix_News|Whonix News]]. 
 
-<!--T:432-->
 {{Open with root rights|filename=
 /etc/whonix.d/50_user.conf
 }}
 
-<!--T:433-->
 Add the following content.
 
 {{CodeSelect|code=
@@ -1203,15 +1096,12 @@ whonixcheck_skip_functions+=" download_whonix_news "
 }}
 
 
-<!--T:435-->
 This prevents the running of apt-get by whonixcheck.
 
-<!--T:436-->
 {{Open with root rights|filename=
 /etc/whonix.d/50_user.conf
 }}
 
-<!--T:437-->
 Add the following content.
 
 {{CodeSelect|code=
@@ -1228,7 +1118,6 @@ See [[Tor|Tor]].
 
 = Chaining Anonymizing Gateways =
 
-<!--T:444-->
 {{mbox
 | type      = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
@@ -1236,10 +1125,8 @@ See [[Tor|Tor]].
 }}
 
 
-<!--T:445-->
 By default, all Whonix-Workstation traffic is forced through Whonix-Gateway. Alternatively, a chain of anonymizing gateways can be built, with sample tunnel configurations outlined below.
 
-<!--T:446-->
 '''Post-Tor-VPN'''
 
 <pre>
@@ -1249,7 +1136,6 @@ Whonix-Workstation -> VPN-Gateway    -> Whonix-Gateway -> clearnet
 user               -> Tor            -> VPN            -> Internet
 </pre>
 
-<!--T:447-->
 '''Pre-Tor-VPN'''
 
 <pre>
@@ -1259,7 +1145,6 @@ Whonix-Workstation -> Whonix-Gateway -> VPN-Gateway    -> clearnet
 user               -> VPN            -> Tor            -> Internet
 </pre>
 
-<!--T:448-->
 '''Pre- and Post-Tor-VPN'''
 
 <pre>
@@ -1269,10 +1154,8 @@ Whonix-Workstation -> VPN-Gateway    -> Whonix-Gateway -> VPN-Gateway -> Interne
 user               -> VPN            -> Tor            -> VPN         -> Internet
 </pre>
 
-<!--T:449-->
 Whonix is not limited to VPN-Gateways; the VPN can be replaced with a Proxy-Gateway.
 
-<!--T:450-->
 '''Post-Tor-Proxy'''
 
 <pre>
@@ -1282,12 +1165,10 @@ Whonix-Workstation -> Proxy-Gateway  -> Whonix-Gateway -> clearnet
 user               -> Tor            -> Proxy          -> Internet
 </pre>
 
-<!--T:451-->
 '''Other Connection Schemes'''
 
 Virtually any combination is possible: a Post-Tor-Proxy; a Pre/Post-Tor-SSH; or the proxy being replaced with JonDo or perhaps I2P.
 
-<!--T:452-->
 The user should always remember that the connection will be created in reverse order. This is best explained using an example. <ref>"Internet" below refers to the destination server (a website for example).</ref>
 
 <pre>
@@ -1297,7 +1178,6 @@ Whonix-Workstation -> Proxy-Gateway  -> Whonix-Gateway -> VPN-Gateway -> clearne
 user               -> VPN            -> Tor            -> Proxy       -> Internet
 </pre>
 
-<!--T:453-->
 Upon reflection, it becomes clear why the connection happens in reverse order:
 
 * Whonix-Workstation has no way but to go through the Proxy-Gateway. 
@@ -1307,30 +1187,21 @@ Upon reflection, it becomes clear why the connection happens in reverse order:
 
 Thus, the VPN-Gateway uses clearnet, the Whonix-Gateway uses the VPN-Gateway to connect, the Proxy-Gateway uses Whonix-Gateway to connect, and Whonix-Workstation uses the Proxy-Gateway to connect. Since the Proxy-Gateway has option but to go through Whonix-Gateway followed by VPN-Gateway, it is clear why it will be the last hop in front of the destination server.
 
-<!--T:454-->
 '''Other Considerations'''
 
 Whether these combinations make sense in terms of security and anonymity is hotly debated and depends on the user's personal threat model, see [https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN Tor plus VPN or Proxy].
 
-<!--T:455-->
-<!--T:456-->
-<!--T:457-->
 Before attempting complex tunnel configurations, the following basic knowledge is required:
 
-<!--T:458-->
 * [[Tunnels/Introduction]]
 * [[Stream Isolation]]
 
-<!--T:459-->
 This resource may also be useful: [https://www.whonix.org/wiki/Dev/Inspiration Inspiration]. 
 
-<!--T:460-->
 Users must also have an understanding of, and be able to edit /etc/network/interfaces on Whonix-Gateway and/or on Whonix-Workstation. In the case of non-Qubes-Whonix, this refers to the virtual internal network name in VirtualBox settings.
 
-<!--T:461-->
 This process is generally difficult because there are no other anonymizing gateways (VPN / JonDo / I2P / Proxy / SSH / VPN) available for download in Whonix, just the Whonix-Gateway which uses Tor to anonymize traffic. Users often have to look for instructions and/or build an anonymizing gateway themselves. <ref>There are some instructions for a pfSense based VPN-Gateway which can be found with search engines, but it is untested for leaks.</ref> 
 
-<!--T:462-->
 For a VPN-Gateway, see also:
 <br />
 * [https://www.ivpn.net/privacy-guides/advanced-privacy-and-anonymity-part-6 VPN-Gateway] ([http://www.webcitation.org/6RKpGv2y9 w])
@@ -1347,10 +1218,8 @@ For a VPN-Gateway, see also:
 
 = Other Important Stuff =
 
-<!--T:465-->
 Users are also recommended to learn more about the following topics:
 
-<!--T:466-->
 * [[Time Attacks]].
 * [https://www.whonix.org/wiki/Stream_Isolation Stream Isolation].
 * [https://www.whonix.org/wiki/Connections_between_Whonix-Gateway_and_Whonix-Workstation Connections between Whonix-Gateway and Whonix-Workstation].
