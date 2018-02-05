@@ -8,28 +8,21 @@
 
 = Tor Hidden Services - EASY =
 == Introduction ==
-<!--T:3-->
 Be sure to read and understand [https://www.torproject.org/docs/hidden-services.html.en Tor: Hidden Service Protocol] (general information) and [https://www.torproject.org/docs/tor-onion-service Configuring Onion Services for Tor] (standard setup, no isolated proxy) first. Note that hidden services are always only reachable using Tor or tunnel services, such as tor2web, ([https://trac.torproject.org/projects/tor/wiki/doc/tor2web be careful]). Also review Riseup's [https://riseup.net/en/security/network-security/tor/onionservices-best-practices Tor Hidden (Onion) Services Best Practices guide].
 
-<!--T:4-->
 You do not need SSL <ref>https://en.wikipedia.org/wiki/Secure_Sockets_Layer</ref>, because connections to Tor hidden services are end-to-end encrypted by default. <ref>To be exact, only tor-to-tor, see [[Hidden_Services#Notes_about_End-to-end_security_of_Hidden_Services|Notes about End-to-end security of Hidden Services]].</ref><ref>http://www.quora.com/Is-there-an-SSL-equivalent-for-Tor-Hidden-Services</ref> This is handy, as you do not have to bother with self signed certificates or certificate authorities.
 
 Another interesting property is they can serve as a drop-in Global Server Load Balancing and Layer 3 DDoS-resistance solution.<ref>https://archive.is/Aaqsz</ref> This raises the bar to withstanding attacks that the entire Tor network can tolerate. Same with [[I2P|I2P Eepsties]]. Tor can be also considered a very simple to configure encrypted transport alternative to IPSec.<ref>https://lists.torproject.org/pipermail/tor-talk/2016-October/042360.html
 </ref>
 
-<!--T:5-->
 An adversary can see whether the service (and presumably Tor) is up and running or not.
 
-<!--T:7-->
 Below on this page is an ''example'' for a Hidden Webserver. On the [[VoIP]] page is an example for a Hidden VoIP Mumble Server.
 
-<!--T:8-->
 Even if someone hacks your hidden server software (lighttpd, thttpd, apache, etc.), the attacker can not steal your hidden service key or bypass Tor, see [[Comparison with Others#Attacks|Attack on Whonix]]. The key is stored on the Whonix-Gateway. Once you cleaned your Whonix-Workstation, no one can impersonate your hidden service anymore.
 
-<!--T:9-->
 While using Whonix we're quite confident that there are no IP/DNS leaks, but hardening the server software is still left to the user. In the [[Security Guide]] and in the [[Advanced Security Guide]] you'll find pointers for hardening.
 
-<!--T:10-->
 Beware of application level leaks. See [[Protocol-Leak-Protection and Fingerprinting-Protection]] for definition. Some of these instructions are paraphrased from Sarah Jamie Lewis' write-up after running OnionScan<ref>https://mascherari.press/why-onionscan-should-worry-you/</ref> on the Onion web. All credit goes to her.<ref>https://mascherari.press/thwarting-identity-correlation-attacks/</ref> OnionScan<ref>https://github.com/s-rah/onionscan</ref> is an open source pen-testing suite that exposes misconfiguration errors that expose Hidden Servers. '''Do''' run it before your service goes live. 
 
 * Avoid Apache. It has much more functionality, leak potential and attack surface than smaller and lighter alternatives. Nginx is a recommended alternative, its good practice to setup access to your site through reverse proxies to mitigate layer 7 DoS attacks and information leaks about your setup.
@@ -41,48 +34,37 @@ Beware of application level leaks. See [[Protocol-Leak-Protection and Fingerprin
 * ALPaCA is an advanced website fingerprinting client/server mitigation in development that applies server-side padding to requests sent out to Tor Browser. Once ts ready, service operators can run it to protect against this class of correlation attacks.<ref>https://github.com/camelids/</ref><ref>[https://petsymposium.org/2017/papers/issue2/paper54-2017-2-source.pdf Website Fingerprinting Defenses at the
 Application Layer]</ref><ref>https://www.esat.kuleuven.be/cosic/?p=6743</ref>
 
-<!--T:11-->
 * If you are using the Apache web server, it is advised to install [https://packages.debian.org/de/jessie/libapache2-mod-removeip libapache2-mod-removeip]<ref>
 {{CodeSelect|code=
 sudo apt-get install libapache2-mod-removeip
 }}
 </ref> as well. A combination of Apache and mediawiki without libapache2-mod-removeip being installed, wouldn't be the optimal case, since mediawiki by default puts IPs of anonymous editors in the public accessible editor logs. The IP would be 10.152.152.10. That could not be used to identify you, because that is not your real external IP address, but it would identify the server as a hidden service behind a Whonix-Gateway.<ref>Since it is easy to know that the internal LAN IP 10.152.152.10 is usually used by Whonix-Gateway.</ref>
 
-<!--T:12-->
 Therefore any instructions on how to hide the IP address for your specific server software should be applied. Also other hardening instructions are recommended to apply. For example,
 
-<!--T:13-->
 * If you are using the Apache web server, see the following footnotes. <ref>
 (Source: [http://sourceforge.net/p/whonix/discussion/general/thread/407fce8f/?limit=25#478a old forum])
 
-<!--T:14-->
 Stop Apache.
 
-<!--T:15-->
 In {{Code|ports.conf}}:
 
-<!--T:16-->
 <pre>
 NameVirtualHost 127.0.0.1:80
 Listen 127.0.0.1:80
 ServerName localhost
 </pre>
 
-<!--T:17-->
 In {{Code|sites-available/default}}:
 <pre>
 </pre>
 
-<!--T:18-->
 Start Apache.
 
-<!--T:19-->
 Now Apache is not listening on {{Code|10.152.152.10}}, but only on {{Code|127.0.0.1}}. So now we somehow need to redirect {{Code|10.152.152.10:80}} to {{Code|127.0.0.1:80}}.
 
-<!--T:20-->
 It can be done with a firewall rule or netcat:
 
-<!--T:21-->
 {{CodeSelect|code=
 sudo ncat -l 10.152.152.10 80 -c 'ncat 127.0.0.1 80'
 }}
@@ -96,7 +78,6 @@ You are better off not using Apache! We do not have a suggestion for a privacy f
 }}
 
 == Hidden Webserver ==
-<!--T:23-->
 ==== Whonix-Gateway ====
 On your Whonix-Gateway:
 
@@ -106,7 +87,6 @@ On your Whonix-Gateway:
 ====== Step 2: edit /etc/tor/torrc ======
 (all Whonix platforms)
 
-<!--T:26-->
 You need to add two settings to {{Code2|/etc/tor/torrc}}.
 
 * A {{Code2|HiddenServiceDir}} configuration directive declaring where hidden services files (hostname file and private key file) should be stored.
@@ -127,7 +107,6 @@ HiddenServicePort 80 IP-of-Qubes-Whonix-Workstation-AppVM:80
 
 [[Non-Qubes-Whonix]]:
 
-<!--T:27-->
 {{CodeSelect|code=
 HiddenServiceDir /var/lib/tor/hidden_service/
 HiddenServicePort 80 10.152.152.11:80
@@ -157,10 +136,8 @@ Backups_Tor_Hidden_Service_private_key
 On your Whonix-Workstation:
 ===== Step 1: Install Server Software =====
 
-<!--T:34-->
 Run the following commands to install lighttpd.
 
-<!--T:35-->
 {{CodeSelect|code=
 sudo apt-get update
 }}
@@ -179,44 +156,35 @@ Qubes_Tor_Hidden_Service_Firewall_Exception
 TODO: Update for Whonix 14 (not yet released) EXTERNAL_OPEN_PORTS.
 
 ===== Step 3: Final Notes =====
-<!--T:36-->
 Done.
 
-<!--T:37-->
 <u>Note</u>, that it may take up to 30 minutes (or so?) until a fresh .onion domain gets reachable.
 
-<!--T:38-->
 <u>Note</u>, accessing 127.0.0.1 {{Tor_Browser_Local_Connections}}.
 
 === Debugging ===On Whonix-Gateway.
 
 Check permissions.
 
-<!--T:40-->
 {{CodeSelect|code=
 sudo ls -la /var/lib/tor/hidden_service/
 }}
 
-<!--T:41-->
 In case you manually restored your hidden_service keys as root, Tor will fail to start. The folder must be owned by debian-tor. In that case, fix the permissions.
 
-<!--T:42-->
 {{CodeSelect|code=
 sudo chown debian-tor:debian-tor /var/lib/tor/hidden_service/
 }}
 
-<!--T:43-->
 In Whonix-Workstation. 
 
 Check if the service is available on 127.0.0.1:80.
 
-<!--T:44-->
 {{CodeSelect|code=
 ## Circumventing Whonix curl stream isolation wrapper.
 {{Curl_Plain}} 127.0.0.1:80
 }}
 
-<!--T:45-->
 [[Qubes|Qubes-Whonix]]: In Qubes-Whonix-Workstation, check if the service is available on Qubes-Whonix-Workstation IP, port 80.
 
 {{CodeSelect|code=
@@ -226,7 +194,6 @@ Check if the service is available on 127.0.0.1:80.
 
 [[Non-Qubes-Whonix]]: In Whonix-Workstation, check if the service is available on 10.152.152.11:80.
 
-<!--T:46-->
 {{CodeSelect|code=
 ## Circumventing Whonix curl stream isolation wrapper.
 {{Curl_Plain}} 10.152.152.11:80
@@ -235,25 +202,19 @@ Check if the service is available on 127.0.0.1:80.
 Note: Tor Browser will allow connections to ''127.0.0.1:80'' but not to ''10.152.152.11:80''.
 
 == Tips settings up any hidden service ==
-<!--T:48-->
 Please test the example Hidden Webserver above first. It helps understanding this in general and will ease debugging.
 
-<!--T:49-->
 Quoted from the Tor manual<ref>https://www.torproject.org/docs/tor-manual.html.en</ref>:
 
-<!--T:50-->
 <pre>HiddenServiceDir DIRECTORY
 
-<!--T:51-->
 Store data files for a hidden service in DIRECTORY. Every hidden service must have a separate
 directory. You may use this option multiple times to specify multiple services. DIRECTORY
 must be an existing directory.</pre>
 Quoted from the Tor manual<ref>https://www.torproject.org/docs/tor-manual.html.en</ref>:
 
-<!--T:52-->
 <pre>HiddenServicePort VIRTPORT [TARGET]
 
-<!--T:53-->
 Configure a virtual port VIRTPORT for a hidden service. You may use this option multiple
 times; each time applies to the service using the most recent hiddenservicedir. By default,
 this option maps the virtual port to the same port on 127.0.0.1 over TCP. You may override
@@ -264,7 +225,6 @@ Read the [[Security Guide]].
 
 == Important Upstream Bugs ==Connectivity bugs:
 
-<!--T:55-->
 * [https://trac.torproject.org/projects/tor/ticket/3825 HS intro points overloaded with CREATE cells cause connectivity failures]
 * [https://trac.torproject.org/projects/tor/ticket/8940#comment:15 Possible bug, if too many people try to access the same hidden service]
 
@@ -274,13 +234,10 @@ Read the [[Security Guide]].
 == Hidden Services Security ==
 '''Not Whonix specific! Talking about Tor in general.'''
 
-<!--T:58-->
 How safe are Tor Hidden Services?
 
-<!--T:59-->
 This is a difficult question. Therefore state relevant facts, quotes and links here.
 
-<!--T:60-->
 * At time of writing there are no known attacks used in the wild constantly deanonymizing Tor hidden services.
 * 80 bit name hash and RSA-1024 sized keys
 * Quote Mike Perry {{Code|Tor core people}}<ref>https://www.torproject.org/about/corepeople.html.en</ref>): http://www.mail-archive.com/liberationtech@lists.stanford.edu/msg05418.html
@@ -291,25 +248,20 @@ https://forums.whonix.org/t/cryptolog-for-whonix-website/3369/12
 </ref>
 
 == Hidden Service Authentication ==
-<!--T:61-->
 === Introduction ===
 By default Hidden Service names are known to the public as they are broadcast to Hidden Service directories. This information becomes sequestered in search crawlers allowing anyone to try and connect and probe your Hidden Server even if this wasn't your intention.
 
-<!--T:62-->
 To set up a Hidden service in a private mode, only accessible by just you or additionally your trusted associates, there is a little known feature in Tor feature known as Hidden Services Authentication. <ref>http://tor.stackexchange.com/questions/219/how-to-use-hidden-service-authentication How to use Hidden Service Authentication?</ref><ref>https://gitweb.torproject.org/torspec.git/tree/proposals/121-hidden-service-authentication.txt</ref> When activated, no one (not even the Hidden Service Directories) can derive your .onion address from the descriptors nor can they know the introduction points to your server and consequently will not be able to connect to you.
 
 This feature allows the HS operator to generate multiple shared secrets - giving access to different parties which is revocable. Configurable with the "stealth" auth type used with HiddenServiceAuthorizeClient. Meaning that clients who are banned will no longer know about the HS' introduction points anymore.
 
-<!--T:64-->
 [https://www.torproject.org/docs/tor-manual.html.en Tor manual]
 
 === Server Setup ===
 On Whonix-Gateway.
 
-<!--T:66-->
 {{Open /etc/tor/torrc}}
 
-<!--T:67-->
 See the following example. Adjust it for your purposes and add it.
 
 {{CodeSelect|code=
@@ -344,16 +296,13 @@ This is the authentication cookie that was generated by Tor that should be share
 * preferably face-to-face or,
 * or via OpenPGP encrypted e-mail or OTR encrypted chat over Tor involving both parties.
 
-<!--T:72-->
 Note that you can generate a unique authentication cookie for every individual or group you grant access to. This gives you the ability to revoke access if the need arises. It is an all or none rule for granting access to a hidden service. If you want to limit that on a subdomain level you are advised to implement it by compartmentalizing your services under different Hidden service addresses running on a Multiple Workstation setup.
 
 === Client Setup ===
-<!--T:70-->
 
 
 {{Open /etc/tor/torrc}}
 
-<!--T:71-->
 {{CodeSelect|code=
 HidServAuth <onion-address> <auth-cookie>
 }}
@@ -363,31 +312,22 @@ HidServAuth <onion-address> <auth-cookie>
 Done.
 
 == Notes about End-to-end security of Hidden Services ==
-<!--T:74-->
 Hidden services are not really "end-to-end" encrypted, they encrypted only Tor to End. (or "Tor to Tor") The communication between the browser or server and Tor is sent in clear text. This doesn't really constitute a security issue, as localhost (or Workstation to Gateway on an isolated network), is supposed to be secure. But it has some security implications:
 
-<!--T:75-->
 With hidden services alone, without TLS enabled, the adversary only needs to compromise Whonix-Gateway to get knowledge of the content of the connection and the clients identity/location. To compromise the content of the connection, the adversary only needs to compromise either the gateway or the workstation.
 
-<!--T:76-->
 With hidden services, and TLS enabled, an adversary needs to compromise Whonix-Workstation to gain knowledge of the content of the connection. The adversary would have to compromise Whonix-Gateway as well, to gain knowledge of the client's identity/location.
 
-<!--T:77-->
 It is possible to use hidden services and TLS at the same time, i.e. https://****************.onion. There are only a very few hidden services reachable over TLS. For example https://pad.riseup.net/ can be reached over https://5jp7xtmox6jyoqd5.onion/. But since this only offers benefits to users of Whonix (and other Tor gateway implementations), there is no demand. It would provide some nice defense in depth as it eliminates a single point of failure.
 
-<!--T:78-->
 It would open the question, how would the certificate be verified?
 
-<!--T:79-->
 That's simple for private sites, where server and clients know each other. They simply verify it over preshared secure channel, for example, a meeting.
 
-<!--T:80-->
 And public hidden services? It is unlikely, that certificate authorities will give out certificates for .onion sites. Startssl.com declined, because .onion is no .gTLD, see [https://trac.torproject.org/projects/tor/ticket/6116 Bug #6116: apply for .onion gTLD at IANA]. Although you could try asking other certificate authorities, if they offer SSL certificates for people who can prove that they own a .onion domain. You can prove, that you have control over the domain by editing its contents on their request.
 
-<!--T:81-->
 But CAs should not be relied on anyway. See chapter [[SSL]].
 
-<!--T:82-->
 Hidden Services with Whonix are still safer than running Tor and the server software on the same host, because even when misconfigured, there can be, by design, no IP or DNS leaks.
 
 == See Also ==* [[Hosting_Location_Hidden_Services|Hosting Location Hidden Services]]
@@ -395,8 +335,6 @@ Hidden Services with Whonix are still safer than running Tor and the server soft
 
 = References =<references/>
 
-<!--T:85-->
 {{Footer}}
 
-<!--T:86-->
 [[Category:Documentation]]
