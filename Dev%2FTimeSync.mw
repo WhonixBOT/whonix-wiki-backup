@@ -77,10 +77,10 @@ A correct system clock is crucial for many reasons (see footnotes for more):
 * '''Attack 2:''' Feeding old/outdated/known vulnerable updates and (https) certificates <ref>Cryptographic verification depends on system clock, i.e. a clock two years in past will accept certificates/updates, which have been expired/revoked for two years.</ref>
 * '''Attack 3:''' Deanonymizing <ref>[[#Local Clock Leaks]] are an issue. Imagine the user connects to an adversary controlled web-server with Mozilla Firefox and connects to another web-server controlled by the same adversary with Thunderbird. The adversary can link the anonymous and non-anonymous session, thus deanonymizing.</ref>
 * '''Attack 4:''' Linking all sessions to the same pseudonym <ref>If the clock is too much off, it is also easy for an adversary's web-server to detect "Oh, that's the Tor Browser user who's clock is X in past/future.", thus allowing the adversary to link all sessions to the same pseudonym. See Tor Browser upstream bug #3059: [https://trac.torproject.org/projects/tor/ticket/3059 Find some way to deal with time-based fingerprints].</ref>
-* '''Attack 5:''' Locating hidden services. <ref>
-For hidden services a correct clock is crucial, see:
+* '''Attack 5:''' Locating onion services. <ref>
+For onion services a correct clock is crucial, see:
 * [http://www.cl.cam.ac.uk/~sjm217/papers/ccs06hotornot.pdf Hot or Not: Revealing Hidden Services by their Clock Skew]
-* [http://caia.swin.edu.au/talks/CAIA-TALK-080728A.pdf An improved clock-skew measurement technique for revealing hidden services]
+* [http://caia.swin.edu.au/talks/CAIA-TALK-080728A.pdf An improved clock-skew measurement technique for revealing onion services]
 * [http://people.cs.umass.edu/~elisha/Papers/SkewMask%20-%20final%20version.pdf SkewMask: Frustrating Clock Skew Fingerprinting Attempts]
 *[http://www.caida.org/publications/papers/2005/fingerprinting/ Remote physical device fingerprinting]
 </ref>
@@ -172,7 +172,7 @@ When the user powers on Whonix-Gateway and the host time is too much off, it wil
 
 An adversary tampering with the user's clock, while the user doesn't recognize that, can't do any more damage to Whonix than he could do to Tor Browser. Worst case is a denial of service for Tor. On the other hand, an adversary capable of actively tampering with the traffic between the user and its entry guard or bridge poses much bigger risks to Tor in general. <ref>General Tor problems, Tor is known to be broken against many active attacks. This can not be solved by Whonix. When an adversary is capable of running active attacks, tampering with the time leading into a denial of service is the least of the worries. The adversary could also disrupt the service easier. And as for active attacking in general, there are other attacks which are easier to deploy and which pose a greater danger. Not a Whonix specific problem.</ref> 
 
-The reason for running TimeSync on Whonix-Gateway, is that hidden services can only be accessed if the clock is no more than 30 minutes slow or fast.<ref>https://trac.torproject.org/projects/tor/ticket/3582#comment:3</ref> Running TimeSync ensures, that Whonix-Gateway's clock is reasonably accurate.
+The reason for running TimeSync on Whonix-Gateway, is that onion services can only be accessed if the clock is no more than 30 minutes slow or fast.<ref>https://trac.torproject.org/projects/tor/ticket/3582#comment:3</ref> Running TimeSync ensures, that Whonix-Gateway's clock is reasonably accurate.
 
 {{Anchor|sclockadj2}}
 = Adjusting time slowly using adjtimex/ntp_adjtime =
@@ -260,7 +260,7 @@ Cons:
 * Does not distribute trust. <ref>As {{Code2|sdwdate}} does.</ref> <ref>https://github.com/ioerror/tlsdate/issues/112</ref> <ref>https://github.com/ioerror/tlsdate/issues/143#issuecomment-57053323</ref> The single time source can send by error or by malicious intent send wrong time replies.
 * Does not support hooks for user notifications about state of network time synchronization. -> Users shouldn't use the internet in Whonix-Workstation before network time synchronization finished, and timesync is informing users about this. -> Implementing notifications would be difficult or require patching tlsdate.
 * Produces clock jumps, which confuses various applications. Does not gradually adjust as {{Code2|sdwdate}} does with [https://github.com/Whonix/Whonix/issues/169 Slow Clock Adjuster]. <ref>[https://github.com/Whonix/sdwdate/blob/master/usr/lib/sclockadj sclockadj]</ref>
-* Cannot connect to (most) Tor hidden services, because most of those do not support SSL. <ref>Because in most cases, there is little need to combine Tor hidden services with SSL. [[Hidden_Services#Notes_about_End-to-end_security_of_Hidden_Services|connections to Tor hidden services are Tor-to-Tor encrypted by default ("not exactly end-to-end")]].</ref> <ref>https://github.com/ioerror/tlsdate/issues/157</ref>
+* Cannot connect to (most) Tor onion services, because most of those do not support SSL. <ref>Because in most cases, there is little need to combine Tor onion services with SSL. [[Hidden_Services#Notes_about_End-to-end_security_of_Hidden_Services|connections to Tor onion services are Tor-to-Tor encrypted by default ("not exactly end-to-end")]].</ref> <ref>https://github.com/ioerror/tlsdate/issues/157</ref>
 * Minor: {{Code2|command line parser doesn't fail closed on extraneous / unknown command line parameters}} <ref>https://github.com/ioerror/tlsdate/issues/158</ref> - not that important in the absence of bugs, butsafer behavior for {{Code2|tlsdate}} would be to fail closed on on extraneous / unknown command line parameters.
 * Likely denial of service issue: https://github.com/ioerror/tlsdate/issues/149
 
@@ -384,7 +384,7 @@ Is the authority's cert's valid-after date signed/verified/built-into-Tor or can
 * When can anondate set time from verified and when only from unverified consensus file?
 * How reliable is it to do something as non-standard, unintended, inventive such as parsing Tor's consensus and Tor's log?
 * When clock is more than 1 hour in past or more than 3 hour in future, Tor will be unable to establish circuits? <ref>https://lists.torproject.org/pipermail/tor-talk/2012-February/023264.html</ref>
-* How accurate has the clock to be so hidden services can be accessed? See: https://trac.torproject.org/projects/tor/ticket/3460
+* How accurate has the clock to be so onion services can be accessed? See: https://trac.torproject.org/projects/tor/ticket/3460
 
 ===== Reasons for relying solely on anondate for time setting =====
 * Does not require [https://github.com/Whonix/Whonix/issues/24 ssl certificate pinning].
@@ -395,7 +395,7 @@ Is the authority's cert's valid-after date signed/verified/built-into-Tor or can
 * Provides only rough time.
 ** [[Fingerprint#For_the_websites_that_you_are_visiting|web fingerprint]] would differ from most other Tor users.
 ** Would cause lots of support requests complaining about skewed clocks.
-** Might trouble hidden services (such as hidden web servers) that need to show time to clients?
+** Might trouble onion services (such as hidden web servers) that need to show time to clients?
 ** Might trouble people attempting to [[I2P|tunnel I2P through Tor]]?
 ** Might cause other (gpg) verification issues?
 * Fingerprinting issues at ISP level:
