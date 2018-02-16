@@ -526,6 +526,45 @@ Marek can build testers-only and stable Qubes-Whonix images. See: https://github
 
 = Build Qubes-Whonix Templates - New New =
 
+git clone https://github.com/QubesOS/qubes-builder.git
+
+<pre>
+cat <<EOF > ~/qubes-builder
+GIT_BASEURL ?= https://github.com
+GIT_PREFIX ?= QubesOS/qubes-
+NO_SIGN ?= 1
+VERBOSE ?= 2
+BACKEND_VMM = xen
+DIST_DOM0 ?= 
+DISTS_VM ?= whonix-gateway whonix-workstation
+USE_QUBES_REPO_VERSION ?= 4.0
+USE_QUBES_REPO_TESTING ?= 1
+BRANCH ?= master
+COMPONENTS ?= \
+              linux-template-builder \
+              builder \
+              builder-debian \
+              template-whonix
+
+BUILDER_PLUGINS ?= \
+                   builder-debian \
+                   template-whonix
+
+GIT_URL_template_whonix = https://github.com/adrelanos/qubes-template-whonix
+
+
+import-whonix-keys:
+	if ! [ -d "$(KEYRING_DIR_GIT)" ]; then \
+		export GNUPGHOME="$(KEYRING_DIR_GIT)"; \
+		scripts/verify-git-tag; \
+		gpg --keyserver pgp.mit.edu --recv-key 916B8D99C38EAF5E8ADC7A2A8D66066A2EEACCDA || exit 1; \
+		echo '916B8D99C38EAF5E8ADC7A2A8D66066A2EEACCDA:6:' | gpg --import-ownertrust; \
+	fi
+
+get-sources: import-whonix-keys
+EOF
+</pre>
+
 = Test =
 * works as UpdateVM
 * can be used as ProxyVM for Fedora and Debian templates
