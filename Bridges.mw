@@ -144,15 +144,21 @@ This section will explain how to use obfuscated bridges in Whonix.
 </div>
 </div>
 
-== Option 2: Edit {{Code2|/etc/tor/torrc}}  ==
+== Option 2: Edit {{Code2|/usr/local/etc/torrc.d/50_user.conf}}  ==
 
 <div class="toccolours mw-collapsible mw-collapsed">
 <div class="mw-collapsible-content">
 
-=== Step 1: Access {{Code2|/etc/tor/torrc}} to Add Bridges ===
-{{Open_/etc/tor/torrc}}
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Since Whonix 14, all user's own Tor configurations should go to {{Code2|/usr/local/etc/torrc.d/50_user.conf}}, not anywhere else. Please be aware that Whonix will not modify the /usr/local/etc/torrc.d/50_user.conf once it is created, which means you are fully responsible for adding and removing configurations in it.
+}}
 
-=== Step 2: Edit {{Code2|/etc/tor/torrc}} ===
+=== Step 1: Access {{Code2|/usr/local/etc/torrc.d/50_user.conf}} to Add Bridges ===
+{{Open_/usr/local/etc/torrc.d/50_user.conf}}
+
+=== Step 2: Edit {{Code2|/usr/local/etc/torrc.d/50_user.conf}} ===
 
 {{mbox
 | type      = notice
@@ -160,25 +166,19 @@ This section will explain how to use obfuscated bridges in Whonix.
 | text       = This step is the same on all Whonix platforms.
 }}
 
+Once inside {{Code2|/usr/local/etc/torrc.d/50_user.conf}}, copy and paste the following text to prepare for using obfs2, obfs3 and obfs4 bridges.
 
-Once inside {{Code2|/etc/tor/torrc}}, scroll all the way to the bottom of the file. Copy and paste the following text.
 {{CodeSelect|code=
 UseBridges 1
-ClientTransportPlugin obfs2,obfs3 exec /usr/bin/obfsproxy managed
+ClientTransportPlugin obfs2,obfs3 exec /usr/bin/obfs4proxy
 ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy
 }}
 
-Beginning with Whonix 14, meek bridges can also be used. To use them, simply add one more line to the {{Code2|/etc/tor/torrc}}. Notice that the bridge type is actually called {{Code2|meek_lite}}, not {{Code2|meek}} which is used in Tor Browser Bundle.
-
-<ref>
-{{Code2|meek_lite}} actually uses a different implementation of {{Code2|obfs4proxy}}. Forum discussion: https://forums.whonix.org/t/censorship-circumvention-tor-pluggable-transports/2601/3
-</ref>
+Beginning with Whonix 14, meek_lite bridges can also be used. To use them, simply add one more line to the {{Code2|/usr/local/etc/torrc.d/50_user.conf}}. Notice that the bridge type is called {{Code2|meek_lite}}, not {{Code2|meek}} which is used in Tor Browser Bundle. <ref>{{Code2|meek_lite}} actually uses a different implementation of {{Code2|obfs4proxy}}. Forum discussion: https://forums.whonix.org/t/censorship-circumvention-tor-pluggable-transports/2601/3</ref>
 
 {{CodeSelect|code=
 ClientTransportPlugin meek_lite exec /usr/bin/obfs4proxy
 }}
-
-
 
 <ref>
 {{CodeSelect|code=
@@ -188,7 +188,7 @@ ClientTransportPlugin fte exec /usr/bin/fteproxy --managed
 
 Now add the bridge IP addresses you discovered in the section [[#Finding_a_bridge_and_choosing_the_right_protocol|Finding a Bridge and Choosing the Right Protocol]] to the file.
 
-Copy and paste those IP addresses to the very bottom of {{Code2|/etc/tor/torrc}}, <u>after the ClientTransportPlugin entries</u>. Make sure to manually type the text "bridge" at the beginning of each line entry.
+Copy and paste those IP addresses to the very bottom of {{Code2|/usr/local/etc/torrc.d/50_user.conf}}, <u>after the ClientTransportPlugin entries</u>. Make sure to manually type the text "bridge" at the beginning of each line entry.
 
 In the <i>obfs3</i> and <i>obfs4</i> examples below:
 * '''Do not copy and paste this list of bridge entries to the torrc file.''' They will not work.
@@ -196,8 +196,7 @@ In the <i>obfs3</i> and <i>obfs4</i> examples below:
 * Use '''either''' the <i>obfs3</i> or <i>obfs4</i> protocol, not both.
 * '''Capitalization in the torrc file matters.''' For example, bridges will not connect if you type "Bridge" instead of "bridge".
 
-
-{{Code2|Obfs3}} example text to add to {{Code2|/etc/tor/torrc}}.
+{{Code2|Obfs3}} example text to add to {{Code2|/usr/local/etc/torrc.d/50_user.conf}}.
 
 {{CodeSelect|code=
 bridge obfs3 109.195.132.77:22321 4352e58420e68f5e40bf7c74faddccd9d1349413
@@ -205,7 +204,7 @@ bridge obfs3 55.32.27.22:38123  4352e58420e68f5e40bf7c74faddccd9d1349413
 bridge obfs3 192.24.131.513:62389 4352e58420e68f5e40bf7c74faddccd9d1349413
 }}
 
-{{Code2|Obfs4}} example text to add to {{Code2|/etc/tor/torrc}}.
+{{Code2|Obfs4}} example text to add to {{Code2|/usr/local/etc/torrc.d/50_user.conf}}.
 
 {{CodeSelect|code=
 bridge obfs4 192.235.207.85:42086 0EEB10BF4B4FAF56D46E cert=oue8sYYw5wi4n3mf2WDOg iat-mode=0
@@ -213,7 +212,7 @@ bridge obfs4 34.218.26.20:43263 DD21A551767816A0C9495 cert=7qzS6KASquPvJU82Fm7qo
 bridge obfs4 161.217.177.95:10703 B3B8009D01BB7E5FDFAEC cert=4RaIqGiOytEXm6Hw iat-mode=0
 }}
 
-{{Code2|meek_lite}} example text to add to {{Code2|/etc/tor/torrc}}.
+{{Code2|meek_lite}} example text to add to {{Code2|/usr/local/etc/torrc.d/50_user.conf}}.
 
 {{CodeSelect|code=
 bridge meek_lite 0.0.2.0:2 B9E7141C594AF25699E0079C1F0146F409495296 url=https://d2cly7j4zqgua7.cloudfront.net/ front=a0.awsstatic.com
@@ -221,7 +220,7 @@ bridge meek_lite 0.0.2.0:2 B9E7141C594AF25699E0079C1F0146F409495296 url=https://
 
 
 <ref>
-{{Code2|fte}} example text to add to {{Code2|/etc/tor/torrc}}. 
+{{Code2|fte}} example text to add to {{Code2|/usr/local/etc/torrc.d/50_user.conf}}. 
 
 fte is not yet supported in Whonix 13; wait for the Whonix 14 release. https://phabricator.whonix.org/T520
 {{CodeSelect|code=
@@ -230,7 +229,7 @@ bridge fte 300.100.300.80:23521 4352e58420e68f5e40bf7c74faddccd9d1349413
 }}
 </ref>
 
-When {{Code2|/etc/tor/torrc}} editing is finished, save and exit.
+When {{Code2|/usr/local/etc/torrc.d/50_user.conf}} editing is finished, save and exit.
 
 <pre>
 <Ctrl-X> --> press Y --> <Enter>
@@ -243,7 +242,7 @@ The sample text for a complete {{Code2|obfs4}} torrc file is below. Check your f
 # See the file COPYING for copying conditions.
 
 # Use this file for your user customizations.
-# Please see /etc/tor/torrc.examples for help, options, comments etc.
+# Please see /usr/local/etc/torrc.d/50_user.conf.examples for help, options, comments etc.
 
 # Anything here will override Whonix's own Tor config customizations in /usr/share/tor/tor-service-defaults-torrc
 
@@ -270,7 +269,7 @@ Follow this procedure if it has not been previously completed.
 
 {{Enable_Tor}}
 
-=== Step 4: Have {{Code2|/etc/tor/torrc}} Changes Take Effect ===
+=== Step 4: Have {{Code2|/usr/local/etc/torrc.d/50_user.conf}} Changes Take Effect ===
 {{Reload_Tor}}
 </div>
 </div>
