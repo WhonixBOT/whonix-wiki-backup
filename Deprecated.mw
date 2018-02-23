@@ -8,6 +8,70 @@
 '''This is outdated documentation which no longer applies. Kept in case it will be required again in future.'''
 
 
+Add FoxyProxy to [[Tor Browser]] in Whonix. 
+
+{{Box|text=
+'''Warning:''' Installing FoxyProxy worsens the user's browser fingerprint and adversely affects anonymity since it is not a default Tor Browser add-on. The Tor Project's anonymity warning is explicit: <ref>https://www.torproject.org/docs/faq.html.en</ref>
+<blockquote>
+Can I install other Firefox extensions?<br />
+<br />
+Tor Browser is free software, so there is nothing preventing you from modifying it any way you like. However, we do not recommend installing any additional Firefox add-ons with Tor Browser. Add-ons can break your anonymity in a number of ways, including browser fingerprinting and bypassing proxy settings.
+</blockquote>
+
+When using a browser and FoxyProxy in combination, a user's [[Fingerprint#web_fingerprint|web fingerprint]] becomes more unique. The potential fingerprinting harm to user anonymity depends on how many others are running Tor Browser in conjunction with FoxyProxy. 
+
+This configuration is so specialized that probably very few are doing it, reducing the user pool to a small subset. Due to the risk, this approach is generally recommended against. If a user decides to proceed anyhow, the tunnel configuration should not be combined with any browser other than Tor Browser (like Firefox or Chrome), due to an even greater browser fingerprinting risk.
+
+This warning equally applies to configurations such as Tor Browser and I2P, or Tor Browser and remote (http(s)/socks4/5) proxies.
+
+To install FoxyProxy, follow these steps in the Whonix-Workstation ([[Qubes-Whonix]]: Whonix-Workstation AppVM). <ref>The following instructions have been tested as functional in Tor Browser versions 6.5, 7.0a1 and 7.0a2 "hardened". https://lists.torproject.org/pipermail/tbb-dev/2017-February/000471.html</ref> <ref>Some users report <i>xpinstall.signatures.required</i> needs to be disabled in Tor Browser <i>about:config</i> settings to enable FoxyProxy, when it is installed from the Debian repository. This workaround is not required when installing FoxyProxy from addons.mozilla.org. https://forums.whonix.org/t/new-version-of-tbb-no-longer-accepts-foxyproxy-plugin</ref> 
+
+Make the tbb-foxyproxy config file available to Tor Browser. <ref>
+https://github.com/Whonix/usability-misc
+</ref> <ref>
+https://github.com/Whonix/usability-misc/blob/master/usr/share/usability-misc/tbb-foxyproxy/foxyproxy.xml
+</ref>
+
+{{CodeSelect|code=
+cp /usr/share/usability-misc/tbb-foxyproxy/foxyproxy.xml /home/user/.tb/tor-browser/Browser/TorBrowser/Data/Browser/profile.default/
+}}
+
+Navigate to addons.mozilla.org.
+
+<code>Tor Browser Menu</code> -> <code>Tools</code> -> <code>Add-ons</code>
+
+Download and install the FoxyProxy add-on. <ref>This procedure is safe. Since Firefox 43, all add-ons on Mozilla's servers are signed and verified. https://wiki.mozilla.org/Add-ons/Extension_Signing</ref>
+
+<code>Search: "foxyproxy"</code> -> <code>Install: FoxyProxy Standard</code>
+
+Restart Tor Browser.
+
+When prompted, select <code>Restart now</code>.
+
+After restart, the FoxyProxy icon should appear in the Tor Browser toolbar and be enabled. Check you can interact with it and change proxy settings as required.
+
+After FoxyProxy is installed, you may see an app-armory warning you about the denied creation of dconf/user. The current Debian profile for Firefox does not yet include the modern temporary file location /run/user. However, this can be safely ignored since FoxyProxy never needs access to this dconf/user. However, if you'd like give the Tor Browser permission to use tempory file directory /run/user/ and not receive the warning, edit the file
+
+{{CodeSelect|code=
+kdesudo kwrite /etc/apparmor.d/home.tor-browser.firefox
+}}
+
+And uncomment line
+{{CodeSelect|code=
+# owner /run/user/[0-9]*/** rwkl,
+}}
+by removing the #.
+
+To reverse this procedure and restore the default Tor Browser fingerprint:
+* [[Non-Qubes-Whonix]]: It is best to use a VM snapshot taken before installing the add-on. 
+* [[Qubes-Whonix]]: FoxyProxy should be installed to a specific Whonix-Workstation AppVM set up for proxy purposes. The AppVM can be discarded at leisure.
+
+If [[Non-Qubes-Whonix]] users did not take a snapshot prior to these changes, Tor Browser can be downloaded again. Alternatively, FoxyProxy can be removed via the <code>about:addons</code> -> <code>Extensions</code> menu.
+
+For further technical discussion of FoxyProxy, see the [https://forums.whonix.org/t/new-version-of-tbb-no-longer-accepts-foxyproxy-plugin Whonix forum].
+}}
+
+
 ====== AnnealMail ======
 
 Project uncontained and contains vulns: https://github.com/annealmail/annealmail/issues/12#event-1489053019
