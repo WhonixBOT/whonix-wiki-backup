@@ -1,187 +1,349 @@
 {{Header}}
 {{#seo:
 |description=How to Upgrade from Whonix 13.x to Whonix 14.x
+|og:image=https://www.whonix.org/w/images/d/d3/Upgrade.jpg
 }}
 
-'''DEVELOPERS ONLY!'''
-
-development discussion:
-
-* https://forums.whonix.org/t/updating-whonix-from-jessie-to-stretch-migration-to-gnome-shell-port-to-gnome-ish-applications
-* https://phabricator.whonix.org/T467
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = '''TESTERS ONLY!'''
+}}
 
 = High Level Overview =
-1. Backup your data. (Ideally have a copy of your VM, so you can try again.) <br />
+1. Backup your data - ideally have a copy of the VM so it is possible to try again (if necessary). <br />
 2. Consider running the optional [[#Sanity Tests]]. <br />
 3. Upgrade Whonix-Workstation. <br />
 4. Power off Whonix-Workstation. <br />
 5. Upgrade Whonix-Gatway. <br />
 6. Restart Whonix-Gateway. <br />
-7. Restart Whonix-Workstation <br />
+7. Restart Whonix-Workstation. <br />
 
 = Sanity Tests =
 <div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
-These are optional, but recommended. If you want to do them, please press on expand on the right.
+These are optional, but recommended. To complete sanity tests, please press on expand on the right.
 <div class="mw-collapsible-content">
-<pre>
+{{CodeSelect|code=
 sudo dpkg --audit ; echo $?
-</pre>
+}}
 
 Expected output.
 
-<pre>
+{{CodeSelect|code=
 0
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 sudo dpkg --configure -a ; echo $?
-</pre>
+}}
 
-Expected output:
+Expected output.
 
-<pre>
+{{CodeSelect|code=
 0
-</pre>
+}}
 
 [[Security_Guide#Updates|Get package upgrades.]]
 
-<pre>
+{{CodeSelect|code=
 sudo apt-get update
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 sudo apt-get dist-upgrade
-</pre>
+}}
 
-Test wise install python-qt4.
+For testing purposes, install python-qt4.
 
-<pre>
+{{CodeSelect|code=
 sudo apt-get install python-qt4 ; echo $?
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 ## ... successful installation of python-qt4 ...
 0
-</pre>
+}}
 </div>
 </div>
 
 = Upgrading =
-(Downloading a new Whonix-Gateway / Whonix-Workstation would be probably easier than applying the following instructions for upgrading, but this upgrade should be quite smooth.)
 
-Backups are important as noted in above chapter [[#Before you start]].
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Downloading a new Whonix-Gateway / Whonix-Workstation is easier than applying the following upgrade instructions, but this process should be relatively smooth.
+}}
 
-Consider doing the [[#Sanity Tests]] described above. They'll check if your system is affected by obvious grave issues, that you must fix before attempting to upgrade. If your package manager is broken, for example because you mixed packages from Debian stable with packages from Debian testing, then the upgrade may fail in the middle leaving your system in a difficult to resolve situation.
 
-Consider keeping the full terminal (Konsole) log. Even if everything apparently worked, there might be issues after reboot. In case of a bug report in the forums you would be asked to share the upgrading log so the issue can be investigated.
+Both [[Non-Qubes-Whonix]] and [[Qubes-Whonix]] are supported.
 
-If you are using Qubes R3.0 or R3.1 as your host operating system, you are advised to upgrade your VMs and dom0 to R3.2 before proceeding. Follow the [https://www.qubes-os.org/doc/upgrade-to-r3.2/ Qubes R3.1 > R3.2 upgrade instructions on the Qubes website].
+First consider completing the [[#Sanity Tests]] described above; the system is checked for obvious and grave issues that must be fixed before attempting an upgrade. For example, if the package manager is broken due to the mixing of packages from both Debian stable and Debian testing, then the upgrade may fail part way through, leaving the system in an unstable state that is difficult to resolve.
 
-Do a usual [[Security_Guide#Updates|upgrade]] of your system's packages from Debian.
+Consider retaining the full terminal (Konsole) log. Even if the upgrade appears successful, there might be issues following reboot. To properly report a bug in the Whonix forums it is necessary to share the upgrade log so the issue can be investigated.
 
-TODO: Skip the following. (Just a reminder to update this in future.)
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = <u>If you are using Qubes-Whonix</u>: If Qubes R3.0 or R3.1 is used as the host operating system, it is strongly advised to upgrade the VMs and dom0 to R3.2 before proceeding. Only Qubes R3.2 and R4 are currently supported. <ref>https://www.qubes-os.org/downloads/</ref> Follow the [https://www.qubes-os.org/doc/upgrade-to-r3.2/ Qubes R3.1 > R3.2 upgrade instructions on the Qubes website].
+}}
 
-<pre>
-sudo whonix_repository --enable --codename stretch
-</pre>
+
+First, [[Security_Guide#Updates|upgrade]] the system's packages from Debian.
+
+-----
+
+TODO
+
+Backup the Tor config file.
+
+[[Non-Qubes-Whonix]] users:
+
+{{CodeSelect|code=
+sudo cp /etc/tor/torrc ~/
+}}
+
+[[Qubes-Whonix]] users:
+
+When upgrading the TemplateVM, <code>/etc/tor/torrc</code> in the Whonix-Gateway TemplateBased ProxyVM (commonly called <code>sys-whonix</code>) will not be modified, because bind-dirs makes it persistent.
+
+-----
 
 Update Whonix apt sources list.
 
-<pre>
-sudo whonix_repository --baseuri https://deb.whonix.org --enable --repository developers
-</pre>
+{{CodeSelect|code=
+sudo whonix_repository --enable --codename stretch
+}}
 
 Update Debian apt sources list.
 
-<pre>
+{{CodeSelect|code=
 sudo sed -i "s/jessie/stretch/g" /etc/apt/sources.list.d/debian.list
-</pre>
+}}
 
 [[Qubes-Whonix]] only. Update Qubes apt sources list.
 
-<pre>
-sudo sed -i "s/jessie/stretch/g" /etc/apt/sources.list.d/qubes-r3.list
-</pre>
+{{CodeSelect|code=
+sudo sed -i "s/jessie/stretch/g" /etc/apt/sources.list.d/qubes*.list
+}}
 
 Become root.
 
-<pre>
+{{CodeSelect|code=
 sudo su
-</pre>
+}}
 
-Enable extensive debugging so reporting eventual bugs becomes easier.
+Enable extensive debugging so the reporting of any eventual bugs is easier.
 
-<pre>
+{{CodeSelect|code=
 export DEBDEBUG=1
-</pre>
-
-Remove the following accessibility tools unless you are using those. (You would probably know if you are using them.) TODO: Required? (Maybe that gets fixed later during Debian stretch development.)
-
-<pre>
-apt-get purge espeakup brltty
-</pre>
+}}
 
 {{Update}}
 
-<pre>
+{{CodeSelect|code=
 apt-get update
-</pre>
+}}
 
 Upgrade torsocks and usability-misc first. <ref>
-Avoids some torsocks warnings due to the torsocks upgrade.
+This avoids some torsocks warnings due to the torsocks upgrade.
 </ref> <ref>
 Provides apt-get-noninteractive.
 </ref>
 
-<pre>
+{{CodeSelect|code=
 apt-get install torsocks usability-misc
-</pre>
+}}
 
 Upgrade.
 
-<pre>
+{{CodeSelect|code=
 apt-get-noninteractive dist-upgrade
-</pre>
+}}
+
+Purge packages which are not required or deprecated in Whonix and have been replaced by new functionality. <ref>
+sysfsutils - https://github.com/Whonix/Whonix/commit/d7cb15aa96bd571368b54f8a980922d9e1982250
+</ref> anon-shared-kde-accessibility can be removed from the following command if accessibility tools are in use.
+
+{{CodeSelect|code=
+apt-get purge anon-shared-kde-accessibility iceweasel firefox-esr exim* unattended-upgrades cups control-port-filter-python packagekit at wpasupplicant apparmor-profile-sdwdate apparmor-profile-whonixcheck
+}}
 
 Restart whonix-legacy service. <ref>
-Required to do manually, because we used apt-get-noninteractive above. Not so crucial, since it would also run after reboot.
+A manual restart is required because apt-get-noninteractive is being used. This step is not crucial since it would also run after reboot.
 </ref>
 
-<pre>
+{{CodeSelect|code=
 service whonix-legacy restart
-</pre>
+}}
 
-[[Update]] your package lists again. <ref>
-This is required because the repository uri of Whonix repository has been upgraded to the new location by the whonix-legacy package.
+[[Update]] the package lists again. <ref>
+This is required because the Whonix repository URI has been upgraded to a new location by the whonix-legacy package.
 </ref>
 
-<pre>
+{{CodeSelect|code=
 apt-get update
-</pre>
+}}
 
-Purge packages which are deprecated in Whonix and replaced by new functionality or not required. <ref>
-* sysfsutils - https://github.com/Whonix/Whonix/commit/d7cb15aa96bd571368b54f8a980922d9e1982250
+<div class="toccolours mw-collapsible mw-collapsed">
+<u>[[Non-Qubes-Whonix]] users</u> please click on expand on the right.
+<div class="mw-collapsible-content">
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Non-Qubes-Whonix Whonix-Gateway only!
+}}
+
+
+{{CodeSelect|code=
+apt-get install non-qubes-whonix-gateway
+}}
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Non-Qubes-Whonix only! Whonix-Workstation only!
+}}
+
+
+{{CodeSelect|code=
+apt-get install non-qubes-whonix-workstation
+}}
+</div>
+</div>
+
+<div class="toccolours mw-collapsible mw-collapsed">
+<u>[[Qubes-Whonix]] users</u> please click on expand on the right.
+<div class="mw-collapsible-content">
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Qubes-Whonix only! Whonix-Gateway only!
+}}
+
+
+{{CodeSelect|code=
+apt-get install qubes-whonix-gateway
+}}
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Qubes-Whonix only! Whonix-Workstation only!
+}}
+
+
+{{CodeSelect|code=
+apt-get install qubes-whonix-workstation
+}}
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Qubes-Whonix Whonix-Workstation only! Only when you upgrade from Qubes R3.2 to Qubes R4!
+}}
+
+
+{{CodeSelect|code=
+apt-get install pulseaudio-qubes
+}}
+</div>
+</div>
+
+<!--
+If snapshots or backups of the VM were not made, then at least /boot should be backed up.
+
+{{CodeSelect|code=
+cp -a /boot /boot.back
+}}
+
+Remove the old versions of initrd and create new ones with dracut.
+
+{{CodeSelect|code=
+rm /boot/initr*
+dracut --regenerate-all
+}}
+
+Update GRUB.
+
+{{CodeSelect|code=
+update-grub
+}}
+-->
+
+Remove packages which are no longer required.
+
+{{CodeSelect|code=
+apt-get autoremove
+}}
+
+Delete files which are no longer required. <ref>
+tor-controlport-filter was replaced by onion-grater. This deletion is of minor importance. (Only results in a useless apparmor profile.)
 </ref>
 
-<pre>
-apt-get purge iceweasel firefox-esr exim* unattended-upgrades sysfsutils cups
-</pre>
+{{CodeSelect|code=
+sudo rm /etc/apparmor.d/usr.lib.tor-controlport-filter
+}}
 
-Get rid of old packages.
+Remember to store the terminal (Konsole) log: <code>File</code> -> <code>Save Output As</code>
 
-<pre>
-apt-get autoremove
-</pre>
+A poweroff is required.
 
-Remember to store the terminal (Konsole) log. (File -> Save Output As)
+{{CodeSelect|code=
+poweroff
+}}
 
-Reboot required.
+* <u>Non-Qubes-Whonix users</u>: All necessary steps are now complete.
+* <u>Qubes-Whonix users</u>: <u>In Dom0</u>
 
-<pre>
-reboot
-</pre>
+{{CodeSelect|code=
+sudo qubesctl state.sls qvm.anon-whonix
+}}
 
-Done.
+Only complete the next step if all upgrades should be routed through <code>sys-whonix</code>. <ref>
+https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/updates-via-whonix.sls
+</ref>
+
+{{CodeSelect|code=
+sudo qubesctl state.sls qvm.updates-via-whonix
+}}
+
+The upgrade procedure is now complete.
+
+= Update Settings in Qubes R4 =
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Qubes-Whonix only!
+}}
+
+
+After successfully cloning <code>whonix-gw</code> to <code>whonix-gw-14</code> and <code>whonix-ws</code> to <code>whonix-ws-14</code>, some users will want to configure a new <code>sys-whonix-14</code> ProxyVM and have TemplateVMs use it for future updates. Follow these steps below.
+
+'''1.''' [[Template:Qubes_Create_Gateway_ProxyVMs|Create a new Proxy-VM]] using the <code>whonix-gw-14</code> template. Label the new VM "sys-whonix-14".<br /> 
+'''2.''' Edit the ''/etc/qubes-rpc/policy/qubes.UpdatesProxy'' file to set <code>sys-whonix-14</code> as the target VM for the recently upgraded Whonix-Workstation and Whonix-Gateway. Copy and paste the text below.
+
+<pre>whonix-ws $default allow,target=sys-whonix
+whonix-ws $anyvm deny
+whonix-gw $default allow,target=sys-whonix
+whonix-gw $anyvm deny
+
+whonix-ws-14 $default allow,target=sys-whonix-14
+whonix-ws-14 $anyvm deny
+whonix-gw-14 $default allow,target=sys-whonix-14
+whonix-gw-14 $anyvm deny
+
+## Note that policy parsing stops at the first match,
+## so adding anything below "$anyvm $anyvm action" line will have no effect
+
+## Please use a single # to start your custom comments
+
+# Default rule for all TemplateVMs - direct the connection to sys-net
+$type:TemplateVM $default allow,target=sys-net
+
+$anyvm $anyvm deny</pre>
+
+Save and exit.
+
+'''3.''' After upgrading to Qubes-Whonix 14 in Qubes R4, the network setting for any Whonix TemplateVM should be set to <code>none</code> because a qrexec-based updates proxy is in use. <ref>Qubes-Whonix 13 supports this feature as well after running apt-get dist-upgrade.</ref>
 
 = Footnotes =
 <references />
