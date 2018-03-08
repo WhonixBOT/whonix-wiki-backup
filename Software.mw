@@ -235,6 +235,45 @@ Note this applies to printers under your own control only. If you use a printer 
 Modern printers and scanners are embedded computers with their own dedicated internal storage. It has been discovered that scanned documents are saved by these devices, leaking sensitive documents. <ref>https://www.schneier.com/blog/archives/2017/01/photocopier_sec.html</ref> The next best workaround is to use cell phone for  a dedicated to anonymous activities to take photos of the material but make sure you understand the [[Surfing_Posting_Blogging#Anonymous_Photo_Sharing|caveats]].
 
 Another non-technical issue with anonymous printing nowadays is forensics like hand fingerprints, DNA traces, etc.
+Mitigating Printing Risk 
+
+Instructions for Qubes-Whonix only!
+
+Warning: Use of network printers is strongly discouraged with Whonix. This is because most (all?) network printing protocols are insecure, unencrypted protocols. This means, that an attacker who is able to sniff the local network, or who is controlling the (normally untrusted) Qubes NetVM, will likely to be able to see the documents being printed. This is a limitation of today’s printers and printing protocols, something that cannot be solved by Qubes or any other OS.
+
+To mitigate risk of exposing dom0 to malware Qubes-Whonix users should use a USB qube when using a USB printer. 
+
+Warning: Printer driver plugins should never be installed in a trusted TemplateVM. This is because many driver plugins are proprietary and are typically downloadable from the vendor’s website. Such drivers are typically distributed in a form of ready to install packages. However, they are often unsigned, and additionally the downloads are available via HTTP connections only. As a result, installation of such third-party driver plugins in a trusted template VM exposes a risk of compromise of this template VM, which, in turn, leads automatically to compromise of all the AppVMs based on the template.
+
+Although using a printer is risky in itself. One can mitigate the risks posed by  printer drivers plugins by using one of the options listed.
+
+Install printer driver in a TemplateBasedVM
+
+Since there is no reason to avoid installation of software in TemplateBasedVMs. Users can install the printer drivers in an AppVM which is based on a Whonix-ws template. 
+
+1. Create a Whonix-ws based AppVM. It is important this AppVM be given a name not easily confused with a more trusted VM. Name this untrusted VM anon-printer. 
+
+2. Install the printer drivers in the anon-printer VM. This often involves using Tor Browser or konsole to download the drivers. (see  install software & secure downloads) 
+
+3. Once the drivers are installed, the anon-printer VM is used for printing  purposes only. This VM should not be used for sensitive activity!
+
+4. Once printing is completed, the anon-printer VM is shutdown and removed from the system. When printing is again necessary, repeat the steps to create another anon-printer VM.
+
+Warning: While it may be tempting to use the AppVM's root filesystem as a persistent security feature. All data in the normal user filesystem, /home , /rw and /usr/local survives reboot and would thus enable malware to remain persistent if the AppVM was infected. It is possible that malware, especially malware that could be specifically written to target a Qubes-based AppVMs, could install its hooks inside the user home directory files only.
+
+Install Printer Driver in a StandaloneVM
+
+1. Create a Standalone Whonix-ws VM. Give this VM a name that is not easily confused with a more trusted VM such as anon-printer.
+
+2. Install the printer driver as one normally would. This often require using Tor Browser or the konsole.
+
+3. The untrusted Standalone anon-printer VM is used for printing only! This is because printer driver plugins can pose a serious risk to security and anonymity. It is imperative that users do not perform sensitive task in the Standalone anon-printer VM that require anonymity. A more trusted VM 
+which does not have printer driver plugins installed should be used for such activity.
+
+Use bind-dir selective persistence
+
+Using selective bind-dir persistence is undocumented. This would require research in order to ascertain which files would require persistence across VM reboots. 
+This task would be difficult.
 
 == scurl - SSL command line downloader ==
 
