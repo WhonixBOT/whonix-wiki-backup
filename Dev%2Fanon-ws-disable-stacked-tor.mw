@@ -145,6 +145,55 @@ Should show.
 -----
 
 = Application Developers =
+Please use <code>add_onion</code> / Tor ephemeral onion services. In other words, Tor onion services can be created through Tor ControlPort.
+
+ephemeral: Means the onion service will be gone after the Tor control connection is closed. It's however possible and usual to retrieve onion service private key and to restore it at next run.
+
+For example [https://github.com/ricochet-im/ricochet ricochet] by [https://github.com/special @special] is doing that.
+
+Tor ephemeral onion services would work a lot a lot better for Whonix than preconfigued Tor hidden services.
+
+[https://github.com/micahflee/onionshare onionshare] by [https://github.com/micahflee @micahflee] has superb Tails and Whonix support.
+
+* It can listen on all interfaces rather than just localhost. (This is required since the incoming onion service connection comes from the network, not from localhost.)
+
+<pre>
+    # In Whonix, listen on 0.0.0.0 instead of 127.0.0.1 (#220)
+    if os.path.exists('/usr/share/anon-ws-base-files/workstation'):
+        host = '0.0.0.0'
+    else:
+        host = '127.0.0.1'
+</pre>
+
+Related: [https://github.com/Whonix/proposals/blob/master/635-listen-port-convention.txt Listen Port Convention]
+
+* Doesn't crash the application if Tor ControlPort replies something unexpected such as <code>510 Command filtered</code>.
+
+* It shows an error message if Whonix is detected and seeing <code>510 Command filtered</code>:
+
+<blockquote>
+Error talking to the Tor controller.\nIf you're using Whonix, check out https://www.whonix.org/wiki/onionshare to make OnionShare work.
+</blockquote>
+
+* It has a [http://cdn.ghacks.net/wp-content/uploads/2017/03/onionshare-password.png settings dialog]. But not really needed in Whonix.
+
+* It detects Tor settings through <code>TOR_*</code> environment variables.
+
+In Whonix:
+
+<pre>
+TOR_CONTROL_IPC_PATH=/var/run/anon-ws-disable-stacked-tor/127.0.0.1_9151.sock
+</pre>
+
+<pre>
+TOR_SOCKS_IPC_PATH=/var/run/anon-ws-disable-stacked-tor/127.0.0.1_9150.sock
+</pre>
+
+These are unix domain socket files.
+
+Ports would also work but nowadays unix domain socket files are much more advisable since these are less likely to leak.
+
+* Please set a socks user name for [[Stream Isolation]]. (<code>IsolateSOCKSAuth</code>)
 
 = Footnotes =
 <references />
