@@ -167,6 +167,16 @@ Tor ephemeral onion services are a lot a lot better for Whonix than preconfigued
 
 Related: [https://github.com/Whonix/proposals/blob/master/635-listen-port-convention.txt Listen Port Convention]
 
+* Don't listen on a random local server port.
+* Listen on a specific local server port or port range.
+* Tor <code>VIRTPROT</code> does not matter.
+* <ref>
+* onionshare uses `17600 - 17659`. That is handy, so we can match for it using `(176[0-5][0-9])` in the [onionshare control port filter whitelist config](https://github.com/Whonix/onion-grater/blob/master/usr/share/onion-grater-merger/examples/40_onionshare.yml).
+* That way onionshare (running inside a compromised workstation) cannot open arbitrary ports on the workstation. For example, not to the real Tor ControlPort and circumvent the filtering. (We use Tor ControlSocket rather than ControlPort now for this reason.) There are no local ports open on Whonix-Gateway besides Tor Socks, DNS and TransPort, but if there was (let's say for example for [brltty](https://packages.debian.org/brltty), then we don't want connections to it.
+* That allows us to set a limit on how many Tor hidden services (a compromised) workstation can create.
+* It's also useful so users don't have to open all incoming ports in [Whonix-Workstation firewall](https://www.whonix.org/wiki/Whonix-Workstation_Firewall).
+</ref>
+
 * Don't crash the application if Tor ControlPort replies something unexpected such as <code>510 Command filtered</code>.
 
 * Show an error message if Whonix is detected and seeing <code>510 Command filtered</code>:
