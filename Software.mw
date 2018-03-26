@@ -135,6 +135,48 @@ You can start it using: <code>Start menu</code> -> <code>Applications</code> -> 
 
 = Work on sensitive documents =
 
+Install Software in TemplateBasedVM 
+
+
+There is no reason to avoid installing software in TemplateBasedVMs. Although software installed using this method will not remain persistent across reboots. Users may opt to use a custom script to automate this process thereby minimizing time spent re-installing packages. 
+
+Advantages 
+
+This method of installing software affords a single VM many of the benefits of both TemplateBasedVMs and StandaloneVMs.
+
+Centralized Updates - AppVMs are based on a TemplateVM. This means their root filesystem is based on the root filesystem of the corresponding template. Users need only update the TemplateVM and those updates will be reflected in TemplateBasedVM's root filesystem when the VM is restarted.
+
+Minimal Disk Usage - TemplateBasedVMs require much less disk space than StandaloneVMs. Since the AppVM's root filesystem is based the corresponding template. The AppVM only requires enough disk space to hold user files in the /home directory  
+
+Semi-Persistent Storage - User data stored in /home, /rw and /usr/local survives reboot. Many applications such as signal and wire store user data in the /home folder. Since the custom script installs the software seamlessly with little to no user interaction. It gives the AppVM, in a sense "quasi full persistence" not unlike a StandaloneVMs full persistence.
+
+Note: Although these instructions include the use of custom scripting. Writing this script is beyond the scope of these instructions. Users can find numerous free articles and instructions on the web using a search engine.   
+
+
+AppVM Preparation 
+
+1. Create an AppVM based on whonix-ws.
+
+2. To speed up the repetitive software installation process. Users can pre-install any needed dependencies available from packages.debian.org in the TemplateVM. This is done so only packages or software missing from  packages.debian.org would be repetitively installed in the AppVM.
+
+3. Create a custom script that runs at VM start up. The purpose of this script is to automate software installation that would otherwise require manual completion. Note: The functionality of the script can vary greatly. This can be dependent on the software packages being installed along with the experience of the user.
+
+Common tasks that scripting could be used to complete.  
+
+add the desired software repository
+add the verified signing key 
+update the package list with apt-get update after the repository and signing key are added 
+finally, the script would run apt-get install <your-desired-software> 
+
+Warning: Some users may be tempted to use the AppVM's root filesystem as a non-persistent security feature. However, malware may persist if the AppVM is infected since all data in the normal user filesystem, /home , /rw and /usr/local survives reboot. It is feasible that advanced malware (or malware specifically targeted at Qubes-based AppVMs) could install its hooks inside the user home directory files only. 
+
+AppVM Use 
+Once preparation is complete. The user needs only to start the AppVM for the script to begine the process of installing software. Once this process is complete. The AppVM can be used as any other TemplateBasedVM. When the AppVM is shut down. All data not in the users persistent /home folder, including the newly installed software packages is lost. However, a user needs only to start the VM to install the software packages once again.
+ 
+Using bind-dirs Selective Persistance
+
+Using selective bind-dirs persistence is currently undocumented. Further research is required to ascertain which files require persistence across VM reboots. 
+This task would also be difficult.
 == Office Suite ==
 
 [http://www.libreoffice.org/ LibreOffice] ([https://en.wikipedia.org/wiki/LibreOffice wikipedia]) is recommended. It is a full-featured office productivity suite that provides a near drop-in replacement for Microsoft(R) Office. A word processor, a spreadsheet and a presentation application is included.
