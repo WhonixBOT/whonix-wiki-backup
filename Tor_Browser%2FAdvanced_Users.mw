@@ -208,33 +208,34 @@ The Tor Browser sandbox is unlikely to ever support:
 
 Manual configuration changes are required for: audio support, the Tor ciruit display (already disabled in Whonix), and installs/updates of Tor Browser add-ons. By design: fonts are limited to a minimal set, plug-ins like Flash or Silverlight will not work, users will not be able to see downloaded files, and further add-ons cannot be enabled without sandbox configuration changes.
 
-== Sandboxing Tor Browser in Non-Qubes-Whonix ==
+== Sandboxing Tor Browser in Whonix ==
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       = '''Warning:''' These instructions are extremely alpha and require a 64-bit version of Whonix (Whonix 14) to work. Testers or advanced users only!
+| text       = '''Warning:''' These instructions are alpha and require a 64-bit version of Whonix (Whonix 14) to work. Testers or advanced users only!
 }}
 
 === Tor Browser Sandbox Dependencies ===
 
-Several dependencies are required in order to install and run the sandbox:
+Two dependencies are required in order to install and run the sandbox:
 
-* Bubblewrap from Debian Jessie backports.
-* A newer (Whonix-14-developers-only) version of the control-port-filter-python for Tor cookie control protocol authentification. <ref>https://forums.whonix.org/t/tor-browser-sandbox-linux-alpha-coming-soon/3060</ref>
-* ''Optional:'' Libnotify4 for desktop notifications about events.
+* Bubblewrap from Debian stretch backports.
+* A newer (Whonix-14) version of the control-port-filter-python for Tor cookie control protocol authentication. <ref>https://forums.whonix.org/t/tor-browser-sandbox-linux-alpha-coming-soon/3060</ref>
 
 
 '''1. Boot Whonix-Workstation'''
 
-'''2. Add jessie-backports to sources.list'''
+[[Qubes-Whonix]]: boot the Whonix-Workstation TemplateVM.
+
+'''2. Add stretch-backports to sources.list'''
 
 {{CodeSelect|code=
-sudo su -c "echo -e 'deb http://http.debian.net/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
+sudo su -c "echo -e 'deb http://http.debian.net/debian stretch-backports main' > /etc/apt/sources.list.d/stretch-backports.list"
 }}
 
 Or to use the .onion mirror.
 
 {{CodeSelect|code=
-sudo su -c "echo -e 'deb http://vwakviie2ienjx6t.onion/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
+sudo su -c "echo -e 'deb http://vwakviie2ienjx6t.onion/debian stretch-backports main' > /etc/apt/sources.list.d/stretch-backports.list"
 }}
 
 '''3. Update the Package Lists and Install Bubblewrap'''
@@ -244,18 +245,15 @@ sudo apt-get update
 }}
 
 {{CodeSelect|code=
-sudo apt-get -t jessie-backports install bubblewrap
+sudo apt-get -t stretch-backports install bubblewrap
 }}
 
-Note: golang is not needed unless manually building the sandbox from source. lib-seccomp dependencies are no longer required since v0.0.3 of the sandbox.
+Note: 
 
-'''4. ''Optional:'' Install Libnotify4 for Desktop Notifications'''
-
-{{CodeSelect|code=
-sudo apt-get install libnotify4
-}}
-
-Note: The Adwaita Gtk+-2.0 theme is already installed in the Whonix template.
+* golang is not needed unless manually building the sandbox from source.
+* lib-seccomp dependencies are no longer required since v0.0.3 of the sandbox. 
+* Libnotify4 is already installed in the Whonix 14 template. 
+* The  Adawaita Gtk+-2.0 theme is not installed by default - advanced users may choose to optionally install it at this step.
 
 === Download Tor Browser Sandbox ===
 
@@ -268,16 +266,16 @@ Note: The Adwaita Gtk+-2.0 theme is already installed in the Whonix template.
 }}
 
 
-In the Whonix-Workstation, open a terminal and run.
+In the Whonix-Workstation ([[Qubes-Whonix]]: Whonix-Workstation AppVM), open a terminal and run.
 
 {{CodeSelect|code=
-curl --remote-name http://rqef5a5mebgq46y5.onion/torbrowser/7.0a4/sandbox-0.0.6-linux64.zip
+curl --remote-name http://rqef5a5mebgq46y5.onion/torbrowser/8.0a5/sandbox-0.0.16-linux64.zip
 }}
 
 Download the signature file.
 
 {{CodeSelect|code=
-curl --remote-name http://rqef5a5mebgq46y5.onion/torbrowser/7.0a4/sandbox-0.0.6-linux64.zip.asc
+curl --remote-name http://rqef5a5mebgq46y5.onion/torbrowser/8.0a5/sandbox-0.0.16-linux64.zip.asc
 }}
 
 '''2. Download the Tor Project Signing Key and Verify the Zip File'''
@@ -289,7 +287,7 @@ gpg --recv-keys "EF6E 286D DA85 EA2A 4BA7 DE68 4E2C 6E87 9329 8290"
 }}
 
 {{CodeSelect|code=
-gpg --verify sandbox-0.0.6-linux64.zip.asc
+gpg --verify sandbox-0.0.16-linux64.zip.asc
 }}
 
 The output should show a good signature from the Tor developers and be similar to this.
@@ -309,7 +307,7 @@ If a bad signature warning is received, delete the files, rotate the Tor circuit
 In the terminal, run.
 
 {{CodeSelect|code=
-unzip sandbox-0.0.6-linux64.zip
+unzip sandbox-0.0.16-linux64.zip
 }}
 
 === Launch Sandboxed Tor Browser ===
@@ -333,7 +331,7 @@ env | grep TOR
 The output should show.
 
 <pre>
-TOR_CONTROL_PORT=9151
+TOR_CONTROL_IPC_PATH=/var/run/anon-ws-disable-stacked-tor/127.0.0.1_9151.sock
 </pre>
 
 Is set as an environment variable.
