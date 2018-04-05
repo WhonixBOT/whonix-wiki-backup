@@ -39,41 +39,49 @@ sudo chmod --recursive 700 /var/run/tor
 }}
 
 = Log Analysis =
+
 == Introduction ==
-Analysis of Tor's log can be useful in case of connectivity issues.
+
+Analysis of Tor's log can be useful if connectivity issues emerge.
 
 == Open Tor Log ==
-* /var/log/tor/log - persistent Tor log
-* /var/run/tor/log - Tor log since last boot
+
+Users can inspect two logs:
+
+* The persistent Tor log: ''/var/log/tor/log''; and/or
+* The Tor log since last boot: ''/var/run/tor/log'' <ref>
+{{Code2|/var/run/tor/log}} is a Tor configuration file specific to Whonix and an alternative to {{Code2|/var/log/tor/log}}. The former only contains Tor's output since Whonix-Gateway (<code>sys-whonix</code>) last booted. The latter is a permanent log that persists across reboots. The former has a small usability advantage because it is shorter and should therefore contain more relevant information.
+</ref>
+
 
 {{open with root rights|filename=
 /var/run/tor/log
 }}
 
-<ref>
-{{Code2|/var/run/tor/log}} is a Whonix Tor configuration specific file. An alternative to {{Code2|/var/log/tor/log}}. The former only contains Tor's output since last boot of Whonix-Gateway. The latter is a permanent log that persists across reboots. The former has a small usability advantage. It is shorter. Should therefore contain more relevant information.
-</ref>
-
 == Watch Tor Log ==
-You can also watch Tor's log as it's being written.
+
+Users can also watch Tor's log as it is written.
 
 {{CodeSelect|code=
 sudo tail -f /var/run/tor/log
 }}
 
-This is especially useful in combination with another terminal tab and [[#Reload Tor|reloading Tor]].
+This command is especially useful when Tor is reloaded or restarted simultaneously in another terminal window. 
+
+To [[#Reload Tor|reload Tor]], run the following command.
 
 {{CodeSelect|code=
 sudo service tor@default reload
 }}
 
-Or [[#Restart Tor|restarting Tor]].
+To [[#Restart Tor|restart Tor]], run the following command.
 
 {{CodeSelect|code=
 sudo service tor@default restart
 }}
 
 == Non-Issues ==
+
 {| class="wikitable" style="background-color: #fff;text-align: center"
 
 ! message / question
@@ -81,24 +89,24 @@ sudo service tor@default restart
 
 |-
 | <u>{{Code2|Am I compromised? Does Tor's log report leaks?}}
-| Tor's output is conceptually not a tool to find out about serious issues such as compromise or leaks.</u>
+| Tor's output is an ineffective tool for discovering serious issues such as a compromise or leaks.</u>
 
 |-
 | {{Code2|[WARN] Socks version 71 not recognized. (Tor is not an http proxy.)}}
 | 
-This is caused by [[whonixcheck]] (by function {{Code2|check_tor_socks_port_reachability}}). It checks if a Tor SocksPort is reachable by trying to fetch it using curl. <ref>
+This warning is caused by [[whonixcheck]], specifically the function {{Code2|check_tor_socks_port_reachability}} which checks if a Tor SocksPort is reachable by trying to fetch it using curl. <ref>
 {{CodeSelect|code=
 {{Curl_Plain}} 10.152.152.10:9100
 }}
-</ref> It will not report anything if it worked, but would complain if it failed.
+</ref> No warnings appear if the function works correctly.
 
 |-
-| {{Code2|[NOTICE] You configured a non-loopback address '10.152.152.10:9179' for SocksPort. This allows everybody on your local network to use your machine as a proxy. Make sure this is what you wanted. [1 duplicate hidden]}} (Or other port number or DnsPort or TransPort.)
-| This is not of concern. Tor really listens on that IP/port. It is Whonix-Gateway's network interface, that is only available to Whonix-Workstations, because it is an internal network with Whonix-Workstation and because Whonix-Gateway is firewalled (see ''{{WhonixFirewall}}'' or in Whonix source code).
+| {{Code2|[NOTICE] You configured a non-loopback address '10.152.152.10:9179' for SocksPort. This allows everybody on your local network to use your machine as a proxy. Make sure this is what you wanted. [1 duplicate hidden]}} This notice may reference other port numbers, or the DnsPort or TransPort.
+| This notice is not a concern because Tor really listens on that IP/port - it is the internal network interface for Whonix-Gateway (<code>sys-whonix</code>) that is only available to Whonix-Workstations because Whonix-Gateway (<code>sys-whonix</code>) is firewalled. See ''{{WhonixFirewall}}'' or the Whonix source code for further information.
 
 |-
-| {{Code2|[NOTICE] New control connection opened. [2 duplicates hidden]}} (Or more duplicates.)
-| This is not of concern. This is caused by [[whonixcheck]]'s Tor Bootstrap Status Test, which uses Tor's ControlPort or [[Dev/CPFP|CPFP]].
+| {{Code2|[NOTICE] New control connection opened. [2 duplicates hidden]}} A higher number of duplicate messages may also appear.
+| This notice is not a concern because it is caused by [[whonixcheck]]'s Tor Bootstrap Status Test, which uses Tor's ControlPort or [[Dev/CPFP|CPFP]].
 
 |}
 
