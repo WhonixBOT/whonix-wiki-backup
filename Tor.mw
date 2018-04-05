@@ -191,41 +191,50 @@ Complete the following steps on Whonix-Gateway ([[Qubes-Whonix]]: <code>sys-whon
 
 4. Before leaving this location, disable Tor and add a different bridge address if traveling to a different area. To revert to the usual guard nodes used at home, remove the torrc bridge settings before enabling the network, or rollback to a VM snapshot created at home.
 
-=== Copy Tor State File to Fresh sys-whonix VM ===
+=== Copy the Tor State File to Another sys-whonix Instance ===
 
-[[Qubes-Whonix]] only!
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = [[Qubes-Whonix]] only!
+}}
 
-In some circumstance it may be necessary to copy over Tor state from one sys-whonix VM to a newly created (fresh) sys-whonix VM. Although [[Qubes-Whonix]] users can clone VMs to achieve this goal, it may be desirable to copy across Tor state to the fresh sys-whonix VM with no other persistent data.
 
-'''1. In sys-whonix-A, stop Tor.
+On occasion, [[Qubes-Whonix]] users may want to copy the Tor state from an existing <code>sys-whonix</code> ProxyVM to another <code>sys-whonix</code> instance. For example, this is useful for testing later Whonix releases without aiding deanonymization attempts by advanced adversaries, <ref>As the same Tor entry guard is used.</ref> or creating an identical backup that does not share any other persistent data, except for the Tor state.
+
+The following instructions copy the Tor state from <code>sys-whonix-B</code> to <code>sys-whonix-A</code>.
+
+'''1. In <code>sys-whonix-A</code>, stop Tor.'''
 
 {{CodeSelect|code=
 sudo systemctl stop tor@default
 }}
 
-'''2. In sys-whonix-A, remove Tor state file. 
+'''2. In <code>sys-whonix-A</code>, remove the Tor state file.'''
 
-Note: Its likely that this command will complain that the process is busy. This can be ignored.
+Note: It is likely this command will complain that the process is busy, but this can be safely ignored.
 
 {{CodeSelect|code=
 sudo rm -r /var/lib/tor
 }}
 
-'''3. In sys-whonix-A, ensure''' <code>/var/lib/tor</code> '''is empty'''. 
+'''3. In <code>sys-whonix-A</code>, ensure ''/var/lib/tor'' is empty.'''
 
-Note: This command should produce no output.
+Note: This command should not produce any output.
 
 {{CodeSelect|code=
 sudo ls /var/lib/tor
 }}
 
-'''4. In sys-whonix-B, stop Tor.
+'''4. In <code>sys-whonix-B</code>, stop Tor.'''
 
 {{CodeSelect|code=
 sudo systemctl stop tor@default
 }}
 
-'''5.  In sys-whonix-A, copy Tor state file across to sys-whonix-B. Users must upgrade to a root prompt''' (<code>root@host:#</code> ) '''for the command to exit successfully.'''
+'''5. In <code>sys-whonix-A</code>, copy the Tor state file across to <code>sys-whonix-B</code>.'''
+
+Note: Users must upgrade to a root prompt (<code>root@host:#</code>) for the command to exit successfully.
 
 {{CodeSelect|code=
 sudo su
@@ -235,58 +244,66 @@ sudo su
 qvm-copy /var/lib/tor sys-whonix-B
 }}
 
-Note: If users encounter this error it can be ignored. 
+If the following error appears, it can be safely ignored (hit "OK" when prompted).
 
-<code>qfile-agent: Fatal error: stat “VM” (error type: No such file or directory)</code> . Hit “OK” when prompted
+<pre>
+qfile-agent: Fatal error: stat “VM” (error type: No such file or directory)
+</pre> 
 
-
-'''6. In sys-whonix-B, list the QubesIncoming directory to ensure Tor state file was was copied over successfully.
+'''6. In <code>sys-whonix-B</code>, list the QubesIncoming directory to ensure the Tor state file was copied over successfully.'''
 
 {{CodeSelect|code=
 ls ~/QubesIncoming/sys-whonix-A/tor
 }}
 
-Note:  The output should include these files.
+The output should include the files below.
 
    <code>cached-certs cached-microdescs lock</code>
    <code>cached-microdesc-consensus cached-microdescs.new state</code>
 
-'''7.   In sys-whonix-B, move the newly copied Tor state file to''' <code>/var/lib/tor</code> .
+'''7. In <code>sys-whonix-B</code>, move the newly copied Tor state file to ''/var/lib/tor''.'''
 
 {{CodeSelect|code=
 sudo mv ~/QubesIncoming/sys-whonix-A/tor/* /var/lib/tor
 }}
 
-'''8.    In sys-whonix-B, ensure all files listed in step 6 are now in''' <code>/var/lib/tor</code> '''and have the proper ownership. For Tor to function, files in this directory should be owned by''' <code>debian-tor</code> . '''If files do not have proper ownership, proceed to step 9. Otherwise skip to step 10.'''
+'''8. In <code>sys-whonix-B</code>, ensure all files listed in step 6 are now in ''/var/lib/tor'' and have the proper ownership.'''
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = For Tor to function, files in this directory should be owned by <code>debian-tor</code>. If files do not have proper ownership, proceed to step 9. Otherwise skip to step 10.
+}}
+
 
 {{CodeSelect|code=
 sudo ls -l /var/lib/tor
 }}
 
-Note: The first 2 lines of the output should look similar to this. Notice the proper file ownership ‘<code>debian-tor debian-tor</code>’.
+Note: The first 2 lines of the output should look similar to this. Notice the proper file ownership "<code>debian-tor debian-tor</code>".
 
     <code>-rw------- 1 debian-tor debian-tor 20442 Feb 22 21:22 cached-certs</code>
     <code>-rw------- 1 debian-tor debian-tor 1985454 Apr 4 00:04 cached-microdesc-consensus</code>
 
-'''9.    In sys-whonix-B, change ownership of all files in the Tor state folder to''' <code>debian-tor</code>.
+'''9. In <code>sys-whonix-B</code>, change ownership of all files in the Tor state folder to <code>debian-tor</code>.'''
 
 {{CodeSelect|code=
 sudo chown debian-tor: -R /var/lib/tor
 }}
 
-'''10.    In sys-whonix-B, verify Tor state files are owned by''' <code>debian-tor</code>.
+'''10. In <code>sys-whonix-B</code>, verify Tor state files are owned by <code>debian-tor</code>.'''
 
 {{CodeSelect|code=
 sudo ls -l /var/lib/tor
 }}
 
-'''11.    In sys-whonix-B, start Tor.
+'''11. In <code>sys-whonix-B</code>, start Tor.'''
 
 {{CodeSelect|code=
 sudo systemctl start tor@default
 }}
 
-'''12.    In sys-whonix-B, verify Tor is functioning properly.
+'''12. In <code>sys-whonix-B</code>, verify Tor is functioning properly.'''
 
 {{CodeSelect|code=
 whonixcheck -v
