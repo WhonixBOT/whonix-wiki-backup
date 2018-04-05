@@ -182,6 +182,82 @@ On your Whonix-Gateway.
 
 4. Before you leave this location, disable Tor and add a different bridge address if going to a different place. To go back to your usual guard nodes at home, remove the torrc bridge settings before you enable the network or rollback to a vm snapshot you created there.
 
+Copy Across Tor State to Fresh sys-whonix VM
+
+Qubes-Whonix only!
+
+In some circumstance it may be necessary to copy over Tor state from one sys-whonix VM to a newly created (fresh) sys-whonix VM. Although Qubes-Whonix users can clone VMs to achieve this goal, it may be desirable to copy across Tor state to the fresh sys-whonix VM with no other persistent data.
+
+1. In sys-whonix-A, stop Tor.
+
+sudo systemctl stop tor@default
+
+2. In sys-whonix-A, remove Tor state file. 
+
+Note: Its likely that this command will complain that the process is busy. This can be ignored.
+
+sudo rm -r /var/lib/tor
+
+3. In sys-whonix-A, ensure /var/lib/tor is empty. 
+
+Note: This command should produce no output.
+
+sudo ls /var/lib/tor
+
+4. In sys-whonix-B, stop Tor.
+
+sudo systemctl stop tor@default
+
+5.  In sys-whonix-A, copy Tor state across to sys-whonix-B. Users must upgrade to a root prompt (root@host:# ) for the command to exit successfully.
+
+sudo su
+
+qvm-copy /var/lib/tor sys-whonix-B
+
+Note: If users encounter this error it can be ignored. 
+
+qfile-agent: Fatal error: stat “VM” (error type: No such file or directory) . Hit “OK” when prompted
+
+6. In sys-whonix-B, list the QubesIncoming directory to ensure Tor state file was was copied over successfully.
+
+ls ~/QubesIncoming/sys-whonix-A/tor
+
+Note:  The output should include these files.
+
+ cached-certs cached-microdescs lock
+ cached-microdesc-consensus cached-microdescs.new state
+
+7.   In sys-whonix-B, move the newly copied Tor state file to /var/lib/tor.
+
+sudo mv ~/QubesIncoming/sys-whonix-A/tor/* /var/lib/tor
+
+8.    In sys-whonix-B, ensure all files listed in step 6 are now in /var/lib/tor and have the proper ownership. For Tor to function, files in this directory should be owned by debian-tor . If files do not have proper ownership, proceed to step 9. Otherwise skip to step 10.
+
+sudo ls -l /var/lib/tor
+
+Note: The first 2 lines of the output should look similar to this. Notice the proper file ownership ‘debian-tor debian-tor’.
+
+ -rw------- 1 debian-tor debian-tor 20442 Feb 22 21:22 cached-certs
+ -rw------- 1 debian-tor debian-tor 1985454 Apr 4 00:04 cached-microdesc-consensus
+
+9.    In sys-whonix-B, change ownership of all files in the Tor state folder to debian-tor.
+
+sudo chown debian-tor: -R /var/lib/tor
+
+10.    In sys-whonix-B, verify Tor state files are owned by debian-tor.
+
+sudo ls -l /var/lib/tor
+
+11.    In sys-whonix-B, start Tor.
+
+sudo systemctl start tor@default
+
+12.    In sys-whonix-B, verify Tor is functioning properly.
+
+whonixcheck -v
+
+
+
 === Fresh Tor Entry Guards by Regenerating the Tor State File ===
 Usually something to avoid unless you know what you are doing (see [[#Introduction|Introduction]]). This is a method you could use if you just once wanted to change your Tor entry guards, such as before you permanently relocate to a new location.
 
