@@ -1,11 +1,177 @@
 {{Header}}
 {{#seo:
-|description=Using onionshare in Whonix.
+|description=Using OnionShare in Whonix.
 }}
 
-Using onionshare in Whonix will most likely be possible with the next release, Whonix 14. By then, the documentation here will be updated.
+== Introduction ==
 
-They will look like this: [[Next#onionshare]]
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = OnionShare is only available in Whonix 14 and later releases.
+}}
+
+
+OnionShare is an open source program that allows a file of any size to be shared securely and anonymously using the Tor network. <ref>https://onionshare.org/</ref> The OnionShare wiki succinctly describes the design: <ref>https://github.com/micahflee/onionshare/wiki</ref>
+
+<blockquote>It works by starting a web server, making it accessible as a Tor Onion Service, and generating an unguessable URL to access and download the files. It does not require setting up a separate server or using a third party file-sharing service. You host the files on your own computer and use a Tor Onion Service to make it temporarily accessible over the internet. The receiving user just needs to open the URL in Tor Browser to download the file.</blockquote>
+
+At the time of writing, the OnionShare package is not packaged in Debian stretch, and the package version available in Debian buster is quite old (v0.9.2.1 from 2017). <ref>https://tracker.debian.org/pkg/onionshare</ref> For these reasons, the following instructions use the most recent version available from github (v1.3). Advanced users may prefer to use APT pinning to install the version from Debian buster instead.
+
+== Install OnionShare ==
+
+'''1. ''Optional'': Create a Separate Whonix-Workstation (<code>anon-onionshare</code> AppVM)'''
+
+Note: This is not strictly necessary, but best practice is to separate anonymous activities of a different nature in alternate VMs (AppVMs). <ref>Qubes-Whonix users should note the <code>whonix-ws</code> TemplateVM will pull in over 70Mb of dependencies at step 6. Consider creating a separate cloned <code>whonix-ws</code> TemplateVM for this purpose beforehand, prior to completing this step.</ref>
+
+In [[Qubes-Whonix]], to clone the existing <code>anon-whonix</code> AppVM: <code>Right-click on anon-vm</code> -> <code>Select "Clone VM"</code> -> <code>Rename to "anon-onionshare"</code>
+
+'''2. Install git in Whonix-Workstation (<code>anon-onionshare</code> AppVM)'''
+
+Open a terminal (Konsole) in Whonix-Workstation (<code>anon-onionshare</code>) and navigate to the persistent home directory. 
+
+{{CodeSelect|code=
+cd /home/user
+}}
+
+Next install git which is not available by default in the VM (AppVM). <ref>The git installation will not persist in Qubes-Whonix following reboot. This method avoids polluting the <code>whonix-ws</code> TemplateVM upon which it is based.</ref>
+
+{{CodeSelect|code=
+sudo apt-get install git
+}}
+
+'''3. Clone the OnionShare Directory'''
+
+This will pull the OnionShare source code directly from github.com
+
+{{CodeSelect|code=
+git clone https://github.com/micahflee/onionshare.git
+}}
+
+Next navigate into the OnionShare directory.
+
+{{CodeSelect|code=
+cd onionshare
+}}
+
+'''4. Retrieve the OnionShare PGP Signing Key'''
+
+This step retrieves the OnionShare developer's PGP key using its long key ID. <ref>OnionShare is developed by Micah Lee and the key ID has been taken directly from www.micahflee.com</ref>
+
+{{CodeSelect|code=
+gpg --keyserver pool.sks-keyservers.net --recv-keys 0x927F419D7EC82C2F149C1BD1403C2657CD994F73
+}}
+
+'''5. Examine and Verify the git Tags and Commit'''
+
+These steps list the available git tags, and verifies the latest version and its commit (v1.3 at the time of writing).
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = Good signature messages should appear for each verify command below. Do not proceed if signatures are bad! In that case, remove the OnionShare directory and repeat step 3.
+}}
+
+
+{{CodeSelect|code=
+git tag
+}}
+
+{{CodeSelect|code=
+git verify-tag v1.3
+}}
+
+{{CodeSelect|code=
+git verify-commit v1.3^{commit}
+}}
+
+Qubes-Whonix users should shut down the <code>anon-onionshare</code> AppVM prior to the next step.
+
+'''6. Install OnionShare Dependencies'''
+
+Several dependencies must be installed in Whonix-Workstation (<code>whonix-ws</code> TemplateVM) for OnionShare to work correctly. In a terminal (Konsole) run.
+
+{{CodeSelect|code=
+sudo apt install -y build-essential fakeroot python3-all python3-stdeb dh-python python3-flask python3-stem python3-pyqt5 python-nautilus python3-pytest obfs4proxy
+}}
+
+Qubes-Whonix users should shutdown the <code>whonix-ws</code> TemplateVM after dependencies have installed, and restart the <code>anon-onionshare</code> AppVM.
+
+'''7. Extend the onion-grater Whitelist in Whonix-Gateway (<code>sys-whonix</code> ProxyVM)'''
+
+{{Control_Port_Filter_Python_Profile_Add|
+filename=/usr/share/onion-grater-merger/examples/40_onionshare.yml
+}}
+
+'''8. Modify the Whonix-Workstation (<code>anon-onionshare</code> AppVM) User Firewall Settings and Reload Them'''
+
+{{Firewall Settings Workstation}}
+
+Add. <ref>As per https://labs.riseup.net/code/issues/7870#note-15 OnionShare uses ports 17600 to 17659.</ref>
+
+{{CodeSelect|code=
+EXTERNAL_OPEN_PORTS+=" $(seq 17600 17659) "
+}}
+
+Save.
+
+{{Reload_Firewall_Whonix-Workstation}}
+
+== Start OnionShare ==
+
+To start OnionShare in Whonix-Workstation (<code>anon-onionshare</code>) first navigate to the OnionShare folder.
+
+{{CodeSelect|code=
+cd onionshare
+}}
+
+Then either run the command line interface or GUI version, depending on your preference.
+
+{{CodeSelect|code=
+./dev_scripts/onionshare
+}}
+
+{{CodeSelect|code=
+./dev_scripts/onionshare-gui
+}}
+
+Advanced users can also build an OnionShare package to install. <ref>https://github.com/micahflee/onionshare/blob/master/BUILD.md#gnulinux</ref> <ref>To create a .deb on Debian, run: <code>./install/build_deb.sh</code></ref>
+
+=== OnionShare Configuration ===
+
+On the first run of OnionShare:
+
+* Select the settings button/icon (cog symbol) in the GUI.
+* Under “How should OnionShare connect to Tor?” choose “Connect using socket file”, and set the socket file to ''/var/run/tor/control''.
+* Under “Tor authentication options” choose “No authentication, or cookie authentication”.
+
+
+To test OnionShare is running correctly:
+
+* Click the “Test Settings” button. If all steps were completed correctly, Tor will successfully connect.
+* The GUI should say it supports both ephemeral onion services and stealth onion services.
+* Check “Create stealth onion services” to make OnionShare operations more secure.
+
+=== How to Use OnionShare ===
+
+Once OnionShare has been installed correctly and the Tor check is successful, sharing files anonymously is easy: <ref>https://github.com/micahflee/onionshare/wiki</ref>
+
+<blockquote>Open OnionShare, drag and drop files and folders you wish to share into it, and click Start Sharing. After a moment, it will show you a .onion URL such as http://asxmi4q6i7pajg2b.onion/egg-cain. This is the secret URL that can be used to download the file you're sharing.<br />
+<br />
+Send this URL to the person you're sending the files to. If the files you're sending aren't secret, you can use normal means of sending the URL, like by emailing it, or sending it in a Facebook or Twitter private message. If you're sending secret files then it's important to send this URL securely.<br />
+<br />
+The person who is receiving the files doesn't need OnionShare. All they need is to open the URL you send them in Tor Browser to be able to download the file.
+</blockquote>
+
+A complete user guide, along with advanced topics and development documentation is available on the [https://github.com/micahflee/onionshare/wiki official website].
+
+== OnionShare AppArmor Profiles ==
+
+AppArmor profiles are available to better contain OnionShare, but they have not yet been tested in Whonix. <ref>https://github.com/micahflee/onionshare/tree/develop/apparmor</ref> Whonix community wiki contributions and testing are most welcome!
+
+TODO: Test profiles and expand this section.
+
+= Footnotes =
+<references/>
 
 {{Footer}}
 
