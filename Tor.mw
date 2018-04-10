@@ -210,23 +210,32 @@ The following instructions copy the Tor state from <code>sys-whonix-old</code> t
 sudo systemctl stop tor@default
 }}
 
-'''2. In <code>sys-whonix-new</code>, remove the Tor state folder. Fist the <i>/var/lib/tor</i> directory must be unmounted'''
+'''2. In <code>sys-whonix-new</code>, remove the Tor state file.'''
 
-{{CodeSelect|code=
-sudo umount /var/lib/tor
-}}
+Note: It is likely this command will complain that the process is busy, but this can be safely ignored.
 
-{{CodeSelect|code=
-sudo rm -r /var/lib/tor
-}}
+Warning:  When using a wildcard such as an asterisk to remove files. It is recommended users surround the file path in apostrophes ( ' ) to prevent errors that could have severe consequences. If a user unintentionally placed a space before the asterisk in the command to remove the Tor state file. The apostrophes would prevent the / (root directory) from being removed.
 
-'''3. In <code>sys-whonix-old</code>, stop Tor'''
+ 
+
+sudo rm -r '/var/lib/tor/*'
+
+
+3. In sys-whonix-new, ensure /var/lib/tor is empty
+
+Note: This command should not produce any output.
+
+
+sudo ls /var/lib/tor
+
+
+'''4. In <code>sys-whonix-old</code>, stop Tor'''
 
 {{CodeSelect|code=
 sudo systemctl stop tor@default
 }}
 
-'''4. In <code>sys-whonix-old</code>, copy the Tor state file across to <code>sys-whonix-new</code>'''
+'''5. In <code>sys-whonix-old</code>, copy the Tor state file across to <code>sys-whonix-new</code>'''
 
 {{CodeSelect|code=
 sudo qvm-copy /var/lib/tor sys-whonix-new
@@ -238,7 +247,7 @@ If the following error appears, it can be safely ignored (hit "OK" when prompted
 qfile-agent: Fatal error: stat “VM” (error type: No such file or directory)
 </pre> 
 
-'''5. In <code>sys-whonix-new</code>, list the QubesIncoming directory to ensure the Tor state file was copied over successfully'''
+'''6. In <code>sys-whonix-new</code>, list the QubesIncoming directory to ensure the Tor state file was copied over successfully'''
 
 {{CodeSelect|code=
 ls ~/QubesIncoming/sys-whonix-old/tor
@@ -249,26 +258,25 @@ The output should include the files below.
    <code>cached-certs cached-microdescs lock</code>
    <code>cached-microdesc-consensus cached-microdescs.new state</code>
 
-'''6. In <code>sys-whonix-new</code>, move the newly copied Tor state file to ''/var/lib/tor'''''
+'''7. In <code>sys-whonix-new</code>, move the newly copied Tor state file to ''/var/lib/tor'''''
 
 {{CodeSelect|code=
-sudo mv ~/QubesIncoming/sys-whonix-old/tor /var/lib
+sudo mv ~/QubesIncoming/sys-whonix-old/tor/* /var/lib/tor
 }}
 
-'''7. In <code>sys-whonix-new</code>, change ownership of all files in the Tor state folder to <code>debian-tor</code>'''
+'''8. In <code>sys-whonix-new</code>, change ownership of all files in the Tor state folder to <code>debian-tor</code>'''
 
 {{CodeSelect|code=
 sudo chown -R debian-tor:debian-tor /var/lib/tor
 }}
 
-'''8. In <code>sys-whonix-new</code>, start Tor'''
+'''9. In <code>sys-whonix-new</code>, start Tor'''
 
 {{CodeSelect|code=
 sudo systemctl start tor@default
 }}
 
-'''9. In <code>sys-whonix-new</code>, run [[whonixcheck]] to verify Tor is functioning properly'''<ref>If Tor fails to start, users should verify the Tor folder has the proper file permissions with the following command <code>sudo ls -l /var/lib/tor</code></ref> 
-
+'''10. In <code>sys-whonix-new</code>, run [[whonixcheck]] to verify Tor is functioning properly'''<ref>If Tor fails to start, users should verify the Tor folder has the proper file permissions with the following command <code>sudo ls -l /var/lib/tor</code></ref> 
 
 {{CodeSelect|code=
 whonixcheck 
