@@ -198,9 +198,10 @@ Complete the following steps on Whonix-Gateway ([[Qubes-Whonix]]: <code>sys-whon
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
 | text       = [[Qubes-Whonix]] only!
 }}
-
+Note: Users with custom Tor configurations options, which are also referred to as custom torrc options, are required to migrate those settings separately. This is on account of the Tor state folder, which is located in /var/lib, does not contain the custom torrc settings that are located in /etc/tor/torrc for Whonix 13, and /usr/local/etc/torrc.d/50_user.conf for Whonix 14 and later releases.  
 
 On occasion, [[Qubes-Whonix]] users may want to copy the Tor state from an existing <code>sys-whonix</code> ProxyVM to another <code>sys-whonix</code> instance. For example, this is useful for testing later Whonix releases without aiding deanonymization attempts by advanced adversaries, <ref>As the same Tor entry guard is used.</ref> or creating an identical backup that does not share any other persistent data, except for the Tor state.
+
 
 The following instructions copy the Tor state from <code>sys-whonix-old</code> to <code>sys-whonix-new</code>.
 
@@ -210,34 +211,28 @@ The following instructions copy the Tor state from <code>sys-whonix-old</code> t
 sudo systemctl stop tor@default
 }}
 
-'''2. In <code>sys-whonix-new</code>, remove the Tor state file.'''
-
-Note: It is likely this command will complain that the process is busy, but this can be safely ignored.
+'''2. In <code>sys-whonix-new</code>, remove the Tor state file.''' Users are strongly encouraged to follow the instructions as they are written. This is because deviation from the listed commands could have unforeseen consequences. For example, if users where to use a alternate command to remove the Tor state folder. The outcome may be broken file persistence across reboots. This is owing to the fact that Qubes-Whonix uses bind-dirs persistence for the Tor folder and other select directories. This in turn, at the very least would require users to unmount and mount the Tor folder in the same way as bind-dirs does. Users would likely find this timely and very difficult. 
 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text       ='''Warning:'''  Users should use care when removing files so extra spaces are not inadvertently added to the file path. Such mistakes could have severe consequences. For example, if a user unintentionally placed a space before the asterisk in the command to remove the Tor state file. The <code>/</code> (root directory) and all system data would be removed.
 }}
- 
-{{CodeSelect|code=
-sudo rm -r /var/lib/tor
-}}
-
-'''3. In <code>sys-whonix-new</code>, ensure <i>/var/lib/tor</i> is empty'''
-
-Note: This command should not produce any output.
 
 {{CodeSelect|code=
-sudo ls /var/lib/tor
+sudo su
 }}
 
-'''4. In <code>sys-whonix-old</code>, stop Tor'''
+{{CodeSelect|code=
+sudo rm  /var/lib/tor/*
+}}
+
+'''3. In <code>sys-whonix-old</code>, stop Tor'''
 
 {{CodeSelect|code=
 sudo systemctl stop tor@default
 }}
 
-'''5. In <code>sys-whonix-old</code>, copy the Tor state file across to <code>sys-whonix-new</code>'''
+'''4. In <code>sys-whonix-old</code>, copy the Tor state file across to <code>sys-whonix-new</code>'''
 
 {{CodeSelect|code=
 sudo qvm-copy /var/lib/tor sys-whonix-new
@@ -249,7 +244,7 @@ If the following error appears, it can be safely ignored (hit "OK" when prompted
 qfile-agent: Fatal error: stat “VM” (error type: No such file or directory)
 </pre> 
 
-'''6. In <code>sys-whonix-new</code>, list the QubesIncoming directory to ensure the Tor state file was copied over successfully'''
+'''5. In <code>sys-whonix-new</code>, list the QubesIncoming directory to ensure the Tor state file was copied over successfully'''
 
 {{CodeSelect|code=
 ls ~/QubesIncoming/sys-whonix-old/tor
@@ -260,25 +255,25 @@ The output should include the files below.
    <code>cached-certs cached-microdescs lock</code>
    <code>cached-microdesc-consensus cached-microdescs.new state</code>
 
-'''7. In <code>sys-whonix-new</code>, move the newly copied Tor state file to ''/var/lib/tor'''''
+'''6. In <code>sys-whonix-new</code>, move the newly copied Tor state file to ''/var/lib/tor'''''
 
 {{CodeSelect|code=
 sudo mv ~/QubesIncoming/sys-whonix-old/tor/* /var/lib/tor
 }}
 
-'''8. In <code>sys-whonix-new</code>, change ownership of all files in the Tor state folder to <code>debian-tor</code>'''
+'''7. In <code>sys-whonix-new</code>, change ownership of all files in the Tor state folder to <code>debian-tor</code>'''
 
 {{CodeSelect|code=
 sudo chown -R debian-tor:debian-tor /var/lib/tor
 }}
 
-'''9. In <code>sys-whonix-new</code>, start Tor'''
+'''8. In <code>sys-whonix-new</code>, start Tor'''
 
 {{CodeSelect|code=
 sudo systemctl start tor@default
 }}
 
-'''10. In <code>sys-whonix-new</code>, run [[whonixcheck]] to verify Tor is functioning properly'''<ref>If Tor fails to start, users should verify the Tor folder has the proper file permissions with the following command <code>sudo ls -l /var/lib/tor</code></ref> 
+'''9. In <code>sys-whonix-new</code>, run [[whonixcheck]] to verify Tor is functioning properly'''<ref>If Tor fails to start, users should verify the Tor folder has the proper file permissions with the following command <code>sudo ls -l /var/lib/tor</code></ref> 
 
 {{CodeSelect|code=
 whonixcheck 
