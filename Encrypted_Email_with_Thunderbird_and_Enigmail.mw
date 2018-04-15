@@ -1,1 +1,1014 @@
-.
+{{Header}}
+{{#seo:
+|description=Encrypted Anonymous Email with Thunderbird, TorBirdy and Enigmail
+}}
+
+= Credits =
+
+Gratitude is expressed to tempest for permission to use this material for the Whonix wiki documentation. <ref>http://forums.whonix.org/t/tor-project-support-of-whonix/5030</ref> This material forms chapter 4.5 of ''A Beginner Friendly Comprehensive Guide to Installing and Using a Safer Anonymous Operating System'', which can be found [http://yuxv6qujajqvmypv.onion here]. Minor edits have been made to the source material: for phrasing; to incorporate Whonix wiki and external references where appropriate; and to accommodate Qubes-Whonix users.
+
+= Introduction =
+
+Due to the complexity of software in the past, one of the most underutilized forms of protection for users is email encryption. However, it is now easier to take advantage of encrypted email via the use of Thunderbird (Mozilla's email client) and Enigmail, which is a graphical front-end for using the GnuPG ("GPG") encryption program. Encrypted subject and references headers are also now possible in Enigmail, reducing the leakage of metadata. <ref>https://blog.torproject.org/our-latest-release-torbirdy-thunderbird-includes-new-enigmail-features</ref> <ref>https://trac.torproject.org/projects/tor/ticket/21880</ref> However, MIME is not used in the following instructions to reduce the risk of Enigmail bugs exposing unencrypted messages, meaning the subject line will ''not'' be encrypted. <ref>On the upside, this configuration change allows the user to confirm their message is actually encrypted before it is sent.</ref> The TorBirdy extension is also utilized to make Thunderbird connections take place over the Tor network. <ref>https://trac.torproject.org/projects/tor/wiki/torbirdy</ref>
+
+The following instructions provide a higher security and privacy standard than relying upon online services such as ProtonMail or Lavabit, that promise "encrypted email" in transit or storage. Online systems can still be broken by an attacker capable of exploiting JavaScript flaws or undermining Certificate Authorities that provide encryption certificates for websites. Further, online providers can be compelled by National Security Letters to allow government access for extended periods. This is often coupled with a gag order that threatens severe legal sanctions, preventing the announcement of government backdooring. <ref>As was the case for RiseUp. Relying on warrant canaries alone is also not recommended, as they have proven ineffective in several cases.</ref> 
+
+To minimize these risks, the following method of email encryption involves direct end-to-end encryption that can only be read by the intended recipient, making it much more secure. Further, a strong encryption key-pair is created so the user has strict control over the private key, which is stored securely.
+
+Users should understand this method does not make email infallible - advanced adversaries can easily penetrate Internet-facing endpoints of targets with today's advanced surveillance and offensive systems. 
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Tip: If possible, critical information that is of high value should not traverse computer networks at all, or even risk exposure to Internet-facing computers.  <ref>Similarly, that same information should not be stored on electronic media in the first place, if that is feasible in the circumstances.</ref> High-risk users might also consider combining the use of [[One_Time_Pads|One Time Pads]] with email encryption for even greater seccurity, and creating an [[Air_Gapped_OpenPGP_Key|airgapped OpenPGP key pair]] rather than relying on Enigmail as per these instructions.
+}}
+
+
+Always remember that mistakes or poor security practices on behalf of the email recipient can inadvertently lead to disclosures of plaintext.
+
+The following instructions provides steps to:
+
+# Install the TorBirdy plugin for the Thunderbird email desktop client.
+# Create an email account anonymously with a suitable provider via Tor Browser.
+# Store the login credentials in KeePassX (optional).
+# Setup the new email account: Thunderbird account settings, install necessary extensions (add-ons), and enforce connections to the email provider's Onion Service.
+# Create an OpenPGP encryption key pair and revocation certificate using the Enigmail Setup Wizard.
+# Encrypt and store the revocation certificate securely.
+# Configure Thunderbird preferences for greater security and anonymity.
+# Configure additional OpenPGP preferences via Enigmail.
+# Key management: import GPG public keys.
+# Export the public key to a GPG key server (optional).
+# Prepare an email signature with the public GPG key ID and fingerprint (optional).
+# Compose and send a test encrypted email to vfemail.net
+# Open an encrypted email received in Thunderbird.
+
+== Warnings ==
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Be aware that with respect to privacy and anonymity, e-mail is a very insecure system by design. Use it sparingly, and only with great discipline and caution. 
+}}
+
+
+Operational security is imperative to maintain the integrity of properly encrypted email. Consider the following scenarios which would allow an adversary access to the plaintext or other metadata that might help deanonymize a user:
+
+* Even if all email sent to a recipient is encrypted, if the recipient fails to encrypt the email response, then adversaries will be able to read the message and likely a quote of the original one sent.
+* The names of email recipients cannot be encrypted and are therefore visible to adversaries. However, the subject line and references email header are now encrypted as of TorBirdy v2.3 and above - although disabled in the following configuration.
+* There are several different types of [https://easycrypt.co/email-privacy-crash-course-part-3-metadata-and-anonymity/ metadata] that can be harvested from email, depending on how it is used. Therefore, users must be careful when relying on email for sensitive communications.
+
+= Install the Torbirdy Plugin in Thunderbird = 
+
+'''1. Open a Konsole session in Whonix-Workstation.'''
+
+[[Qubes-Whonix]]: <code>anon-whonix</code> -> <code>Konsole</code>. 
+
+Non-Qubes-Whonix: Double-click the Konsole icon on the Desktop.
+
+''SCREENSHOT 1''
+
+'''2. Navigate to the Downloads directory.'''
+
+In non-Qubes-Whonix, type.
+
+{{CodeSelect|code=
+cd Downloads
+}}
+
+In [[Qubes-Whonix]], type.
+
+{{CodeSelect|code=
+cd /home/user/Downloads
+}}
+
+And press <code>Enter</code>.
+
+'''3. Download TorBirdy.'''
+
+Note: [https://trac.torproject.org/projects/tor/wiki/torbirdy TorBirdy] is a desktop email plugin created by the Tor Project to further anonymize Thunderbird. At the time of writing, the version available for download was v0.2.4.
+
+Type.
+
+{{CodeSelect|code=
+scurl https://www.torproject.org/dist/torbirdy/torbirdy-current.xpi
+}}
+
+And press <code>Enter</code>.
+
+'''4. Download the necessary files to verify the integrity of the TorBirdy installer.'''
+
+Type.
+
+{{CodeSelect|code=
+scurl https://www.torproject.org/dist/torbirdy/torbirdy-current.xpi.asc
+}}
+
+And press <code>Enter</code>.
+
+'''5. Import the GPG public key of Sukhbir Singh, one of the developers of TorBirdy.'''
+
+Type.
+
+{{CodeSelect|code=
+gpg --recv-key E4ACD3975427A5BA8450A1BEB01C8B006DA77FAA
+}}
+
+And press <code>Enter</code>.
+
+When the process completes, the screen should be similar to the screenshot below.
+
+''SCREENSHOT 2''
+
+'''6. Verify the integrity of TorBirdy.'''
+
+Type.
+
+{{CodeSelect|code=
+gpg --verify torbirdy-current.xpi.asc
+}}
+
+And press <code>Enter</code>.
+
+When the verification is complete, the screen should look similar to the screen shot below. If the following message appears:
+
+<pre>gpg: Good signature from "Sukhbir Singh <azadi@riseup.net></pre>
+
+Then the integrity of the program installer has been successfully verified. The "key is not certified" warning that appears after that line can be safely ignored. 
+
+If the following message appears:
+
+<pre>gpg: BAD signature from "Sukhbir Singh <azadi@riseup.net>"</pre>
+
+Delete <code>torbirdy-current.xpi.asc</code> and <code>torbirdy-current.xpi</code> and do not use it. A bad signature means the downloaded program may have been tampered with or was corrupted during the download process. 
+
+If this occurs, delete the files and either wait 10-15 minutes for the Tor circuits to change, or open up the "Arm Tor Controller" in the Whonix Gateway (<code>sys-whonix</code>) and type "n" to create new Tor circuits. Then, repeat steps 3-6 after a random period of time has elapsed.
+
+''SCREENSHOT 3''
+
+'''7. Modify TorBirdy to allow for importation/exportation of GPG keys in Thunderbird.'''
+
+Without modifying Torbirdy, key management is much more difficult in Thunderbird due to various errors.
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       =  '''Important:''' This modification is for Whonix only! The same TorBirdy steps in any other OS may harm anonymity or privacy!
+}}
+
+
+Type.
+
+{{CodeSelect|code=
+7z x torbirdy-current.xpi components
+}}
+
+And press <code>Enter</code>.
+
+'''8. Maximize the terminal window.'''
+
+The part of the file that will be edited is moved to the right by spaces. Therefore it is easier to edit if the terminal window is maximized. 
+
+Click on the up-arrow ([[Qubes-Whonix]]: "+" key) in the upper right side of your terminal window.
+
+''SCREENSHOT 4''
+
+9. Edit the <code>torbirdy.js</code> file.
+
+Type.
+
+{{CodeSelect|code=
+nano components/torbirdy.js
+}}
+
+And press <code>Enter</code>.
+
+'''10. Open a search routine.'''
+
+Press the <code>LEFT-CTRL</code> + <code>W</code> keys simultaneously to open a search routine. Type.
+
+{{CodeSelect|code=
+--display-charset utf-8
+}}
+
+And press <code>Enter</code>.
+
+''SCREENSHOT 5''
+
+'''11. Modify the display character set.'''
+
+The cursor will appear on a line that shows <code>"--display-charset utf-8 " +</code> as per the screen shot below.
+
+''SCREENSHOT 6''
+
+Remove the "+" sign and type.
+
+{{CodeSelect|code=
+,
+}}
+
+Immediately following the quotation mark so it looks like the screen shot below.
+
+''SCREENSHOT 7''
+
+'''12. Modify the keyserver options.'''
+
+Move the cursor down 2 lines to the line beginning with <code>"--keyserver-options"</code> as pictured below.
+
+''SCREENSHOT 8''
+
+Type.
+
+{{CodeSelect|code=
+//
+}}
+
+So it appears before the quotation mark as pictured below.
+
+''SCREENSHOT 9''
+
+'''13. Save the modified file.'''
+
+Press <code>LEFT-CTRL</code> + <code>X</code> buttons at the same time and type <code>Y</code> when asked about saving the modified buffer.
+
+When prompted for the file name to write, press <code>Enter</code>.
+
+'''14. Add the modified file to the torbirdy-current.xpi install package.'''
+
+Type.
+
+{{CodeSelect|code=
+7z u torbirdy-current.xpi components/torbirdy.js
+}}
+
+And press <code>Enter</code>.
+
+'''15. Close the Konsole session.'''
+
+Type.
+
+{{CodeSelect|code=
+exit
+}}
+
+And press <code>Enter</code>.
+
+= Create a New Email Account with Tor Browser =
+
+'''1. Launch Tor Browser.'''
+
+It is critical to create a new email account anonymously with Tor Browser.
+
+In Whonix-Workstation ([[Qubes-Whonix]]: <code>anon-whonix</code>), launch Tor Browser via the icon on the toolbar (non-Qubes-Whonix) or via the Qubes VM Manager (or widget).
+
+'''2. Choose an appropriate email provider.'''
+
+First and foremost, there are multiple email providers that users can choose from. For the purposes of this tutorial, VFEmail (vfemail.net) is used as an example. This is not an endorsement for VFEmail, nor are they necessarily the most secure or private email provider available.
+
+At the time of writing, [https://344c6kbnjnljjzlz.onion/faq.php VFEmail] is one of the few free and reliable email providers offering POP3 email access through an .onion address, which does not require additional verification details to register an account. 
+
+For more details regarding the features and offerings of VFEmail, visit https://344c6kbnjnljjzlz.onion/faq.php. If used properly with GPG encryption, VFEmail's onion email service will provide the user with strong anonymity and privacy. 
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Never forget this is an [[Onion_Services#How_Onion_Services_Connections_Work|Onion Service]] which means there is no way of  determining who is running it. If GPG is not used to encrypt e-mail and/or the recipient of email does not encrypt it either, '''it can be easily read by the e-mail service provider, random computers on the internet that relay a sent email message, or anyone else who manages to gain access to the account!'''
+}}
+
+
+If problems are experienced with VFEmail, users should consider the use of alternatives such as [http://cadamailgxsy6ykq.onion/intro.php cadamail], or refer to the [https://trac.torproject.org/projects/tor/wiki/doc/EmailProvider list of providers] recommended by The Tor Project, [[E-Mail#E-Mail_Provider_Comparison|Whonix]] and [https://anonymous-proxy-servers.net/en/help/email-provider.html JonDonym].
+
+When Tor Browser opens, type.
+
+{{CodeSelect|code=
+https://344c6kbnjnljjzlz.onion/register
+}}
+
+Into the URL bar to nagivate to the VFEmail Onion Service web page.
+
+''SCREENSHOT 10''
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = If using another email provider, navigate to the respective registration page, create the new account, use KeePassX to generate a password for it, <ref>Or create random [[Security_Guide#Generating_Unbreakable_Passwords|diceware passphrases]] of sufficient length.</ref> and continue from "Setup the New Email Account" section.
+}}
+
+
+'''3. Add an SSL certificate exception for the VFEmail .onion'''
+
+Tor Browser will warn that the web page "connection is not secure." This is expected. The warning arises because the SSL certificate received is from vfemail.net, but the domain the user is connected to is 344c6kbnjnljjzlz.onion
+
+<code>Select "Advanced"</code> -> <code>Select "add exception"</code>.
+
+''SCREENSHOT 11''
+
+'''4. Add a security exception for VFEmail.'''
+
+A window prompting the user to "add security exception" will appear. Click on the "Confirm Security Exception" button.
+
+''SCREENSHOT 12''
+
+'''5. Allow JavaScript for the registration page.'''
+
+The registration screen for VFEmail will now load. At the time of writing, JavaScript is required for the registration process due to the CAPTCHA used to block spam bots. <ref>This is undesirable from a security perspective. Email providers which do not rely upon JavaScript for registration should be preferred in general, such as cadamail.</ref>
+
+<code>Click on the NoScript icon</code> -> <code>Select "temporarily allow
+https://344c6kbnjnljjzlz.onion"</code>
+
+''SCREENSHOT 13''
+
+'''6. Register an email account name and password.'''
+
+After the page reloads, a new email account name and password can be created.
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = When creating an account and password do not use [[DoNot#Disclose_Identifying_Data_Online|identifying or familiar data]] in either! Also consider the [[Security_Guide#Principles_for_Stronger_Passwords|principles for stronger passwords]] and the option of lengthy [[Security_Guide#Generating_Unbreakable_Passwords|diceware passphrases]].
+}}
+
+
+Open up KeePassX and create an account and password entry for your new e-mail account with the warning above in mind.
+
+When the password has been created in KeePassX (or manually with diceware passphrases):
+
+# Type fake information into the fields under "First Name" and "Last Name." 
+# Type the email name that will be used in the field under "User Name."
+# Select "vfemail.net" in the pull down menu under "Domain name."
+# ''Optional:'' Copy (type) the password (passphrase) created in KeePassX (manually) and paste it into the fields under "Password" and "Confirm Password." <ref>The obvious alternative is to write it down at home and store it in a safe place.</ref>
+# Check the box next to "I'm not a robot" and solve the CAPTCHA puzzles. When a green check appears next to "I'm not a robot," click on the "Create Account"
+button.
+
+''SCREENSHOT 14''
+
+'''7. Confirm the account creation.'''
+
+The next screen will confirm an account has been created and the email address chosen will be displayed on the page. ''Optional:'' Copy that address and paste it into the "description" or "username" fields of KeePassX that are associated with your password immediately. <ref>Alternatively it may be written down.</ref>
+
+''SCREENSHOT 15''
+
+Next, save the KeePassX database. Then, click the X button to close Tor Browser and continue to the next step.
+
+''SCREENSHOT 16''
+
+= Setup the New Email Account =
+
+== Thunderbird First Run ==
+
+'''1. Open Thunderbird.'''
+
+In non-Qubes-Whonix: <code>Click the blue "K" start button</code> -> <code>Select "Mail Client."</code>
+
+In Qubes-Whonix: <code>Click the blue "Q" button</code> -> <code>Click on anon-whonix</code> -> <code>Select "Thunderbird."</code>
+
+''SCREENSHOT 17''
+
+'''2. Close unnecessary windows on the first run.'''
+
+When Thunderbird first opens, two windows will appear inside of it. These should be cancelled. In the window entitled "Mail Account Setup," click the "Cancel" button.
+
+''SCREENSHOT 18''
+
+Next, in the "Enigmail Setup Wizard," click the "Cancel" button.
+
+''SCREENSHOT 19''
+
+When the "Enigmail Alert" window appears, click the "Close" button.
+
+''SCREENSHOT 20''
+
+== Install and Configure TorBirdy ==
+
+'''1. Navigate to the add-ons manager.'''
+
+After reaching the main Thunderbird window, click on the Thunderbird Menu icon which looks like a hamburger symbol - three horizontal lines stacked on top of each other - towards the top right side of the window. Then, click on "Add-ons."
+
+''SCREENSHOT 21''
+
+'''2. Disable plugins.'''
+
+Next, click on "Extensions." Then click the "Disable" buttons next to "Lightning" and "Torbirdy" to disable them. 
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = Lightning is a calendar plugin that is probably unnecessary. A newer version of TorBirdy is installed at a later step and modified to work better with Whonix.
+}}
+
+
+''SCREENSHOT 22''
+
+'''3. Install the latest TorBirdy release and restart Thunderbird.'''
+
+The modified version of TorBirdy will now be installed. Click the gear icon
+towards the top of the window and then click on "Install Add-on From File..."
+
+''SCREENSHOT 23''
+
+In the next window that appears, click on "user" under "Places" towards the left side of the window. Then, double-click on Downloads.
+
+''SCREENSHOT 24''
+
+At the next screen, click on "torbirdy-current.xpi" and then click the "Open" button.
+
+''SCREENSHOT 25''
+
+Next, a "Software Installation" window will appear warning to only install add-ons from authors you trust. After the brief time delay finishes, click the "Install Now" button.
+
+''SCREENSHOT 26''
+
+After being returned to the "Add-ons Manager" in Thunderbird, click the "Restart Now" button that appears towards the top of the window.
+
+''SCREENSHOT 27''
+
+== Thunderbird Second Run ==
+
+When Thunderbird opens, a window will appear asking if you would like a new e-mail address. Click on the button stating "I think I'll configure my account later."
+
+''SCREENSHOT 28''
+
+After being returned to the "Add-ons Manager," at the bottom of the Thunderbird window, a message will appears asking "Would you like to help improve Thunderbird Mail/News by automatically reporting memory usage, performance and responsiveness to Mozilla?" Click on the "No" button.
+
+''SCREENSHOT 29''
+
+Enable the new version by clicking the "Enable" button next to "Torbirdy."
+
+''SCREENSHOT 30''
+
+After TorBirdy is enabled, click on the "Restart now" link that causes Thunderbird to restart.
+
+''SCREENSHOT 31''
+
+== Configure the Thunderbird Email Account ==
+
+'''1. Configure the email account on Thunderbird's third run.'''
+
+The first window that will appear after restarting Thunderbird will prompt to configure an email account. Type a suitable alias in the field next to "Your
+name." This will appear next to the email address in emails you send to others. 
+
+Next, type the vfemail.net email address that was just created into the field next to "Email address." Finally, uncheck "remember password" and click the "Continue" button. 
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = '''IMPORTANT NOTE:''' Never use Thunderbird to save the email account password! Thunderbird does not store passwords in an encrypted format. Thus, if the Whonix-Workstation (<code>anon-whonix</code>) is compromised in the future, an attacker may be able to gain access to the email account if they view Thunderbird's unencrypted password storage file.
+}}
+
+
+''SCREENSHOT 32''
+
+The next window that appears will inform that Torbirdy has blocked the automatic configuration process to protect your anonymity. Click on the "OK" button to continue.
+
+''SCREENSHOT 33''
+
+'''2. Configure Thunderbird to connect to the email Onion Service.'''
+
+In the next window, Thunderbird must be configured to connect to the Onion Service of vfemail.net (change the values as appropriate for alternate providers). The fields to change are highlighted in red below: 
+
+* Type 344c6kbnjnljjzlz.onion in the field next to "Server Name."
+* Type the complete email address into the field next to "User Name."
+* Uncheck the box next to "Leave messages on server."
+* Check the box next to "Empty Trash on Exit" and continue to the next step.
+
+
+''SCREENSHOT 34''
+
+'''3. Configure Thunderbird folders.'''
+
+Click on "Copies and Folders" in the left column. Each option to change is highlighted in red below:
+
+* In the pull down menu next to "'Sent' Folder on," select "Local Folders." 
+* Next, in the pull down menu next to "'Archives' Folder on," select "Local Folders."
+* In the pull down menu next to "'Drafts' Folder on," select "Local Folders."
+* In the pull down menu next to "'Templates' Folder on," select "Local Folders."
+* Check the box next to "Show confirmation dialog when messages are saved." 
+
+
+''SCREENSHOT 35''
+
+'''4. Empty Thunderbird trash on exit.'''
+
+Click on "Local Folders" in the left column. Then, mark the box next to "Empty trash on exit."
+
+''SCREENSHOT 36''
+
+'''5. Configure the outgoing server.'''
+
+Click on "Outgoing Server (SMTP)" in the left column. Then, click on the "Edit" button.
+
+''SCREENSHOT 37''
+
+In the next window that appears:
+
+* Type 344c6kbnjnljjzlz.onion (or alternative .onion) in the field next to "Server Name." 
+* Click on the pulldown menu next to "Connection security" and select "STARTTLS." <ref>Depending on the service provider in use, they may or may not enable TLS/STARTTLS connection security for their Onion domain. The reason is because it is redundant, as end-to-end Tor encryption provides security properties for authenticating to the server. It is best to leave it turned on by default and only disable it if problems arise.</ref>
+* Type the complete email address into the field next to "User Name."
+* Finally, click the "OK" button.
+
+
+''SCREENSHOT 38''
+
+After returning to the "Account Settings" window, click the "OK" button.
+
+''SCREENSHOT 39''
+
+After returning to the "Add-ons Manager" tab of Thunderbird. Click on the "x" in the tab entitled "Add-ons Manager" to close the Add-ons Manager window.
+
+''SCREENSHOT 40''
+
+= Create an OpenPGP Key Pair and Revocation Certificate =
+
+There are two methods for creating an OpenPGP key pair and revocation certificate - using either the Enigmail Setup Wizard, or manually creating them from the command line. The easier Enigmail method is outlined below, but the manual creation of stronger keys from the command line is recommended for high risk users.
+
+== Enigmail Setup Wizard ==
+
+'''1. Start the Enigmail Setup Wizard.'''
+
+After returning to the main Thunderbird window, click the "hamburger" icon that has the 3 horizontal bars towards the upper right corner. 
+
+Then, hover the mouse over "Preferences" and click "Menu Bar" when the next menu appears.
+
+''SCREENSHOT 41''
+
+A menu bar will now appear towards the top of the Thunderbird window. In the menu bar, click "Enigmail" and then click "Setup Wizard."
+
+''SCREENSHOT 42''
+
+'''2. Create the OpenPGP key pair.'''
+
+The Enigmail Setup Wizard will start running. On the next screen, click the circle next to "I prefer an extended configuration" and then click the "Next" button.
+
+''SCREENSHOT 43''
+
+Next, a prompt will appear to either create a GPG keypair or use an existing one. 
+
+Click the circle next to "I want to create a new key pair for signing and encrypting my email" and then click the "Next" button.
+
+''SCREENSHOT 44''
+
+In the next window that appears, a prompt will appear to create a passphrase for the GPG private key. 
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = This passphrase should be  [[Security_Guide#Principles_for_Stronger_Passwords|long]] and  [[Security_Guide#Generating_Unbreakable_Passwords|random]]! You will need this passphrase to sign messages with GPG or to decrypt messages sent to you.
+}}
+
+
+With a strong passphrase, if the machine is ever compromised and someone steals the GPG Secret Key, this provides an extra layer of protection to prevent the attacker from being able to easily decrypt emails sent to you, or to impersonate you by signing emails with the GPG key.
+
+Type an appropriately secure and random passphrase into the fields under "Passphrase" and "Please confirm your passphrase by typing it again." Then, click on the "Next" button.
+
+''Optional:'' Create a new entry in KeePassX to store the GPG passphrase and manually enter the passphrase into the new entry. Then, save the KeePassX database. This will be useful if the GPG passphrase is forgotten. <ref>This is optional because some users may not place trust in the integrity of KeePassX.</ref>
+
+''SCREENSHOT 45''
+
+At this point, Enigmail will begin creating the new GPG key pair. When it finishes, click the "Create Revocation Certificate" button.
+
+''SCREENSHOT 46''
+
+'''3. Create the revocation certificate.'''
+
+A prompt will now appear to enter the passphrase created in a recent earlier step. Paste the GPG passphrase from KeePassX (or enter it manually) in the "Passphrase" field and click the "OK" button.
+
+''SCREENSHOT 47''
+
+The next window will ask where the GPG Revocation Certificate should be stored.
+
+Click on "user" in the left column. Next, replace the spaces and parentheses signs with periods in the default filename for the GPG Revocation Certificate. The spaces and parentheses signs in the default name can make a step later in this guide trickier. Finally, click the "Save" button.
+
+''SCREENSHOT 48''
+
+Next, a message will inform that the GPG revocation certificate was successfully created. Click the "OK" button.
+
+''SCREENSHOT 49''
+
+After returning to the "Key Creation" window, click the "Next" button.
+
+''SCREENSHOT 50''
+
+The next window will state that Enigmail is now ready to use. Click the "Finish" button.
+
+''SCREENSHOT 51''
+
+'''4. Encrypt and store the revocation certificate.'''
+
+The revocation certificate will now be encrypted and stored in the persistent storage directory. The GPG revocation certificate can be used to revoke the public encryption key that is added to key servers, even if access to the GPG Secret Key is lost or the password is forgotten.
+
+If an attacker accesses the GPG revocation certificate, they can revoke the keys. Encrypting the GPG revocation certificate with a passphrase that is easily remembered will protect against an attacker using it to revoke the keys (if
+they manage to steal the revocation key). 
+
+Open up a Konsole / Terminal session to get a command prompt. 
+
+* In non-Qubes-Whonix: <code>Click the "K" start button</code> -> <code>Click "Terminal."</code>
+* In Qubes-Whonix: <code>Click the "Q" taskbar button</code> -> <code>anon-whonix</code> -> <code>Konsole</code>).
+
+
+''SCREENSHOT 52''
+
+When the terminal window opens, create a directory to store the encrypted GPG revocation key in the persistent storage folder. Type.
+
+{{CodeSelect|code=
+mkdir storage/gpg-revoke
+}}
+
+And press <code>Enter.</code>
+
+To encrypt the revocation certificate, in the command below, replace "RevocationCertificateFileName" with the name of the revocation certificate. Type.
+
+{{CodeSelect|code=
+gpg --cipher-algo AES256 --symmetric RevocationCertificateFileName
+}}
+
+Use a strong revocation certificate passphrase.
+
+A prompt will appear to "Enter passphrase." Choose a secure passphrase and enter it into the passphrase field, then click the "OK" button. 
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = This passphrase should be  [[Security_Guide#Principles_for_Stronger_Passwords|strong]] and unique! Do not re-use passphrases for multiple functions or accounts.
+}}
+
+
+If the revocation certificate ever needs to be used, then this passphrase is first used to decrypt it.
+
+''Optional:'' Create a new entry in KeePassX to store the GPG revocation certificate passphrase and manually enter the passphrase into the new entry.  Then, save the KeePassX database. This will be useful in case the passphrase is forgotten.
+
+''SCREENSHOT 53''
+
+A prompt will appear, asking for the passphrase to be re-entered. Type it again into the passphrase field and click the "OK" button.
+
+''SCREENSHOT 54''
+
+Note: If an error appears that states "gpg: error creating passphrase: invalid passphrase," then a typo was made somewhere in the last two steps. Start over from the earlier step "Encrypt the revocation certificate."
+
+If no error messages appear and have returned to the command prompt, type.
+
+{{CodeSelect|code=
+mv *.gpg storage/gpg-revoke
+}}
+
+And press <code>Enter.</code>
+
+Type exit to close the terminal and return to Thunderbird.
+
+In the future, if the revocation key is ever needed, decrypt it by typing.
+
+{{CodeSelect|code=
+gpg -o RevocationCertificateFilename.asc -d \~/storage/gpg-revoke/RevocationCertificateFilename.gpg
+}}
+
+== Manual Creation from the Command Line ==
+
+Advanced users should follow [[Air_Gapped_OpenPGP_Key|these instructions]].
+
+= Configure Final Thunderbird Preferences = 
+
+'''1. Edit the final Thunderbird preferences.'''
+
+Navigate to the main Thunderbird window, then <code>Click on "Edit"</code> -> <code>"Preferences."</code>
+
+''SCREENSHOT 55''
+
+In the window that appears, click the "Advanced" tab. Uncheck the box next to "Enable Global Search and Indexer." This will save disk space. Next, click the "Return Receipts" button.
+
+''SCREENSHOT 56''
+
+In the next window that appears, mark the circle next to "Never send a  return receipt." Then, click the "OK" button.
+
+''SCREENSHOT 57''
+
+After returning to the "Thunderbird Preferences" window, click the "Data Choices" tab. Then, uncheck the box next to "Enable Crash Reporter."
+
+''SCREENSHOT 58''
+
+Next, click the "Privacy" button. Then, uncheck the boxes next to "Remember websites and links I've visited" and "Accept cookies from sites." Then, click the "close" button.
+
+''SCREENSHOT 59''
+
+'''2. Change settings that were not addressed by the Enigmail Setup Wizard.'''
+
+On the main Thunderbird window, click on <code>Edit</code> -> <code>Account Settings.</code>
+
+''SCREENSHOT 60''
+
+In the window that appears:
+
+* Click on "OpenPGP Security" in the left column. 
+* Check the boxes next to "Encrypt messages by default" and "Sign encrypted messages."
+* Uncheck the box next to "Use PGP/MIME by default." 
+* Click the "Enigmail Preferences" button. <ref>Note this action prevents TorBirdy from encrypting the subject line and references headers, but improves confirmation of email encryption prior to it being sent.</ref>
+
+
+''SCREENSHOT 61''
+
+In the "Sending" tab of the "Enigmail Preferences" window, click the circle next to "Manual encryption settings." Then click the circle next to "Always" under "Confirm before sending" and click the "OK" button.
+
+''SCREENSHOT 62''
+
+When returned to the "OpenPGP Options" window, click the "OK" button.
+
+''SCREENSHOT 63''
+
+'''3. Configure Enigmail Key Management.'''
+
+In the menu bar, <code>Click on Enigmail</code> -> <code>Key management.</code>
+
+''SCREENSHOT 64''
+
+In the Key Management window that opens, your key is in bold and the key imported for Sukhbir Singh is also visible. Click on <code>Keyserver</code> -> <code>Search for Keys.</code>
+
+''SCREENSHOT 65''
+
+== Search for GPG keys ==
+
+The next window that appears enables a search for GPG keys hosted on public GPG key servers. It is possible to search for GPG keys by e-mail address, a short key ID or an individual's public GPG fingerprint. 
+
+This step starts a search for the key belong to anonguide@vfemail.net based on  its public GPG fingerprint. Paste.
+
+{{CodeSelect|code=
+64222A88D25730910C47A904BD8083C5237F796B
+}}
+
+In the field next to "Search for key" and click the "OK" button.
+
+''SCREENSHOT 66''
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = Always search with the long fingerprint of a GPG key in the key manager. The results are more secure and work more often. Everyone who shares a public GPG key should share a long fingerprint.
+}}
+
+
+In the next window that appears, an entry for "anonguide@bitmessage.ch" with a Key ID of "237F796B" should be displayed with a check mark next to it. Click the "OK" button to import the key.
+
+''SCREENSHOT 67''
+
+A window should appear stating that the key for "anonguide@vfemail.net" was successfully imported. 
+
+It is not a problem that the e-mail address is different than the "anonguide@bitmessage.ch" listed above when importing the key. Multiple e-mail addresses can be used with a GPG public key. 
+
+"Anonguide@bitmessage.ch" is simply an older e-mail address associated with the key. The important aspect to note is the finger print, which should appear as:
+
+<pre>
+6422 2A88 D257 3091 0C47
+A904 BD80 83C5 237F 796B</pre>
+
+Click the "OK" button to continue.
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = If the fingerprint is different than what is shown above, delete the key for the "anonguide" e-mail address in the key manager and start over from the "Enigmail Key Management" step. 
+}}
+
+
+''SCREENSHOT 68''
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = '''Important:''' It is critical to verify any GPG public key that is added to the keyring with a fingerprint provided by the person you intend to communicate with.
+}}
+
+
+It is important to realize that anyone can add a GPG public key to a key server and claim to belong to a certain email account. Consider the following attack vector:
+
+# An attacker is monitoring an email account through surveillance.
+# An encryption key is mistakenly used that was created to falsely correspond to the intended recipient of communications. 
+# The attacker is now able to read the user's email.
+
+== Export the Public Key to a GPG Server ==
+
+Right-click on the entry for the email address and click "Upload Public Keys to Keyserver."
+
+''SCREENSHOT 69''
+
+A progress meter will then appear. If the upload is successful, ''no'' confirmation message will be received. 
+
+''SCREENSHOT 70''
+
+To check that the GPG public key was successfully uploaded to the keyserver, do a search for your own key the same way you searched for the key belonging to
+"anonguide@vfemail.net" in an earlier step.
+
+To inspect the GPG fingerprint:
+
+<code>Right-click on the GPG key</code> -> <code>Click "Key Properties."</code> 
+
+The GPG fingerprint will appear towards the top of the window. Highlight it and
+then copy it to the clipboard. 
+
+To search for it in a manner similar to the earlier step, paste it into the search field and simply remove the spaces between the letters and numbers.
+
+== Public GPG Key Signature Block ==
+
+'''1. Locate the key's fingerprint.'''
+
+The following steps configure Thunderbird to inform people about the public GPG key via imbedding it in the email signature. 
+
+Double-click on the key entry for the vfemail.net (or alternate) email address to open the "Key Properties" window.
+
+''SCREENSHOT 71''
+
+In the window that appears, use the mouse to highlight the text next to "Fingerprint." Then, right-click the highlighted text and click "Copy."
+
+''SCREENSHOT 72''
+
+When the GPG fingerprint has been copied, click the "Close" button.
+
+''SCREENSHOT 73''
+
+Now, close the Enigmail Key Management window. Click the "X" in the upper right corner of the window.
+
+''SCREENSHOT 74''
+
+After returning to the main Thunderbird window, click on <code>Edit</code> -> <code>Account Settings.</code>
+
+''SCREENSHOT 75''
+
+'''2. Create a PGP email signature.'''
+
+A signature is now created that will be included in all outgoing mail, which  contains both the GPG public key ID and the GPG public key fingerprint. In the next window that appears:
+
+* Click in the text field located underneath "Signature text."
+* Paste the contents of the clipboard on to two separate lines in the text field.
+* On the first line:
+** Type "GPG Public Key:" before the fingerprint that was just pasted. 
+** Delete all but the last 16 characters of the fingerprint from this line. <ref>In the example below, the fingerprint consists of 10 groups of 4 characters. Delete the first six groups, then delete the spaces in between the remaining groups of characters.</ref>
+** Type "0x" (that is the numeral zero) directly in front of the remaining characters. <ref>In the example below, that results in "0xE2A4440ABE1DE630." The end result of what is created here is the GPG public key ID number. People can enter that into various GPG key servers to find the public key and send you encrypted messages.</ref>
+* On the second line, type "Fingerprint:" in front of the characters pasted there. This will help enable people who download the GPG public key to verify that it is they key you wish them to use. When finished, click the "OK" button.
+
+
+''SCREENSHOT 76''
+
+= Compose and Send Encrypted Email =
+
+This section will test the correct sending of the first encrypted email to anonguide@vfemail.net. 
+
+'''1. Compose a new email message.'''
+
+Click the "Write" button located in the upper left region of the window.
+
+''SCREENSHOT 77''
+
+A new window will open for you to compose an email message. In the "To" field, type.
+
+{{CodeSelect|code=
+anonguide@vfemail.net
+}}
+
+In the "Subject" field, type.
+
+{{CodeSelect|code=
+key test
+}}
+
+Next, type an innocuous message into the message body. Do not go into great detail; a large amount of text is unnecessary.
+
+The point of this email is to test the encryption key and to become familiar with a common encrypted email exchange. Take note of the padlock and pencil icons located towards the upper-left side of the window next to the "Enigmail:" header. These icons should be marked as active by a gray square around them with the padlock closed, which means the message will be signed and encrypted (if you possess a corresponding public key). To the far right of these icons, a status message also informs that the message will be signed and encrypted.
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = In this configuration, '''the Subject field is never encrypted''', even when the message and attachments are encrypted. <ref>The TorBirdy version currently installed supports this feature, but this was deactivated in earlier configuration steps.</ref> Therefore, be wary of any information entered into in a subject field.
+}}
+
+
+'''2. Send the email message.'''
+
+When the message is ready for sending, click the "Send" button.
+
+''SCREENSHOT 78''
+
+A prompt will appear to enter the GPG passphrase. This makes it possible for the message sent to be signed. When a message is signed, this provides a mechanism for the email recipient to be confident that the sender actually wrote the email, and not an impostor. Type the passphrase and click the "OK" button.
+
+''SCREENSHOT 79''
+
+After typing in the passphrase, a confirmation window will appear asking if a signed and encrypted email should be sent to anonguide@vfemail.net. Take note of the body of the email message under that window. This text should be clearly visible: 
+
+<pre>-----BEGIN PGP MESSAGE-----</pre>
+
+Followed by a series of random characters. This proves the email has been encrypted and it is safe to click the "Send Message" button. However, if the original text of the message is visible, <u>then it is not encrypted and the "Cancel" button should be clicked.</u>
+
+''SCREENSHOT 80''
+
+'''3. Add a security exception.'''
+
+The first time an email is sent, an "Add Security Exception" window will next appear (this is expected). The warning appears because the SSL certificate that was received is from vfemail.net (or alternate provider), but Thunderbird is configured to connect to the 344c6kbnjnljjzlz.onion domain. 
+
+Click the "Confirm Security Exception" button; this action is not required again in the future.
+
+''SCREENSHOT 81''
+
+'''4. Resend the email message.'''
+
+As a result of the issue with the SSL certificate in the last step, the sending of the message will fail. Select the Thunderbird "Write: key test" window from the task bar.
+
+''SCREENSHOT 82''
+
+Next, click the "OK" button in the "Send Message Error" window that appears.
+
+''SCREENSHOT 83''
+
+After returning to the email composition window, click the "Send" button again.
+
+''SCREENSHOT 84''
+
+Finally, a prompt will appear to confirm that a signed and encrypted email should be sent. Click the "Send Message" button.
+
+''SCREENSHOT 85''
+
+Next, a prompt will appear to enter the password for the vfemail.net account. This will happen each time Thunderbird is started and the first email is sent, since the password is not stored by the program. However, once the password is entered, Thunderbird will remember it for the session. The same process applies to receiving email. 
+
+When asked to enter the password, copy it from KeePassX (or refer to your physical record), paste it into the password field and click the "OK" button.
+
+''SCREENSHOT 86''
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Do not use Thunderbird's Password Manager to store the password! Thunderbird does not encrypt stored passwords by default. Thus, if an attacker compromises the machine and manages to access the Thunderbird folder, they will gain the password to the email account if it was stored in Thunderbird.
+}}
+
+
+After returning to the main Thunderbird window, a new "Sent" folder should appear in the Local Folders on the left side of the window, indicating the email to anonguide@vfemail.net was sent.
+
+''SCREENSHOT 87''
+
+'''5. ''Optional:'' Send the GPG public key as an attachment.'''
+
+Sometimes it is necessary to send an email to an address where the GPG public key is not in the keyring. If the GPG public key for the e-mail address cannot be located through a search, it is possible to send them your public key.
+
+After reaching the new mail composition window, it is possible to send the GPG public key to the recipient as an attachment. Since this message will not be encrypted, click on the padlock icon next to "Enigmail:" so it looks like an open lock. Then, click on the "Attach My Public Key" button before sending the email. 
+
+''SCREENSHOT 88''
+
+After composing the message, click the "Send" button.
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = Remember that this email is unencrypted. Therefore it could be read if someone intercepts the email at some point. Be wary of what information you share in an unencrypted email.
+}}
+
+= Download and Read Encrypted Email =
+
+In the near future, the user will want to check if anyone has sent email messages or if a response was received to the test email composed in the previous section. 
+
+'''1. Check for new email messages.'''
+
+From the main Thunderbird window, click the "Get Messages" icon to check for any new email messages on the server and download them.
+
+''SCREENSHOT 89''
+
+'''2. Add a security exception.'''
+
+When first checking for mail on vfemail.net, another "Add Security Exception" window will appear (this is expected). The warning is because the SSL certificate received at an earlier step is from vfemail.net, but the email desktop client is connecting to the 344c6kbnjnljjzlz.onion domain (or alternate .onion address). Click the "Confirm Security Exception" button; this action is not needed again in the future.
+
+''SCREENSHOT 90''
+
+3. Read email messages in the inbox.
+
+After returning to the main Thunderbird window, click the "Get Messages" button again.
+
+''SCREENSHOT 91''
+
+A prompt will appear to enter the password for the email account. After entering the password, Thunderbird will remember it for the session. When asked to enter the password, copy it from KeePassX (or from physical records), paste it into the password field and click the "OK" button.
+
+''SCREENSHOT 92''
+
+When new emails are received, a counter will appear next to "Inbox" in the left column. Click on "Inbox" to go to the list of new emails. Then, click the email that you wish to read.
+
+''SCREENSHOT 93''
+
+If the message received was encrypted with your public key, the GPG passphrase is needed to decrypt it. If a window like the one in the image below appears, type the GPG passphrase and click the "OK" button.
+
+''SCREENSHOT 94''
+
+The email will now display in the lower portion of the Thunderbird window. From here, the user has the option of replying, forwarding, deleting, and so on. If a message is read that was sent from anonguide@vfemail.net, the encryption configuration is working correctly.
+
+''SCREENSHOT 95''
+
+= Final Warnings =
+
+If all steps have been successfully completed then the user now has an anonymous email account paired with strong encryption.
+
+It should be emphasized this wiki entry is not a substitute for an all-inclusive tutorial on the safest way to use GPG/PGP encryption. Numerous advanced resources and expert opinions exist on the Internet, and these can provide additional tips that might better address a user's perceived threat model and circumstances. <ref>For instance, users at high risk might generate a strong [[https://www.whonix.org/wiki/Air_Gapped_OpenPGP_Key|airgapped OpenPGP key pair]] on the command line for greater security, rather than rely on Enigmail.</ref>  However, this tutorial provides a solid foundation that lays down the basic fundamentals of using email encryption. 
+
+Finally, always heed the following warnings regarding email:
+
+* E-mail is a ''very insecure'' means of communication where anonymity is concerned. A lot of metadata is leaked with e-mail, so it should be used sparingly and only when strictly necessary.
+
+* Do not contact people you know in real life at non-anonymous email addresses with the email account that was created here. Always separate real world identities from online identities used with Whonix.
+
+* Be circumspect about sharing personal information in email! Encrypted email does not protect against the email recipient storing personal emails in an unencrypted format. Nor does encryption protect against an email recipient maliciously using personal information in order to exploit you.
+
+* Never include sensitive information in an email subject, '''even if the email is encrypted!''' Subject headers in email are not encrypted in this configuration, despite the fact the rest of the message is.
+
+* If an email is sent to a recipient without encryption, assume it can be read by anyone!
+
+* Utilize the Tor Onion Service (with the .onion extension) whenever it is made available by the email provider. After first confirming the domain is controlled by the email provider, it will afford greater protection than a clearnet address.
+
+= License =
+
+This wiki entry is based on chapter 4.5 of ''A Beginner Friendly Comprehensive Guide to Installing and Using a Safer Anonymous Operating System'', which can be found [http://yuxv6qujajqvmypv.onion here]. This material has been used with the author's permission. <ref>http://forums.whonix.org/t/tor-project-support-of-whonix/5030</ref>
+
+= Footnotes =
+<references/>
+
+{{Footer}}
+
+[[Category:Documentation]]
