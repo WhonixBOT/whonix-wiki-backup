@@ -191,7 +191,7 @@ Complete the following steps on Whonix-Gateway ([[Qubes-Whonix]]: <code>sys-whon
 
 4. Before leaving this location, disable Tor and add a different bridge address if traveling to a different area. To revert to the usual guard nodes used at home, remove the torrc bridge settings before enabling the network, or rollback to a VM snapshot created at home.
 
-Copy Tor Configuration files and Settings to Another sys-whonix Instance 
+=== Copy Tor Configuration files and Settings to Another sys-whonix Instance ===
 
 {{mbox
 | type      = notice
@@ -200,13 +200,16 @@ Copy Tor Configuration files and Settings to Another sys-whonix Instance
 }}
 
 
-Users are strongly encouraged to follow the instructions as they are written to avoid unforeseen consequences. If users where to use a alternate command to remove the Tor state folder. The outcome may be broken file persistence across reboots. This is owing to the fact that Qubes-Whonix uses bind-dirs file persistence for the Tor folder and other select directories. This in turn, at the very least would require users to unmount, and then again mount the Tor folder in the same way as bind-dirs does. This would likely be very complicated and time consuming.
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       ='''Warning:''' Users are strongly encouraged to follow the instructions as they are written to avoid unforeseen consequences.<ref>If users where to use a alternate command to remove the Tor state folder. The outcome may be broken file persistence across reboots. This is owing to the fact that [[Qubes-Whonix]] uses <code>bind-dirs</code> file persistence for the Tor folder and other select directories. This in turn, at the very least would require users to unmount, and then again mount the Tor folder in the same way as <code>bind-dirs</code> does. This would likely be very complicated and time consuming.</ref> 
+}}
 
 
 On occasion, [[Qubes-Whonix]] users may want to copy the Tor state along with custom configuration options from an existing <code>sys-whonix</code> ProxyVM to another <code>sys-whonix</code> instance. For example, this is useful for testing later Whonix releases without aiding deanonymization attempts by advanced adversaries, <ref>As the same Tor entry guard is used.</ref> or creating an identical backup that does not share any other persistent data, except for Tor state and custom torrc options.
 
 
-Copy Tor State Files to Another sys-whonix Instance 
+==== Copy Tor State Files to Another sys-whonix Instance ====
 
 The following instructions copy the Tor state from <code>sys-whonix-old</code> to <code>sys-whonix-new</code>.
 
@@ -284,53 +287,59 @@ sudo systemctl start tor@default
 whonixcheck
 }}
 
-Copy Tor Configuration Options (torrc) to Another sys-whonix 
+==== Copy Tor Configuration Options (torrc) to Another sys-whonix ====
 
 
-Note: Due to the differences in Whonix 13 and 14 torrc files. It is recommended Qubes secure copy/paste be used to migrate only the custom torrc option between the two releases. 
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       ='''Note:''' Due to the differences in Whonix 13 and 14 torrc files. It is recommended [https://qubes-os.org/doc/copy-paste/ Qubes secure copy/paste] be used to migrate <i>only</i> the custom torrc option between the two releases. 
+}}
+<br>
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       ='''Note:'''  For Whonix 14 and later releases, all user unique Tor configurations (torrc) options should be stored in <i>/usr/local/etc/torrc.d/50_user.conf</i> and not anywhere else. Instructions should be modified to use this torrc file as needed.
+}}
 
 
-Note:  For Whonix 14 and later releases, all user unique Tor configurations (torrc) options should be stored in /usr/local/etc/torrc.d/50_user.conf and not anywhere else. Instructions should be modified to use this torrc file as needed.
+The following instructions copy the custom Tor configuration options (torrc) from <code>sys-whonix-old</code> to <code>sys-whonix-new</code>.
 
+'''1.  In <code>sys-whonix-old</code>, copy the <i>torrc</i> options across to <code>sys-whonix-new</code>
 
-
-The following instructions copy the custom Tor configuration options (torrc) from sys-whonix-old to sys-whonix-new.
-
-1.  In sys-whonix-old, copy the torrc options across to sys-whonix-new
-
-
+{{CodeSelect|code=
 qvm-copy /etc/tor/torrc sys-whonix-new
-
+}}
 
 If the following error appears, it can be safely ignored (hit "OK" when prompted).
 
   qfile-agent: Fatal error: stat “VM” (error type: No such file or directory)
 
-2. In sys-whonix-new, print the QubesIncoming directory to ensure the torrc options were copied over successfully
+'''2. In <code>sys-whonix-new</code>, print the <i>QubesIncoming</i> directory to ensure the <i>torrc</i> options were copied over successfully
 
-
+{{CodeSelect|code=
 cat ~/QubesIncoming/sys-whonix-old/torrc
+}}
 
+'''3. In <code>sys-whonix-new</code>, move the <i>torrc</i> options from the <i>QubesIncoming</i> directory to the <i>torrc</i> file
 
-3. In sys-whonix-new, move the torrc options from the QubesIncoming directory to the torrc file
-
-
+{{CodeSelect|code=
 sudo mv ~/QubesIncoming/sys-whonix-old/torrc /etc/tor/torrc
+}}
 
+'''4. In <code>sys-whonix-new</code>, restart Tor so the newly copied <i>torrc</i> options take affect
 
-4. In sys-whonix-new, restart Tor for the newly copied torrc options to take affect
-
-
+{{CodeSelect|code=
 sudo systemctl restart tor@default
+}}
 
+'''5. In <code>sys-whonix-new</code>, run [[whonixcheck]] to verify Tor is functioning properly.<ref>If Tor has not running after restart, users can verify the newly migrated torrc options are valid with this command <code>sudo -u debian-tor tor --verify-config</code>The output should be similar to the following.
+<br><i>Sep 17 17:40:41.416 [notice] Read configuration file "/etc/tor/torrc".
+Configuration was valid</i></ref>
 
-5. In sys-whonix-new, run whonixcheck to verify Tor is functioning properly. If Tor has not running after restart, users can verify the newly migrated torrc options are valid with this command sudo -u debian-tor tor --verify-config The output should be similar to the following.
-Sep 17 17:40:41.416 [notice] Read configuration file "/etc/tor/torrc".
-Configuration was valid
-
-
+{{CodeSelect|code=
 whonixcheck
-
+}}
 
 === Fresh Tor Entry Guards by Regenerating the Tor State File ===
 
