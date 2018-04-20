@@ -289,17 +289,22 @@ whonixcheck
 
 ==== Copy Tor Configuration Options (torrc) to Another sys-whonix ====
 
+Note: Users may also migrate Whonix 13 torrc options to Whonix 14 based sys-whonix instances. To do this users must revise the instructions to use /usr/local/etc/torrc.d/50_user.conf as the destination for the torrc options in place of /etc/tor/torrc. When users reach step 3 in the instructions, move the torrc options from the QubesIncoming directory to the torrc file
+sudo mv ~/QubesIncoming/sys-whonix-old/torrc /usr/local/etc/torrc.d/50_user.conf
 
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       ='''Note:''' Due to the differences in Whonix 13 and 14 torrc files. It is recommended [https://qubes-os.org/doc/copy-paste/ Qubes secure copy/paste] be used to migrate <i>only</i> the custom torrc option between the two releases. 
-}}
+For migration between Whonix 14 based sys-whonix VMs, use /usr/local/etc/torrc.d/50_user.conf as both the source and destination file for torrc options.
+Users should revise instructions as follows
+Step 1 qvm-copy /usr/local/etc/torrc.d/50_user.conf sys-whonix-new
+Step 2 cat ~/QubesIncoming/sys-whonix-old/50_user.conf
+Step 3 sudo mv ~/QubesIncoming/sys-whonix-old/50_user.conf /usr/local/etc/torrc.d/50_user.conf 
+Step 4 sudo chown root:root /usr/local/etc/torrc.d/50_user.conf
+
+
 <br>
 {{mbox
 | type      = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       ='''Note:'''  For Whonix 14 and later releases, all user unique Tor configurations (torrc) options should be stored in <i>/usr/local/etc/torrc.d/50_user.conf</i> and not anywhere else. Instructions should be modified to use this torrc file as needed.
+| text       ='''Note:'''  For Whonix 14 and later releases, all user unique Tor configurations (torrc) options should be stored in <i>/usr/local/etc/torrc.d/50_user.conf</i> and not anywhere else.
 }}
 
 
@@ -327,13 +332,19 @@ cat ~/QubesIncoming/sys-whonix-old/torrc
 sudo mv ~/QubesIncoming/sys-whonix-old/torrc /etc/tor/torrc
 }}
 
-'''4. In <code>sys-whonix-new</code>, restart Tor so the newly copied <i>torrc</i> options take affect
+4. In sys-whonix-new, change ownership of the Tor configuration file
+
+
+sudo chown root:root /etc/tor/torrc
+
+
+'''5. In <code>sys-whonix-new</code>, restart Tor so the newly copied <i>torrc</i> options take affect
 
 {{CodeSelect|code=
 sudo systemctl restart tor@default
 }}
 
-'''5. In <code>sys-whonix-new</code>, run [[whonixcheck]] to verify Tor is functioning properly.<ref>If Tor has not running after restart, users can verify the newly migrated torrc options are valid with this command <code>sudo -u debian-tor tor --verify-config</code>The output should be similar to the following.
+'''6. In <code>sys-whonix-new</code>, run [[whonixcheck]] to verify Tor is functioning properly.<ref>If Tor is not running after restart, users can verify the newly migrated torrc options are valid with this command <code>sudo -u debian-tor tor --verify-config</code>The output should be similar to the following.
 <br><i>Sep 17 17:40:41.416 [notice] Read configuration file "/etc/tor/torrc".
 Configuration was valid</i></ref>
 
