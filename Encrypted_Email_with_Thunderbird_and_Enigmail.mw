@@ -78,11 +78,18 @@ Operational security is imperative to maintain the integrity of properly encrypt
 {{mbox
 | type      = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = The following instructions install the latest available version of TorBirdy from The Tor Project so manual changes to the display character set and key server options are not required. Users who prefer the version available from Debian stable (jessie - v0.1.3-1; stretch v0.2.1-1) can instead install it from the command line.
+| text       = The following instructions install the latest available version of TorBirdy from The Tor Project so manual changes to the display character set and key server options are not required. Users who prefer the version available from Debian stable (jessie v0.1.3-1; stretch v0.2.1-1) can instead install it from the command line.
 }}
 
 
 '''1. Open a Konsole session in Whonix-Workstation.'''
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = '''Tip:''' Users should create a dedicated VM / AppVM solely for the use of encrypted email with Thunderbird.
+}}
+
 
 [[Qubes-Whonix]]: <code>anon-whonix</code> -> <code>Konsole</code>. 
 
@@ -115,7 +122,7 @@ Note: [https://trac.torproject.org/projects/tor/wiki/torbirdy TorBirdy] is a des
 Type.
 
 {{CodeSelect|code=
-scurl https://www.torproject.org/dist/torbirdy/torbirdy-current.xpi
+wget https://www.torproject.org/dist/torbirdy/torbirdy-current.xpi
 }}
 
 And press <code>Enter</code>.
@@ -125,7 +132,7 @@ And press <code>Enter</code>.
 Type.
 
 {{CodeSelect|code=
-scurl https://www.torproject.org/dist/torbirdy/torbirdy-current.xpi.asc
+wget https://www.torproject.org/dist/torbirdy/torbirdy-current.xpi.asc
 }}
 
 And press <code>Enter</code>.
@@ -146,7 +153,23 @@ When the process completes, the screen should be similar to the screenshot below
 
 [[File:Tempest_screenshot_2.png]]
 
-'''6. Verify the integrity of TorBirdy.'''
+'''6. Verify the public key fingerprint.'''
+
+It is important to verify the fingerprint of the key that was imported. Run.
+
+{{CodeSelect|code=
+gpg --fingerprint 0xE4ACD3975427A5BA8450A1BEB01C8B006DA77FAA
+}}
+
+At the time of writing, the following output should appear.
+
+<pre>pub   4096R/0xB01C8B006DA77FAA 2016-02-25 [expires: 2020-02-24]
+         Key fingerprint = E4AC D397 5427 A5BA 8450  A1BE B01C 8B00 6DA7 7FAA
+uid                 [ unknown] Sukhbir Singh <azadi@riseup.net>
+uid                 [ unknown] Sukhbir Singh <sukhbir@torproject.org>
+sub   4096R/0x1AF20C043D9F9289 2016-02-25 [expires: 2020-02-24]</pre>
+
+'''7. Verify the integrity of TorBirdy.'''
 
 Type.
 
@@ -174,12 +197,20 @@ Delete <code>torbirdy-current.xpi.asc</code> and <code>torbirdy-current.xpi</cod
 
 If this occurs, delete the files and either wait 10-15 minutes for the Tor circuits to change, or open up the "Arm Tor Controller" in the Whonix Gateway (<code>sys-whonix</code>) and type "n" to create new Tor circuits. Then, repeat steps 3-6 after a random period of time has elapsed.
 
-'''7. Modify TorBirdy to allow for importation/exportation of GPG keys in Thunderbird.'''
+If the following message appears:
+
+<pre>gpg: no valid OpenPGP data found.
+gpg: the signature could not be verified.
+Please remember that the signature file (.sig or .asc) should be the first file given on the command line.</pre>
+
+Then delete the TorBirdy files, download them again and retry the verification step.
+
+'''8. Modify TorBirdy to allow for importation/exportation of GPG keys in Thunderbird.'''
 
 {{mbox
 | type      = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = Steps 7 to 14 only need to be completed if TorBirdy was installed from Debian jessie or stretch stable repositories. <ref>TorBirdy v2.4 and later work without these modifications.</ref> <ref>Without modifications, Enigmail cannot fetch GPG keys because TorBirdy points to a local proxy running on port 8118, which is not running in the Whonix-Workstation. Prior to TorBirdy v2.4, the modification of the <code>--display-charset</code> and <code>--keyserver-options</code> lines allow for the fetching or uploading of GPG keys with Engimail and Thunderbird.</ref>
+| text       = Steps 8 to 15 only need to be completed if TorBirdy was installed from Debian jessie or stretch stable repositories. <ref>TorBirdy v2.4 and later work without these modifications.</ref> <ref>Without modifications, Enigmail cannot fetch GPG keys because TorBirdy points to a local proxy running on port 8118, which is not running in the Whonix-Workstation. Prior to TorBirdy v2.4, the modification of the <code>--display-charset</code> and <code>--keyserver-options</code> lines allow for the fetching or uploading of GPG keys with Engimail and Thunderbird.</ref>
 }}
 
 {{mbox
@@ -198,7 +229,7 @@ Type.
 
 And press <code>Enter</code>.
 
-'''8. Maximize the terminal window.'''
+'''9. Maximize the terminal window.'''
 
 The part of the file that will be edited is moved to the right by spaces. Therefore it is easier to edit if the terminal window is maximized. 
 
@@ -208,7 +239,7 @@ Click on the up-arrow ([[Qubes-Whonix]]: "+" key) in the upper right side of you
 
 [[File:Tempest_screenshot_4.png]]
 
-9. Edit the <code>torbirdy.js</code> file.
+10. Edit the <code>torbirdy.js</code> file.
 
 Type.
 
@@ -218,7 +249,7 @@ nano components/torbirdy.js
 
 And press <code>Enter</code>.
 
-'''10. Open a search routine.'''
+'''11. Open a search routine.'''
 
 Press the <code>LEFT-CTRL</code> + <code>W</code> keys simultaneously to open a search routine. Type.
 
@@ -232,7 +263,7 @@ And press <code>Enter</code>.
 
 [[File:Tempest_screenshot_5.png]]
 
-'''11. Modify the display character set.'''
+'''12. Modify the display character set.'''
 
 The cursor will appear on a line that shows <code>"--display-charset utf-8 " +</code> as per the screen shot below.
 
@@ -252,7 +283,7 @@ Immediately following the quotation mark so it looks like the screen shot below.
 
 [[File:Tempest_screenshot_7.png]]
 
-'''12. Modify the keyserver options.'''
+'''13. Modify the keyserver options.'''
 
 Move the cursor down 2 lines to the line beginning with <code>"--keyserver-options"</code> as pictured below.
 
@@ -272,13 +303,13 @@ So it appears before the quotation mark as pictured below.
 
 [[File:Tempest_screenshot_9.png]]
 
-'''13. Save the modified file.'''
+'''14. Save the modified file.'''
 
 Press <code>LEFT-CTRL</code> + <code>X</code> buttons at the same time and type <code>Y</code> when asked about saving the modified buffer.
 
 When prompted for the file name to write, press <code>Enter</code>.
 
-'''14. Add the modified file to the torbirdy-current.xpi install package.'''
+'''15. Add the modified file to the torbirdy-current.xpi install package.'''
 
 Type.
 
@@ -288,7 +319,7 @@ Type.
 
 And press <code>Enter</code>.
 
-'''15. Close the Konsole session.'''
+'''16. Close the Konsole session.'''
 
 Type.
 
