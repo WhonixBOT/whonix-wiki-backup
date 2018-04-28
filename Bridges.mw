@@ -118,8 +118,10 @@ The Tor Project provides a database of [https://bridges.torproject.org/bridges?t
 Do not select the "IPv6 compatible" check box when [https://bridges.torproject.org/options sourcing bridges] from the database, as they [https://phabricator.whonix.org/T509 cannot be used in Whonix] yet.
 
 = How to Use Bridges in Whonix =
-== Introduction ==
-This section will explain how to use obfuscated bridges in Whonix.
+== Use Bridges in Whonix 13 ==
+This section will explain how to use obfuscated bridges in Whonix 13.
+
+{{Code2|obfs2}}, {{Code2|obfs3}} and {{Code2|obfs4}} are the three types of bridges can be used in Whonix 13.
 
 {{mbox
 | type      = notice
@@ -127,50 +129,123 @@ This section will explain how to use obfuscated bridges in Whonix.
 | text       = '''Tip:''' Until Whonix 14 is released, there is no wizard available to help set up bridges before connecting to Tor. The graphical [[Tor_Browser#tor-launcher_vs_torbrowser-launcher|tor-launcher]] ([[Dev/tor-launcher|screenshots]]) that some users might know from The Tor Project's Tor Browser cannot be used in Whonix. 
 }}
 
+The only way to use Tor bridges in Whonix 13 is to edit {{Code2|/etc/tor/torrc}} file within the Whonix-Gateway. The process is identical to the steps completed on a Debian platform because [[About#Based_on_Debian|Whonix is based on Debian]].
 
-{{Code2|obfs2}}, {{Code2|obfs3}} and {{Code2|obfs4}} bridges can currently be configured on Whonix-Gateway. From Whonix 14, {{Code2|meek_lite}} bridges can also be used in Whonix-Gateway. The process is identical to the steps completed on a Debian platform because [[About#Based_on_Debian|Whonix is based on Debian]]. From Whonix 14, bridges can be configured easily using [[Anon_Connection_Wizard|Anon Connection Wizard]]. Alternatively, for all Whonix versions, Tor bridges can be configured by editing {{Code2|/etc/tor/torrc}} within the Whonix-Gateway. Click the expand button to see instructions for each method.
+==== Step 1: Access {{Code2|/etc/tor/torrc}} to Add Bridges ====
+{{Open_/etc/tor/torrc}}
 
-== Option 1: Use {{Code2|Anon Connection Wizard}} ==
+==== Step 2: Edit {{Code2|/etc/tor/torrc}} ====
+
+Open {{Code2|/etc/tor/torrc}} in an editor, then copy and paste the following text to enable the use of obfs2, obfs3 and obfs4 bridges.
+
+{{CodeSelect|code=
+UseBridges 1
+ClientTransportPlugin obfs2,obfs3,obfs4 exec /usr/bin/obfs4proxy
+}}
+
+Now add the bridge IP addresses you discovered in the section [[#Finding_a_bridge_and_choosing_the_right_protocol|Finding a Bridge and Choosing the Right Protocol]] to the file.
+
+Copy and paste those IP addresses to the very bottom of {{Code2|/etc/tor/torrc}}, <u>after the ClientTransportPlugin entries</u>. Make sure to manually type the text "bridge" at the beginning of each line entry.
+
+In the <i>obfs3</i> and <i>obfs4</i> examples below:
+* '''Do not copy and paste this list of bridge entries to the torrc file.''' They will not work.
+* Make sure to have already retrieved your own [https://bridges.torproject.org/bridges?transport=obfs3 obfs3 bridges] or better yet [https://bridges.torproject.org/bridges?transport=obfs4 obfs4 bridges] from The Tor Project.
+* Use '''either''' the <i>obfs3</i> or <i>obfs4</i> protocol, not both.
+* '''Capitalization in the torrc file matters.''' For example, bridges will not connect if you type "Bridge" instead of "bridge".
+
+{{Code2|Obfs3}} example text to add to {{Code2|/etc/tor/torrc}}.
+
+{{CodeSelect|code=
+bridge obfs3 109.195.132.77:22321 4352e58420e68f5e40bf7c74faddccd9d1349413
+bridge obfs3 55.32.27.22:38123  4352e58420e68f5e40bf7c74faddccd9d1349413
+bridge obfs3 192.24.131.513:62389 4352e58420e68f5e40bf7c74faddccd9d1349413
+}}
+
+{{Code2|Obfs4}} example text to add to {{Code2|/etc/tor/torrc}}.
+
+{{CodeSelect|code=
+bridge obfs4 192.235.207.85:42086 0EEB10BF4B4FAF56D46E cert=oue8sYYw5wi4n3mf2WDOg iat-mode=0
+bridge obfs4 161.217.177.95:10703 B3B8009D01BB7E5FDFAEC cert=4RaIqGiOytEXm6Hw iat-mode=0
+}}
+
+When {{Code2|/etc/tor/torrc}} editing is finished, save and exit.
+
+<pre>
+<Ctrl-X> --> press Y --> <Enter>
+</pre>
+
+The sample text for a complete {{Code2|obfs4}} torrc file is below. Check your file is similar, except for the specific bridge entries.
+<pre>
+# This file is part of Whonix
+# Copyright (C) 2012 - 2013 adrelanos
+# See the file COPYING for copying conditions.
+
+# Use this file for your user customizations.
+# Please see /etc/tor/torrc.examples for help, options, comments etc.
+
+# Anything here will override Whonix's own Tor config customizations in /usr/share/tor/tor-service-defaults-torrc
+
+# Enable Tor through whonixsetup or manually uncomment "DisableNetwork 0" by
+# removing the # in front of it.
+DisableNetwork 0
+UseBridges 1
+ClientTransportPlugin obfs2,obfs3,obfs4 exec /usr/bin/obfs4proxy
+
+bridge obfs4 192.235.207.85:42086 0EEB10BF4B4FAF56D46E cert=oue8sYYw5wi4n3mf2WDOg iat-mode=0
+bridge obfs4 34.218.26.20:43263 DD21A551767816A0C9495 cert=7qzS6KASquPvJU82Fm7qoJw iat-mode=0
+bridge obfs4 161.217.177.95:10703 B3B8009D01BB7E5FDFAEC cert=4RaIqGiOytEXm6Hw iat-mode=0
+</pre>
+
+==== Step 3: Enable Tor ====
+Follow this procedure if it has not been previously completed.
+
+{{Enable_Tor}}
+
+==== Step 4: Have {{Code2|/etc/tor/torrc}} Changes Take Effect ====
+
+{{Reload_Tor}}
+
+== Use Bridges in Whonix 14 ==
+
+This section will explain how to use obfuscated bridges in Whonix 14.
+
+In addition to the three types of bridges ({{Code2|obfs2}}, {{Code2|obfs3}} and {{Code2|obfs4}}) that can be used in Whonix 13, from Whonix 14, {{Code2|meek_lite}} bridges can also be used in Whonix-Gateway.
+
+There are two different ways to configure bridges since Whonix 14. One can either use the GUI application [[Anon_Connection_Wizard|Anon Connection Wizard]], or edit {{Code2|/usr/local/etc/torrc.d/50_user.conf}} file within the Whonix-Gateway. Click the expand button to see instructions for each method.
+
+=== Option 1: Use {{Code2|Anon Connection Wizard}} ===
 
 <div class="toccolours mw-collapsible mw-collapsed">
 <div class="mw-collapsible-content">
-=== Step 1: Start Anon Connection Wizard ===
+
+==== Step 1: Start Anon Connection Wizard ====
 {{Start_Anon_Connection_Wizard}}
 
-=== Step 2: Use the Bridge Configuration Page ===
+==== Step 2: Use the Bridge Configuration Page ====
 {{Anon_Connection_Wizard_Use_Bridges}}
 </div>
 </div>
 
-== Option 2: Edit {{Code2|/usr/local/etc/torrc.d/50_user.conf}}  ==
+=== Option 2: Edit {{Code2|/usr/local/etc/torrc.d/50_user.conf}}  ===
 
 <div class="toccolours mw-collapsible mw-collapsed">
 <div class="mw-collapsible-content">
 
-=== Step 1: Access {{Code2|/usr/local/etc/torrc.d/50_user.conf}} to Add Bridges ===
+==== Step 1: Access {{Code2|/usr/local/etc/torrc.d/50_user.conf}} to Add Bridges ====
 {{Open_/usr/local/etc/torrc.d/50_user.conf}}
 
-=== Step 2: Edit {{Code2|/usr/local/etc/torrc.d/50_user.conf}} ===
+==== Step 2: Edit {{Code2|/usr/local/etc/torrc.d/50_user.conf}} ====
 
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = This step is the same on all Whonix platforms.
-}}
-
+===== Use obfs2, obfs3 and obfs4 bridges =====
 
 Open {{Code2|/usr/local/etc/torrc.d/50_user.conf}} in an editor, then copy and paste the following text to enable the use of obfs2, obfs3 and obfs4 bridges.
 
+Now add the bridge IP addresses you discovered in the section [[#Finding_a_bridge_and_choosing_the_right_protocol|Finding a Bridge and Choosing the Right Protocol]] to the file.
+
+
 {{CodeSelect|code=
 UseBridges 1
-ClientTransportPlugin obfs2,obfs3 exec /usr/bin/obfs4proxy
-ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy
-}}
-
-Beginning with Whonix 14, meek_lite bridges can also be used. To use them, simply add one more line to the {{Code2|/usr/local/etc/torrc.d/50_user.conf}}. Notice that the bridge type is called {{Code2|meek_lite}}, not {{Code2|meek}} which is used in Tor Browser Bundle. <ref>{{Code2|meek_lite}} actually uses a different implementation of {{Code2|obfs4proxy}}. Forum discussion: https://forums.whonix.org/t/censorship-circumvention-tor-pluggable-transports/2601/3</ref>
-
-{{CodeSelect|code=
-ClientTransportPlugin meek_lite exec /usr/bin/obfs4proxy
+ClientTransportPlugin obfs2, obfs3, obfs4 exec /usr/bin/obfs4proxy
 }}
 
 <ref>
@@ -178,8 +253,6 @@ ClientTransportPlugin meek_lite exec /usr/bin/obfs4proxy
 ClientTransportPlugin fte exec /usr/bin/fteproxy --managed
 }}
 </ref>
-
-Now add the bridge IP addresses you discovered in the section [[#Finding_a_bridge_and_choosing_the_right_protocol|Finding a Bridge and Choosing the Right Protocol]] to the file.
 
 Copy and paste those IP addresses to the very bottom of {{Code2|/usr/local/etc/torrc.d/50_user.conf}}, <u>after the ClientTransportPlugin entries</u>. Make sure to manually type the text "bridge" at the beginning of each line entry.
 
@@ -201,32 +274,9 @@ bridge obfs3 192.24.131.513:62389 4352e58420e68f5e40bf7c74faddccd9d1349413
 
 {{CodeSelect|code=
 bridge obfs4 192.235.207.85:42086 0EEB10BF4B4FAF56D46E cert=oue8sYYw5wi4n3mf2WDOg iat-mode=0
-bridge obfs4 34.218.26.20:43263 DD21A551767816A0C9495 cert=7qzS6KASquPvJU82Fm7qoJw iat-mode=0
+
 bridge obfs4 161.217.177.95:10703 B3B8009D01BB7E5FDFAEC cert=4RaIqGiOytEXm6Hw iat-mode=0
 }}
-
-{{Code2|meek_lite}} example text to add to {{Code2|/usr/local/etc/torrc.d/50_user.conf}}.
-
-{{CodeSelect|code=
-bridge meek_lite 0.0.2.0:2 B9E7141C594AF25699E0079C1F0146F409495296 url=https://d2cly7j4zqgua7.cloudfront.net/ front=a0.awsstatic.com
-}}
-
-
-<ref>
-{{Code2|fte}} example text to add to {{Code2|/usr/local/etc/torrc.d/50_user.conf}}. 
-
-fte is not yet supported in Whonix 13; wait for the Whonix 14 release. https://phabricator.whonix.org/T520
-{{CodeSelect|code=
-bridge fte 10.200.100.60:95128 4352e58420e68f5e40bf7c74faddccd9d1349413
-bridge fte 300.100.300.80:23521 4352e58420e68f5e40bf7c74faddccd9d1349413
-}}
-</ref>
-
-When {{Code2|/usr/local/etc/torrc.d/50_user.conf}} editing is finished, save and exit.
-
-<pre>
-<Ctrl-X> --> press Y --> <Enter>
-</pre>
 
 The sample text for a complete {{Code2|obfs4}} torrc file is below. Check your file is similar, except for the specific bridge entries.
 <pre>
@@ -243,8 +293,7 @@ The sample text for a complete {{Code2|obfs4}} torrc file is below. Check your f
 # removing the # in front of it.
 DisableNetwork 0
 UseBridges 1
-ClientTransportPlugin obfs2,obfs3 exec /usr/bin/obfsproxy managed
-ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy
+ClientTransportPlugin obfs2, obfs3, obfs4 exec /usr/bin/obfs4proxy
 
 bridge obfs4 192.235.207.85:42086 0EEB10BF4B4FAF56D46E cert=oue8sYYw5wi4n3mf2WDOg iat-mode=0
 bridge obfs4 34.218.26.20:43263 DD21A551767816A0C9495 cert=7qzS6KASquPvJU82Fm7qoJw iat-mode=0
@@ -252,17 +301,51 @@ bridge obfs4 161.217.177.95:10703 B3B8009D01BB7E5FDFAEC cert=4RaIqGiOytEXm6Hw ia
 </pre>
 
 <ref>
-<pre>
+{{Code2|fte}} example text to add to {{Code2|/usr/local/etc/torrc.d/50_user.conf}}. 
+
+fte is not yet supported in Whonix 13; wait for the Whonix 14 release. https://phabricator.whonix.org/T520
+{{CodeSelect|code=
 ClientTransportPlugin fte exec /usr/bin/fteproxy --managed
-</pre>
+bridge fte 10.200.100.60:95128 4352e58420e68f5e40bf7c74faddccd9d1349413
+bridge fte 300.100.300.80:23521 4352e58420e68f5e40bf7c74faddccd9d1349413
+}}
 </ref>
 
-=== Step 3: Enable Tor ===
+When {{Code2|/usr/local/etc/torrc.d/50_user.conf}} editing is finished, save and exit.
+
+<pre>
+<Ctrl-X> --> press Y --> <Enter>
+</pre>
+
+
+===== Use meek_lite bridges =====
+
+Beginning with Whonix 14, meek_lite bridges can also be used. To use them, simply add one more line to the {{Code2|/usr/local/etc/torrc.d/50_user.conf}}. Notice that the bridge type is called {{Code2|meek_lite}}, not {{Code2|meek}} which is used in Tor Browser Bundle. <ref>{{Code2|meek_lite}} actually uses a different implementation of {{Code2|obfs4proxy}}. Forum discussion: https://forums.whonix.org/t/censorship-circumvention-tor-pluggable-transports/2601/3</ref>
+
+Open {{Code2|/usr/local/etc/torrc.d/50_user.conf}} in an editor, then copy and paste the following text to enable the use of meek_lite bridges.
+
+{{CodeSelect|code=
+ClientTransportPlugin meek_lite exec /usr/bin/obfs4proxy
+}}
+
+{{Code2|meek_lite}} example text to add to {{Code2|/usr/local/etc/torrc.d/50_user.conf}}. The bridge in this example is valid, which means one do not have find other meek_lite bridges.
+
+{{CodeSelect|code=
+bridge meek_lite 0.0.2.0:2 B9E7141C594AF25699E0079C1F0146F409495296 url=https://d2cly7j4zqgua7.cloudfront.net/ front=a0.awsstatic.com
+}}
+
+When {{Code2|/usr/local/etc/torrc.d/50_user.conf}} editing is finished, save and exit.
+
+<pre>
+<Ctrl-X> --> press Y --> <Enter>
+</pre>
+
+==== Step 3: Enable Tor ====
 Follow this procedure if it has not been previously completed.
 
 {{Enable_Tor}}
 
-=== Step 4: Have {{Code2|/usr/local/etc/torrc.d/50_user.conf}} Changes Take Effect ===
+==== Step 4: Have {{Code2|/usr/local/etc/torrc.d/50_user.conf}} Changes Take Effect ====
 {{Reload_Tor}}
 </div>
 </div>
