@@ -1,5 +1,3 @@
-
-
 {{Header}}
 {{#seo:
 |description=Computer Security Guide for Whonix Linux for Users, Whonix Hardening
@@ -652,7 +650,51 @@ If it is necessary to SSH or VNC into the Whonix-Workstation, then:
 
 Note: The last two methods are <i>not</i> recommended. They risk weakening isolation between the host and Whonix-Workstation.
 
+= Secure Qubes-Whonix Operation =
+
+The following is a short list of actions that can help to improve security and anonymity on the Qubes' platform, and by extension [[Qubes-Whonix]] users. It is advised to regularly consult [https://groups.google.com/d/forum/qubes-users Qubes forums] and [https://www.qubes-os.org/news/ other channels] for the latest security news and [https://www.qubes-os.org/doc/security-guidelines/ advice].
+
+'''GPG and Software Packages'''
+
+* Always keep the system up to date in [https://www.qubes-os.org/doc/software-update-dom0/ dom0], [https://www.qubes-os.org/doc/software-update-vm/ template VMs] and standalone VMs.
+* Check gpg is enabled in [http://docs.fedoraproject.org/en-US/Fedora/12/html/Deployment_Guide/sec-Configuring_Yum_and_Yum_Repositories.html config files] (gpgcheck=1) if new Fedora repositories are installed.
+* [[Security_Guide#Checking_Digital_Fingerprints_of_Signing_Keys|Safely import new signing keys]] by checking it is the same from multiple sources.
+* Preferably only install packages from trusted sources, for example. pre-configured Fedora, Debian, Whonix and Qubes sources. Untrusted or unverifiable programs should be installed in Standalone VMs or less trusted, cloned templates.
+
+
+'''Hardware / Hardware Settings'''
+
+* Enable [https://en.wikipedia.org/wiki/IOMMU VT-d/IOMMU] via BIOS to have [https://en.wikipedia.org/wiki/DMA_attack DMA protection], effective network isolation, and the ability to assign PCIe devices to a HVM. Check it is running via dom0 (qubes-hcl-report).
+* Prefer Intel Integrated Graphics Processing (IGP) units for greater system stability and security. <ref>Proprietary binary blobs of other GPU manufacturers pose security risks, and available open source drivers are notoriously unstable in Qubes.</ref>
+* Ensure computer hardware meets all other [[Security_Guide#Qubes-Whonix_Hardware_Requirements|Qubes-Whonix  requirements]] for the best security, functionality and future compatibility with Qubes 4.X releases.
+
+
+'''ISO and Qubes Version'''
+
+* Verify the [https://www.qubes-os.org/doc/verifying-signatures/ authenticity and integrity] of the Qubes iso download.
+* Prefer Qubes R4.0 over earlier releases, as fully virtualized (HVM or PVH) VMs provide [https://www.qubes-os.org/news/2018/03/15/qsb-37-update/ greater protection] against processor speculative execution bugs like the Meltdown and Spectre attacks, and other exploits. <ref>Qubes R3.2 and earlier versions rely on para-virtualized (PV) VMs.</ref> <ref> For instance, this [https://xenbits.xen.org/xsa/advisory-260.html recent security bug] allows an attacker to escape from a PV domain and exploit the dom0 hypervisor. It only affects Qubes R3.2, since Qubes R4 [https://github.com/QubesOS/qubes-secpack/blob/master/QSBs/qsb-039-2018.txt only runs untrusted code in PVH or HVM domains] by default.</ref>
+
+
+'''Protecting User Data and Activites'''
+
+* For critical user data, protect against [https://www.qubes-os.org/doc/data-leaks/ unintentional leaks] by setting an empty NetVM field (set to "none") for the corresponding qube. 
+* For sensitive activities, do not run trusted, high-value VMs in paralell with untrusted VMs. <ref>A successful exploit of the untrusted qube provides an avenue for attacking the sensitive qube.</ref>
+* Observe the [https://theinvisiblethings.blogspot.fr/2011/05/app-oriented-ui-model-and-its-security.html security context] of colored windows borders in Qubes before running applications or manipulating data.
+* If paying in cryptocurrencies, utilize a [https://www.qubes-os.org/doc/split-bitcoin/ “split” bitcoin wallet] which creates an offline “cold storage” wallet and an online “watching only” wallet.
+* Avoid [https://www.qubes-os.org/doc/multiboot/ dual / multi-boot configurations] in Qubes. The other OS could modify the unprotected <i>/boot</i> partition or firmware to maliciously compromise Qubes and/or spy on user activities.
+* Be careful when running command line operations. Refer to a [https://github.com/Jeeppler/qubes-cheatsheet/blob/master/qubes-cheatsheet.md a suitable resource first], then proceed.
+
+
+'''Template and Other VMs'''
+
+* Never run applications in TemplateVMs or dom0, except updating tools or editors for configuration purposes (running applications poses security risks).
+* Avoid configuring [https://www.qubes-os.org/doc/firewall/ network traffic between two qubes] for security reasons.
+* Consider leveraging the non-persistence of Qubes' templates to [https://github.com/tasket/Qubes-VM-hardening fend off malware] by locking-down, quarantining and checking the contents of ''/rw'' private storage. <ref>The <code>vm-boot-protect.service</code> is suitable for standalone VMs, AppVMs, netVMs, Whonix AppVMs and others. Do not use the <code>vm-boot-protect-root</code> service for Whonix AppVMs.</ref> <ref>This service: starts before the private volume is mounted, protects ''/home'' desktop and shell startup executables, quarantines ''/rw'' configs and scripts (with whitelisting), re-deploys custom / default files to ''/rw'' on each boot, conducts SHA256 checking against unwanted changes, and more.</ref> <ref>Disabling of the Qubes' default passwordless-root is also required.</ref>
+* Consider [https://github.com/rustybird/qubes-split-dm-crypt split dm-crypt] to isolate device-mapper based secondary storage encryption (not the root filesystem) and LUKS header processing to DisposableVMs.
+* Consider running the sys-net, sys-firewall and sys-usb VMs as DisposableVMs. <ref>Publication of working wiki instructions is pending, but they can be found in the forums in the meantime.</ref>
+
 = Onionizing Repositories =
+
 When Whonix, Debian and Qubes packages are installed or updated, default settings point to repositories with a http:// URI. <ref>https://www.whonix.org/wiki/Whonix-APT-Repository#Repository_Location_URI</ref> However, experimental Tor onion services are already available for the Whonix, Debian and Qubes packages.
 
 There are several security and privacy benefits of using Tor onion services: <ref>https://blog.torproject.org/blog/tor-heart-apt-transport-tor-and-debian-onions</ref>
