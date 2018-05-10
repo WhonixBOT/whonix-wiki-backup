@@ -280,19 +280,44 @@ At the time of writing, [https://panopticlick.eff.org Panopticlick] only returns
 
 == Browser History and Cache ==
 
-A [http://cseweb.ucsd.edu/users/lerner/papers/ccs10-jsc.pdf publication from the University of California] provides an analysis of the top 50,000 websites. 1% of these websites collect information about web surfers via history sniffing. Using malicious JavaScript code and CSS hacks, information about previously visited websites were collected. Webmasters who are not familiar with sniffing technologies can use services like Tealium or Beencounter for real-time history sniffing.
+=== Introduction ===
 
-Collected information is not only used for advertisements. It can be used for de-anonymization of surfers too. A [http://www.iseclab.org/papers/sonda-TR.pdf publication from Isec] shows one possible way. Using the browser history the visited groups of the social network site Xing were collected. Because there are generally no two people who are members of the exact same set of groups in a social network, it was possible to get the real names and e-mail addresses of the users.
+A user's browser history and cache enables the possibility of history sniffing attacks: <ref>https://cseweb.ucsd.edu/~lerner/papers/ccs10-jsc.pdf</ref>
 
-By certain trickery, websites can tell which websites are saved in your browser history. For this, the visited website embeds special formatting commands (CSS Stylesheets) that contain external links "of interest" on the pages you visit. If you have visited one of the external websites before, your browser will react by executing a command defined in the format, e.g. download a small picture from the website. The website can thereby largely guess the contents of your browser history.
+<blockquote>In most browsers, all application domains share access to a single visited-page history, file cache, and DNS cache. This leads to the possibility of history sniffing attacks, where a malicious site (say, attacker.com) can learn whether a user has visited a specific URL (say, bankofamerica.com), merely by inducing the user to visit attacker.com. To this end, the attack uses the fact that browsers display links differently depending on whether or not their target has been visited. In JavaScript, the attacker creates a link to the target URL in a hidden part of the page, and then uses the browser’s DOM interface to inspect how the link is displayed. If the link is displayed as a visited link, the target URL is in the user’s history. Tealium and Beencounter sell services that allow a website to collect the browsing history of their visitors using history sniffing.</blockquote>
 
-From the contents of your browser cache one can conclude already cached, thus previously visited, websites. Together with every website an ETag is sent by the server and stored in the browser cache. If the website was called again, the Etag is sent first to ask for changes. This tag may contain a unique user ID. [http://www.kissmetrics.com/ KISSmetrics] was using ETags in this way to identify visitors of some TOP100 websites.
+A [http://cseweb.ucsd.edu/users/lerner/papers/ccs10-jsc.pdf 2010 University of California publication] found that nearly 1 per cent of the Alexa global top 50,000 websites collected information from web surfers via history sniffing. History sniffing was not just limited to fringe websites - popular sites like <i>youporn.com</i> were found to engage in the practice. Website histories were vulnerable via a combination of malicious JavaScript and CSS hacks, leading to:
 
-Additionally, the time required for loading a website changes when part of it is already in the browser cache. By subtle placement of the images on the website, the server can analyze the cache one by one.
+* Inspection of style properties to infer browser history.
+* Transfer of the browser's history to the network.
+* Actual history hijacking. 
 
-At the moment, there is no reliable protection against the analysis of browser histories apart from deactivating this feature, which has been made the default in Tor Browser.
+=== Tracking Methods ===
 
-Unlike deactivating your browser history, deactivating your cache would have tremendous effect on your surfing speed, which is why we don't recommend it. In Tor Browser a protective mechanism has been integrated instead which bypasses the cache for third party content. Also, the cache is deleted automatically when you close the browser. A website can thus only gain information about itself, not about other websites.
+Websites can tell which sites are saved in a user's browser history using specialized commands and design elements. Three example are outlined below.
+
+* '''CSS Stylesheets:''' Commonly the visited wesite will embed special formatting commands (CSS Stylesheets) that contain external links "of interest" on the pages that are visited. If one of the external websites have been visited before, the browser will react by executing a command defined in the format, for example by downloading a small picture from the website. In this way the website can learn and/or make educated guesses about the contents of a user's browser history.
+
+* '''ETags:''' The contents of the browser cache can reveal previously visited websites. Along with the website URL and numerous page elements, the browser caches also store an ETag sent by the server. If the website is visited again, the ETag is first sent to ask for changes. ETags can contain unique user IDs, which have been used by companies like [http://www.kissmetrics.com/ KISSmetrics] to identify persons visiting some of the top 100 websites.
+
+* '''Website Page Load Time:''' The time required for a website page to load changes when it is partially stored in the browser cache. By subtle placement of the images on the website, the server can analyze the cache elements one by one. <ref>Cache elements include graphic files (logos, icons, banners, buttons etc.), script files, photographs and HTML pages.</ref>
+
+=== Deanonymization Risk ===
+
+The obvious corporate business case for information collected via history sniffing is targeted advertising. However, the same technique can be used to deanonymize web surfers.
+
+Consider the following attack vector, outlined in a  [http://www.iseclab.org/papers/sonda-TR.pdf publication] by security researchers iSecLab. <ref>Broken link.</ref>  Browser history was used to collect the groups visited in the social network "Xing." Logically, it is improbable that two or more people would share membership of the same set of groups within a social network. Therefore, when this information was revealed it was possible to associate users with their real names and e-mail addresses.
+
+'''Precautions'''
+
+The only reliable protection against analysis of a user's browser history is to use Tor Browser:
+
+* This "feature" is deactivated by default.
+* Tor Browser bypasses the cache for third party content to protect users. <ref>This means a website can only learn information about itself, and not other websites.</ref>
+* The cache is deleted automatically when the browser is closed. 
+
+
+Deactivating the browser cache is not recommended, since it can have a deleterious impact on browsing speed.
 
 == Webbugs and Banner Ads ==
 
