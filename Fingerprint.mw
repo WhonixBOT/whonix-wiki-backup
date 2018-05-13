@@ -34,51 +34,105 @@ The Whonix Fingerprint wiki page is forked from the Tails Fingerprint page, from
 |description=About Whonix's Network, Bridge/Guard and ISP Fingerprint.
 |image=https://www.whonix.org/w/images/9/94/Eye-319668-640.jpg
 }}
+
 = Introduction =
 
-In this context we use the term ''fingerprint'' to refer to the specificities in the way Whonix behaves on Internet. Those specificities could be used to determine whether a particular user is using Whonix or not.
+In this chapter, the term ''fingerprint'' refers to the specific way Whonix behaves on the Internet. Those specificities could be used to determine whether a particular user is running Whonix or not.
 
-As explained on our [[Warning]] page, when using Whonix it is possible to know that you are using Tor. But Whonix tries to make it as difficult as possible to distinguish Whonix users from other Tor users, especially Tor Browser Bundle (TBB<ref name="tbb" />) users. If it were possible to determine whether your are a Whonix user or a TBB<ref name=tbb>TBB stands for [https://www.torproject.org/download/download-easy.html.en Tor Browser Bundle]. It is included in Whonix, see [[Tor Browser]].</ref> user, this provides more information about you and in consequence reduces your anonymity.
+As explained on the [[Warning]] page, the default Whonix configuration does not hide Tor use from network observers. However, the Whonix design attempts to make Whonix users indistinguishable from the rest of the Tor population, particularly Tor Browser Bundle (TBB<ref name="tbb" />) users. 
 
-This section explains some issues regarding the fingerprint of Whonix and how this could be used to identify you as a Whonix user.
+If Whonix and TBB<ref name=tbb>TBB stands for [https://www.torproject.org/download/download-easy.html.en Tor Browser Bundle]. It is included in Whonix, see [[Tor Browser]].</ref> users have distinct fingerprints, then this information significantly degrades anonymity because the Whonix user base is far smaller than the broader Tor population. <ref>Certainly less than 50,000 users, although [https://phabricator.whonix.org/T689 an exact figure] will not be known until Whonix 14 is released.</ref>
+
+This section briefly addresses possible Whonix fingerprinting issues and how adversaries might use this information to verify Whonix is being used.
 
 {{Anchor|web fingerprint}}
 
 {{Anchor|web_fingerprint}}
-= For the websites that you are visiting =
-The websites that you are visiting can retrieve [[Tor_Browser/Advanced_Users#Adversary_Attack_Capabilities|a lot]] of information about your browser. That information can include its name and version, window size, list of available extensions, timezone, available fonts, etc.
+= Fingerprinting Information =
 
-To make it difficult to distinguish Whonix users from TBB<ref name="tbb" /> users, Whonix includes TBB<ref name="tbb" /> and therefore should provide the same information as the TBB<ref name="tbb" /> in order to have similar fingerprints.
+Various types of information can be leaked about the user's browser, (host) operating system, and hardware depending on the  external party in question.
 
-A unique fingerprint makes you [[DoNot#Confuse_Anonymity_with_Pseudonymity|pseudonymous rather than anonymous]].
+== Visited Websites ==
+
+Destination websites can retrieve [[Tor_Browser/Advanced_Users#Adversary_Attack_Capabilities|a lot of information]] about a user's browser and system. <ref>Information that is leaked depends on the browser in use, JavaScript settings, Tor Browser's security slider settings, whether it is a malicious attack or not, and other factors.</ref> This information can include: 
+
+* The browser name and version.
+* CSS media queries:
+** Window dimensions.
+** Desktop size.
+** Widget size.
+** Display type.
+** DPI.
+* A list of available extensions.
+* Timezone. <ref>Via the date object.</ref>
+* Available fonts.
+* User agent.
+* Video card in use. <ref>Via WebGL</ref>
+* CPU and interpreter speed.
+* Browser history. <ref>For example, using CSS and JavaScript to perform history disclosure attacks.</ref>
+* Via exploited plugins:
+** Leak the non-Tor IP address.
+** Interface addresses and other machine information. 
+** List all plugins to fingerprint the user.
+** Retrieve unique plugin identifiers.
+* Read / store identifiers related to HTTP auth, DOM storage, cached scripts, client certificates and TLS session IDs.
+* Browser cache.
+
+
+To make it difficult to distinguish Whonix and TBB<ref name="tbb" /> users, Whonix includes TBB<ref name="tbb" />. Therefore, Whonix should provide the same information as the TBB<ref name="tbb" /> in order to generate similar fingerprints.
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Tip: A unique fingerprint makes the user [[DoNot#Confuse_Anonymity_with_Pseudonymity|pseudonymous rather than anonymous]].
+}}
 
 {{Anchor|ISP fingerprint}}
 
-= For your ISP or local network administrator =
+== ISP or Local Network Administrators ==
 
-This is difficult (impossible?) to say with 100% certainty, since part of this is still a general Tor (not Whonix!) research question. It is also impossible to prove a negative.
+The capabilities of the ISP or local network administrator are difficult to ascertain with complete certainty. This is still a general research question for The Tor Project, and not Whonix developers. It is also impossible to prove a negative.
 
-Whonix is itself exclusively generating Tor activity on the network. Both, all traffic from Whonix-Workstation (TBB<ref name="tbb" />, updates, timesync, etc.) and Whonix-Gateway (updates, timesync) goes through Tor. Getting online activity is the task of the host, so the host <ref>In case of Default/Download version, it is the host's task to get online. In case of [[PhysicalIsolation]] it is the Gateway's task to get online. </ref> is most likely using DHCP to obtain a local IP address. Usually TBB<ref name="tbb" /> users also have network activity outside of Tor, either from another web browser or other applications. So the proportion or amount of Tor activity could be used to determine whether a user is using Whonix or the TBB<ref name="tbb" />. If you are sharing your Internet connection with other users that are not using Whonix or if you also use a browser on the host <ref>Which would come with the risk of the user confusing one browser for another.</ref>, it is probably harder for your ISP to determine whether a single user is generating only Tor traffic and so maybe using Whonix.
+=== Tor Enforcement ===
 
-Whonix uses the <code>entry guards mechanism</code> of Tor. With the <code>entry guard mechanism</code> <ref>https://www.torproject.org/docs/faq#EntryGuards</ref>, a Tor user always uses the same relay as first hop, which is a security feature. <code>Whonix uses an unmodified version of Tor</code><ref>[[FAQ#Does_Whonix_modify_Tor.3F | Whonix uses an unmodified version of Tor]]</ref>, but a <code>configured torrc</code><ref>https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/tor/torrc.anondist</ref> for the <code>Stream Isolation</code><ref>[[Stream Isolation]]</ref> security feature.
+Firstly, Whonix solely generates Tor activity on the network. All traffic from both the Whonix-Workstation (<code>whonix-ws</code>) and Whonix-Gateway (<code>whonix-gw</code>) such as TBB<ref name="tbb" />, updates, and timesync pass through Tor. Establishing an online connection is the task of the host, so the host <ref>In case of Default/Download version, it is the host's task to establish an online connection. In the case of [[PhysicalIsolation]], it is the gateway's task to establish an online connection. </ref> is most likely using DHCP to obtain a local IP address. 
 
-When starting, Whonix synchronizes the system clock to make sure it differs from the host clock and is not too much off (<code>TimeSync</code><ref>[[TimeSync]]</ref>). <code>whonixcheck</code><ref>[[whonixcheck]]</ref> issues some network traffic to check for updates and news, all goes through different circuits, which might be specific to Whonix. (Unchecked theory, it is unknown if an ISP can guess "oh, this Tor user opens many different Tor circuits." On the other hand, Tor seems to open only X entry guards and keep them for a while, thus not opening as many entry guards as streams.)
+In contrast, usually TBB<ref name="tbb" /> users have additional network activity outside of Tor, either from another web browser or other applications. This means the proportion or volume of Tor activity might be feasible identifiers to determine whether a user is running Whonix or the TBB<ref name="tbb" />. It is probably harder for the ISP to determine whether a single user is solely generating Tor traffic (and potentially using Whonix) if:
 
-There is also the general Tor research question <code>Website traffic fingerprinting</code><ref>See [https://www.torproject.org/projects/torbrowser/design/ Tor Browser Design] for Website traffic fingerprinting.</ref>. (Not a Whonix specific issue!) No one ever researched yet, if that also applies to <code>other traffic</code><ref>Such as apt-get traffic.</ref>.
+* The Internet connection is shared with other users that do not run Whonix.
+* A browser is also used on the host. <ref>This comes with the attendant risk of the user confusing one browser for another.</ref>
 
-In conclusion, if your ISP or local network administrator can determine someone is using the official Tor Browser Bundle from The Tor Project, Whonix, a custom transparent Tor proxy or similar project, depends on how well Tor actually works. Since Whonix is itself exclusively generating Tor activity on the network and relies on Tor to obfuscate that traffic, it really depends on Tor and these are open research questions.
+=== Tor Entry Guards ===
 
-= For your Entry Guard or Bridge =
-'''TODO''': To be written.
+Whonix uses an unmodified version of Tor, <ref>[[FAQ#Does_Whonix_modify_Tor.3F | Whonix uses an unmodified version of Tor]]</ref> so entry guards are used as the default mechanism to connect to the Tor network. <ref>https://www.torproject.org/docs/faq#EntryGuards</ref> Consequently, a Tor user will maintain the same relay as the first hop for an extended period, <ref>Typically the entry guards are rotated after a few months.</ref> which is a security feature. 
+
+One addition which is unique to Whonix is the ''configured torrc'' <ref>https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/tor/torrc.anondist</ref> for the <code>Stream Isolation</code><ref>[[Stream Isolation]]</ref> security feature.
+
+=== Time Synchronization ===
+
+When Whonix is started, the system clock is synchronized to make sure it slightly differs from the host clock via <code>[[TimeSync]]</code>. <code>[[whonixcheck]]</code> also issues some network traffic to check for updates and news, which all passes through different circuits. This behavior might be specific to Whonix. <ref>It is unknown if an ISP can detect whether a user has many different Tor circuits open. On the other hand, Tor seems to only open X entry guards and maintain them for a period, thus not opening as many entry guards as streams.</ref>
+
+=== Website Traffic Fingerprinting ===
+
+Website traffic fingerprinting is also an open Tor research question, which is unspecific to Whonix. <ref>See [https://www.torproject.org/projects/torbrowser/design/ Tor Browser Design] for further exploration of this issue.</ref> A related and unresearched issue is whether fingerprinting risks also apply to other traffic, such as <code>apt-get</code> traffic.
+
+=== Conclusion ===
+
+The ability of the ISP or local network administrator to distinctly identify users who utilize TBB, Whonix, Tails, a custom transparent Tor proxy or similar project, depends on how well Tor actually works. As Whonix is exclusively generating Tor activity on the network and relies on Tor to obfuscate that traffic, the answer depends on Tor itself and resolution of open research questions.
+
+== Entry Guards or Bridges ==
+
+'''TODO''': Finish this section.
 
 [https://lists.torproject.org/pipermail/tor-dev/2013-September/005424.html tor-dev: entry guards and linkability]
 
-= Comparison =
+= Whonix Fingerprint Comparison =
 
-[[Comparison with Others#Fingerprint]]
+* [[Comparison with Others#Fingerprint|Fingerprint: Whonix vs other anonymity systems or tools]].
 
-= See Also =
-[[Protocol-Leak-Protection and Fingerprinting-Protection]]
+= Further Reading =
+
+* [[Protocol-Leak-Protection and Fingerprinting-Protection]].
 
 = References =
 <references/>
