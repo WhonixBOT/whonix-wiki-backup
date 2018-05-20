@@ -86,6 +86,7 @@ For even greater security and privacy, users should read and follow the advice i
 == Host Security ==
 
 === Core Dumps ===
+
 All OS platforms have a "core dump" functionality which poses potential security and privacy risks. According to Wikipedia: <ref>https://en.wikipedia.org/wiki/Core_dump</ref>
 
 <blockquote>In computing, a core dump (in Unix parlance), memory dump, or system dump consists of the recorded state of the working memory of a computer program at a specific time, generally when the program has crashed or otherwise terminated abnormally. In practice, other key pieces of program state are usually dumped at the same time, including the processor registers, which may include the program counter and stack pointer, memory management information, and other processor and operating system flags and information. Core dumps are often used to assist in diagnosing and debugging errors in computer programs.</blockquote>
@@ -115,6 +116,31 @@ Clearly, how long copies of data survive and where they end up are critical fact
 While this information is stored locally on GNU/Linux distributions, this is not the case on proprietary platforms. Windows and macOS generally ship this memory information to the OS vendor. <ref>https://cs.stanford.edu/people/jchow/papers/lifetime-sigops04.pdf</ref> <ref>https://msdn.microsoft.com/en-us/library/windows/desktop/bb787181%28v=vs.85%29.aspx</ref> <ref>https://en.wikipedia.org/wiki/Crash_Reporter</ref> <ref>http://www.networkworld.com/article/2164903/windows/windows-how-to-solve-windows-8-crashes-in-less-than-a-minute.html</ref> <ref>Notably, GNU/Linux platforms like Debian usually have core dumps turned on via systemd's default settings.</ref>
 
 For greater security, advanced users should consider configuring the OS to avoid making core dumps. If possible, preventing access to process memory is also advisable, along with secure storage of the file system. <ref>https://docs.tibco.com/pub/rendezvous/8.3.1_january_2011/html/tib_rv_administration/rv_adm.6.072.htm</ref> <ref>https://stackoverflow.com/questions/17068818/how-to-deal-with-passwords-securely-within-your-application</ref> GNU/Linux users can further research disabling core dump features [https://linux-audit.com/understand-and-configure-core-dumps-work-on-linux/ here] and [https://wiki.archlinux.org/index.php/Core_dump here].
+
+=== Hostnames ===
+
+Computers are given hostnames for a number of good reasons. For instance, this is particularly useful for computers which operate on a network, as administrators and users are then able to ping computers, remotely connect to the computer, mount computer disks, and conduct other relevant activities. Naming conventions for computers are usually left to the individual, and may either comprise random chosen selections (“MrBig”, “coffeelover”, “Qubes-WhonixRocks” etc.), or default values that comprise information such as user name, login name, and device brand / model / make.
+
+In the case of smaller devices like smart phones, these usually have manufacturer-assigned names which are either generic (“Samsung Phone”) or completely unique (“android_f7s89f8ir78etywt”), and may contain information such as the brand name, language used, and the name of the device owner. In many cases, hostnames cannot be changed - or at least not without “rooting” the device. <ref>https://tools.ietf.org/html/rfc8117</ref> In the case of Whonix, the hostname is always set to "host". <ref>https://github.com/Whonix/anon-base-files</ref> <ref>https://github.com/Whonix/anon-base-files/blob/master/etc/hostname.anondist</ref>
+
+The hostname given to a user’s home computer or device can be leaked via a number of protocols, posing a privacy risk depending on the specificity of the naming convention. Vulnerable protocols which may leak the hostname include, but are not limited to: <ref>https://tools.ietf.org/html/rfc8117</ref> <ref>Refer to the source paper for further information on these protocols.</ref>
+
+* DHCP.
+* DNS address to name resolution.
+* Multicast DNS.
+* Link-local Multicast Name Resolution.
+* DNS service discovery.
+
+
+Disclosure of information is particularly problematic for mobile devices, since adversaries that monitor remote networks (like Wi-Fi hotspots) are able to obtain the hostname via passive monitoring, or active probing using a variety of Internet protcols. In combination with traffic analysis, adversaries that can obtain a hostname may be able to extract information that identifies the particular device and its properties; potentially revealing unique individuals utilizing the device. <ref>https://tools.ietf.org/html/rfc8117</ref>
+
+Even if generic names are used for hostnames such as “pinkrose” or “linuxfan”, the possible identity of the user is narrowed significantly to a much smaller subset, particularly when combined with data on sites that are visited. This may quickly lead to user identification because hostname disclosure allows for tracking of the computer or device across many domains, and one-time exposure of the user via clearnet traffic can inform databases which link unique hostnames to user identities.
+
+As a further example, consider an adversary that is tracking users connecting to a specific Wi-Fi hot spot in an airport. After retrieving the hostname of a particular user “ABSmith”, and observing VPN connections to the Apple corporate network, the two pieces of information reveal that Mr Smith is the owner, and is an employee of Apple.
+
+'''Recommendations'''
+
+Obviously a generic hostname is advisable, but in practice, there are limited other solutions available at present. One is to turn off any protocols that are not strictly necessary and which leak hostnames, particularly when insecure places are visited. This reduces the attack surface, but is impractical for certain protocols; for example, DHCP is necessary for Internet connectivity and many services depend on protocols such as mDNS. Another option is to use different hostnames for different purposes, rather than relying on a global hostname - this option is available on some OSes. Ultimately, a randomized hostname protocol is necessary to protect privacy, similar to methods utilized for MAC addresses. <ref>https://tools.ietf.org/html/rfc8117</ref>
 
 === Malware ===
 {{Anchor|AntiVirus}}
