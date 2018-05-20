@@ -12,7 +12,8 @@
 |support=[[Support]]
 }}
 
-= Basics =
+= Introduction =
+== Basics ==
 
 * [[Warning|Warnings]]
 * [[DoNot|Do Not - Non technical steps staying anonymous]]
@@ -21,7 +22,7 @@
 * [[Surfing Posting Blogging]]
 * Read the [[Documentation]] in general
 
-= Motivation =
+== Motivation ==
 This Motivation chapter may be skipped.
 
 If you need motivation to secure your computer, refer to these articles:
@@ -35,84 +36,21 @@ If that is too much to read, then just take a glimpse at the graphics:
 * [https://krebsonsecurity.com/wp-content/uploads/2012/10/HackedPC2012.png The Scrap Value of a Hacked PC, Revisited (picture).]
 * [https://krebsonsecurity.com/wp-content/uploads/2013/06/HE-1-600x333.jpg The Value of a Hacked Email Account (picture).]
 
-= Virtualization Platform =
-== Type 1 vs Type 2 Hypervisors ==
+= Advanced Security Guide =
 
-According to qubes-os.org: <ref>https://www.qubes-os.org/intro/</ref>
-
-<blockquote>Not all virtual machine software is equal when it comes to security. You may have used or heard of VMs in relation to software like VirtualBox or VMware Workstation. These are known as “Type 2” or “hosted” hypervisors. (The hypervisor is the software, firmware, or hardware that creates and runs virtual machines.) These programs are popular because they’re designed primarily to be easy to use and run under popular OSes like Windows (which is called the host OS, since it “hosts” the VMs). However, the fact that Type 2 hypervisors run under the host OS means that they’re really only as secure as the host OS itself. If the host OS is ever compromised, then any VMs it hosts are also effectively compromised.
-
-By contrast, Qubes uses a “Type 1” or “bare metal” hypervisor called Xen. Instead of running inside an OS, Type 1 hypervisors run directly on the “bare metal” of the hardware. This means that an attacker must be capable of subverting the hypervisor itself in order to compromise the entire system, which is vastly more difficult.</blockquote>
-
-The take-home message is that [[Qubes-Whonix|Qubes-Whonix]] is more secure than the default Whonix configuration using a Type 2 hypervisor like VirtualBox. Therefore, it is recommended to install Qubes-Whonix if users have suitably [https://www.qubes-os.org/doc/system-requirements/ modern hardware].
-
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = Do not install Qubes inside a virtual machine - Qubes uses its own bare-metal hypervisor (Xen). <ref>https://www.qubes-os.org/doc/system-requirements/</ref>
-}}
-
-== Qubes-Whonix vs Physically-Isolated Non-Qubes-Whonix ==
-
-In [[Non-Qubes-Whonix]], using a separate computer for [[Dev/Build_Documentation/Physical_Isolation|physical isolation]] is certainly more secure than using the same computer for everything in the standard host OS / Type 2 hypervisor configuration. However, it is not clear this is superior to Qubes' [http://invisiblethingslab.com/resources/2014/Software_compartmentalization_vs_physical_separation.pdf compartmentalized software approach].
-
-Consider the pros and cons of physical isolation relative to Qubes: <ref>https://www.qubes-os.org/intro/</ref>
-
-<blockquote>Pros
-
-* Physical separation doesn’t rely on a hypervisor. (It’s very unlikely that an attacker will break out of Qubes’ hypervisor, but if one were to manage to do so, one could potentially gain control over the entire system).
-* Physical separation can be a natural complement to physical security. (For example, you might find it natural to lock your secure laptop in a safe when you take your unsecure laptop out with you).
-</blockquote>
-
-<blockquote>Cons
-
-* Physical separation can be cumbersome and expensive, since we may have to obtain and set up a separate physical machine for each security level we need.
-* There’s generally no secure way to transfer data between physically separate computers running conventional OSes. (Qubes has a secure inter-VM file transfer system to handle this).
-* Physically separate computers running conventional OSes are still independently vulnerable to most conventional attacks due to their monolithic nature.
-* Malware which can bridge air gaps has existed for several years now and is becoming increasingly common.</blockquote>
-
-In summary, the relative merits of physical isolation do not necessarily provide any more protection than Qubes' approach. Physical isolation is relatively difficult, still experimental, inconvenient, and requires a significant time investment. On the other hand, Qubes is relatively easy to install, has fully integrated Whonix, and is convenient for most activities. 
-
-Qubes also supports [[Qubes/Why_use_Qubes_over_other_Virtualizers|a host of features]] unavailable in the physically-isolated model, such as: DisposableVMs, a USB VM, secure copy / paste operations between VMs, secure copying and transfers of files between VMs, and sanitization of PDFs and images.
-
-For these reasons, [[Qubes-Whonix]] is recommended for the majority of users seeking a higher-security solution.
-
-== Qubes-Whonix Hardware Requirements ==
-For Qubes-Whonix hardware requirements, see [[System_Requirements|here]].
-
-== VirtualBox Hardening ==
-
-For an overview on VM security risks in general, see: [http://security.stackexchange.com/questions/3056/how-secure-are-virtual-machines-really-false-sense-of-security How secure are Virtual Machines really?]
-
-The less features enabled, the smaller the [http://en.wikipedia.org/wiki/Attack_surface attack surface]. The following features can be removed or disabled without impacting core functionality:
-
-* Disable Audio.
-* Do not enable Shared Folders.
-* Do not enable video acceleration.
-* Do not enable 3D acceleration. <ref>
-Quote http://www.virtualbox.org/manual/ch04.html#guestadd-3d
-<blockquote>
-Untrusted guest systems should not be allowed to use VirtualBox's 3D acceleration features, just as untrusted host software should not be allowed to use 3D acceleration. Drivers for 3D hardware are generally too complex to be made properly secure and any software which is allowed to access them may be able to compromise the operating system running them. In addition, enabling 3D acceleration gives the guest direct access to a large body of additional program code in the VirtualBox host process which it might conceivably be able to use to crash the virtual machine.
-</blockquote>
-</ref> <ref>
-Quote https://hsmr.cc/palinopsia/
-<blockquote>
-If the "3D-Acceleration" feature of VirtualBox is activated, running the proof-of-concept code from inside the VM provides the ability to read framebuffers from the host system. 
-</blockquote>
-</ref>
-* Do not enable the Serial Port.
-* Remove the Floppy drive.
-* Remove the CD/DVD drive.
-* Do not attach USB devices.
-* Disable the USB controller which is enabled by default. Set the Pointing Device to "PS/2 Mouse" or changes will revert.
-* Do disable Advanced Configuration and Power Interface (ACPI). ACPI information is passed to guest OS by default, which allow guest OS to obtain battery status and manufacturer information.
-* Do not enable the Remote Display server.
-* Enable PAE/NX (NX is a security feature).
-
-
-Not enabling IO APIC, EFI may also provide some protection, but this requires further investigation.
+After reading this chapter, users are recommended to refer to the [[Advanced Security Guide]] for even more security advice.
 
 = Operating System =
+
+== End-of-life Software ==
+
+Users should not run software that has reached end-of-life status, because developers will not fix existing defects, bugs or vulnerabilities, posing serious security risks.
+
+A recent example is [https://www.debian.org/security/2018/dsa-4203 VLC in Debian jessie], which reached end-of-life status in May, 2018. Therefore, a different media player should be used until Whonix 14 is released, because VLC in jessie has current unpatched security vulnerabilities.
+
+== Installing Additional Software ==
+
+See [[Install Software]].
 
 {{Anchor|Recommendation to install latest security updates on all systems}}
 == Updates ==
@@ -133,556 +71,6 @@ Not enabling IO APIC, EFI may also provide some protection, but this requires fu
 
 See [[Install_Software#How-to:_Install_or_Update_with_Utmost_Caution|How-to: Install or Update with Utmost Caution]].
 
-== Installing Additional Software ==
-
-See [[Install Software]].
-
-== End-of-life Software ==
-
-Users should not run software that has reached end-of-life status, because developers will not fix existing defects, bugs or vulnerabilities, posing serious security risks.
-
-A recent example is [https://www.debian.org/security/2018/dsa-4203 VLC in Debian jessie], which reached end-of-life status in May, 2018. Therefore, a different media player should be used until Whonix 14 is released, because VLC in jessie has current unpatched security vulnerabilities.
-
-= Whonix-Gateway Security =
-== General ==
-{{mbox
-| image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       = '''Warning:''' Only use Whonix-Gateway for running Tor!
-}}
-
-
-If the Whonix-Gateway VM is ever compromised, the attacker can discover: the user's identity (public IP address); all destinations visited; and the entirety of clear-text and onion service communication over Tor.
-
-Before installing any extra packages on the Whonix-Gateway, first consult the developers to check whether that is  necessary and wise.
-
-== Seccomp ==
-According to Mozilla: <ref>https://wiki.mozilla.org/Security/Sandbox/Seccomp</ref>
-
-<blockquote>Seccomp stands for secure computing mode. It is a simple sandboxing tool in the Linux kernel, available since Linux version 2.6.12. When enabling seccomp, the process enters a "secure mode" where a very small number of system calls are available (exit(), read(), write(), sigreturn()). Writing code to work in this environment is difficult; for example, dynamic memory allocation (using brk() or mmap(), either directly or to implement malloc()) is not possible.</blockquote>
-
-Strongly consider enabling seccomp on Whonix-Gateway ([[Qubes-Whonix]]: Whonix-Gateway ProxyVM; sys-whonix), since it is easily applied and provides additional sandboxing protection for the Tor process.
-
-{{Open /etc/tor/torrc}}
-
-Add.
-
-<pre>
-Sandbox 1
-</pre>
-
-Save and exit.
-
-== Tor Connection Padding ==
-Connection padding is available for the Tor process from version 0.3.1.7 onward. This helps to resist traffic analysis, as The Tor Project explains: <ref>https://blog.torproject.org/tor-0317-now-released</ref> <ref>At the time of writing, the Jessie proposed updates repository in Whonix supports this Tor version.</ref>
-
-<blockquote>Connections between clients and relays now send a padding cell in each direction every 1.5 to 9.5 seconds (tunable via consensus parameters). This padding will not resist specialized eavesdroppers, but it should be enough to make many ISPs’ routine network flow logging less useful in traffic analysis against Tor users.<br />
-<br />
-Padding is negotiated using Tor’s link protocol, so both relays and clients must upgrade for this to take effect. Clients may still send padding despite the relay’s version by setting ConnectionPadding 1 in torrc, and may disable padding by setting ConnectionPadding 0 in torrc.</blockquote>
-
-Consider enabling ConnectionPadding client-side by following these steps.
-
-{{Open /etc/tor/torrc}}
-
-Add.
-
-<pre>
-ConnectionPadding 1
-</pre>
-
-Save and exit.
-
-== AppArmor ==
-According to debian.org: <ref>https://wiki.debian.org/AppArmor</ref>
-
-<blockquote>AppArmor is a Mandatory Access Control framework. When enabled, AppArmor confines programs according to a set of rules that specify what files a given program can access. This proactive approach helps protect the system against both known and unknown vulnerabilities.</blockquote>
-
-AppArmor provides a number of advantages: <ref>http://wiki.apparmor.net/index.php/Main_Page</ref>
-
-* It protects the operating system and applications from external or internal threats, including zero-day attacks.
-* "Good behavior" is enforced and it mitigates exploits via unknown application flaws.
-* AppArmor security policies define the system resources that individual applications can access, and with what privileges. For instance:
-** Network access.
-** Raw socket access.
-** Read, write or execute file permissions on specific paths.
-
-
-Strongly consider using the [[AppArmor|Whonix AppArmor profiles]] which are available for various programs which run in both the Whonix-Gateway and Whonix-Workstation, such as Tor, Tor Browser, Thunderbird and others. The profiles are easily applied and provide a considerable security benefit.
-
-== Warning: Bridged Networking ==
-Do not change Whonix-Gateway's first or second network interface to a bridged network. This is untested and should not be necessary. Users who feel it is necessary in their circumstances should get in [[contact]].
-
-For further interest, here is a [https://sourceforge.net/p/whonix/discussion/general/thread/1e6a8675/ discussion thread], and [https://sourceforge.net/p/whonix/discussion/general/thread/3a0b673a/ another one], debating whether NAT or a bridged network is more secure.
-
-= Host Security =
-
-== Basics ==
-
-Please read the [[Computer Security Education#Host Security|Computer Security Education section about Host Security]].
-
-== Hostnames ==
-
-The hostname given to a user’s home computer or device can be leaked via a number of protocols, posing a privacy risk depending on the specificity of the naming convention. For further information, [[Computer_Security_Education#Hostnames|see here]].
-
-== Power Saving Considerations ==
-{{mbox
-| image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       = '''Warning:''' Upon system suspend / standby, Full Disk Encryption keys are still kept in RAM.
-}}
-
-
-Users at high risk or traveling should avoid leaving a system in the suspend or standby state. Instead, the recommended power mode to use is hibernation. This will lock all system partitions to a safe state, though there is a small trade-off in startup time.
-
-On GNU/Linux hosts, standby will not always result in having LUKS keys retained in memory. Some experimental projects <ref>https://github.com/jonasmalacofilho/ubuntu-luks-suspend</ref> and custom setups with systemd+scripting are able to erase the keys before system suspend to avoid mistakes.
-
-Following a system standby period, the network fingerprint for Tor on the Whonix-Gateway is identical to a standard Tor instance on the host that has gone through the same procedure. There are some old connections that go stale and need renewal, but nothing is seen by a network adversary because time leak identifiers have been stripped out of Tor's protocol / OpenSSL, and TCP Timestamps are gone. 
-
-[[Non-Qubes-Whonix]] only:<br />
-In order to reconnect, manual time adjustment is required or the VM can simply be powered off and then powered on again. This step will not be necessary once hypervisor specific post resume hooks are used, because guest clocks will be seamlessly updated upon power state changes from the host.
-
-[[Qubes-Whonix]] only:<br />
-Has automatic seamless time adjustment after resume. <ref>
-https://github.com/Whonix/sdwdate/blob/master/etc/qubes/suspend-pre.d/30_sdwdate.sh
-
-https://github.com/Whonix/sdwdate/blob/master/etc/qubes/suspend-post.d/30_sdwdate.sh
-</ref>
-
-== Hardware Component Risks ==
-
-In the default configuration, Whonix provides significant protection against [[Comparison_with_Others#Circumventing_Proxy_Obedience_Design|circumvention of the proxy obedience design]]. This includes:
-
-* Applications not honoring proxy settings (proxy bypass IP leaks).
-* Applications disclosing the user's real IP (protocol IP leaks).
-* Remote code execution exploits with user-only rights (exploit + unsafe browser).
-* Remote code execution exploits with root rights (exploit + root exploit + unsafe browser).
-
-
-However, if a second exploit is used to break out of the VM, the default Whonix installation is broken and the user's real IP address will be identified. Only Whonix run with [[Physical_Isolation|physical isolation]] will defeat this attack. This is because the Whonix-Workstation host does not know the real IP address, only the Whonix-Gateway which is running on another machine. Consequently, to successfully deanonymize the user, the attacker must also: exploit the physically isolated Whonix-Gateway, subvert the Tor process, or attack the Tor network at large.
-
-Nevertheless, physically-isolated users should be aware that if an adversary manages to break out of the Whonix-Workstation VM using an exploit, then additional risks are posed by the hardware components that are built-in or have been additionally installed. This includes CPU and HDD / SSD temperature sensors, microphones and cameras.
-
-In the case of Whonix with physical isolation:
-
-* The user's IP address is still safe, but the temperature sensors can be used for anonymity set reduction.
-* Different CPU,  HDD and SSD models will report different sensor information, depending on climate and weather. If possible, it is advised to remove or to obfuscate the sensor results.
-* Cameras and microphones can be covertly activated by the adversary. Remove external hardware and/or disable them in BIOS if possible. At a minimum, cover them or ideally remove them.
-
-
-In the case of a default Whonix installation, the same general recommendations apply, although it does not really matter since the user will have been deanonymized successfully.
-
-== Anonymous Mobile Modems ==
-{{mbox
-| image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       = 
-'''Warning:''' The technique outlined in this section may be ineffective against advanced adversaries who can:
-
-* [https://theintercept.com/2014/12/04/nsa-auroragold-hack-cellphones/ Subvert cellular networks].
-* Conduct downgrade attacks on [https://www.schneier.com/blog/archives/2015/04/the_further_dem_1.html network functioning] from 4G to 3G, from 3G to 2G and so on.
-* [https://www.schneier.com/blog/archives/2014/12/nsa_hacking_of_.html Attack all ciphers] used in cellular networks, including A5/1, A5/2 and A5/3.
-}}
-
-
-Mobile modems refers to portable broadband modems which allow your computer to connect to the internet via the cellular network. These devices support use of the 2G, 3G and 4G networks. 
-
-For activities necessitating the best possible anonymity, it is theoretically safer to use an anonymous mobile modem far away from one's normal location, rather than use a local internet connection. The reason is the dial-up or broadband provider normally knows your name, postal address and non-anonymous payment method. This is problematic if Tor or Whonix is compromised, since an adversary could pressure the service provider and very easily confirm your identity. However, if a mobile modem user is successfully attacked, the IP address leaked will not immediately lead back to the postal address of the user.
-
-It is safest to assume that identification and location information can be discovered if specifically targeted, alongside potential eavesdropping of activities and communications. Always conduct a threat assessment of planned activities before following any course of action!
-
-'''Default Configuration Whonix Users'''
-
-Either:
-
-* Plug or integrate the mobile modem into the host operating system as its internet connection replacement (easy).
-* Plug the mobile modem into the Whonix-Gateway and only route Whonix-Gateway's traffic through it, not the host traffic (difficult; undocumented and therefore not recommended).
-
-
-'''Physically-Isolated Whonix Users'''
-
-Use the second method outlined above. There is no host in the sense that the Whonix-Gateway is running bare-metal on a second computer.
-
-'''Safe Purchase of a Mobile Modem and SIM Card'''
-
-Recommendations:
-
-* Buy the mobile modem anonymously. This may be in a store, second-hand, or on the street. Be sure to leave no personal data during the purchase.
-* Be aware of cameras and potential witnesses to your purchases.
-* Do not use the modem for any non-anonymous activity prior to using it for Whonix purposes.
-* Telecommunication companies routinely log the serial numbers of phones (IMEI) and SIM cards, as well as the phone number for network logins. Therefore it is also necessary to: 
-** Buy the SIM card anonymously (prepaid is better).
-** Buy cash codes in different stores anonymously.
-** Never use the anonymous SIM card with a non-anonymous phone or mobile modem beforehand.
-
-
-'''Mobile Modem Warnings'''
-
-* Many devices are manufactured by a handful of countries that have run [http://www.macworld.com.au/news/3g-and-4g-usb-modems-are-a-security-threat-researcher-says-89533/ insecure software] in the recent past.
-* Devices often show critical [https://www.helpnetsecurity.com/2015/12/03/3g4g-cellular-usb-modems-are-full-of-critical-security-flaws-many-0-days/ zero days]. For example: remote code executive flaws, exploitable firmware, vulnerability to cross-site scripting and CSRF vulnerabilities.
-
-
-Carefully choose all hardware and conduct manufacturer research beforehand!
-
-'''Mobile Modem Operation'''
-
-When using cellular networks, users often only get a shared external IP address due to scarcity of IPv4 IPs. This can lead to thousands of users sharing one IPv4 address at the same time. Also, some providers do not yet log the users' (NAT) ports. Consequently, providers cannot pinpoint users when they are given an IP address and time stamp. This is a nice feature, but do not rely on it for strong anonymity!
-
-Some providers assign additional and unique IPv6 IP addresses to their users. This is not a concern for intended Tor usage, as it does not yet automatically utilize IPv6. <ref>https://trac.torproject.org/projects/tor/wiki/org/roadmaps/Tor/IPv6</ref> For greater security, prefer using a new, distant, random, non-circular location when conducting on-line activities.
-
-== Anonymous WiFi Adapters ==
-
-Normally the dial-up or broadband provider knows your name, postal address and non-anonymous payment method. If Tor or Whonix is compromised, then an adversary only needs to pressure the service provider to confirm your identity. This is not the case if using an anonymous WiFi adapter plugged or integrated into the Whonix-Gateway.
-
-For safer use, it is recommended to:
-
-* Buy the WiFi adapter anonymously in a store, second-hand or on the street.
-* Never provide personal data during a purchase.
-* Do not use the adapter for prior, non-anonymous activity. Some providers or hotspots log MAC addresses and the username (if paid).
-* If possible, only use free hotspots or pay for them anonymously. Otherwise abstain from paid hotspots.
-* For greater security, always use a new, distant, random, non-circular hotspot location.
-* Check for cameras and witnesses during online activities.
-
-== Hardening ==
-Whonix does not yet improve host security. It is recommended to use a secure host operating system like [[Computer_Security_Education#Host_Operating_System|Debian]] [[Computer_Security_Education#Which_GNU.2FLinux_Distribution_do_you_recommend.3F|GNU/Linux]] and manually [[Advanced_Security_Guide#Harden_Debian|harden]] it. Also follow relevant steps in the [[Security_Guide#System_Hardening_Checklist|system hardening checklist]] for greater security.
-
-= Whonix-Workstation Security =
-
-== Introduction ==
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = '''Tip:''' Whonix implementation examples are based on Debian. To use a customized Whonix-Workstation VM based on other operating systems, see [[Other_Operating_Systems|here]]. For technical design notes, see [[Operating_System|here]].
-}}
-
-
-If the Whonix-Workstation VM is ever compromised, the attacker has access to the data it contains, including all credentials, browser data and passwords. The IP address is never leaked, since this requires a compromise of the Whonix-Gateway VM, but this information may still result in identity disclosure.
-
-In [[Non-Qubes-Whonix|Non-Qubes-Whonix]]:
-
-The best practice is to keep a clean master copy of the Whonix-Workstation VM, make snapshots / clones of the master, and then only use these for internet activity. The user can then 'rollback' (use a new clean clone / snapshot VM) after risky activity, or if they suspect the integrity of the system has been compromised. See the [[Security_Guide#VM_Snapshots|multiple VM snapshots recommendation]] below.
-
-In [[Qubes-Whonix|Qubes-Whonix]]:
-
-The best practice is to use [[Qubes/Disposable_VM|DisposableVMs]] for all your internet activity. Alternatively, periodically delete your Whonix-Workstation AppVM(s) and create fresh instances from the Whonix-Workstation TemplateVM.
-
-{{Anchor|Recommendation to use multiple VM Snapshots}}
-
-== AppArmor ==
-Strongly consider using the [[AppArmor|Whonix AppArmor profiles]] which are available for various programs which run in both the Whonix-Gateway and Whonix-Workstation, such as Tor, Tor Browser, Thunderbird and others. The profiles are easily applied and provide a considerable security benefit.
-
-== Firejail ==
-=== Introduction ===
-According to the Firejail project page: <ref>https://firejail.wordpress.com/</ref>
-
-<blockquote>Firejail is a SUID program that reduces the risk of security breaches by restricting the running environment of untrusted applications using Linux namespaces and seccomp-bpf. It allows a process and all its descendants to have their own private view of the globally shared kernel resources, such as the network stack, process table, mount table.
-
-Written in C with virtually no dependencies, the software runs on any Linux computer with a 3.x kernel version or newer. The sandbox is lightweight, the overhead is low. There are no complicated configuration files to edit, no socket connections open, no daemons running in the background. All security features are implemented directly in Linux kernel and available on any Linux computer. The program is released under GPL v2 license.</blockquote>
-
-Firejail has built-in profiles for a large number of popular Linux programs, including many which are used in Whonix. A small sample of the 100+ profiles includes: Chromium, CryptoCat, Dolphin, Evince, Firefox, HexChat, LibreOffice, Okular, Thunderbird, Transmission, VirtualBox, VLC and wget. <ref>https://github.com/netblue30/firejail/tree/master/etc</ref>
-
-=== Installing Firejail ===
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = '''Tip:''' Firejail works in both [[Qubes-Whonix]] and [[Non-Qubes-Whonix]]. Before completing these instructions, considering cloning the Whonix-Workstation TemplateVM, as a host of dependencies will be installed.
-}}
-
-
-'''1. Boot the Whonix-Workstation (<code>whonix-ws</code>) TemplateVM'''
-
-'''2. Add jessie-backports to sources.list'''
-{{CodeSelect|code=
-sudo su -c "echo -e 'deb http://http.debian.net/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
-}}
-Or alternatively use the <i>.onion</i> mirror.
-{{CodeSelect|code=
-sudo su -c "echo -e 'deb http://vwakviie2ienjx6t.onion/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
-}}
-
-'''3. [[Update#Updates|Update]] the Package Lists'''
-
-{{CodeSelect|code=
-sudo apt-get update
-}}
-'''4. Install Firejail'''
-
-{{CodeSelect|code=
-sudo apt-get -t jessie-backports install firejail
-}}
-'''5. Launch Firejail'''
-
-Note: In [[Qubes-Whonix]], a new Whonix-Workstation AppVM based on the modified template should be created before running any applications. Never launch programs in your Whonix-Workstation TemplateVM.
-
-To run sandboxed applications, simply prefix your program command with "firejail" in a terminal. For example: 
-{{CodeSelect|code=
-firejail evince
-
-firejail vlc
-}}
-
-'''6. ''Optional'': Use Additional Firejail Command Line Options'''
-
-The full list of command line options can be found in the [https://firejail.wordpress.com/features-3/man-firejail/ official Firejail documentation]. Alternatively, run the following command in konsole in the Whonix-Workstation AppVM.
-{{CodeSelect|code=
-man firejail
-}}
-
-The interested reader should note the host of additional security features. For instance, VLC could be run while blocking access to the internet as follows.
-{{CodeSelect|code=
-firejail --net=none vlc
-}}
-
-Similarly, the following commands would run Firefox or Tor Browser with seccomp restrictions and debug output. <ref>Preliminary tests of other security features reveals they are not yet functional in Whonix, for instance {{code|--apparmor}}, {{code|--private}}, and {{code|--overlay-tmpfs}}. If the user does not specify a path to a specific profile when running Firejail, it will search for any relevant profile automatically. If a profile is not found, a default profile will be used.</ref>
-{{CodeSelect|code=
-firejail --debug --seccomp firefox
-
-firejail --debug --seccomp torbrowser
-}}
-
-For a further technical discussion of Firejail, see [https://forums.whonix.org/t/firejail-seccomp-more-options-for-program-containment here].
-
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = There is no secure and reliable way to create menu entries / desktop shortcuts using Firejail since package upgrades will break them. It is recommended to start firejailed applications from the command line, but testers can follow the instructions for Whonix 13 [https://forums.whonix.org/t/automatically-firejailing-tor-browser/4767 here]. <ref>This must be removed in Whonix 14 and replaced with the method below.</ref>
-}}
-
-
-'''7. ''Optional'': Automatically Prepend Tor Browser with Firejail'''
-
-In Whonix 14, users can automatically prepend the Tor Browser binary with Firejail by editing ''etc/torbrowser.d/50_user.conf'' and adding the following text. <ref>https://github.com/Whonix/tb-starter/commit/ca3e4cbaedaaa80a6e92145badf0fcdb3c5b22db</ref>
-
-{{CodeSelect|code=
-tb_starter_bin_pre="firejail --seccomp"
-}}
-
-=== Sandboxing Tor Browser ===
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = '''Tip:''' The [[Tor_Browser/Advanced_Users#Sandboxed_Tor_Browser|sandboxed Tor Browser]] cannot be used until [[About#Whonix_version|Whonix 14 is released]]. In the meantime, consider using Firejail as an interim sandboxing measure to restrict the Tor Browser process. 
-}}
-
-
-Mitigating the risk of Tor Browser security breaches makes sense, because it is an untrusted application with a huge attack surface; it is frequently and successfully attacked in the wild. <ref>Firejail has been tested to work with both Tor Browser 7.0.6 and 7.5a5.</ref>
-
-Note: Consider cloning the Whonix-Workstation-TemplateVM prior to installing Firejail. Firejail installs a host of  dependencies and users may not want these in the default template.
-
-'''1. Boot the Whonix-Workstation TemplateVM'''
-
-'''2. Follow the Steps to [[Security_Guide#Installing_Firejail|Install Firejail]] from jessie-backports'''
-
-'''3. Create a New Whonix-Workstation-AppVM Based on the Modified Template'''
-
-{{Qubes Create Workstation AppVMs}}
-
-'''4. ''Optional Step (Untested):'' Create a Customized Firejail Profile for Tor Browser'''
-
-Follow [https://firejail.wordpress.com/documentation-2/building-custom-profiles/ these steps] to build a custom profile.
-
-'''5. Launch the Sandboxed Tor Browser'''
-
-Open a terminal and run.
-
-    firejail torbrowser
-
-'''6. Confirm Tor Browser is Sandboxed'''
-
-Launch Tor Browser in the anon-whonix AppVM. Then open a terminal and run.
-
-    firejail --tree
-
-The output should show Tor Browser is now running in a Firejail container.
-
-    XXXX:user:firejail torbrowser
-    XXXX:user:/bin/bash /usr/bin/torbrowser
-    XXXX:user:bash /home/user/.tb/tor-browser/Browser/start-tor-browser --all
-    XXXX:user:./firefox --class Tor Browser -profile TorBrowser/Data/Browse
-
-=== Running Firefox-ESR in a Firejail Sandbox (Qubes Debian Template) ===
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = '''Tip:''' Preferably clone the Debian-8 or Debian-9 TemplateVM prior to taking these steps, as some dependencies are required.
-}}
-
-
-{{mbox
-| image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       = '''Warning:''' Do not use Firefox-ESR in a Whonix template! It is easily fingerprinted and less secure than the Tor Browser.
-}}
-
-
-'''1. Boot the Debian-8 or Debian-9 TemplateVM'''
-
-'''2. Follow the [[Security_Guide#Installing_Firejail|Steps]] to Install Firejail from jessie-backports'''
-
-'''3. Create a New Debian-8 or Debian-9 AppVM Based on the Modified Template'''
-
-'''4. Launch the Sandboxed Firefox-ESR'''
-
-In a terminal, run.
-
-    firejail firefox
-
-Note: Refer to the official [https://firejail.wordpress.com/documentation-2/firefox-guide/ Firefox Sandboxing Guide] for further command line options.
-
-'''5. Confirm Firefox-ESR is Sandboxed'''
-
-Open another terminal and run.
-
-    firejail --tree
-
-The output should confirm Firefox-ESR is now running in a firejail container.
-
-    XXXX:user:firejail /usr/lib/firefox-esr/firefox-esr
-
-== VM Snapshots ==
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = '''Tip:''' The following advice refers to [[Non-Qubes-Whonix|Non-Qubes-Whonix]] users.
-}}
-
-
-Apart from offering protection against hardware serial leaks, VMs have another major advantage: the ability to quickly discard and restore a system. This process is easy in [[Qubes-Whonix|Qubes-Whonix]], since every template-based AppVM used for activities is based on a TemplateVM which is only used for software installation and updates, and nothing else. AppVMs are easily discarded and recreated in a clean state whenever the user requires it. <ref>https://www.qubes-os.org/doc/templates/</ref> In [[Non-Qubes-Whonix|Non-Qubes-Whonix]], greater precaution is required. 
-
-It is ''strongly recommended'' the user keep a master copy of the Whonix-Workstation VM which is:
-
-* Kept updated.
-* Does not have any additional software installed.
-* Does not have any default settings changed.
-* Is not used directly for any activities.
-
-
-Regular "clean" snapshots or clones of the master VM should be made for activities that require anonymity. Particular care must be taken that clean and unclean states are never mixed up!
-
-The correct method for the safest operation of Non-Qubes-Whonix is as follows:
-# Import both VMs into the virtualizer.
-# Start both the Whonix-Gateway and Whonix-Workstation VMs.
-# [[Update#Updates|Securely update both VMs]].
-# After the updates have finished, shut down both VMs. '''Do not''' browse anywhere or open any unauthenticated communication channels to the internet.
-# Create snapshots of both VMs in their clean state.
-# Only use the snapshots for browsing or initiating any external connections.
-
-
-Note: The only exception made is running apt, since it has a guaranteed way to securely download and verify packages.
-
-<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
-<u>For important [[VirtualBox]] information</u>, please press on Expand on the right.
-<div class="mw-collapsible-content">
-{{mbox
-| image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       = '''Warning''': VirtualBox's VM Snapshot feature is recommended against because [https://www.whonix.org/old-forum/index.php/topic,97.msg1586.html#msg1586 data loss] has been experienced using it. Instead, use clones or other methods outlined in the "Reliable Alternative To VirtualBox VM Snapshots" section below.
-}}
-
-
-{{Anchor|Reliable Alternative To Virtualbox VM Snapshots}}
-{{Anchor|Reliable Alternative To VirtualBox VM Snapshots}}
-
-Although VirtualBox's snapshot feature is useful when making interim snapshots of live running systems, it is not recommended as a reliable method for backing up VMs. The user risks possible data loss, primarily in the form of corrupted virtual hard drives (VHDs). Reverting can be very painful, or even impossible, following VHD corruption. Alternative methods are copy / paste, cloning, and exporting / importing. These methods reliably provide VM backups, but disk resources are used inefficiently and manual versioning is required.
-
-'''SubVersioN (SVN) Backup Tool'''
-
-[http://en.wikipedia.org/wiki/Subversion_(software) SubVersioN] is considered the best alternative tool for backing up VM operating environments. It is similar to VirtualBox's snapshot feature, but is much more reliable and efficient. Prior to using it, familiarize yourself with the tool's [https://subversion.apache.org/docs/ documentation] and design. SVN [http://en.wikipedia.org/wiki/Comparison_of_Subversion_clients clients] are available for various platforms.
-
-SVN is a tool typically used by software developers to conduct: collaborative configuration management, version control, and backup / restore of file sets under development by many people over extended period of time. Basic functionality of versioning, backing up and restoring changes to sets of files is available. However, SVN is considered superior to CVS, GIT and other options for VM backups, because it does not have any file size limitations by design. Regardless of how big or small the files are, SVN handles them reliably and efficiently. See the following section: [http://svn.apache.org/repos/asf/subversion/trunk/doc/user/svn-best-practices.html "Be patient with large files"]. 
-
-When versioning file sets, SVN employs [http://en.wikipedia.org/wiki/Atomic_commit "atomic commits"]. By way of comparison, [http://en.wikipedia.org/wiki/Concurrent_Versions_System Concurrent Versions System (CVS)] does not employ [http://en.wikipedia.org/wiki/Atomic_commit atomic commits]. Manual backup procedures are inherently not [http://en.wikipedia.org/wiki/Atomic_commit atomic functions]. Additionally, SVN also handles [http://en.wikipedia.org/wiki/Sparse_file sparse (dynamic)] virtual hard disk files, an option VirtualBox offers when [http://www.virtualbox.org/manual/ch01.html#gui-createvm instantiating new virtual disk drives].
-
-Similar to VirtualBox's snapshot capability, SVN also takes into consideration differences in files - both textual and binary - from version to version. For instance, if a 50 GB virtual hard drive grows by an additional 60 GB over the course of a week, SVN's repository will not necessarily increase by an additional 60 GB when a new back up is performed. The outcome depends on how much of the original file changed since the previous backup. SVN will analyze differences between newer files against older files in its repository and only save the differences. Therefore, the repository may only grow as little as 10 GB+, making more efficient use of system resources.
-
-VirtualBox's snapshot feature provides [http://forums.virtualbox.org/viewtopic.php?f=3&p=123806 'branching'] capability. This means one can revert to an earlier version of your VM and start a new branch / version of your VM from where you left off earlier. SVN also provides similar [http://svnbook.red-bean.com/en/1.7/svn.branchmerge.html branching] capability. 
-
-'''Note:''' For backups and restores, configuration management tools like SVN require significant additional disk space over and above the size of the file. For instance, a 50 GB file typically requires approximately 150 GB of disk space to manage that instance of the VM because you require: 50 GB for the original source file, 50 GB in SVN's database [http://en.wikipedia.org/wiki/Apache_Subversion#Repository_types repository], and another 50 GB for SVN's [http://svnbook.red-bean.com/en/1.6/svn.tour.initial.html local workspace] working folder ('./.svn'). Although this overhead may seem inefficient, it is not when you consider SVN's functionality and reliability in comparison to manual backup methods outlined earlier.
-
-'''Complete Operating Environment Backups'''
-
-In addition to backing up the Whonix-Gateway and Whonix-Workstation(s) virtual hard drive files, it is also possible to back up the whole of the VirtualBox application and Whonix environment for a completely restoreable solution.  Cloning is another possible option, but that requires more advanced technical skills.
-
-Typically, the VirtualBox application installed is the one provided by [http://www.virtualbox.org Virtualbox.org]. However, a [http://en.wikipedia.org/wiki/Portable_application portable application] version of VirtualBox is available via a tool provided by [http://www.vbox.me VBox.me]. This application converts VirtualBox's 'install application' into a 'portable application', thereby providing the option to port VMs to other computers via external USB hard drives and/or sticks. By instantiating VMs under portable VirtualBox's '~/data/.VirtualBox/Machines' folder, it is possible to backup and restore the complete operating environment of not only Whonix, but also specific instances of VirtualBox and SVN for complete portability. This method captures the entire Whonix operating environment under one parent folder, rather than distributing it across various user and system folders:
-<br /><br />
-[[File:2014-05-11 09_42_19.png|400px]]
-<br /><br />
-[[File:2014-05-11 09_46_43.png|400px]]
-<br /><br />
-[[File:2014-05-11 09_54_39.png|400px]]
-</div>
-</div>
-
-== Adding a NAT Adapter to Whonix-Workstation / Updates without Tor ==
-Anonymity is compromised if another NAT network adapter is added to the Whonix-Workstation. If this advice is disregarded, then your identity is leaked if/when infection occurs. Therefore, it is strongly recommended to always update over the Tor network. Although Tor updating is slow by comparison, it prevents inadvertent leaks.
-
-== Adding a Host-Only Networking Adapter to Whonix-Workstation / SSH into Whonix-Workstation ==
-If accessing the Whonix-Workstation via SSH, some users may consider something dangerous - adding a second network adapter with [http://www.virtualbox.org/manual/ch06.html#network_hostonly host-only networking].
-
-{{mbox
-| image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       = '''Warning:''' Never add another network adapter in this manner! It is also potentially dangerous if any other VMs are running except the Whonix-Workstation. The reason is that it will expose the MAC address of the host to the Whonix-Workstation.
-}}
-
-
-The VMware host-only warning regarding routing and connection sharing may equally apply to Whonix: <ref>https://www.vmware.com/support/ws4/doc/network_host_ws.html</ref>
-
-<blockquote>If you install the proper routing or proxy software on your host computer, you can establish a connection between the host virtual Ethernet adapter and a physical network adapter on the host computer. This allows you, for example, to connect the virtual machine to a Token Ring or other non-Ethernet network.
-
-On a Windows 2000, Windows XP or Windows Server 2003 host computer, you can use host-only networking in combination with the Internet connection sharing feature in Windows to allow a virtual machine to use the host's dial-up networking adapter or other connection to the Internet. See your Windows documentation for details on configuring Internet connection sharing.</blockquote>
-
-If it is necessary to SSH or VNC into the Whonix-Workstation, then:
-
-* It is safest to do this from another Whonix-Workstation. When using VMs, they can see each other if they are within the same virtual LAN. When using [[Physical Isolation]], VMs can see each other if they are within the same LAN.
-* Alternatively run the services using [[Onion Services]] and access them through another Whonix-Workstation.
-* Another alternative is to run the services using [[Onion Services]] and access them from the host using ordinary torification methods.
-* A final method is to SSH from the host into Whonix-Gateway (see [[File Transfer]] for instructions) and then SSH from there [[File_Transfer#SSH_into_Whonix-Workstation|into the Whonix-Workstation]].
-
-
-Note: The last two methods are <i>not</i> recommended. They risk weakening isolation between the host and Whonix-Workstation.
-
-= Secure Qubes-Whonix Operation =
-
-The following short list of actions can help to improve security and anonymity on the Qubes platform, and by extension [[Qubes-Whonix]] users. It is advised to regularly consult [https://groups.google.com/d/forum/qubes-users Qubes forums] and [https://www.qubes-os.org/news/ other channels] for the latest security news and [https://www.qubes-os.org/doc/security-guidelines/ advice].
-
-'''GPG and Software Packages'''
-
-* Always keep the system up to date in [https://www.qubes-os.org/doc/software-update-dom0/ dom0], [https://www.qubes-os.org/doc/software-update-vm/ template VMs] and standalone VMs.
-* Check gpg is enabled in [http://docs.fedoraproject.org/en-US/Fedora/12/html/Deployment_Guide/sec-Configuring_Yum_and_Yum_Repositories.html config files] (gpgcheck=1) if new Fedora repositories are installed.
-* [[Security_Guide#Checking_Digital_Fingerprints_of_Signing_Keys|Safely import new signing keys]] by checking it is the same from multiple sources.
-* Preferably only install packages from trusted sources, for example pre-configured Fedora, Debian, Whonix and Qubes sources.
-* Untrusted or unverifiable programs should be installed in Standalone VMs or less trusted, cloned templates.
-
-
-'''Hardware / Hardware Settings'''
-
-* Enable [https://en.wikipedia.org/wiki/IOMMU VT-d/IOMMU] via BIOS to have [https://en.wikipedia.org/wiki/DMA_attack DMA protection], effective network isolation, and the ability to assign PCIe devices to a HVM. Check it is running via dom0 (qubes-hcl-report).
-* Ensure [https://en.wikipedia.org/wiki/X86_virtualization#Intel_virtualization_(VT-x) Intel VT-x] or [https://www.amd.com/en/technologies/virtualization AMD-V] is available, since it is required for running HVM domains, such as Windows-based AppVMs.
-* Prepare and utilize a [https://www.qubes-os.org/doc/usb/ USB qube] to protect against side-channel attacks. <ref>Automatically configured in Qubes R4, but an optional configuration in R3.2.</ref>
-* Use a [https://www.qubes-os.org/doc/yubi-key/ Yubikey] to enhance the security of Qubes user authentication, mitigate the risk of password snooping, and to improve USB keyboard security.
-* Prefer Intel Integrated Graphics Processing (IGP) units for greater system stability and security. <ref>Proprietary binary blobs of other GPU manufacturers pose security risks, and available open source drivers are notoriously unstable in Qubes.</ref>
-* Ensure computer hardware meets all other [[Security_Guide#Qubes-Whonix_Hardware_Requirements|Qubes-Whonix  requirements]] for the best security, functionality and future compatibility with Qubes 4.X releases.
-
-
-'''ISO and Qubes Version'''
-
-* Verify the [https://www.qubes-os.org/doc/verifying-signatures/ authenticity and integrity] of the Qubes iso download.
-* Prefer Qubes R4.0 over earlier releases, as fully virtualized (HVM or PVH) VMs provide [https://www.qubes-os.org/news/2018/03/15/qsb-37-update/ greater protection] against processor speculative execution bugs like the Meltdown and Spectre attacks, and other exploits. <ref>Qubes R3.2 and earlier versions rely on para-virtualized (PV) VMs.</ref> <ref> For instance, this [https://xenbits.xen.org/xsa/advisory-260.html recent security bug] allows an attacker to escape from a PV domain and exploit the dom0 hypervisor. It only affects Qubes R3.2, since Qubes R4 [https://github.com/QubesOS/qubes-secpack/blob/master/QSBs/qsb-039-2018.txt only runs untrusted code in PVH or HVM domains] by default.</ref>
-
-
-'''Protecting User Data and Activities'''
-
-* For critical user data, protect against [https://www.qubes-os.org/doc/data-leaks/ unintentional leaks] by setting an empty NetVM field (set to "none") for the corresponding qube. 
-* For sensitive activities, do not run trusted, high-value VMs in paralell with untrusted VMs. <ref>A successful exploit of the untrusted qube provides an avenue for attacking the sensitive qube.</ref>
-* Observe the [https://theinvisiblethings.blogspot.fr/2011/05/app-oriented-ui-model-and-its-security.html security context] of colored windows borders in Qubes before running applications or manipulating data.
-* If paying in cryptocurrencies, utilize a [https://www.qubes-os.org/doc/split-bitcoin/ “split” bitcoin wallet] which creates an offline “cold storage” wallet and an online “watching only” wallet.
-* Avoid [https://www.qubes-os.org/doc/multiboot/ dual / multi-boot configurations] in Qubes. The other OS could modify the unprotected <i>/boot</i> partition or firmware to maliciously compromise Qubes and/or spy on user activities.
-* Be careful when running command line operations. Refer to a [https://github.com/Jeeppler/qubes-cheatsheet/blob/master/qubes-cheatsheet.md suitable resource first], then proceed.
-* Use [https://www.qubes-os.org/doc/split-gpg/ split-GPG] for email to reduce the risk of key theft used for encryption / decryption and signing.
-
-
-'''Template and Other VMs'''
-
-* Never run applications in TemplateVMs or dom0, except updating tools or editors for configuration purposes (running applications poses security risks).
-* Avoid configuring [https://www.qubes-os.org/doc/firewall/ network traffic between two qubes] for security reasons.
-* Consider leveraging the non-persistence of Qubes' templates to [https://github.com/tasket/Qubes-VM-hardening fend off malware] by locking-down, quarantining and checking the contents of ''/rw'' private storage. <ref>The <code>vm-boot-protect.service</code> is suitable for standalone VMs, AppVMs, netVMs, Whonix AppVMs and others. Do not use the <code>vm-boot-protect-root</code> service for Whonix AppVMs.</ref> <ref>This service: starts before the private volume is mounted, protects ''/home'' desktop and shell startup executables, quarantines ''/rw'' configs and scripts (with whitelisting), re-deploys custom / default files to ''/rw'' on each boot, conducts SHA256 checking against unwanted changes, and more.</ref> <ref>Disabling of the Qubes' default passwordless-root is also required.</ref>
-* Consider [https://github.com/rustybird/qubes-split-dm-crypt split dm-crypt] to isolate device-mapper based secondary storage encryption (not the root filesystem) and LUKS header processing to DisposableVMs.
-* Consider running <code>sys-net</code>, <code>sys-firewall</code> and <code>sys-usb</code> as [https://www.qubes-os.org/doc/dispvm-customization/#using-static-disposable-vms-for-sys- Static DisposableVMs].
-
 = Onionizing Repositories =
 
 When Whonix, Debian and Qubes packages are installed or updated, default settings point to repositories with a http:// URI. <ref>https://www.whonix.org/wiki/Whonix-APT-Repository#Repository_Location_URI</ref> However, experimental Tor onion services are already available for the Whonix, Debian and Qubes packages.
@@ -694,7 +82,43 @@ There are several security and privacy benefits of using Tor onion services: <re
 * The ISP cannot easily learn what packages are fetched.
 * End-to-end authentication and encryption provides protection against man-in-the-middle attacks e.g. version downgrade attacks.
 
-==Whonix and Debian Packages==
+== Qubes Packages ==
+
+The following commands must be run in dom0 in order to use Qubes’ Tor onion service repositories for each type of VM. <ref>https://www.qubes-os.org/doc/hidden-service-repos/</ref> <ref>The cat commands are optional and for confirmation only.</ref>
+
+The downside of this approach is that repository definitions are managed by a Qubes package, meaning further manual updates need to be applied in the future when they change.
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = To enforce v3 onion connections, replace all instances of the v2 onion address below (qubesos4rrrrz6n4.onion) with sik5nlgfc5qylnnsr57qrbm64zbdx6t4lreyhpon3ychmxmiem7tioad.onion <ref>https://groups.google.com/forum/?_escaped_fragment_=topic/qubes-users/4VCPI7SZLhE#!topic/qubes-users/4VCPI7SZLhE</ref> <ref>Tor v3.2 or higher must be running in Whonix-Gateway (<code>sys-whonix</code>).</ref>
+}}
+
+
+'''Dom0'''
+
+In dom0, run.
+<pre>
+sudo sed -i 's/yum.qubes-os.org/yum.qubesos4rrrrz6n4.onion/' /etc/yum.repos.d/qubes-dom0.repo && cat /etc/yum.repos.d/qubes-dom0.repo
+</pre>
+<pre>
+sudo sed -i 's/yum.qubes-os.org/yum.qubesos4rrrrz6n4.onion/' /etc/yum.repos.d/qubes-templates.repo && cat /etc/yum.repos.d/qubes-templates.repo
+</pre>
+'''Fedora Template'''
+
+In dom0, run.
+<pre>
+qvm-run -a --nogui -p -u root $FedoraTemplateVM 'sed -i "s/yum.qubes-os.org/yum.qubesos4rrrrz6n4.onion/" /etc/yum.repos.d/qubes-r3.repo && cat /etc/yum.repos.d/qubes-r3.repo'
+</pre>
+'''Debian and Whonix Templates'''
+
+In dom0, run.
+<pre>
+qvm-run -a --nogui -p -u root $DebianTemplateVM 'sed -i "s/deb.qubes-os.org/deb.qubesos4rrrrz6n4.onion/" /etc/apt/sources.list.d/qubes-r3.list && cat /etc/apt/sources.list.d/qubes-r3.list'
+</pre>
+
+== Whonix and Debian Packages ==
+
 {{mbox
 | type      = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
@@ -812,44 +236,19 @@ deb http://sdscoq7snqtznauu.onion/torproject.org jessie main
 
 Save and exit.
 
-==Qubes Packages==
-
-The following commands must be run in dom0 in order to use Qubes’ Tor onion service repositories for each type of VM. <ref>https://www.qubes-os.org/doc/hidden-service-repos/</ref> <ref>The cat commands are optional and for confirmation only.</ref>
-
-The downside of this approach is that repository definitions are managed by a Qubes package, meaning further manual updates need to be applied in the future when they change.
-
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = To enforce v3 onion connections, replace all instances of the v2 onion address below (qubesos4rrrrz6n4.onion) with sik5nlgfc5qylnnsr57qrbm64zbdx6t4lreyhpon3ychmxmiem7tioad.onion <ref>https://groups.google.com/forum/?_escaped_fragment_=topic/qubes-users/4VCPI7SZLhE#!topic/qubes-users/4VCPI7SZLhE</ref> <ref>Tor v3.2 or higher must be running in Whonix-Gateway (<code>sys-whonix</code>).</ref>
-}}
-
-
-'''Dom0'''
-
-In dom0, run.
-<pre>
-sudo sed -i 's/yum.qubes-os.org/yum.qubesos4rrrrz6n4.onion/' /etc/yum.repos.d/qubes-dom0.repo && cat /etc/yum.repos.d/qubes-dom0.repo
-</pre>
-<pre>
-sudo sed -i 's/yum.qubes-os.org/yum.qubesos4rrrrz6n4.onion/' /etc/yum.repos.d/qubes-templates.repo && cat /etc/yum.repos.d/qubes-templates.repo
-</pre>
-'''Fedora Template'''
-
-In dom0, run.
-<pre>
-qvm-run -a --nogui -p -u root $FedoraTemplateVM 'sed -i "s/yum.qubes-os.org/yum.qubesos4rrrrz6n4.onion/" /etc/yum.repos.d/qubes-r3.repo && cat /etc/yum.repos.d/qubes-r3.repo'
-</pre>
-'''Debian and Whonix Templates'''
-
-In dom0, run.
-<pre>
-qvm-run -a --nogui -p -u root $DebianTemplateVM 'sed -i "s/deb.qubes-os.org/deb.qubesos4rrrrz6n4.onion/" /etc/apt/sources.list.d/qubes-r3.list && cat /etc/apt/sources.list.d/qubes-r3.list'
-</pre>
-
 = Passwords =
 
 If weak passwords (passphrases) are used, they can be easily determined by [https://en.wikipedia.org/wiki/Brute-force_attack brute-force attacks], whether or not Whonix is installed. In essence, attackers systematically try all passwords until the correct one is found, or attempt to guess the key which is created from the password using a key derivation function (an exhaustive key search). This method is very fast for short and/or non-random passwords.
+
+== Generating Unbreakable Passwords ==
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = '''Warning:''' It is safe to assume that advanced adversaries with modern technology can conduct bruteforce attacks at a rate of 10s or even 100s of billions of attempts per second. <ref>https://www.password-depot.com/know-how/brute-force-attacks.htm</ref>
+}}
+
+
+To generate passphrases which cannot be bruteforced even over a timeframe of several billion years (barring breakthroughs in quantum computing), users should default to [https://en.wikipedia.org/wiki/Diceware diceware passphrases of 7-8 words in length], with the words chosen randomly by dice rolls. This provides password entropy of 80-96 bits. <ref>https://en.wikipedia.org/wiki/Password_strength#Random_passwords</ref> Generally speaking, lower entropy is reasonable to prevent online attacks due to limits on incorrect username/password combinations, but up to 128 bits of entropy is suggested for important cryptographic keys; a Diceware passphrase of 10 words in length. <ref>https://en.wikipedia.org/wiki/Password_strength#Required_bits_of_entropy</ref>
 
 == Principles for Stronger Passwords ==
 
@@ -864,54 +263,573 @@ Users should read [https://en.wikipedia.org/wiki/Password_strength#Examples_of_w
 * If passwords are written down, they should not be left in obvious places.
 * Consider using a [https://www.keepassx.org/ secure password manager], so hundreds of different passwords can be kept stored in an encrypted password database, with access only requiring one master password (which itself should be a cryptographically strong password).
 
-== Generating Unbreakable Passwords ==
+= Platform Security = 
+
+== Host Security ==
+
+=== Basics ===
+
+Please read the [[Computer Security Education#Host Security|Computer Security Education section about Host Security]].
+
+=== Anonymous Mobile Modems ===
+
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       = '''Warning:''' It is safe to assume that advanced adversaries with modern technology can conduct bruteforce attacks at a rate of 10s or even 100s of billions of attempts per second. <ref>https://www.password-depot.com/know-how/brute-force-attacks.htm</ref>
+| text       = 
+'''Warning:''' The technique outlined in this section may be ineffective against advanced adversaries who can:
+
+* [https://theintercept.com/2014/12/04/nsa-auroragold-hack-cellphones/ Subvert cellular networks].
+* Conduct downgrade attacks on [https://www.schneier.com/blog/archives/2015/04/the_further_dem_1.html network functioning] from 4G to 3G, from 3G to 2G and so on.
+* [https://www.schneier.com/blog/archives/2014/12/nsa_hacking_of_.html Attack all ciphers] used in cellular networks, including A5/1, A5/2 and A5/3.
 }}
 
 
-To generate passphrases which cannot be bruteforced even over a timeframe of several billion years (barring breakthroughs in quantum computing), users should default to [https://en.wikipedia.org/wiki/Diceware diceware passphrases of 7-8 words in length], with the words chosen randomly by dice rolls. This provides password entropy of 80-96 bits. <ref>https://en.wikipedia.org/wiki/Password_strength#Random_passwords</ref> Generally speaking, lower entropy is reasonable to prevent online attacks due to limits on incorrect username/password combinations, but up to 128 bits of entropy is suggested for important cryptographic keys; a Diceware passphrase of 10 words in length. <ref>https://en.wikipedia.org/wiki/Password_strength#Required_bits_of_entropy</ref>
+Mobile modems refers to portable broadband modems which allow your computer to connect to the internet via the cellular network. These devices support use of the 2G, 3G and 4G networks. 
 
-= Transporting UDP Tunnels over Tor =
+For activities necessitating the best possible anonymity, it is theoretically safer to use an anonymous mobile modem far away from one's normal location, rather than use a local internet connection. The reason is the dial-up or broadband provider normally knows your name, postal address and non-anonymous payment method. This is problematic if Tor or Whonix is compromised, since an adversary could pressure the service provider and very easily confirm your identity. However, if a mobile modem user is successfully attacked, the IP address leaked will not immediately lead back to the postal address of the user.
 
-'''Tor Design'''
+It is safest to assume that identification and location information can be discovered if specifically targeted, alongside potential eavesdropping of activities and communications. Always conduct a threat assessment of planned activities before following any course of action!
 
-According to the Tor Project: <ref>https://blog.torproject.org/blog/moving-tor-datagram-transport</ref>
+'''Default Configuration Whonix Users'''
 
-<blockquote>Tor transports data over encrypted TLS tunnels between nodes, which is in turn carried by TCP.</blockquote>
+Either:
 
-The current Tor design does not support the transport of [https://trac.torproject.org/projects/tor/ticket/7830 UDP-based protocols] through exit nodes in the network. This is unlikely to be supported in the near future due to incompatibility with cryptographic protocols in use and those planned.
-
-The consequence is that UDP-based protocols and applications cannot be used to transmit UDP datagrams between guards and exit nodes in the default environment, for example, some [[VoIP]] or video applications. <ref>https://en.wikipedia.org/wiki/User_Datagram_Protocol</ref>
-
-'''Transporting UDP Tunnels over Tor with a VPN'''
-
-A solution to this problem is to use a [https://en.wikipedia.org/wiki/Tunneling_protocol tunneling protocol]. In simple terms, this allows a user to access a foreign protocol or network service that the underlying (Tor) network does not support or provide directly. 
-
-The tested and working method in Whonix is to utilize a Virtual Private Network (VPN) with a trusted provider that does not block UDP traffic (User -> Tor -> VPN -> [Other Anonymizing Network] -> Internet). Some VPN protocols such as OpenVPN may use UDP while implementing reliable connections and error checking at the application level. <ref>Other VPN implementations may also be useful, but they have not been researched yet.</ref>
-
-Please first read the related VPN documentation and warnings: 
-
-* [https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN Tor Plus VPN or Proxy].
-* [[Whonix:General_disclaimer#Whonix_VPN_disclaimer|Whonix VPN disclaimer]].
-* [[Tunnels/Connecting to Tor before a VPN| How to connect to Tor before a VPN (<code>User</code> -> <code>Tor</code> -> <code>VPN</code> -> <code>Internet</code>)]].
-* [[Tunnels/Introduction#Comparison_Table|Tunneling comparison table]].
+* Plug or integrate the mobile modem into the host operating system as its internet connection replacement (easy).
+* Plug the mobile modem into the Whonix-Gateway and only route Whonix-Gateway's traffic through it, not the host traffic (difficult; undocumented and therefore not recommended).
 
 
-Before following the instructions to [[Tunnel_UDP_over_Tor|tunnel UDP over Tor]].
+'''Physically-Isolated Whonix Users'''
 
-The current [http://sec.cs.ucl.ac.uk/users/smurdoch/papers/tor11datagramcomparison.pdf Tor architecture] may cause negative performance impacts on user activities. This arises from high latency due to congestion in the network, queue length on nodes (mixing of traffic across multiple nodes), and TCP mechanisms which attempt to account for lost packets and hold delivery of future packets until a resend is complete. <ref>https://guardianproject.info/2012/12/10/voice-over-tor/</ref>
+Use the second method outlined above. There is no host in the sense that the Whonix-Gateway is running bare-metal on a second computer.
 
-Understand that adding a second connection in the tunneling chain adds significant complexity. This potentially increases the user's security and anonymity risks due to: misconfiguration, the increased attack surface of secure tunneling software, the difficulty in anonymously paying for VPN services, and potential bottlenecks with VPN providers. Depending on the configuration, this may also increase fingerprinting risk, remove stream isolation of  activities, and lead to a permanent destination X in the Tor network. <ref>Also read the Tor Project warnings here: https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN</ref>.
+'''Safe Purchase of a Mobile Modem and SIM Card'''
 
-'''Whonix Recommendations'''
+Recommendations:
 
-Whonix recommends the use of [https://en.wikipedia.org/wiki/OpenVPN OpenVPN] as the most secure (SSL/TLS-based) protocol, rather than reliance upon IKE, L2TP/IPsec or PPTP. OpenVPN is considered extremely secure when used with encryption algorithms such as AES. <ref>IKE is being exploited by advanced agencies to decrypt IPSec traffic. IPsec configured with pre-shared keys is vulnerable to MITM attacks. PPTP is an obsolete method for VPN implementation with a host of security weaknesses. For further reading on adversary capabilities against VPN protocols see: http://www.spiegel.de/media/media-35515.pdf</ref>
+* Buy the mobile modem anonymously. This may be in a store, second-hand, or on the street. Be sure to leave no personal data during the purchase.
+* Be aware of cameras and potential witnesses to your purchases.
+* Do not use the modem for any non-anonymous activity prior to using it for Whonix purposes.
+* Telecommunication companies routinely log the serial numbers of phones (IMEI) and SIM cards, as well as the phone number for network logins. Therefore it is also necessary to: 
+** Buy the SIM card anonymously (prepaid is better).
+** Buy cash codes in different stores anonymously.
+** Never use the anonymous SIM card with a non-anonymous phone or mobile modem beforehand.
 
-A dedicated virtual machine is recommended for this activity, see: [[Multiple Whonix-Workstations]].
+
+'''Mobile Modem Warnings'''
+
+* Many devices are manufactured by a handful of countries that have run [http://www.macworld.com.au/news/3g-and-4g-usb-modems-are-a-security-threat-researcher-says-89533/ insecure software] in the recent past.
+* Devices often show critical [https://www.helpnetsecurity.com/2015/12/03/3g4g-cellular-usb-modems-are-full-of-critical-security-flaws-many-0-days/ zero days]. For example: remote code executive flaws, exploitable firmware, vulnerability to cross-site scripting and CSRF vulnerabilities.
+
+
+Carefully choose all hardware and conduct manufacturer research beforehand!
+
+'''Mobile Modem Operation'''
+
+When using cellular networks, users often only get a shared external IP address due to scarcity of IPv4 IPs. This can lead to thousands of users sharing one IPv4 address at the same time. Also, some providers do not yet log the users' (NAT) ports. Consequently, providers cannot pinpoint users when they are given an IP address and time stamp. This is a nice feature, but do not rely on it for strong anonymity!
+
+Some providers assign additional and unique IPv6 IP addresses to their users. This is not a concern for intended Tor usage, as it does not yet automatically utilize IPv6. <ref>https://trac.torproject.org/projects/tor/wiki/org/roadmaps/Tor/IPv6</ref> For greater security, prefer using a new, distant, random, non-circular location when conducting on-line activities.
+
+=== Anonymous WiFi Adapters ===
+
+Normally the dial-up or broadband provider knows your name, postal address and non-anonymous payment method. If Tor or Whonix is compromised, then an adversary only needs to pressure the service provider to confirm your identity. This is not the case if using an anonymous WiFi adapter plugged or integrated into the Whonix-Gateway.
+
+For safer use, it is recommended to:
+
+* Buy the WiFi adapter anonymously in a store, second-hand or on the street.
+* Never provide personal data during a purchase.
+* Do not use the adapter for prior, non-anonymous activity. Some providers or hotspots log MAC addresses and the username (if paid).
+* If possible, only use free hotspots or pay for them anonymously. Otherwise abstain from paid hotspots.
+* For greater security, always use a new, distant, random, non-circular hotspot location.
+* Check for cameras and witnesses during online activities.
+
+=== Hardening ===
+
+Whonix does not yet improve host security. It is recommended to use a secure host operating system like [[Computer_Security_Education#Host_Operating_System|Debian]] [[Computer_Security_Education#Which_GNU.2FLinux_Distribution_do_you_recommend.3F|GNU/Linux]] and manually [[Advanced_Security_Guide#Harden_Debian|harden]] it. Also follow relevant steps in the [[Security_Guide#System_Hardening_Checklist|system hardening checklist]] for greater security.
+
+=== Hardware Component Risks ===
+
+In the default configuration, Whonix provides significant protection against [[Comparison_with_Others#Circumventing_Proxy_Obedience_Design|circumvention of the proxy obedience design]]. This includes:
+
+* Applications not honoring proxy settings (proxy bypass IP leaks).
+* Applications disclosing the user's real IP (protocol IP leaks).
+* Remote code execution exploits with user-only rights (exploit + unsafe browser).
+* Remote code execution exploits with root rights (exploit + root exploit + unsafe browser).
+
+
+However, if a second exploit is used to break out of the VM, the default Whonix installation is broken and the user's real IP address will be identified. Only Whonix run with [[Physical_Isolation|physical isolation]] will defeat this attack. This is because the Whonix-Workstation host does not know the real IP address, only the Whonix-Gateway which is running on another machine. Consequently, to successfully deanonymize the user, the attacker must also: exploit the physically isolated Whonix-Gateway, subvert the Tor process, or attack the Tor network at large.
+
+Nevertheless, physically-isolated users should be aware that if an adversary manages to break out of the Whonix-Workstation VM using an exploit, then additional risks are posed by the hardware components that are built-in or have been additionally installed. This includes CPU and HDD / SSD temperature sensors, microphones and cameras.
+
+In the case of Whonix with physical isolation:
+
+* The user's IP address is still safe, but the temperature sensors can be used for anonymity set reduction.
+* Different CPU,  HDD and SSD models will report different sensor information, depending on climate and weather. If possible, it is advised to remove or to obfuscate the sensor results.
+* Cameras and microphones can be covertly activated by the adversary. Remove external hardware and/or disable them in BIOS if possible. At a minimum, cover them or ideally remove them.
+
+
+In the case of a default Whonix installation, the same general recommendations apply, although it does not really matter since the user will have been deanonymized successfully.
+
+=== Hostnames ===
+
+The hostname given to a user’s home computer or device can be leaked via a number of protocols, posing a privacy risk depending on the specificity of the naming convention. For further information, [[Computer_Security_Education#Hostnames|see here]].
+
+=== Power Saving Considerations ===
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = '''Warning:''' Upon system suspend / standby, Full Disk Encryption keys are still kept in RAM.
+}}
+
+
+Users at high risk or traveling should avoid leaving a system in the suspend or standby state. Instead, the recommended power mode to use is hibernation. This will lock all system partitions to a safe state, though there is a small trade-off in startup time.
+
+On GNU/Linux hosts, standby will not always result in having LUKS keys retained in memory. Some experimental projects <ref>https://github.com/jonasmalacofilho/ubuntu-luks-suspend</ref> and custom setups with systemd+scripting are able to erase the keys before system suspend to avoid mistakes.
+
+Following a system standby period, the network fingerprint for Tor on the Whonix-Gateway is identical to a standard Tor instance on the host that has gone through the same procedure. There are some old connections that go stale and need renewal, but nothing is seen by a network adversary because time leak identifiers have been stripped out of Tor's protocol / OpenSSL, and TCP Timestamps are gone. 
+
+[[Non-Qubes-Whonix]] only:<br />
+In order to reconnect, manual time adjustment is required or the VM can simply be powered off and then powered on again. This step will not be necessary once hypervisor specific post resume hooks are used, because guest clocks will be seamlessly updated upon power state changes from the host.
+
+[[Qubes-Whonix]] only:<br />
+Has automatic seamless time adjustment after resume. <ref>
+https://github.com/Whonix/sdwdate/blob/master/etc/qubes/suspend-pre.d/30_sdwdate.sh
+
+https://github.com/Whonix/sdwdate/blob/master/etc/qubes/suspend-post.d/30_sdwdate.sh
+</ref>
+
+== Qubes-Whonix Security ==
+
+The following list of actionable items can help to improve security and anonymity on the Qubes platform, and by extension [[Qubes-Whonix]] users. It is advised to regularly consult [https://groups.google.com/d/forum/qubes-users Qubes forums] and [https://www.qubes-os.org/news/ other channels] for the latest security news and [https://www.qubes-os.org/doc/security-guidelines/ advice].
+
+'''GPG and Software Packages'''
+
+* Always keep the system up to date in [https://www.qubes-os.org/doc/software-update-dom0/ dom0], [https://www.qubes-os.org/doc/software-update-vm/ template VMs] and standalone VMs.
+* Check gpg is enabled in [http://docs.fedoraproject.org/en-US/Fedora/12/html/Deployment_Guide/sec-Configuring_Yum_and_Yum_Repositories.html config files] (gpgcheck=1) if new Fedora repositories are installed.
+* [[Security_Guide#Checking_Digital_Fingerprints_of_Signing_Keys|Safely import new signing keys]] by checking it is the same from multiple sources.
+* Preferably only install packages from trusted sources, for example pre-configured Fedora, Debian, Whonix and Qubes sources.
+* Untrusted or unverifiable programs should be installed in Standalone VMs or less trusted, cloned templates.
+
+
+'''Hardware / Hardware Settings'''
+
+* Enable [https://en.wikipedia.org/wiki/IOMMU VT-d/IOMMU] via BIOS to have [https://en.wikipedia.org/wiki/DMA_attack DMA protection], effective network isolation, and the ability to assign PCIe devices to a HVM. Check it is running via dom0 (qubes-hcl-report).
+* Ensure [https://en.wikipedia.org/wiki/X86_virtualization#Intel_virtualization_(VT-x) Intel VT-x] or [https://www.amd.com/en/technologies/virtualization AMD-V] is available, since it is required for running HVM domains, such as Windows-based AppVMs.
+* Prepare and utilize a [https://www.qubes-os.org/doc/usb/ USB qube] to protect against side-channel attacks. <ref>Automatically configured in Qubes R4, but an optional configuration in R3.2.</ref>
+* Use a [https://www.qubes-os.org/doc/yubi-key/ Yubikey] to enhance the security of Qubes user authentication, mitigate the risk of password snooping, and to improve USB keyboard security.
+* Prefer Intel Integrated Graphics Processing (IGP) units for greater system stability and security. <ref>Proprietary binary blobs of other GPU manufacturers pose security risks, and available open source drivers are notoriously unstable in Qubes.</ref>
+* Ensure computer hardware meets all other [[Security_Guide#Qubes-Whonix_Hardware_Requirements|Qubes-Whonix  requirements]] for the best security, functionality and future compatibility with Qubes 4.X releases.
+
+
+'''ISO and Qubes Version'''
+
+* Verify the [https://www.qubes-os.org/doc/verifying-signatures/ authenticity and integrity] of the Qubes iso download.
+* Prefer Qubes R4.0 over earlier releases, as fully virtualized (HVM or PVH) VMs provide [https://www.qubes-os.org/news/2018/03/15/qsb-37-update/ greater protection] against processor speculative execution bugs like the Meltdown and Spectre attacks, and other exploits. <ref>Qubes R3.2 and earlier versions rely on para-virtualized (PV) VMs.</ref> <ref> For instance, this [https://xenbits.xen.org/xsa/advisory-260.html recent security bug] allows an attacker to escape from a PV domain and exploit the dom0 hypervisor. It only affects Qubes R3.2, since Qubes R4 [https://github.com/QubesOS/qubes-secpack/blob/master/QSBs/qsb-039-2018.txt only runs untrusted code in PVH or HVM domains] by default.</ref>
+
+
+'''Protecting User Data and Activities'''
+
+* For critical user data, protect against [https://www.qubes-os.org/doc/data-leaks/ unintentional leaks] by setting an empty NetVM field (set to "none") for the corresponding qube. 
+* For sensitive activities, do not run trusted, high-value VMs in paralell with untrusted VMs. <ref>A successful exploit of the untrusted qube provides an avenue for attacking the sensitive qube.</ref>
+* Observe the [https://theinvisiblethings.blogspot.fr/2011/05/app-oriented-ui-model-and-its-security.html security context] of colored windows borders in Qubes before running applications or manipulating data.
+* If paying in cryptocurrencies, utilize a [https://www.qubes-os.org/doc/split-bitcoin/ “split” bitcoin wallet] which creates an offline “cold storage” wallet and an online “watching only” wallet.
+* Avoid [https://www.qubes-os.org/doc/multiboot/ dual / multi-boot configurations] in Qubes. The other OS could modify the unprotected <i>/boot</i> partition or firmware to maliciously compromise Qubes and/or spy on user activities.
+* Be careful when running command line operations. Refer to a [https://github.com/Jeeppler/qubes-cheatsheet/blob/master/qubes-cheatsheet.md suitable resource first], then proceed.
+* Use [https://www.qubes-os.org/doc/split-gpg/ split-GPG] for email to reduce the risk of key theft used for encryption / decryption and signing.
+
+
+'''Template and Other VMs'''
+
+* Never run applications in TemplateVMs or dom0, except updating tools or editors for configuration purposes (running applications poses security risks).
+* Avoid configuring [https://www.qubes-os.org/doc/firewall/ network traffic between two qubes] for security reasons.
+* Consider leveraging the non-persistence of Qubes' templates to [https://github.com/tasket/Qubes-VM-hardening fend off malware] by locking-down, quarantining and checking the contents of ''/rw'' private storage. <ref>The <code>vm-boot-protect.service</code> is suitable for standalone VMs, AppVMs, netVMs, Whonix AppVMs and others. Do not use the <code>vm-boot-protect-root</code> service for Whonix AppVMs.</ref> <ref>This service: starts before the private volume is mounted, protects ''/home'' desktop and shell startup executables, quarantines ''/rw'' configs and scripts (with whitelisting), re-deploys custom / default files to ''/rw'' on each boot, conducts SHA256 checking against unwanted changes, and more.</ref> <ref>Disabling of the Qubes' default passwordless-root is also required.</ref>
+* Consider [https://github.com/rustybird/qubes-split-dm-crypt split dm-crypt] to isolate device-mapper based secondary storage encryption (not the root filesystem) and LUKS header processing to DisposableVMs.
+* Consider running <code>sys-net</code>, <code>sys-firewall</code> and <code>sys-usb</code> as [https://www.qubes-os.org/doc/dispvm-customization/#using-static-disposable-vms-for-sys- Static DisposableVMs].
+
+== Whonix-Gateway Security ==
+
+=== AppArmor ===
+
+According to debian.org: <ref>https://wiki.debian.org/AppArmor</ref>
+
+<blockquote>AppArmor is a Mandatory Access Control framework. When enabled, AppArmor confines programs according to a set of rules that specify what files a given program can access. This proactive approach helps protect the system against both known and unknown vulnerabilities.</blockquote>
+
+AppArmor provides a number of advantages: <ref>http://wiki.apparmor.net/index.php/Main_Page</ref>
+
+* It protects the operating system and applications from external or internal threats, including zero-day attacks.
+* "Good behavior" is enforced and it mitigates exploits via unknown application flaws.
+* AppArmor security policies define the system resources that individual applications can access, and with what privileges. For instance:
+** Network access.
+** Raw socket access.
+** Read, write or execute file permissions on specific paths.
+
+
+Strongly consider using the [[AppArmor|Whonix AppArmor profiles]] which are available for various programs which run in both the Whonix-Gateway and Whonix-Workstation, such as Tor, Tor Browser, Thunderbird and others. The profiles are easily applied and provide a considerable security benefit.
+
+=== General ===
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = '''Warning:''' Only use Whonix-Gateway for running Tor!
+}}
+
+
+If the Whonix-Gateway VM is ever compromised, the attacker can discover: the user's identity (public IP address); all destinations visited; and the entirety of clear-text and onion service communication over Tor.
+
+Before installing any extra packages on the Whonix-Gateway, first consult the developers to check whether that is  necessary and wise.
+
+=== Seccomp ===
+
+According to Mozilla: <ref>https://wiki.mozilla.org/Security/Sandbox/Seccomp</ref>
+
+<blockquote>Seccomp stands for secure computing mode. It is a simple sandboxing tool in the Linux kernel, available since Linux version 2.6.12. When enabling seccomp, the process enters a "secure mode" where a very small number of system calls are available (exit(), read(), write(), sigreturn()). Writing code to work in this environment is difficult; for example, dynamic memory allocation (using brk() or mmap(), either directly or to implement malloc()) is not possible.</blockquote>
+
+Strongly consider enabling seccomp on Whonix-Gateway ([[Qubes-Whonix]]: Whonix-Gateway ProxyVM; sys-whonix), since it is easily applied and provides additional sandboxing protection for the Tor process.
+
+{{Open /etc/tor/torrc}}
+
+Add.
+
+<pre>
+Sandbox 1
+</pre>
+
+Save and exit.
+
+=== Tor Connection Padding ===
+
+Connection padding is available for the Tor process from version 0.3.1.7 onward. This helps to resist traffic analysis, as The Tor Project explains: <ref>https://blog.torproject.org/tor-0317-now-released</ref> <ref>At the time of writing, the Jessie proposed updates repository in Whonix supports this Tor version.</ref>
+
+<blockquote>Connections between clients and relays now send a padding cell in each direction every 1.5 to 9.5 seconds (tunable via consensus parameters). This padding will not resist specialized eavesdroppers, but it should be enough to make many ISPs’ routine network flow logging less useful in traffic analysis against Tor users.<br />
+<br />
+Padding is negotiated using Tor’s link protocol, so both relays and clients must upgrade for this to take effect. Clients may still send padding despite the relay’s version by setting ConnectionPadding 1 in torrc, and may disable padding by setting ConnectionPadding 0 in torrc.</blockquote>
+
+Consider enabling ConnectionPadding client-side by following these steps.
+
+{{Open /etc/tor/torrc}}
+
+Add.
+
+<pre>
+ConnectionPadding 1
+</pre>
+
+Save and exit.
+
+=== Warning: Bridged Networking ===
+
+Do not change Whonix-Gateway's first or second network interface to a bridged network. This is untested and should not be necessary. Users who feel it is necessary in their circumstances should get in [[contact]].
+
+For further interest, here is a [https://sourceforge.net/p/whonix/discussion/general/thread/1e6a8675/ discussion thread], and [https://sourceforge.net/p/whonix/discussion/general/thread/3a0b673a/ another one], debating whether NAT or a bridged network is more secure.
+
+== Whonix-Workstation Security ==
+
+=== Introduction ===
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = '''Tip:''' Whonix implementation examples are based on Debian. To use a customized Whonix-Workstation VM based on other operating systems, see [[Other_Operating_Systems|here]]. For technical design notes, see [[Operating_System|here]].
+}}
+
+
+If the Whonix-Workstation VM is ever compromised, the attacker has access to the data it contains, including all credentials, browser data and passwords. The IP address is never leaked, since this requires a compromise of the Whonix-Gateway VM, but this information may still result in identity disclosure.
+
+In [[Non-Qubes-Whonix|Non-Qubes-Whonix]]:
+
+The best practice is to keep a clean master copy of the Whonix-Workstation VM, make snapshots / clones of the master, and then only use these for internet activity. The user can then 'rollback' (use a new clean clone / snapshot VM) after risky activity, or if they suspect the integrity of the system has been compromised. See the [[Security_Guide#VM_Snapshots|multiple VM snapshots recommendation]] below.
+
+In [[Qubes-Whonix|Qubes-Whonix]]:
+
+The best practice is to use [[Qubes/Disposable_VM|DisposableVMs]] for all your internet activity. Alternatively, periodically delete your Whonix-Workstation AppVM(s) and create fresh instances from the Whonix-Workstation TemplateVM.
+
+{{Anchor|Recommendation to use multiple VM Snapshots}}
+
+=== Adding a Host-Only Networking Adapter to Whonix-Workstation / SSH into Whonix-Workstation ===
+
+If accessing the Whonix-Workstation via SSH, some users may consider something dangerous - adding a second network adapter with [http://www.virtualbox.org/manual/ch06.html#network_hostonly host-only networking].
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = '''Warning:''' Never add another network adapter in this manner! It is also potentially dangerous if any other VMs are running except the Whonix-Workstation. The reason is that it will expose the MAC address of the host to the Whonix-Workstation.
+}}
+
+
+The VMware host-only warning regarding routing and connection sharing may equally apply to Whonix: <ref>https://www.vmware.com/support/ws4/doc/network_host_ws.html</ref>
+
+<blockquote>If you install the proper routing or proxy software on your host computer, you can establish a connection between the host virtual Ethernet adapter and a physical network adapter on the host computer. This allows you, for example, to connect the virtual machine to a Token Ring or other non-Ethernet network.
+
+On a Windows 2000, Windows XP or Windows Server 2003 host computer, you can use host-only networking in combination with the Internet connection sharing feature in Windows to allow a virtual machine to use the host's dial-up networking adapter or other connection to the Internet. See your Windows documentation for details on configuring Internet connection sharing.</blockquote>
+
+If it is necessary to SSH or VNC into the Whonix-Workstation, then:
+
+* It is safest to do this from another Whonix-Workstation. When using VMs, they can see each other if they are within the same virtual LAN. When using [[Physical Isolation]], VMs can see each other if they are within the same LAN.
+* Alternatively run the services using [[Onion Services]] and access them through another Whonix-Workstation.
+* Another alternative is to run the services using [[Onion Services]] and access them from the host using ordinary torification methods.
+* A final method is to SSH from the host into Whonix-Gateway (see [[File Transfer]] for instructions) and then SSH from there [[File_Transfer#SSH_into_Whonix-Workstation|into the Whonix-Workstation]].
+
+
+Note: The last two methods are <i>not</i> recommended. They risk weakening isolation between the host and Whonix-Workstation.
+
+=== Adding a NAT Adapter to Whonix-Workstation / Updates without Tor ===
+
+Anonymity is compromised if another NAT network adapter is added to the Whonix-Workstation. If this advice is disregarded, then your identity is leaked if/when infection occurs. Therefore, it is strongly recommended to always update over the Tor network. Although Tor updating is slow by comparison, it prevents inadvertent leaks.
+
+=== AppArmor ===
+
+Strongly consider using the [[AppArmor|Whonix AppArmor profiles]] which are available for various programs which run in both the Whonix-Gateway and Whonix-Workstation, such as Tor, Tor Browser, Thunderbird and others. The profiles are easily applied and provide a considerable security benefit.
+
+=== Firejail ===
+
+==== Introduction ====
+
+According to the Firejail project page: <ref>https://firejail.wordpress.com/</ref>
+
+<blockquote>Firejail is a SUID program that reduces the risk of security breaches by restricting the running environment of untrusted applications using Linux namespaces and seccomp-bpf. It allows a process and all its descendants to have their own private view of the globally shared kernel resources, such as the network stack, process table, mount table.
+
+Written in C with virtually no dependencies, the software runs on any Linux computer with a 3.x kernel version or newer. The sandbox is lightweight, the overhead is low. There are no complicated configuration files to edit, no socket connections open, no daemons running in the background. All security features are implemented directly in Linux kernel and available on any Linux computer. The program is released under GPL v2 license.</blockquote>
+
+Firejail has built-in profiles for a large number of popular Linux programs, including many which are used in Whonix. A small sample of the 100+ profiles includes: Chromium, CryptoCat, Dolphin, Evince, Firefox, HexChat, LibreOffice, Okular, Thunderbird, Transmission, VirtualBox, VLC and wget. <ref>https://github.com/netblue30/firejail/tree/master/etc</ref>
+
+==== Installing Firejail ====
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = '''Tip:''' Firejail works in both [[Qubes-Whonix]] and [[Non-Qubes-Whonix]]. Before completing these instructions, considering cloning the Whonix-Workstation TemplateVM, as a host of dependencies will be installed.
+}}
+
+
+'''1. Boot the Whonix-Workstation (<code>whonix-ws</code>) TemplateVM'''
+
+'''2. Add jessie-backports to sources.list'''
+{{CodeSelect|code=
+sudo su -c "echo -e 'deb http://http.debian.net/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
+}}
+Or alternatively use the <i>.onion</i> mirror.
+{{CodeSelect|code=
+sudo su -c "echo -e 'deb http://vwakviie2ienjx6t.onion/debian jessie-backports main' > /etc/apt/sources.list.d/jessie-backports.list"
+}}
+
+'''3. [[Update#Updates|Update]] the Package Lists'''
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+'''4. Install Firejail'''
+
+{{CodeSelect|code=
+sudo apt-get -t jessie-backports install firejail
+}}
+'''5. Launch Firejail'''
+
+Note: In [[Qubes-Whonix]], a new Whonix-Workstation AppVM based on the modified template should be created before running any applications. Never launch programs in your Whonix-Workstation TemplateVM.
+
+To run sandboxed applications, simply prefix your program command with "firejail" in a terminal. For example: 
+{{CodeSelect|code=
+firejail evince
+
+firejail vlc
+}}
+
+'''6. ''Optional'': Use Additional Firejail Command Line Options'''
+
+The full list of command line options can be found in the [https://firejail.wordpress.com/features-3/man-firejail/ official Firejail documentation]. Alternatively, run the following command in konsole in the Whonix-Workstation AppVM.
+{{CodeSelect|code=
+man firejail
+}}
+
+The interested reader should note the host of additional security features. For instance, VLC could be run while blocking access to the internet as follows.
+{{CodeSelect|code=
+firejail --net=none vlc
+}}
+
+Similarly, the following commands would run Firefox or Tor Browser with seccomp restrictions and debug output. <ref>Preliminary tests of other security features reveals they are not yet functional in Whonix, for instance {{code|--apparmor}}, {{code|--private}}, and {{code|--overlay-tmpfs}}. If the user does not specify a path to a specific profile when running Firejail, it will search for any relevant profile automatically. If a profile is not found, a default profile will be used.</ref>
+{{CodeSelect|code=
+firejail --debug --seccomp firefox
+
+firejail --debug --seccomp torbrowser
+}}
+
+For a further technical discussion of Firejail, see [https://forums.whonix.org/t/firejail-seccomp-more-options-for-program-containment here].
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = There is no secure and reliable way to create menu entries / desktop shortcuts using Firejail since package upgrades will break them. It is recommended to start firejailed applications from the command line, but testers can follow the instructions for Whonix 13 [https://forums.whonix.org/t/automatically-firejailing-tor-browser/4767 here]. <ref>This must be removed in Whonix 14 and replaced with the method below.</ref>
+}}
+
+
+'''7. ''Optional'': Automatically Prepend Tor Browser with Firejail'''
+
+In Whonix 14, users can automatically prepend the Tor Browser binary with Firejail by editing ''etc/torbrowser.d/50_user.conf'' and adding the following text. <ref>https://github.com/Whonix/tb-starter/commit/ca3e4cbaedaaa80a6e92145badf0fcdb3c5b22db</ref>
+
+{{CodeSelect|code=
+tb_starter_bin_pre="firejail --seccomp"
+}}
+
+==== Running Firefox-ESR in a Firejail Sandbox (Qubes Debian Template) ====
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = '''Tip:''' Preferably clone the Debian-8 or Debian-9 TemplateVM prior to taking these steps, as some dependencies are required.
+}}
+
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = '''Warning:''' Do not use Firefox-ESR in a Whonix template! It is easily fingerprinted and less secure than the Tor Browser.
+}}
+
+
+'''1. Boot the Debian-8 or Debian-9 TemplateVM'''
+
+'''2. Follow the [[Security_Guide#Installing_Firejail|Steps]] to Install Firejail from jessie-backports'''
+
+'''3. Create a New Debian-8 or Debian-9 AppVM Based on the Modified Template'''
+
+'''4. Launch the Sandboxed Firefox-ESR'''
+
+In a terminal, run.
+
+    firejail firefox
+
+Note: Refer to the official [https://firejail.wordpress.com/documentation-2/firefox-guide/ Firefox Sandboxing Guide] for further command line options.
+
+'''5. Confirm Firefox-ESR is Sandboxed'''
+
+Open another terminal and run.
+
+    firejail --tree
+
+The output should confirm Firefox-ESR is now running in a firejail container.
+
+    XXXX:user:firejail /usr/lib/firefox-esr/firefox-esr
+
+==== Sandboxing Tor Browser ====
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = '''Tip:''' The [[Tor_Browser/Advanced_Users#Sandboxed_Tor_Browser|sandboxed Tor Browser]] cannot be used until [[About#Whonix_version|Whonix 14 is released]]. In the meantime, consider using Firejail as an interim sandboxing measure to restrict the Tor Browser process. 
+}}
+
+
+Mitigating the risk of Tor Browser security breaches makes sense, because it is an untrusted application with a huge attack surface; it is frequently and successfully attacked in the wild. <ref>Firejail has been tested to work with both Tor Browser 7.0.6 and 7.5a5.</ref>
+
+Note: Consider cloning the Whonix-Workstation-TemplateVM prior to installing Firejail. Firejail installs a host of  dependencies and users may not want these in the default template.
+
+'''1. Boot the Whonix-Workstation TemplateVM'''
+
+'''2. Follow the Steps to [[Security_Guide#Installing_Firejail|Install Firejail]] from jessie-backports'''
+
+'''3. Create a New Whonix-Workstation-AppVM Based on the Modified Template'''
+
+{{Qubes Create Workstation AppVMs}}
+
+'''4. ''Optional Step (Untested):'' Create a Customized Firejail Profile for Tor Browser'''
+
+Follow [https://firejail.wordpress.com/documentation-2/building-custom-profiles/ these steps] to build a custom profile.
+
+'''5. Launch the Sandboxed Tor Browser'''
+
+Open a terminal and run.
+
+    firejail torbrowser
+
+'''6. Confirm Tor Browser is Sandboxed'''
+
+Launch Tor Browser in the anon-whonix AppVM. Then open a terminal and run.
+
+    firejail --tree
+
+The output should show Tor Browser is now running in a Firejail container.
+
+    XXXX:user:firejail torbrowser
+    XXXX:user:/bin/bash /usr/bin/torbrowser
+    XXXX:user:bash /home/user/.tb/tor-browser/Browser/start-tor-browser --all
+    XXXX:user:./firefox --class Tor Browser -profile TorBrowser/Data/Browse
+
+=== VM Snapshots ===
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = '''Tip:''' The following advice refers to [[Non-Qubes-Whonix|Non-Qubes-Whonix]] users.
+}}
+
+
+Apart from offering protection against hardware serial leaks, VMs have another major advantage: the ability to quickly discard and restore a system. This process is easy in [[Qubes-Whonix|Qubes-Whonix]], since every template-based AppVM used for activities is based on a TemplateVM which is only used for software installation and updates, and nothing else. AppVMs are easily discarded and recreated in a clean state whenever the user requires it. <ref>https://www.qubes-os.org/doc/templates/</ref> In [[Non-Qubes-Whonix|Non-Qubes-Whonix]], greater precaution is required. 
+
+It is ''strongly recommended'' the user keep a master copy of the Whonix-Workstation VM which is:
+
+* Kept updated.
+* Does not have any additional software installed.
+* Does not have any default settings changed.
+* Is not used directly for any activities.
+
+
+Regular "clean" snapshots or clones of the master VM should be made for activities that require anonymity. Particular care must be taken that clean and unclean states are never mixed up!
+
+The correct method for the safest operation of Non-Qubes-Whonix is as follows:
+# Import both VMs into the virtualizer.
+# Start both the Whonix-Gateway and Whonix-Workstation VMs.
+# [[Update#Updates|Securely update both VMs]].
+# After the updates have finished, shut down both VMs. '''Do not''' browse anywhere or open any unauthenticated communication channels to the internet.
+# Create snapshots of both VMs in their clean state.
+# Only use the snapshots for browsing or initiating any external connections.
+
+
+Note: The only exception made is running apt, since it has a guaranteed way to securely download and verify packages.
+
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+<u>For important [[VirtualBox]] information</u>, please press on Expand on the right.
+<div class="mw-collapsible-content">
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = '''Warning''': VirtualBox's VM Snapshot feature is recommended against because [https://www.whonix.org/old-forum/index.php/topic,97.msg1586.html#msg1586 data loss] has been experienced using it. Instead, use clones or other methods outlined in the "Reliable Alternative To VirtualBox VM Snapshots" section below.
+}}
+
+
+{{Anchor|Reliable Alternative To Virtualbox VM Snapshots}}
+{{Anchor|Reliable Alternative To VirtualBox VM Snapshots}}
+
+Although VirtualBox's snapshot feature is useful when making interim snapshots of live running systems, it is not recommended as a reliable method for backing up VMs. The user risks possible data loss, primarily in the form of corrupted virtual hard drives (VHDs). Reverting can be very painful, or even impossible, following VHD corruption. Alternative methods are copy / paste, cloning, and exporting / importing. These methods reliably provide VM backups, but disk resources are used inefficiently and manual versioning is required.
+
+'''SubVersioN (SVN) Backup Tool'''
+
+[http://en.wikipedia.org/wiki/Subversion_(software) SubVersioN] is considered the best alternative tool for backing up VM operating environments. It is similar to VirtualBox's snapshot feature, but is much more reliable and efficient. Prior to using it, familiarize yourself with the tool's [https://subversion.apache.org/docs/ documentation] and design. SVN [http://en.wikipedia.org/wiki/Comparison_of_Subversion_clients clients] are available for various platforms.
+
+SVN is a tool typically used by software developers to conduct: collaborative configuration management, version control, and backup / restore of file sets under development by many people over extended period of time. Basic functionality of versioning, backing up and restoring changes to sets of files is available. However, SVN is considered superior to CVS, GIT and other options for VM backups, because it does not have any file size limitations by design. Regardless of how big or small the files are, SVN handles them reliably and efficiently. See the following section: [http://svn.apache.org/repos/asf/subversion/trunk/doc/user/svn-best-practices.html "Be patient with large files"]. 
+
+When versioning file sets, SVN employs [http://en.wikipedia.org/wiki/Atomic_commit "atomic commits"]. By way of comparison, [http://en.wikipedia.org/wiki/Concurrent_Versions_System Concurrent Versions System (CVS)] does not employ [http://en.wikipedia.org/wiki/Atomic_commit atomic commits]. Manual backup procedures are inherently not [http://en.wikipedia.org/wiki/Atomic_commit atomic functions]. Additionally, SVN also handles [http://en.wikipedia.org/wiki/Sparse_file sparse (dynamic)] virtual hard disk files, an option VirtualBox offers when [http://www.virtualbox.org/manual/ch01.html#gui-createvm instantiating new virtual disk drives].
+
+Similar to VirtualBox's snapshot capability, SVN also takes into consideration differences in files - both textual and binary - from version to version. For instance, if a 50 GB virtual hard drive grows by an additional 60 GB over the course of a week, SVN's repository will not necessarily increase by an additional 60 GB when a new back up is performed. The outcome depends on how much of the original file changed since the previous backup. SVN will analyze differences between newer files against older files in its repository and only save the differences. Therefore, the repository may only grow as little as 10 GB+, making more efficient use of system resources.
+
+VirtualBox's snapshot feature provides [http://forums.virtualbox.org/viewtopic.php?f=3&p=123806 'branching'] capability. This means one can revert to an earlier version of your VM and start a new branch / version of your VM from where you left off earlier. SVN also provides similar [http://svnbook.red-bean.com/en/1.7/svn.branchmerge.html branching] capability. 
+
+'''Note:''' For backups and restores, configuration management tools like SVN require significant additional disk space over and above the size of the file. For instance, a 50 GB file typically requires approximately 150 GB of disk space to manage that instance of the VM because you require: 50 GB for the original source file, 50 GB in SVN's database [http://en.wikipedia.org/wiki/Apache_Subversion#Repository_types repository], and another 50 GB for SVN's [http://svnbook.red-bean.com/en/1.6/svn.tour.initial.html local workspace] working folder ('./.svn'). Although this overhead may seem inefficient, it is not when you consider SVN's functionality and reliability in comparison to manual backup methods outlined earlier.
+
+'''Complete Operating Environment Backups'''
+
+In addition to backing up the Whonix-Gateway and Whonix-Workstation(s) virtual hard drive files, it is also possible to back up the whole of the VirtualBox application and Whonix environment for a completely restoreable solution.  Cloning is another possible option, but that requires more advanced technical skills.
+
+Typically, the VirtualBox application installed is the one provided by [http://www.virtualbox.org Virtualbox.org]. However, a [http://en.wikipedia.org/wiki/Portable_application portable application] version of VirtualBox is available via a tool provided by [http://www.vbox.me VBox.me]. This application converts VirtualBox's 'install application' into a 'portable application', thereby providing the option to port VMs to other computers via external USB hard drives and/or sticks. By instantiating VMs under portable VirtualBox's '~/data/.VirtualBox/Machines' folder, it is possible to backup and restore the complete operating environment of not only Whonix, but also specific instances of VirtualBox and SVN for complete portability. This method captures the entire Whonix operating environment under one parent folder, rather than distributing it across various user and system folders:
+<br /><br />
+[[File:2014-05-11 09_42_19.png|400px]]
+<br /><br />
+[[File:2014-05-11 09_46_43.png|400px]]
+<br /><br />
+[[File:2014-05-11 09_54_39.png|400px]]
+</div>
+</div>
+
+= System Hardening Checklist =
+
+It is possible for users to significantly harden their platform and improve the chances of successful, anonymous activity. See: [[System_Hardening_Checklist|System Hardening Checklist]].
 
 = Time Attacks =
+
 See [[Time Attacks]].
 
 = Tor Versioning =
@@ -963,7 +881,46 @@ Install the (potentially) newer version of Tor. <ref>A later version of Tor will
 sudo apt-get install tor
 </pre>
 
+= Transporting UDP Tunnels over Tor =
+
+'''Tor Design'''
+
+According to the Tor Project: <ref>https://blog.torproject.org/blog/moving-tor-datagram-transport</ref>
+
+<blockquote>Tor transports data over encrypted TLS tunnels between nodes, which is in turn carried by TCP.</blockquote>
+
+The current Tor design does not support the transport of [https://trac.torproject.org/projects/tor/ticket/7830 UDP-based protocols] through exit nodes in the network. This is unlikely to be supported in the near future due to incompatibility with cryptographic protocols in use and those planned.
+
+The consequence is that UDP-based protocols and applications cannot be used to transmit UDP datagrams between guards and exit nodes in the default environment, for example, some [[VoIP]] or video applications. <ref>https://en.wikipedia.org/wiki/User_Datagram_Protocol</ref>
+
+'''Transporting UDP Tunnels over Tor with a VPN'''
+
+A solution to this problem is to use a [https://en.wikipedia.org/wiki/Tunneling_protocol tunneling protocol]. In simple terms, this allows a user to access a foreign protocol or network service that the underlying (Tor) network does not support or provide directly. 
+
+The tested and working method in Whonix is to utilize a Virtual Private Network (VPN) with a trusted provider that does not block UDP traffic (User -> Tor -> VPN -> [Other Anonymizing Network] -> Internet). Some VPN protocols such as OpenVPN may use UDP while implementing reliable connections and error checking at the application level. <ref>Other VPN implementations may also be useful, but they have not been researched yet.</ref>
+
+Please first read the related VPN documentation and warnings: 
+
+* [https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN Tor Plus VPN or Proxy].
+* [[Whonix:General_disclaimer#Whonix_VPN_disclaimer|Whonix VPN disclaimer]].
+* [[Tunnels/Connecting to Tor before a VPN| How to connect to Tor before a VPN (<code>User</code> -> <code>Tor</code> -> <code>VPN</code> -> <code>Internet</code>)]].
+* [[Tunnels/Introduction#Comparison_Table|Tunneling comparison table]].
+
+
+Before following the instructions to [[Tunnel_UDP_over_Tor|tunnel UDP over Tor]].
+
+The current [http://sec.cs.ucl.ac.uk/users/smurdoch/papers/tor11datagramcomparison.pdf Tor architecture] may cause negative performance impacts on user activities. This arises from high latency due to congestion in the network, queue length on nodes (mixing of traffic across multiple nodes), and TCP mechanisms which attempt to account for lost packets and hold delivery of future packets until a resend is complete. <ref>https://guardianproject.info/2012/12/10/voice-over-tor/</ref>
+
+Understand that adding a second connection in the tunneling chain adds significant complexity. This potentially increases the user's security and anonymity risks due to: misconfiguration, the increased attack surface of secure tunneling software, the difficulty in anonymously paying for VPN services, and potential bottlenecks with VPN providers. Depending on the configuration, this may also increase fingerprinting risk, remove stream isolation of  activities, and lead to a permanent destination X in the Tor network. <ref>Also read the Tor Project warnings here: https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN</ref>.
+
+'''Whonix Recommendations'''
+
+Whonix recommends the use of [https://en.wikipedia.org/wiki/OpenVPN OpenVPN] as the most secure (SSL/TLS-based) protocol, rather than reliance upon IKE, L2TP/IPsec or PPTP. OpenVPN is considered extremely secure when used with encryption algorithms such as AES. <ref>IKE is being exploited by advanced agencies to decrypt IPSec traffic. IPsec configured with pre-shared keys is vulnerable to MITM attacks. PPTP is an obsolete method for VPN implementation with a host of security weaknesses. For further reading on adversary capabilities against VPN protocols see: http://www.spiegel.de/media/media-35515.pdf</ref>
+
+A dedicated virtual machine is recommended for this activity, see: [[Multiple Whonix-Workstations]].
+
 = Verifying Software Signatures =
+
 For greater system security, it is strongly recommended to avoid installing unsigned software. Users should also make sure that [[Warning#Always_Verify_Signatures|signing keys and signatures are correct]] and/or use mechanisms that heavily simplify and automate this process, like [[Security_Guide#Updates|apt-get]] upgrades. 
 
 == What Digital Signatures Prove ==
@@ -1040,15 +997,88 @@ The OpenPGP output should show a "good signature", with the primary key fingerpr
 
 The software can now be safely installed. If the output states "bad signature", then the files and digital signatures should be removed and downloaded again.
 
-= System Hardening Checklist =
+= Virtualization Platform =
 
-It is possible for users to significantly harden their platform and improve the chances of successful, anonymous activity. See: [[System_Hardening_Checklist|System Hardening Checklist]].
+== Type 1 vs Type 2 Hypervisors ==
+
+According to qubes-os.org: <ref>https://www.qubes-os.org/intro/</ref>
+
+<blockquote>Not all virtual machine software is equal when it comes to security. You may have used or heard of VMs in relation to software like VirtualBox or VMware Workstation. These are known as “Type 2” or “hosted” hypervisors. (The hypervisor is the software, firmware, or hardware that creates and runs virtual machines.) These programs are popular because they’re designed primarily to be easy to use and run under popular OSes like Windows (which is called the host OS, since it “hosts” the VMs). However, the fact that Type 2 hypervisors run under the host OS means that they’re really only as secure as the host OS itself. If the host OS is ever compromised, then any VMs it hosts are also effectively compromised.
+
+By contrast, Qubes uses a “Type 1” or “bare metal” hypervisor called Xen. Instead of running inside an OS, Type 1 hypervisors run directly on the “bare metal” of the hardware. This means that an attacker must be capable of subverting the hypervisor itself in order to compromise the entire system, which is vastly more difficult.</blockquote>
+
+The take-home message is that [[Qubes-Whonix|Qubes-Whonix]] is more secure than the default Whonix configuration using a Type 2 hypervisor like VirtualBox. Therefore, it is recommended to install Qubes-Whonix if users have suitably [https://www.qubes-os.org/doc/system-requirements/ modern hardware].
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Do not install Qubes inside a virtual machine - Qubes uses its own bare-metal hypervisor (Xen). <ref>https://www.qubes-os.org/doc/system-requirements/</ref>
+}}
+
+== Qubes-Whonix vs Physically-Isolated Non-Qubes-Whonix ==
+
+In [[Non-Qubes-Whonix]], using a separate computer for [[Dev/Build_Documentation/Physical_Isolation|physical isolation]] is certainly more secure than using the same computer for everything in the standard host OS / Type 2 hypervisor configuration. However, it is not clear this is superior to Qubes' [http://invisiblethingslab.com/resources/2014/Software_compartmentalization_vs_physical_separation.pdf compartmentalized software approach].
+
+Consider the pros and cons of physical isolation relative to Qubes: <ref>https://www.qubes-os.org/intro/</ref>
+
+<blockquote>Pros
+
+* Physical separation doesn’t rely on a hypervisor. (It’s very unlikely that an attacker will break out of Qubes’ hypervisor, but if one were to manage to do so, one could potentially gain control over the entire system).
+* Physical separation can be a natural complement to physical security. (For example, you might find it natural to lock your secure laptop in a safe when you take your unsecure laptop out with you).
+</blockquote>
+
+<blockquote>Cons
+
+* Physical separation can be cumbersome and expensive, since we may have to obtain and set up a separate physical machine for each security level we need.
+* There’s generally no secure way to transfer data between physically separate computers running conventional OSes. (Qubes has a secure inter-VM file transfer system to handle this).
+* Physically separate computers running conventional OSes are still independently vulnerable to most conventional attacks due to their monolithic nature.
+* Malware which can bridge air gaps has existed for several years now and is becoming increasingly common.</blockquote>
+
+In summary, the relative merits of physical isolation do not necessarily provide any more protection than Qubes' approach. Physical isolation is relatively difficult, still experimental, inconvenient, and requires a significant time investment. On the other hand, Qubes is relatively easy to install, has fully integrated Whonix, and is convenient for most activities. 
+
+Qubes also supports [[Qubes/Why_use_Qubes_over_other_Virtualizers|a host of features]] unavailable in the physically-isolated model, such as: DisposableVMs, a USB VM, secure copy / paste operations between VMs, secure copying and transfers of files between VMs, and sanitization of PDFs and images.
+
+For these reasons, [[Qubes-Whonix]] is recommended for the majority of users seeking a higher-security solution.
+
+== Qubes-Whonix Hardware Requirements ==
+
+For Qubes-Whonix hardware requirements, see [[System_Requirements|here]].
+
+== VirtualBox Hardening ==
+
+For an overview on VM security risks in general, see: [http://security.stackexchange.com/questions/3056/how-secure-are-virtual-machines-really-false-sense-of-security How secure are Virtual Machines really?]
+
+The less features enabled, the smaller the [http://en.wikipedia.org/wiki/Attack_surface attack surface]. The following features can be removed or disabled without impacting core functionality:
+
+* Disable Audio.
+* Do not enable Shared Folders.
+* Do not enable video acceleration.
+* Do not enable 3D acceleration. <ref>
+Quote http://www.virtualbox.org/manual/ch04.html#guestadd-3d
+<blockquote>
+Untrusted guest systems should not be allowed to use VirtualBox's 3D acceleration features, just as untrusted host software should not be allowed to use 3D acceleration. Drivers for 3D hardware are generally too complex to be made properly secure and any software which is allowed to access them may be able to compromise the operating system running them. In addition, enabling 3D acceleration gives the guest direct access to a large body of additional program code in the VirtualBox host process which it might conceivably be able to use to crash the virtual machine.
+</blockquote>
+</ref> <ref>
+Quote https://hsmr.cc/palinopsia/
+<blockquote>
+If the "3D-Acceleration" feature of VirtualBox is activated, running the proof-of-concept code from inside the VM provides the ability to read framebuffers from the host system. 
+</blockquote>
+</ref>
+* Do not enable the Serial Port.
+* Remove the Floppy drive.
+* Remove the CD/DVD drive.
+* Do not attach USB devices.
+* Disable the USB controller which is enabled by default. Set the Pointing Device to "PS/2 Mouse" or changes will revert.
+* Do disable Advanced Configuration and Power Interface (ACPI). ACPI information is passed to guest OS by default, which allow guest OS to obtain battery status and manufacturer information.
+* Do not enable the Remote Display server.
+* Enable PAE/NX (NX is a security feature).
+
+
+Not enabling IO APIC, EFI may also provide some protection, but this requires further investigation.
 
 = Stay Tuned =
-It is important for users to read the [[Stay Tuned|latest Whonix news]] to stay in touch with ongoing developments, such as notifications about important security vulnerabilities and improved Whonix releases.
 
-= Advanced Security Guide =
-For even more security advice, see the [[Advanced Security Guide]].
+It is important for users to read the [[Stay Tuned|latest Whonix news]] to stay in touch with ongoing developments, such as notifications about important security vulnerabilities and improved Whonix releases.
 
 = Footnotes =
 <references/>
