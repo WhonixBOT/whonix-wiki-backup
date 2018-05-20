@@ -652,6 +652,8 @@ The following short list of actions can help to improve security and anonymity o
 
 * Enable [https://en.wikipedia.org/wiki/IOMMU VT-d/IOMMU] via BIOS to have [https://en.wikipedia.org/wiki/DMA_attack DMA protection], effective network isolation, and the ability to assign PCIe devices to a HVM. Check it is running via dom0 (qubes-hcl-report).
 * Ensure [https://en.wikipedia.org/wiki/X86_virtualization#Intel_virtualization_(VT-x) Intel VT-x] or [https://www.amd.com/en/technologies/virtualization AMD-V] is available, since it is required for running HVM domains, such as Windows-based AppVMs.
+* Prepare and utilize a [https://www.qubes-os.org/doc/usb/ USB qube] to protect against side-channel attacks. <ref>Automatically configured in Qubes R4, but an optional configuration in R3.2.</ref>
+* Use a [https://www.qubes-os.org/doc/yubi-key/ Yubikey] to enhance the security of Qubes user authentication, mitigate the risk of password snooping, and to improve USB keyboard security.
 * Prefer Intel Integrated Graphics Processing (IGP) units for greater system stability and security. <ref>Proprietary binary blobs of other GPU manufacturers pose security risks, and available open source drivers are notoriously unstable in Qubes.</ref>
 * Ensure computer hardware meets all other [[Security_Guide#Qubes-Whonix_Hardware_Requirements|Qubes-Whonix  requirements]] for the best security, functionality and future compatibility with Qubes 4.X releases.
 
@@ -662,7 +664,7 @@ The following short list of actions can help to improve security and anonymity o
 * Prefer Qubes R4.0 over earlier releases, as fully virtualized (HVM or PVH) VMs provide [https://www.qubes-os.org/news/2018/03/15/qsb-37-update/ greater protection] against processor speculative execution bugs like the Meltdown and Spectre attacks, and other exploits. <ref>Qubes R3.2 and earlier versions rely on para-virtualized (PV) VMs.</ref> <ref> For instance, this [https://xenbits.xen.org/xsa/advisory-260.html recent security bug] allows an attacker to escape from a PV domain and exploit the dom0 hypervisor. It only affects Qubes R3.2, since Qubes R4 [https://github.com/QubesOS/qubes-secpack/blob/master/QSBs/qsb-039-2018.txt only runs untrusted code in PVH or HVM domains] by default.</ref>
 
 
-'''Protecting User Data and Activites'''
+'''Protecting User Data and Activities'''
 
 * For critical user data, protect against [https://www.qubes-os.org/doc/data-leaks/ unintentional leaks] by setting an empty NetVM field (set to "none") for the corresponding qube. 
 * For sensitive activities, do not run trusted, high-value VMs in paralell with untrusted VMs. <ref>A successful exploit of the untrusted qube provides an avenue for attacking the sensitive qube.</ref>
@@ -670,6 +672,7 @@ The following short list of actions can help to improve security and anonymity o
 * If paying in cryptocurrencies, utilize a [https://www.qubes-os.org/doc/split-bitcoin/ “split” bitcoin wallet] which creates an offline “cold storage” wallet and an online “watching only” wallet.
 * Avoid [https://www.qubes-os.org/doc/multiboot/ dual / multi-boot configurations] in Qubes. The other OS could modify the unprotected <i>/boot</i> partition or firmware to maliciously compromise Qubes and/or spy on user activities.
 * Be careful when running command line operations. Refer to a [https://github.com/Jeeppler/qubes-cheatsheet/blob/master/qubes-cheatsheet.md suitable resource first], then proceed.
+* Use [https://www.qubes-os.org/doc/split-gpg/ split-GPG] for email to reduce the risk of key theft used for encryption / decryption and signing.
 
 
 '''Template and Other VMs'''
@@ -678,7 +681,7 @@ The following short list of actions can help to improve security and anonymity o
 * Avoid configuring [https://www.qubes-os.org/doc/firewall/ network traffic between two qubes] for security reasons.
 * Consider leveraging the non-persistence of Qubes' templates to [https://github.com/tasket/Qubes-VM-hardening fend off malware] by locking-down, quarantining and checking the contents of ''/rw'' private storage. <ref>The <code>vm-boot-protect.service</code> is suitable for standalone VMs, AppVMs, netVMs, Whonix AppVMs and others. Do not use the <code>vm-boot-protect-root</code> service for Whonix AppVMs.</ref> <ref>This service: starts before the private volume is mounted, protects ''/home'' desktop and shell startup executables, quarantines ''/rw'' configs and scripts (with whitelisting), re-deploys custom / default files to ''/rw'' on each boot, conducts SHA256 checking against unwanted changes, and more.</ref> <ref>Disabling of the Qubes' default passwordless-root is also required.</ref>
 * Consider [https://github.com/rustybird/qubes-split-dm-crypt split dm-crypt] to isolate device-mapper based secondary storage encryption (not the root filesystem) and LUKS header processing to DisposableVMs.
-* Consider running the <code>sys-net</code>, <code>sys-firewall</code> and <code>sys-usb</code> VMs as DisposableVMs. <ref>Publication of working wiki instructions is pending, but they can be found in the forums in the meantime.</ref>
+* Consider running <code>sys-net</code>, <code>sys-firewall</code> and <code>sys-usb</code> as [https://www.qubes-os.org/doc/dispvm-customization/#using-static-disposable-vms-for-sys- Static DisposableVMs].
 
 = Onionizing Repositories =
 
