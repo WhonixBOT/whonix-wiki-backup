@@ -168,59 +168,81 @@ If users feel compelled in their circumstances to proceed despite the anonymity 
 
 The safest decision is to persist with poor performance and wait for normal guard rotation.
 
-Mitigate the Threat of Guard Fingerprinting 
+=== Mitigate the Threat of Guard Fingerprinting === 
 
 If guard fingerprinting across different locations is a concern, there are several ways to mitigate this threat. Viable options include: bridges, temporarily rotating guards, or cloning Whonix-Gateway (sys-whonix) with new guards.
 
 Note: Weigh the fingerprinting risks outlined in the previous section before proceeding. In most cases the decision to not rotate guards (even temporarily) is the correct one.
 
-Clone Whonix-Gateway (sys-whonix) with New Entry Guards 
+=== Clone Whonix-Gateway (sys-whonix) with New Entry Guards ===
 
-It is possible to clone the current Whonix-Gateway (sys-whonix) VM and regenerate the Tor state file. Once the VM is cloned, it is important that the original is not unintentionally used for any anonymous activities. To nullify this threat, consider disabling networking in the original Whonix-Gateway until returning home.
+It is possible to clone the current Whonix-Gateway (<code>sys-whonix</code>) VM and regenerate the Tor state file. Once the VM is cloned, it is important that the original is not unintentionally used for any anonymous activities. To nullify this threat, consider disabling networking in the original Whonix-Gateway until returning home.
 
-Warning: Users should not clone the Whonix-Gateway (sys-whonix) with new guards at the home address. If the Tor client connects through the home network, the new guards might be correlated to the home address.
+Warning: Users should not clone the Whonix-Gateway (<code>sys-whonix</code>) with new guards at the home address. If the Tor client connects through the home network, the new guards might be correlated to the home address.
 
-Create a clone of the Whonix-Gateway (sys-whonix) and name it Whonix-Gateway-temp VM (sys-whonix-temp VM) . 
+Create a clone of the Whonix-Gateway (<code>sys-whonix</code>) and name it Whonix-Gateway-temp VM (<code>sys-whonix-temp</code> VM) . 
+
+Create a clone of the slow Whonix-Gateway (<code>sys-whonix</code>) and name it Whonix-Gateway-temp VM (<code>sys-whonix-temp</code> VM). 
+** Virtualbox: follow [https://dirkstrauss.com/clone-virtualbox-vm/ these instructions] to create a VM snapshot.
+** Qubes-Whonix: <code>Right-click on sys-whonix</code> -> <code>Clone VM</code>
+* [[Tor#Fresh_Tor_Entry_Guards_by_Regenerating_the_Tor_State_File|Regenerate the Tor State File]].
 Virtualbox: Follow [these instructions] to create a VM snapshot.
 Qubes-Whonix: Right-click on sys-whonix -> Clone VM
-Regenerate the Tor State File.
+* Regenerate the Tor State File.
 
-Regenerate the Tor State After Saving the Tor State Folder
+=== Regenerate the Tor State After Saving the Tor State Folder ===
 
-Non-Qubes-Whonix only!
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Non-Qubes-Whonix only!
+}}
 
-Prior to arriving at the remote location, the Whonix-Gateway Tor state folder is moved to the $HOME directory, and the Tor state file is regenerated.
+Prior to arriving at the remote location, the Whonix-Gateway Tor state folder is moved to the <code>$HOME</code> directory, and the Tor state file is regenerated.
 
-1. In Whonix-Gateway konsole, stop Tor.
+'''1.''' In Whonix-Gateway konsole, stop Tor.
 
+{{CodeSelect|code=
 sudo systemctl stop tor@default
+}}
 
-2.In Whonix-Gateway konsole, remove the temporary Tor state folder.
+'''2.''' In Whonix-Gateway konsole, remove the temporary Tor state folder.
 
+{{CodeSelect|code=
 sudo rm -r /var/lib/tor
+}}
 
-3. In Whonix-Gateway konsole, restore the Tor state folder.
+'''3.''' In Whonix-Gateway konsole, restore the Tor state folder.
 
+{{CodeSelect|code=
 sudo mv ~/tor /var/lib
+}}
 
-4. In Whonix-Gateway konsole, restart Tor.
+'''4.''' In Whonix-Gateway konsole, restart Tor.
 
+{{CodeSelect|code=
 sudo systemctl restart tor@default
+}}
 
 Before returning home, the Tor state folder is restored to its original settings.
 
-1. In Whonix-Gateway konsole, Stop Tor.
+'''1.''' In Whonix-Gateway konsole, Stop Tor.
 
+{{CodeSelect|code=
 sudo systemctl stop tor@default
+}}
 
-2. In Whonix-Gateway konsole, move the Tor state folder to the $HOME directory.
+''2.'' In Whonix-Gateway konsole, move the Tor state folder to the $HOME directory.
 
+{{CodeSelect|code=
 sudo mv /var/lib/tor ~/
+}}
 
-3. In Whonix-Gateway konsole, restart Tor.
+'''3.''' In Whonix-Gateway konsole, restart Tor.
 
+{{CodeSelect|code=
 sudo systemctl restart tor@default
-
+}}
 
 === Alternating Bridges ===
 
