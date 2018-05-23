@@ -7,25 +7,47 @@
 [[Image:flash_leak_test.png|Flash Leak Test SocksPort and TransPort|thumb]]
 [[Image:flash_leak_test_both_transport.png|Flash Leak Test both TransPort|thumb]]
 
+'''BitTorrent'''
+
+[https://blog.torproject.org/bittorrent-over-tor-isnt-good-idea IP leaks]([http://www.webcitation.org/6FDaBuhHi w]) have been reported when using ordinary proxification methods. However, since Whonix prevents information leaks, using BitTorrent will not leak a user's real external IP address (see [[File Sharing]]). The reason is  Whonix-Workstation has no knowledge of the external, ISP-facing IP address.
+
 '''Flash and Java'''
 
 Whonix prevents information leaks from browser plugins since it has no knowledge of the real external IP address. This protection also applies to Flash-based applications used by [https://en.wikipedia.org/wiki/Operation_Torpedo advanced adversaries]. Nevertheless, it is not recommended to install browser plugins such as Flash when anonymity is the goal. <ref name=plugin>[https://www.whonix.org/wiki/Comparison_with_Others#Flash_.2F_Browser_Plugin_Security https://www.whonix.org/wiki/Comparison_with_Others#Flash_.2F_Browser_Plugin_Security]</ref> See [[ Browser Plugins]] for further details.     
+
+'''Nautilus''' 
+
+A [https://bugzilla.gnome.org/show_bug.cgi?id=777991 security bug]([http://linux.debian.bugs.dist.narkive.com/Z4frRjjC/bug-860268-desktop-files-can-hide-malware-in-nautilus d]) was reported in Nautilus file manager that allows an attacker to disguise a malicious script as a <code>.desktop</code> file. In this attack, an adversary tricks the user into downloading the <code>.desktop</code> file from a website or sends the file in an email. Once the file is on the target's computer, the file (PDF, ODT) only has to be opened by the user for the script to execute. 
+
+This security bug was used to craft an exploit which was able to break the [https://subgraph.com/sgos/index.en.html Subgraph OS] security model.<ref name=break>[https://micahflee.com/2017/04/breaking-the-security-model-of-subgraph-os/ https://micahflee.com/2017/04/breaking-the-security-model-of-subgraph-os/]</ref> Since Subgraph does not contain Nautilus in an <i>Oz sandbox</i>, <ref>The Subgraph sandbox framework is known as Oz, which is unique to Subgraph OS. It is designed to isolate applications from each other and the rest of the system.</ref> once the malicious script was executed, it would have enabled access to much of the user's data; PGP keys, SSH keys, stored email, documents, password databases, MAC addresses and nearby Wi-Fi access points.
+
+This sensitive information could be used by attackers to deanonymize the user.<ref>To be fair, when this bug was reported Subgraph OS was still in Alpha status.</ref>  Whonix defeats this attack and others like it. Since Whonix-Workstation is isolated from the host and Whonix-Gateway, even if a malicious <code>.desktop</code> script is executed, no information can be gathered about the external IP address, hardware serials or sensitive data outside of Whonix-Workstation.<ref>All data inside Whonix-Workstation would be available to the attacker and could be used to deanonymize the user </ref> Once Subgraph developers were informed of the vulnerability, the Nautilus package was patched on the platform. <ref name=patched>[https://twitter.com/subgraph/status/852000407253594114 https://twitter.com/subgraph/status/852000407253594114]</ref>  
+
+'''P2P'''
+
+An [https://hal.inria.fr/inria-00574178/en/ attack]([https://www.webcitation.org/6FVK6WpNu w]) was published that targets P2P applications in order to trace and profile Tor users. Whonix defeats this attack and others like it because Whonix-Workstation has no knowledge of the external IP address. Furthermore, Whonix provides extended protection by using [[Stream Isolation|stream isolation]].
+
+'''Pidgin'''
+
+A bug was found in [https://www.webcitation.org/6FDZj1gpN Pidgin source code] that would have leaked the real IP address. Whonix did not exist when this bug was discovered. Nevertheless, the security by isolation model adopted by Whonix prevents this kind of leak from occurring. Notably, this bug only existed in the developmental source code and it was patched before the release date. [https://mailman.boum.org/pipermail/tails-dev/2012-September/001704.html source]([https://www.webcitation.org/6FDZe0ZXS w]) 
 
 '''Skype'''
 
 Whonix will not leak a user's IP address / location while using [[Voip#Skype|Skype]] or other [[Voip|VoIP]] protocols, although it is fairly difficult to anonymize voice over these channels.
 
-'''BitTorrent'''
+'''Targeted Clock Skew Correlation''' 
 
-[https://blog.torproject.org/bittorrent-over-tor-isnt-good-idea IP leaks]([http://www.webcitation.org/6FDaBuhHi w]) have been reported when using ordinary proxification methods. However, since Whonix prevents information leaks, using BitTorrent will not leak a user's real external IP address (see [[File Sharing]]). The reason is  Whonix-Workstation has no knowledge of the external, ISP-facing IP address.
+This type of correlation allows an adversary to acquire the time stamp of an Onion Service http header and measure the skew ([https://www.webcitation.org/6FDZnhH5j clock skewing])([https://www.webcitation.org/6FDZnhH5j w]). The adversary then compares the acquired time stamp against Tor relays or other publicly reachable web servers. If the time skew of the Onion Service server matches any publicly reachable servers or Tor relays, it is very likely the Onion Service is hosted on the same server. Whonix defeats this and other [[Time Attacks| time attacks]] since it uses [[sdwdate]]. This program connects to a variety of servers (likely to be hosted on different hardware) at random intervals and extracts time stamps from the https headers. Using the sclockadj option, time is gradually adjusted thus preventing bigger clock jumps that could confuse logs, servers, Tor, i2p, etc. <ref name=sdwdate-github>[https://github.com/Whonix/sdwdate https://github.com/Whonix/sdwdate]</ref> <ref>To be fair, when this attack was first described Whonix did not exist.</ref>
+
+{{mbox	
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]	
+| text       = It is not recommended to run Tor relays on a publicly reachable server along with an Onion Service on the same server. This configuration aids [https://www.webcitation.org/6FDZnhH5j traffic correlation and fingerprinting].	
+}}	
+
 
 '''Thunderbird'''
 
 [https://tails.boum.org Tails] reported that [https://tails.boum.org/security/IP_address_leak_with_icedove/index.en.html Thunderbird leaks]([https://www.webcitation.org/6FDZcatic w]) the real external IP address. Although Whonix did not exist when this bug was discovered, it would have been impossible for the real external IP address to leak, since Whonix-Workstation has no knowledge of the external IP address. In fairness to Tails, this kind of leak is now considered unlikely since they no longer use transparent torification. <ref name=transparent>[https://mailman.boum.org/pipermail/tails-dev/2012-September/001704.html https://mailman.boum.org/pipermail/tails-dev/2012-September/001704.html]</ref> 
-
-'''Pidgin'''
-
-A bug was found in [https://www.webcitation.org/6FDZj1gpN Pidgin source code] that would have leaked the real IP address. Whonix did not exist when this bug was discovered. Nevertheless, the security by isolation model adopted by Whonix prevents this kind of leak from occurring. Notably, this bug only existed in the developmental source code and it was patched before the release date. [https://mailman.boum.org/pipermail/tails-dev/2012-September/001704.html source]([https://www.webcitation.org/6FDZe0ZXS w]) 
 
 '''Tor Browser Bundle'''
 
@@ -35,30 +57,6 @@ A bug was found in [https://www.webcitation.org/6FDZj1gpN Pidgin source code] th
 # A [https://trac.torproject.org/projects/tor/ticket/8751 defect] was discovered which allowed an adversary to use targeted clock skew correlation to identify a user.  Since Tor Browser transmits TLS "Hello Client" <code>gmt_unix_time</code> there are two scenarios in which these transmissions could be used to track users. 
 ** In the first scenario an adversary either compromises [https://en.wikipedia.org/wiki/Network_Time_Protocol NTP] servers or uses a man-in-the-middle to intercept NTP server replies and introduces a unique clock skew. Since "Hello Client" transmissions are visible to ISPs that host Tor Exit Relays as well as destination servers, an adversary could use clock skew correlation to track users' movements. 
 ** In the second scenario, a user visits a clearnet website under adversary control without Tor Browser and the unique clock skew of the TLS "Hello Client" <code>gmt_unix_time</code> is recorded.  Afterwards, the user visits the same or a different adversary-controlled website using Tor Browser. If both clock skews match, this could indicate the two visitors were the same person. At the very least this would significantly degrade anonymity. Since Whonix uses sdwdate and not NTP to keep time, these instances of targeted clock skew correlation and many like it are defeated.
-
-
-'''Targeted Clock Skew Correlation''' 
-
-This type of correlation allows an adversary to acquire the time stamp of an Onion Service http header and measure the skew ([https://www.webcitation.org/6FDZnhH5j clock skewing])([https://www.webcitation.org/6FDZnhH5j w]). The adversary then compares the acquired time stamp against Tor relays or other publicly reachable web servers. If the time skew of the Onion Service server matches any publicly reachable servers or Tor relays, it is very likely the Onion Service is hosted on the same server. Whonix defeats this and other [[Time Attacks| time attacks]] since it uses [[sdwdate]]. This program connects to a variety of servers (likely to be hosted on different hardware) at random intervals and extracts time stamps from the https headers. Using the sclockadj option, time is gradually adjusted thus preventing bigger clock jumps that could confuse logs, servers, Tor, i2p, etc. <ref name=sdwdate-github>[https://github.com/Whonix/sdwdate https://github.com/Whonix/sdwdate]</ref> <ref>To be fair, when this attack was first described Whonix did not exist.</ref>
-
-
-{{mbox	
-| image   = [[File:Ambox_warning_pn.svg.png|40px]]	
-| text       = It is not recommended to run Tor relays on a publicly reachable server along with an Onion Service on the same server. This configuration aids [https://www.webcitation.org/6FDZnhH5j traffic correlation and fingerprinting].	
-}}	
-
-
-'''P2P'''
-
-An [https://hal.inria.fr/inria-00574178/en/ attack]([https://www.webcitation.org/6FVK6WpNu w]) was published that targets P2P applications in order to trace and profile Tor users. Whonix defeats this attack and others like it because Whonix-Workstation has no knowledge of the external IP address. Furthermore, Whonix provides extended protection by using [[Stream Isolation|stream isolation]].
-
-'''Nautilus''' 
-
-A [https://bugzilla.gnome.org/show_bug.cgi?id=777991 security bug]([http://linux.debian.bugs.dist.narkive.com/Z4frRjjC/bug-860268-desktop-files-can-hide-malware-in-nautilus d]) was reported in Nautilus file manager that allows an attacker to disguise a malicious script as a <code>.desktop</code> file. In this attack, an adversary tricks the user into downloading the <code>.desktop</code> file from a website or sends the file in an email. Once the file is on the target's computer, the file (PDF, ODT) only has to be opened by the user for the script to execute. 
-
-This security bug was used to craft an exploit which was able to break the [https://subgraph.com/sgos/index.en.html Subgraph OS] security model.<ref name=break>[https://micahflee.com/2017/04/breaking-the-security-model-of-subgraph-os/ https://micahflee.com/2017/04/breaking-the-security-model-of-subgraph-os/]</ref> Since Subgraph does not contain Nautilus in an <i>Oz sandbox</i>, <ref>The Subgraph sandbox framework is known as Oz, which is unique to Subgraph OS. It is designed to isolate applications from each other and the rest of the system.</ref> once the malicious script was executed, it would have enabled access to much of the user's data; PGP keys, SSH keys, stored email, documents, password databases, MAC addresses and nearby Wi-Fi access points.
-
-This sensitive information could be used by attackers to deanonymize the user.<ref>To be fair, when this bug was reported Subgraph OS was still in Alpha status.</ref>  Whonix defeats this attack and others like it. Since Whonix-Workstation is isolated from the host and Whonix-Gateway, even if a malicious <code>.desktop</code> script is executed, no information can be gathered about the external IP address, hardware serials or sensitive data outside of Whonix-Workstation.<ref>All data inside Whonix-Workstation would be available to the attacker and could be used to deanonymize the user </ref> Once Subgraph developers were informed of the vulnerability, the Nautilus package was patched on the platform. <ref name=patched>[https://twitter.com/subgraph/status/852000407253594114 https://twitter.com/subgraph/status/852000407253594114]</ref>  
 
 = Footnotes =
 <references/>
