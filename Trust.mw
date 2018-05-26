@@ -141,30 +141,32 @@ This is only an an introduction to this topic; see [[Verifiable Builds]] for ful
 
 == Introduction ==
 
-Whonix provides an optional updater since Whonix 6.
+An optional updater has been available in Whonix since version 6 of the platform. <ref>When Whonix's APT repository is disabled, there is no updater - as was the case in Whonix 0.5.6 and below.</ref> When it comes to trust, there is a large difference between building Whonix from source code and using the Default-Download-Version.
 
-[[Non-Qubes-Whonix]]:
+=== APT Repository and Binary Builds Trust === 
 
-* When <u>[[Dev/Build Documentation|building]] from source code</u>, since Whonix 7.3.3, Whonix's APT Repository is <u>disabled by default.</u>
-* For the <u>Default-[[Main_Page#Download_Whonix|Download]]-Version</u>, Whonix's APT Repository is <u>enabled by default.</u> While building Whonix using the build script, Whonix's APT repository has been added to {{Code2|/etc/apt/sources.list.d/whonix.list}} and Whonix's (adrelanos's) APT repository OpenPGP signing key has been added to apt-key by the {{Code2|whonix_repository}} tool.
-<br />
-[[Qubes|Qubes-Whonix]]:
+When Whonix is built with the build script and the source code is verified to be non-malicious and reasonably bug-free, Whonix developers are unable to access the system. On the other hand, if Whonix's APT repository is enabled, developers holding a Whonix repository signing key could release a malicious update to gain full access to the machine(s). <ref>At the moment, Whonix developer Patrick Schleizer is the only one holding the Whonix APT repository OpenPGP signing key.</ref>
 
-* [[Qubes/Install]]: enabled by default
-* When building from source code: enabled by default. To disable:
-** [https://github.com/Whonix/qubes-template-whonix qubes-template-whonix]: [https://github.com/Whonix/qubes-template-whonix/blob/master/builder.conf <code>builder.conf</code>], set <code>WHONIX_APT_REPOSITORY_OPTS = off</code>
-<br />
-When Whonix's APT Repository is enabled and updated Whonix debian packages are uploaded to Whonix's APT repository, next time you are upgrading your system using "sudo apt-get update && sudo apt-get dist-upgrade", those packages will automatically get installed. If this is not what you want, this can be [[Whonix-APT-Repository#Disable_Whonix_APT_Repository|disabled]]. Below is a security discussion about the implications.
+Even if the Whonix APT repository is not used with the Default-Download version, it is still theoretically possible for Whonix developers to sneak a backdoor into the binary builds which are available for download. <ref>See the [[Verifiable Builds]] section for further details.</ref> Although an unpleasant threat, using Whonix's APT repository poses a greater risk: a malicious Whonix developer might sneak in a backdoor at any time. 
 
-Alternatively, you can [[Dev/Build Documentation|update Whonix from source code]].
+It is easier to sneak backdoors into binary builds, since they contain compiled code in binary packages which are downloaded from the Debian repository when built. The actual Whonix deb packages do not yet have any compiled code, and consist of only configuration files, scripts, and comments. <ref>Although these could change with a malicious update.</ref> The lack of compiled code inside Whonix deb packages at present might make it easier for auditors searching for a backdoor in updated deb packages, <ref>Unless it is a targeted attack.</ref> compared to the binary builds.
 
-At the moment, Whonix developer Patrick Schleizer is the only one holding the Whonix APT repository OpenPGP signing key.
+=== APT Repository Default Settings ===
 
-When it comes to trust, there is a big difference if you are building Whonix from source code or if you are using the Default-Download-Version. When you build Whonix using the build script and verified the source code to be non-malicious and reasonable bug free, Whonix developers have no way to access your system. With Whonix's APT repository enabled however, Whonix developers holding a Whonix repository signing key could always release a malicious update and gain full access on your machines.
+'''[[Non-Qubes-Whonix]]:'''
 
-When using the Default-Download version, on one hand, when not using Whonix's APT repository, Whonix developers could sneak in a backdoor into the binary builds (download version) (the rest of this page above goes into this subject), which is worse enough. And on the other hand, while using Whonix's APT repository, Whonix developers could sneak in a backdoor at any time. Also notable, while the binary builds contain binary packages (which are downloaded from Debian repository while building), which makes it easier to sneak a backdoor in, the Whonix deb packages do not contain any compiled code yet (only configuration files, scripts, comments) (which might change with a malicious update). As long as there is no compiled code inside Whonix deb packages, it might be easier for auditors, to catch a backdoor in updated deb packages (unless its a targeted attack) compared to the binary builds (download version).
+* [[Dev/Build Documentation|Building]] from source code: Whonix's APT Repository is ''disabled by default.'' <ref>Since Whonix version 7.3.3</ref>
+* Default [[Main_Page#Download_Whonix|binary download]]: Whonix's APT Repository is ''enabled by default.'' 
+* Building Whonix with the build script: Whonix's APT repository is added to {{Code2|/etc/apt/sources.list.d/whonix.list}} and the Whonix APT repository OpenPGP signing key is added to apt-key by the {{Code2|whonix_repository}} tool.
 
-When Whonix's APT repository is disabled, there is no updater and the situation is the same as in Whonix 0.5.6 and below.
+
+'''[[Qubes|Qubes-Whonix]]:'''
+
+* [[Qubes/Install]]: Whonix's APT Repository is ''enabled by default.''
+* [[Dev/Build Documentation|Building]] from source code: Whonix's APT Repository is ''enabled by default.'' <ref>To disable this setting, see: [https://github.com/Whonix/qubes-template-whonix qubes-template-whonix]: [https://github.com/Whonix/qubes-template-whonix/blob/master/builder.conf <code>builder.conf</code>], and set <code>WHONIX_APT_REPOSITORY_OPTS = off</code></ref>
+
+
+Most users will have the Whonix APT repository enabled. This means when updated Whonix debian packages are uploaded to the Whonix APT repository, these packages will be automatically installed when the system is upgraded. <ref>After running <code>sudo apt-get update && sudo apt-get dist-upgrade</code> manually or via a GUI updater.</ref> If this behavior is unwanted, this can be [[Whonix-APT-Repository#Disable_Whonix_APT_Repository|disabled]]. Refer to the previous section outlining security implications before proceeding.
 
 == Security Conclusion ==
 
