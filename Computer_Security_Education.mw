@@ -835,10 +835,17 @@ sudo sysctl -w net.inet.tcp.rfc1323=0
 TODO: expand.
 
 === Disable ICMP Timestamps ===
+
+The Internet Control Message Protocol (ICMP) is used by network devices, including routers, to send operational information and error messages such as whether a service is available or if a host/router cannot be reached. Unlike TCP and UDP, it is a network level, not transport layer protocol. Commonly network utilities are based on ICMP messages, such as ''traceroute'' and ''ping''. <ref>https://en.wikipedia.org/wiki/ICMP_Timestamp</ref> 
+
+The ICMP protocol includes timestamps for time synchronization, with the originating timestamp being set to the time (in milliseconds since midnight) since the sender last touched the packet. A timestamp reply is also generated, consisting of the originating timestamp (sent by the sender) as well as a "receive timestamp", which captures when the timestamp was received and a reply sent. <ref>https://en.wikipedia.org/wiki/ICMP_Timestamp#Timestamp</ref>
+
 ==== Qubes ====
-This is the default in Qubes R3.1 and above. <ref>https://github.com/QubesOS/qubes-issues/issues/1346</ref>
+
+ICMP timestamps are disabled by default in Qubes R3.1 and above. <ref>https://github.com/QubesOS/qubes-issues/issues/1346</ref>
 
 ==== Linux ====
+
 ICMP timestamps need to be blocked with the [[#Firewall|firewall]]. <ref>Advanced users can of course use IP tables. For example in [https://lists.debian.org/debian-firewall/1999/12/msg00010.html Debian]: <code>ipchains -p icmp -s $INTIP/0 13 -i $INTIF -j DENY</code> and <code>ipchains -p icmp -s 0.0.0.0/0 14 -i $EXTIF -j DENY</code></ref> This is distribution dependent and varies widely as does having a firewall enabled on your specific OS. Be aware that some distributions do not turn on the firewall by default. 
 
 There are many differing ways to accomplish blocking ICMP timestamps via the command line, therefore users are recommended to consult the specific distribution's documentation. <ref>For instance, [http://www.thegeekstuff.com/2010/07/how-to-disable-ping-replies-in-linux/ Debian users] could edit the <i>/etc/systcl.conf</i> file manually and add <code>net.ipv4.icmp_echo_ignore_all = 1</code></ref> The most straightforward way is to download a GUI front-end (like gufw) to configure the firewall and have it set to silently drop all incoming connections by default, and allow only outgoing traffic from the machine.
@@ -921,6 +928,7 @@ sysctl -w net.inet.icmp.tstamprepl=0
 TODO: expand.
 
 {{Anchor|Microphone}}
+
 === Microphones ===
 
 {{mbox
