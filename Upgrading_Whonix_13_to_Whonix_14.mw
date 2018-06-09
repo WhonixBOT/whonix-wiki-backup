@@ -9,7 +9,12 @@
 | text       = '''TESTERS ONLY!'''
 }}
 
+
+To use Whonix 14, users can either upgrade existing Whonix 13 templates or download new testers-only Whonix 14 templates. The latter procedure is much simpler than upgrading.
+
 = High Level Overview =
+
+'''Upgrading Templates'''
 
 # Backup your data - ideally have a copy of the VM so it is possible to try again (if necessary). <br />
 # Consider running the optional [[#Sanity Tests|sanity tests]]. <br />
@@ -18,6 +23,11 @@
 # Upgrade Whonix-Gatway. <br />
 # Restart Whonix-Gateway. <br />
 # Restart Whonix-Workstation. <br />
+
+
+'''Downloading New Templates'''
+
+No special instructions are required for non-Qubes-Whonix. Qubes-Whonix.requires additional, manual, configuration steps.
 
 = Sanity Tests =
 <div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
@@ -357,7 +367,43 @@ https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm
 sudo qubesctl state.sls qvm.updates-via-whonix
 }}
 
-The upgrade procedure is now complete.
+The upgrade procedure is now complete. To optionally configure a new <code>sys-whonix-14</code> ProxyVM for all TemplateVM updates, follow the steps below.
+
+==== Update Settings in Qubes R4 ====
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Qubes-Whonix only!
+}}
+
+
+'''1.''' [[Template:Qubes_Create_Gateway_ProxyVMs|Create a new Proxy-VM]] using the <code>whonix-gw-14</code> template. Label the new VM "sys-whonix-14".<br /> 
+'''2.''' Edit the ''/etc/qubes-rpc/policy/qubes.UpdatesProxy'' file to set <code>sys-whonix-14</code> as the target VM for the recently upgraded Whonix-Workstation and Whonix-Gateway. Copy and paste the text below.
+
+<pre>whonix-ws $default allow,target=sys-whonix
+whonix-ws $anyvm deny
+whonix-gw $default allow,target=sys-whonix
+whonix-gw $anyvm deny
+
+whonix-ws-14 $default allow,target=sys-whonix-14
+whonix-ws-14 $anyvm deny
+whonix-gw-14 $default allow,target=sys-whonix-14
+whonix-gw-14 $anyvm deny
+
+## Note that policy parsing stops at the first match,
+## so adding anything below "$anyvm $anyvm action" line will have no effect
+
+## Please use a single # to start your custom comments
+
+# Default rule for all TemplateVMs - direct the connection to sys-net
+$type:TemplateVM $default allow,target=sys-net
+
+$anyvm $anyvm deny</pre>
+
+Save and exit.
+
+'''3.''' After upgrading to Qubes-Whonix 14 in Qubes R4, the network setting for any Whonix TemplateVM should be set to <code>none</code> because a qrexec-based updates proxy is in use. <ref>Qubes-Whonix 13 supports this feature as well after running apt-get dist-upgrade.</ref>
 
 = Download New Templates =
 
