@@ -26,7 +26,8 @@ __TOC__
 ----
 
 == What are DisposableVMs? ==
-In the Qubes TemplateVM model, <ref>[https://www.qubes-os.org/getting-started AppVMs (qubes) and TemplateVMs]</ref> any changes made to a [https://github.com/QubesOS/qubes-issues/issues/2489 TemplateBasedVM's root filesystem] are lost upon reboot. This is advantageous for several reasons: it saves time and disk space, and allows faster, centralized updates for applications that are usually found inside the root filesystem. However, certain directories are designed to persist between reboots in order to store files and settings. These directories are stored in <i>/rw/</i> and include <i>/home/user</i> as well as additional directories defined by "bind directory" settings. <ref>[https://www.qubes-os.org/doc/bind-dirs/ How to make any file in a TemplateBasedVM persistent using bind-dirs]</ref>
+
+In the Qubes TemplateVM model, <ref>[https://www.qubes-os.org/getting-started AppVMs (qubes) and TemplateVMs]</ref> any changes made to a [https://github.com/QubesOS/qubes-issues/issues/2489 root filesystem of a TemplateBasedVM]] are lost upon reboot. This is advantageous for several reasons: it saves time and disk space, and allows faster, centralized updates for applications that are usually found inside the root filesystem. However, certain directories are designed to persist between reboots in order to store files and settings. These directories are stored in <i>/rw/</i> and include <i>/home/user</i> as well as additional directories defined by "bind directory" settings. <ref>[https://www.qubes-os.org/doc/bind-dirs/ How to make any file in a TemplateBasedVM persistent using bind-dirs]</ref>
 
 Qubes does not have a built-in snapshot capability like VirtualBox that can completely revert all changes back to a previous VM state. <ref>
 Apart from [https://www.qubes-os.org/doc/dom0-tools/qvm-revert-template-changes/ qvm-revert-template-changes] which can only revert to the state existing before the last shutdown of the TemplateVM.
@@ -37,6 +38,9 @@ Apart from [https://www.qubes-os.org/doc/dom0-tools/qvm-revert-template-changes/
 While DisposableVMs ensure that files do not persist without user intervention, the downside is the user can no longer decide whether or not the current VM state should be kept or destroyed. Users must choose beforehand to use a standard AppVM or a DisposableVM; this decision cannot be changed after the fact.
 
 ===== The Two-Layered DisposableVM System =====
+
+'''Qubes R3.2'''
+
 Qubes currently uses a two-layered approach to DisposableVMs. At the core of the system is a ''TemplateVM'' upon which a ''DisposableVM-Template'' is based. Every time a new DisposableVM is launched, it is based on the ''DisposableVM-Template'' - hence, two layers. In a standard Qubes-Whonix installation:
 
 * The base TemplateVM is <code>whonix-ws</code>. 
@@ -48,7 +52,33 @@ Once a DisposableVM-Template is created, its <i>/home/user/</i> directory can be
 https://www.qubes-os.org/doc/dispvm-customization/
 </ref> independently of the base TemplateVM. In this special case, the DisposableVM-Template will continue to inherit changes from the base TemplateVM's root filesystem (for example, package updates), but user files in <i>/home/user/</i> will persist independently.
 
+'''Qubes R4'''
+
+DisposableVMs in Qubes R4 are based on a TemplateBasedVM, rather than a TemplateVM. This means that DisposableVMs are more flexible and convenient, but potentially less anonymous if configured poorly. The characteristics of DisposableVMs are compared to Template(Based)VMs below.
+
+'''Table:''' ''Qubes R4 Inheritance and Persistence''
+
+{| class="wikitable"
+|-
+! scope="col"| 
+! scope="col"| Inheritance <ref>Upon creation.</ref>
+! scope="col"| Persistence <ref>Following shutdown.</ref>
+|-
+! scope="row"| TemplateVM
+| n/a
+| Everything
+|-
+! TemplateBasedVM
+| ''/etc/skel/'' to ''/home/''
+| ''/rw/'' (includes ''/home/'' and <code>bind-dirs</code>)
+|-
+! scope="row" | DisposableVM
+| ''/home/''
+| Nothing
+|}
+
 ===== DisposableVM Traffic is Stream Isolated from Other VMs =====
+
 DisposableVMs work especially well with Whonix-Gateway because each VM is assigned a unique internal IP address. In this way, all traffic from a DisposableVM is [[Stream_Isolation | stream isolated]] from all other traffic arising from VMs running in paralell.
 
 ----
