@@ -674,17 +674,27 @@ For further information about using Flash and other browser plugins in Whonix, s
 = Attacks =
 
 == Circumventing Proxy Obedience Design ==
-Knowledge assumed:
 
-* [[Comparison of different Whonix variants]].
-* Unsafe Browser: Tails and Liberte Linux contain a so-called Unsafe Browser. The Unsafe Browser does not use Tor. It connects in the clear. It is useful to register on hotspots or to view content in the clear without Tor.
-* Exploit against physically isolated Whonix-Gateway: difficult against a bare metal physical isolated Whonix-Gateway. This is because Whonix-Workstation can only access Tor running on Whonix-Gateway. We minimized attack surface, hardening etc. See the whole Security and Hardening page for details.
+=== Introduction ===
+
+This section presupposes the user is familiar with the following:
+
+* The [[Comparison of different Whonix variants|security comparison of different Whonix variants]].
+* Unsafe Browser: Tails and Liberte Linux package a so-called "Unsafe Browser". The Unsafe Browser does not use Tor, but instead connects in the clear. It is useful for hotspot registration or for viewing clearnet content without Tor.
+* Feasible exploits against a physically isolated Whonix-Gateway: this is difficult when the Whonix-Gateway is running in a bare metal configuration. The reason is that only Whonix-Workstation has access to Tor running on Whonix-Gateway. <ref>Whonix developers have also minimized the attack surface, added hardening features and so on. Refer to developer documentation on security and hardening for further details.</ref>
+
+
+Whonix protects against discovery of a user's IP address / location via a successful root exploit ([https://en.wikipedia.org/wiki/Malware Malware] with root rights) on the Whonix-Workstation (<code>anon-whonix</code>). <ref name=workstation /> Users should not deliberately test this feature and risk becoming infected with malware, since all the data inside Whonix-Workstation (<code>anon-whonix</code>) would become available to the attacker. 
+
+Whonix is not a perfect or unbreakable system, nor can it ever be. However, Whonix does raise the bar for attackers, meaning greater effort and skill is needed to discover the user's real IP address and successfully deanonymize them. The following table summarizes the defense-in-depth provided by the Whonix design.
+
+=== Overview ===
+
+In the following table:
+
 * TBB stands for Tor Browser Bundle.
-* In the following table,
-** "{{Code2|Fail}}" is defined as "IP/location of user is compromised.".
-** "{{Code2|Safe}}" is defined as "IP/location of user is hidden behind Tor.".
-
-Whonix protects against IP/location discovery through root exploits ([https://en.wikipedia.org/wiki/Malware Malware] with root rights) on the Workstation <ref name=workstation />. This does not mean you should deliberately place yourself at risk to become infected with malware. Do not! It would still make all data inside Whonix-Workstation available to the attacker. Again, Whonix is not a perfect system. It cannot be. Whonix is not unbreakable. What Whonix does is increase the effort required by an attacker to find out the user's real IP address, thus de-anonymizing the user. The following table visualizes the various defense layers provided by Whonix.
+* "Fail" means: ''The IP address / location of the user is compromised.''
+* "Safe" means: ''The IP address / location of the user is hidden behind Tor.''
 
 {| class="wikitable" style="text-align: center; background-color: #fff"
 |- style="background-color: #f9f9f9"
@@ -698,8 +708,8 @@ Whonix protects against IP/location discovery through root exploits ([https://en
 | '''Qubes OS TorVM'''
 | '''corridor'''
 |-
-| style="height: 27px;text-align: left;background-color: #f9f9f9"| 1. Proxy Bypass IP leak <ref>An application not honoring proxy settings. Example: [https://blog.torproject.org/blog/firefox-security-bug-proxy-bypass-current-tbbs Tor Browser Bundle: Firefox security bug (proxy-bypass)].</ref>
-| {{Safe}} <ref name=firewall>Prevented by firewall.</ref>
+| style="height: 27px;text-align: left;background-color: #f9f9f9"| 1. Proxy bypass IP leak <ref>An application not honoring proxy settings. Example: [https://blog.torproject.org/blog/firefox-security-bug-proxy-bypass-current-tbbs Tor Browser Bundle: Firefox security bug (proxy-bypass)].</ref>
+| {{Safe}} <ref name=firewall>Prevented by the firewall.</ref>
 | {{Safe}} <ref name=firewall />
 | {{Safe}} <ref name=firewall />
 | {{Safe}} <ref name=firewall />
@@ -708,17 +718,17 @@ Whonix protects against IP/location discovery through root exploits ([https://en
 | {{Safe}}
 | {{Safe}}
 |-
-| style="height: 27px;text-align: left;background-color: #f9f9f9"| 2. Protocol IP leak <ref>Where the applications spill the user's real IP. See [[Security in Real World|Whonix security in real world]] for examples where Whonix circumvented them. It gets circumvented by Whonix because Whonix-Workstation does not know the user's real IP address.</ref>
-| {{Safe}} <ref name=own>Workstation doesn't know its own external IP address.</ref>
+| style="height: 27px;text-align: left;background-color: #f9f9f9"| 2. Protocol IP leak <ref>This occurs when applications leak the user's real IP address. See [[Security in Real World|Whonix security in the real world]] for examples where Whonix prevented them. Leaks are often circumvented in Whonix because Whonix-Workstation (<code>anon-whonix</code>) is unaware of the real IP address.</ref>
+| {{Safe}} <ref name=own>The workstation does not know its own external IP address.</ref>
 | {{Safe}} <ref name=own />
 | {{Fail}}
-| {{Safe}} <ref name=lan>VM replaces the IP with an internal LAN IP, which is safe.</ref>
+| {{Safe}} <ref name=lan>The VM replaces the IP address with an internal LAN IP, which is safe.</ref>
 | {{Fail}}
 | {{Safe}} <ref name=lan />
 | {{Safe}}
 | {{Safe}} <ref name=lan />
 |-
-| style="height: 27px;text-align: left;background-color: #f9f9f9"| 3. Exploit + Unsafe Browser <ref>Example: user visits a website over Tor with a torified browser. The website uses a known or zero day vulnerability to gain remote code execution on the user's machine. Remote code execution is used to install malware on the user's machine. The used vulnerability allows the adversary to get "only" user rights, not root. The adversary could remotely start the Unsafe Browser and therefore find out the user's real IP address. This attack gets circumvented by Whonix, because any applications inside Whonix, including malware, can only connect through Tor.</ref>
+| style="height: 27px;text-align: left;background-color: #f9f9f9"| 3. Exploit + Unsafe Browser <ref>Consider the following example. A user visits a website over Tor with a torified browser. The website uses a known or zero day vulnerability to gain remote code execution on the user's machine, and then installs malware. The vulnerability "only" allows the adversary to gain user rights, not root. The adversary could then remotely start the Unsafe Browser in order to discover the user's real IP address. This attack is circumvented by Whonix, because any applications running inside Whonix, including malware, can only connect through Tor.</ref>
 | {{Safe}}
 | {{Safe}}
 | {{Fail}}
@@ -728,7 +738,7 @@ Whonix protects against IP/location discovery through root exploits ([https://en
 | {{Safe}}
 | {{Fail}}
 |-
-| style="height: 27px;text-align: left;background-color: #f9f9f9"| 4. Exploit + Root exploit + Unsafe Browser <ref>Example: user visits a website over Tor with a torified Browser. The website uses known or zero day vulnerability to gain remote code execution on the user's machine. Remote code execution is used to install malware on the user's machine. The used vulnerability allows the adversary to get "only" user rights, not root. The adversary gains root through escalate privileges using a second vulnerability. This allows the adversary to tamper with iptables rules, to make non-Tor connections and so on. This attack gets circumvented by Whonix, because Whonix's Firewall runs on another (virtual) machine. This attack gets circumvented by Whonix, because any root applications inside Whonix, including malware with root rights, can only connect through Tor.</ref>
+| style="height: 27px;text-align: left;background-color: #f9f9f9"| 4. Exploit + root exploit + Unsafe Browser <ref>Consider the following example. A user visits a website over Tor with a torified Browser. The website uses a known or zero day vulnerability to gain remote code execution on the user's machine, and then installs malware. The vulnerability "only" allows the adversary to gain user rights, not root. The adversary gains root rights by escalating privileges with a second vulnerability. The adversary is then capable of tampering with iptables rules to make non-Tor connections and so on. This attack is circumvented by Whonix, because the firewall runs on another (virtual) machine. Further, any root applications inside Whonix, including malware with root rights, can only connect through Tor.</ref>
 | {{Safe}}
 | {{Safe}}
 | {{Fail}}
@@ -738,7 +748,7 @@ Whonix protects against IP/location discovery through root exploits ([https://en
 | {{Safe}}
 | {{Fail}}
 |-
-| style="height: 27px;text-align: left;background-color: #f9f9f9"| 5. Root exploit + Unsafe Browser <ref>Example: user visits a website over Tor with a torified Browser. The website uses known or zero day vulnerability to gain remote code execution on the user's machine. Remote code execution is used to install malware on the user's machine. The used vulnerability allows the adversary to get root rights. This allows the adversary to tamper with iptables rules, to make non-Tor connections and so on. This attack gets circumvented by Whonix, because Whonix's Firewall runs on another (virtual) machine. This attack gets circumvented by Whonix, because any root applications inside Whonix, including malware with root rights, can only connect through Tor.</ref>
+| style="height: 27px;text-align: left;background-color: #f9f9f9"| 5. Root exploit + Unsafe Browser <ref>Consider the following example. A user visits a website over Tor with a torified Browser. The website uses a known or zero day vulnerability to gain remote code execution on the user's machine, and then installs malware. The vulnerability used allows the adversary to gain root rights. The adversary is then capable of tampering with iptables rules to make non-Tor connections and so on. This attack is circumvented by Whonix, because the firewall runs on another (virtual) machine. Further, any root applications inside Whonix, including malware with root rights, can only connect through Tor.</ref>
 | {{Safe}}
 | {{Safe}}
 | {{Fail}}
@@ -748,7 +758,7 @@ Whonix protects against IP/location discovery through root exploits ([https://en
 | {{Safe}}
 | {{Fail}}
 |-
-| style="height: 27px;text-align: left;background-color: #f9f9f9"| 6. Exploit + VM exploit + Unsafe Browser <ref>Example: user visits a website over Tor with a torified Browser. The website uses known or zero day vulnerability to gain remote code execution on the user's machine. Remote code execution is used to install malware on the user's machine. A second exploit is being used to break out of the Virtual Machine. Whonix Default is broken against this attack. Whonix Physical Isolation defeats this attack, because the Whonix-Workstation's host does not know its real IP address, only Whonix-Gateway, running on an other physical machine knows it.</ref>
+| style="height: 27px;text-align: left;background-color: #f9f9f9"| 6. Exploit + VM exploit + Unsafe Browser <ref>Consider the following example. A user visits a website over Tor with a torified Browser. The website uses a known or zero day vulnerability to gain remote code execution on the user's machine, and then installs malware. A second exploit is then used to break out of the virtual machine. The default [[Non-Qubes-Whonix]] and [[Qubes-Whonix]] platforms are vulnerable to this attack. Whonix with physical isolation defeats this attack, because the Whonix-Workstation host does not know its real IP address, only Whonix-Gateway does, which is running on another physical machine.</ref>
 | {{Fail}}
 | {{Safe}}
 | {{Fail}}
@@ -758,7 +768,7 @@ Whonix protects against IP/location discovery through root exploits ([https://en
 | {{Fail}}
 | {{Fail}}
 |-
-| style="height: 27px;text-align: left;background-color: #f9f9f9"| 7. Exploit + VM exploit + Exploit against physically isolated Whonix-Gateway <ref>Same as attack 6. But the adversary uses an extra vulnerability to break into Whonix-Gateway. Whonix is broken against this attack.</ref>
+| style="height: 27px;text-align: left;background-color: #f9f9f9"| 7. Exploit + VM exploit + exploit against physically isolated Whonix-Gateway <ref>This is the same as attack number six, except in this case the adversary uses an extra vulnerability to break into Whonix-Gateway. Whonix is vulnerable to this form of attack.</ref>
 | {{Fail}}
 | {{Fail}}
 | {{Fail}}
@@ -768,28 +778,28 @@ Whonix protects against IP/location discovery through root exploits ([https://en
 | {{Fail}}
 | {{Fail}}
 |-
-| style="height: 27px;text-align: left;background-color: #f9f9f9"| 8. VM exploit <ref>Example: user visits a website over Tor with a torified Browser. The website uses known or zero day vulnerability to gain remote code execution on the host. Whonix Default: fail, same as attack 6. Physical Isolation defeats this attack, same as attack 6.</ref>
+| style="height: 27px;text-align: left;background-color: #f9f9f9"| 8. VM exploit <ref>Consider the following example. A user visits a website over Tor with a torified Browser. The website uses a known or zero day vulnerability to gain remote code execution on the user's machine. The default [[Non-Qubes-Whonix]] and [[Qubes-Whonix]] platforms will fall to this attack, the same as attack number six. Physical isolation defeats this attack in the same manner as per attack number six.</ref>
 | {{Fail}}
 | {{Safe}}
 | {{Safe}}
 | {{Fail}}
 | {{Safe}}
 | {{Fail}}
-| fail, see <ref name=qubes-vm-exploit>Using white as more neutral color, because according to [https://groups.google.com/forum/#!msg/qubes-devel/GT8LyE-la-o/XBvbiOnQtaIJ this post] by [https://en.wikipedia.org/wiki/Joanna_Rutkowska Joanna Rutkowska], exploiting a QubesOS virtual machine is more difficult than exploiting VirtualBox.</ref>
+| Fail, see <ref name=qubes-vm-exploit>White is used as a more neutral color because according to [https://groups.google.com/forum/#!msg/qubes-devel/GT8LyE-la-o/XBvbiOnQtaIJ this post] by [https://en.wikipedia.org/wiki/Joanna_Rutkowska Joanna Rutkowska], exploiting a QubesOS virtual machine is more difficult than exploiting VirtualBox.</ref>
 | {{Fail}}
 |-
-| style="height: 27px;text-align: left;background-color: #f9f9f9"| 9. VM exploit + Exploit against physically isolated Whonix-Gateway <ref>Example: user visits a website over Tor with a torified Browser. The website uses known or zero day vulnerability to gain remote code execution on the host. The adversary uses an extra vulnerability to break Whonix-Gateway. Whonix is broken against this attack.</ref>
+| style="height: 27px;text-align: left;background-color: #f9f9f9"| 9. VM exploit + exploit against physically isolated Whonix-Gateway <ref>Consider the following example. A user visits a website over Tor with a torified Browser. The website uses a known or zero day vulnerability to gain remote code execution on the host. The adversary then uses an extra vulnerability to break into Whonix-Gateway. Whonix is vulnerable to this kind of attack.</ref>
 | {{Fail}}
 | {{Fail}}
 | {{Safe}}
-| {{Fail}} <ref name=fail>Fail, because it already failed against a VM exploit.</ref><ref name=not>Usually not run behind a physically isolated Whonix-Gateway.</ref>
+| {{Fail}} <ref name=fail>Fail, because it has already fallen victim to a VM exploit.</ref> <ref name=not>This is not usually run behind a physically isolated Whonix-Gateway.</ref>
 | {{Safe}}
-| {{Fail}} <ref name=fail /><ref name=not />
-| fail, see <ref name=qubes-vm-exploit /> <ref name=fail /><ref name=not />
+| {{Fail}} <ref name=fail /> <ref name=not />
+| Fail, see <ref name=qubes-vm-exploit /> <ref name=fail /> <ref name=not />
 | {{Fail}}
 |-
-| style="height: 27px;text-align: left;background-color: #f9f9f9"| 10. Exploit against Tor process <ref>Example: user visits a website over Tor with a torified Browser. Tor processes the traffic. The adversary uses a vulnerability to gain remote code execution. The machine where Tor is running knows the user's real IP address (Tor control protocol command: getinfo address), unless this machine is itself behind another Gateway, i.e. ([[Advanced_Security_Guide#Chaining_Anonymizing_Gateways|Chaining Multiple Gateways]] [which is unfortunately only available to expert users]).</ref>
-| {{Fail}} <ref name=chaininganonymizinggateways>Unless you are [[Advanced_Security_Guide#Chaining_Anonymizing_Gateways|Chaining Multiple Gateways]], which is unfortunately only available to expert users, Whonix is broken against this attack.</ref>
+| style="height: 27px;text-align: left;background-color: #f9f9f9"| 10. Exploit against Tor process <ref>Consider the following example. A user visits a website over Tor with a torified Browser, with Tor controlling (processing) the traffic. The adversary uses a vulnerability to gain remote code execution on the user's machine. The machine where Tor is running knows the user's real IP address (Tor control protocol command: getinfo address), unless this machine is itself behind another Gateway which is difficult to configure; see [[Advanced_Security_Guide#Chaining_Anonymizing_Gateways|chaining multiple gateways]].</ref>
+| {{Fail}} <ref name=chaininganonymizinggateways>Unless a user is [[Advanced_Security_Guide#Chaining_Anonymizing_Gateways|chaining multiple gateways]], which is unfortunately only available to expert users. Whonix is vulnerable to this form of attack.</ref>
 | {{Fail}} <ref name=chaininganonymizinggateways />
 | {{Fail}}
 | {{Fail}}
@@ -798,7 +808,7 @@ Whonix protects against IP/location discovery through root exploits ([https://en
 | {{Fail}}
 | {{Fail}}
 |-
-| style="height: 27px;text-align: left;background-color: #f9f9f9"| 11. Attack against the Tor network <ref>Example: end to end correlation attack, but there are much more attacks where Tor is known to be broken against. Any successful attack against Tor on a Tor based anonymity operating system will naturally deanonymize the user, unless you are [[Advanced_Security_Guide#Chaining_Anonymizing_Gateways|Chaining Multiple Gateways]] (which is unfortunately only available to expert users). Whonix defeats some attacks against Tor (and components such as Tor Browser), for example, see [[TimeSync|Whonix's Secure And Distributed Time Synchronization Mechanism]] and [[Protocol-Leak-Protection and Fingerprinting-Protection]] and the rest of the [[Design]] page.</ref>
+| style="height: 27px;text-align: left;background-color: #f9f9f9"| 11. Attack against the Tor network <ref>For example, an end-to-end correlation attack. Research has established that Tor is vulnerable to numerous other attack vectors. Any successful attack against Tor, where an anonymity operating system is dependent on it, will naturally deanonymize the user. The exception is users who are [[Advanced_Security_Guide#Chaining_Anonymizing_Gateways|chaining multiple gateways]], which unfortunately is only available to expert users. Whonix is capable of defeating some attacks against Tor and associated components such as Tor Browser; for example, see the [[TimeSync|secure and distributed time synchronization mechanism]] and [[Protocol-Leak-Protection and Fingerprinting-Protection|protocol and fingerprinting leak protection]], along with the rest of the [[Design|design]] page.</ref>
 | {{Fail}}
 | {{Fail}}
 | {{Fail}}
@@ -808,7 +818,7 @@ Whonix protects against IP/location discovery through root exploits ([https://en
 | {{Fail}}
 | {{Fail}}
 |-
-| style="height: 27px;text-align: left;background-color: #f9f9f9"| 12. Backdoor <ref>A [https://en.wikipedia.org/wiki/Backdoor_(computing) backdoor] in Tor, the operating system which the project is based on or the project itself would be fatal. It would open up for targeted attacks. Big scale attacks would maybe be caught.</ref> <ref name=deterministic />
+| style="height: 27px;text-align: left;background-color: #f9f9f9"| 12. Backdoor <ref>Any [https://en.wikipedia.org/wiki/Backdoor_(computing) backdoor] in Tor would be fatal for operating systems which rely upon it, since it would open up an avenue for targeted attacks. Widespread attacks are more likely to be identified.</ref> <ref name=deterministic />
 | {{Fail}}
 | {{Fail}}
 | {{Fail}}
@@ -819,13 +829,13 @@ Whonix protects against IP/location discovery through root exploits ([https://en
 | {{Fail}}
 |-
 | style="height: 27px;text-align: left;background-color: #f9f9f9"| 13. Hidden service domain name security after server software exploit
-| {{Safe}} <ref name=hidden_service_key_stored_on_gateway>When server software on Whonix-Workstation gets (root) exploited, the attacker cannot steal the key of the onion service because it is stored on Whonix-Gateway.</ref>
+| {{Safe}} <ref name=hidden_service_key_stored_on_gateway>When server software on Whonix-Workstation (<code>anon-whonix</code>) is (root) exploited, the attacker cannot steal the key of the onion service because it is stored on Whonix-Gateway (<code>sys-whonix</code>).</ref>
 | {{Safe}} <ref name=hidden_service_key_stored_on_gateway />
-| {{Fail}} Tails is not meant to be used as a server (yet).
-| {{Fail}} Tails is not meant to be used as a server (yet).
-| {{BlueBackground}} Not an operating system. 
-| {{BlueBackground}} Not an operating system. 
-| ? <ref>Safe in theory. Does it support onion services yet?</ref>
+| {{Fail}} <ref>Tails is not yet meant to be used as a server.</ref>
+| {{Fail}} <ref>Tails is not yet meant to be used as a server.</ref>
+| {{BlueBackground}} Not an operating system
+| {{BlueBackground}} Not an operating system
+| ? <ref>This is safe in theory, but it is unclear if TorVM supports onion services.</ref>
 | {{Fail}}
 |-
 |}
