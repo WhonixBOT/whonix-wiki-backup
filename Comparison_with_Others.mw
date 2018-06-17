@@ -840,17 +840,29 @@ In the following table:
 |-
 |}
 
-== Network Time related ==
-Knowledge assumed:
+== Network Time-related ==
 
-* [[Dev/TimeSync|Whonix Design: TimeSync]]
-* [https://tails.boum.org/contribute/design/Time_syncing/ Tails Design: Time syncing]
-* In the following table,
-** "{{Code2|(VM host) update/crypto block"}} is defined as: Can prevent (VM host) operating system updates and cryptographic verification such as for SSL verification in (VM host) browser.
-** "{{Code2|u/c-block}}" is defined as: update/crypto block
-** "{{Code2|Tor blocked}}" is defined as: Can prevent connections to the Tor network until clock gets manually fixed.
-** "{{Code2|big clock skew}}" is defined as: more than 1 hour in past or more than 3 hour in future. <ref name=source>Source of information: https://lists.torproject.org/pipermail/tor-talk/2012-February/023264.html</ref>
-** "{{Code2|small clock skew}}" is defined as: less than 1 hour in past or less than 3 hour in future. <ref name=source />
+=== Introduction ===
+
+This section presupposes the user is familiar with:
+
+* [[Dev/TimeSync|Whonix Design: TimeSync]].
+* [https://tails.boum.org/contribute/design/Time_syncing/ Tails Design: Time syncing].
+
+
+Terms that are used in the following table are defined below:
+
+* '''(VM host) update/crypto block:''' prevention of (VM host) operating system updates and cryptographic verification such as TLS / SSL in the (VM host) browser.
+
+* '''u/c-block:''' update/crypto block.
+
+* '''Tor blocked:''' prevention of connections to the Tor network until the clock is manually fixed.
+
+* '''Big clock skew:''' more than 1 hour in the past or more than 3 hours in the future. <ref name=source>Source: https://lists.torproject.org/pipermail/tor-talk/2012-February/023264.html</ref>
+
+* '''Small clock skew:''' less than 1 hour in the past or less than 3 hours in the future. <ref name=source />
+
+=== Overview ===
 
 {| class="wikitable" style="text-align: center; background-color: #fff"
 |- style="background-color: #f9f9f9"
@@ -865,10 +877,10 @@ Knowledge assumed:
 |-
 | style="height: 27px;background-color: #f9f9f9"| VM host time synchronization mechanism
 | NTP
-| Gateway: There is no VM host.; Workstation host: NTP
-| There is no VM host. Same as operating system synchronization mechanism
+| Gateway: there is no VM host. Workstation host: NTP
+| There is no VM host. Same as the operating system synchronization mechanism
 | NTP
-| There is no VM host.
+| There is no VM host
 | NTP
 | NTP
 |-
@@ -879,79 +891,79 @@ Knowledge assumed:
 | tordate and tails_htp
 | NTP
 | NTP
-| (?)
+| ?
 |-
-| style="height: 27px;background-color: #f9f9f9"| If clock is too much off
+| style="height: 27px;background-color: #f9f9f9"| Effect of a grossly inaccurate clock
 | style="background-color: {{Red}}"| Tor blocked
 | style="background-color: {{Red}}"| Tor blocked
-| style="background-color: {{Green}}"| tordate will fix it.
-| style="background-color: {{Green}}"| tordate will fix it.
+| style="background-color: {{Green}}"| tordate fixes the clock
+| style="background-color: {{Green}}"| tordate fixes the clock
 | style="background-color: {{Red}}"| Tor blocked
 | style="background-color: {{Red}}"| Tor blocked
 | style="background-color: {{Red}}"| Tor blocked
 |-
 | style="height: 27px;background-color: #f9f9f9"| VM host time differs from operating system time
-| {{Yes}}, <ref name=unsafe>Because unsafe browser runs on the VM host (NTP) and torified browser runs inside Whonix-Workstation. (sdwdate)</ref>
-| {{Yes}}, <ref name=unsafe />
-| {{BlueBackground}} There is no VM host.
-| {{Yes}}. <ref>VM Host time gets synchronized with NTP and operating system time gets synchronized with tails_htp.</ref>
-| {{No}}. <ref name=same>Untorified host browser uses the same clock as TBB.</ref>
-| style="background-color: {{Yellow}}"| Maybe. <ref name=maybe>Host and VM clock both get synchronized with NTP, but it could still make a difference, because they are synchronized independently.</ref>
+| {{Yes}} <ref name=unsafe>Because the unsafe browser runs on the VM host which uses NTP, and the torified browser runs inside Whonix-Workstation (<code>anon-whonix</code>) which uses sdwdate.</ref>
+| {{Yes}} <ref name=unsafe />
+| {{BlueBackground}} There is no VM host
+| {{Yes}} <ref>The VM host time is synchronized with NTP, and operating system time is synchronized with tails_htp.</ref>
+| {{No}} <ref name=same>An untorified host browser uses the same clock as TBB.</ref>
+| style="background-color: {{Yellow}}"| Possibly <ref name=maybe>The host and VM clock are both synchronized with NTP, but there still might be a difference since they are synchronized independently.</ref>
 | {{No}}
 |-
-| style="height: 27px;background-color: #f9f9f9"| Unsafe browser time differs from torified browser time. <ref>This is important because otherwise non-anonymous activity could be linked to anonymous activity if the clock skew is too big and/or too unique.</ref>
-| {{Yes}}. <ref name=unsafe />
-| {{Yes}}. <ref>Whonix-Workstation (sdwdate) and Whonix-Gateway (separate sdwdate) time differ.</ref>
-| {{No}}. <ref name=time>Unsafe browser and torified browser share the same clock. (tails_htp)</ref>
-| {{No}}. <ref name=time />
-| {{No}}. <ref name=same />
-| style="background-color: {{Yellow}}"| Maybe. <ref name=maybe />
+| style="height: 27px;background-color: #f9f9f9"| Unsafe browser time differs from torified browser time <ref>This is important because if the clock skew is too large and/or unique, non-anonymous and anonymous activity might be linked.</ref>
+| {{Yes}} <ref name=unsafe />
+| {{Yes}} <ref>The time differs because Whonix-Workstation (<code>anon-whonix</code>) and Whonix-Gateway (<code>sys-whonix</code>) use separate sdwdate instances.</ref>
+| {{No}} <ref name=time>The unsafe browser and torified browser share the same clock via tails_htp</ref>
+| {{No}} <ref name=time />
+| {{No}} <ref name=same />
+| style="background-color: {{Yellow}}"| Possibly <ref name=maybe />
 | {{No}}
 |-
-| style="height: 27px;background-color: #f9f9f9"| Big clock skew attack against NTP <ref name=adversary>Introduced by ISP level adversary attack.</ref>: VM host effects
+| style="height: 27px;background-color: #f9f9f9"| Large clock skew attack against NTP <ref name=adversary>An attack initiated by an ISP-level adversary.</ref>: VM host effects
 | style="background-color: {{Red}}"| u/c-block
 | style="background-color: {{Red}}"| VM host u/c-block
-| {{BlueBackground}} There is no VM host.
+| {{BlueBackground}} There is no VM host
 | style="background-color: {{Red}}"| VM host u/c-block
-| {{BlueBackground}} There is no VM host.
+| {{BlueBackground}} There is no VM host
 | style="background-color: {{Red}}"| VM host u/c-block
 | style="background-color: {{Red}}"| u/c-block
 |-
-| style="height: 27px;background-color: #f9f9f9"| Big clock skew attack against NTP <ref name=adversary />: operating system effects
+| style="height: 27px;background-color: #f9f9f9"| Large clock skew attack against NTP <ref name=adversary />: operating system effects
 | style="background-color: {{Red}}"| Tor blocked
 | style="background-color: {{Red}}"| Tor blocked
-| style="background-color: {{Green}}"| <ref name=ntp>Assumed an installed regular operating system using NTP was used earlier and the adversary introduced a clock skew.</ref>; tordate will fix it.
-| style="background-color: {{Green}}"| <ref name=ntp />; tordate will fix it.
+| style="background-color: {{Green}}"| <ref name=ntp>This assumes installation of a regular operating system using NTP which was used earlier, and the introduction of a clock skew by an adversary.</ref>; tordate fixes the clock skew
+| style="background-color: {{Green}}"| <ref name=ntp />; tordate fixes the clock skew
 | style="background-color: {{Red}}"| Tor blocked; u/c block
 | style="background-color: {{Red}}"| Tor blocked; u/c block
 | style="background-color: {{Red}}"| Tor blocked
 |-
-| style="height: 27px;background-color: #f9f9f9"| Fingerprintable reaction <ref>Such as running tordate.</ref> when big clock skew attack was used
-| style="background-color: {{Green}}"| No, fails the same way TBB fails.
-| style="background-color: {{Green}}"| No, fails the same way TBB fails.
-| style="background-color: {{Yellow}}"| Probably yes, see [[#Fingerprint|Fingerprint]] section above.
-| style="background-color: {{Yellow}}"| Probably yes, see [[#Fingerprint|Fingerprint]] section above.
+| style="height: 27px;background-color: #f9f9f9"| Fingerprintable reaction <ref>Such as running tordate.</ref> when a large clock skew attack is used
+| style="background-color: {{Green}}"| No, fails identically to TBB
+| style="background-color: {{Green}}"| No, fails identically to TBB
+| style="background-color: {{Yellow}}"| Probably yes, see the [[#Fingerprint|fingerprint]] section above
+| style="background-color: {{Yellow}}"| Probably yes, see the [[#Fingerprint|fingerprint]] section above
 | style="background-color: {{Green}}"| TBB
 | style="background-color: {{Green}}"| TBB
 | style="background-color: {{Green}}"| No
 |-
 | style="height: 27px;background-color: #f9f9f9"| Small clock skew attack against NTP <ref name=adversary />, VM host effects:
-| {{BlueBackground}} <s>VM host u/c block</s> ?
-| {{BlueBackground}} <s>VM host u/c block</s> ?
-| {{BlueBackground}} There is no VM host.
-| {{BlueBackground}} <s>VM host u/c block</s> ?
-| {{BlueBackground}} <s>VM host u/c block</s> ?
-| {{BlueBackground}} <s>VM host u/c block</s> ?
-| {{BlueBackground}} <s>VM host u/c block</s> ?
+| {{BlueBackground}} VM host u/c block (?)
+| {{BlueBackground}} VM host u/c block (?)
+| {{BlueBackground}} There is no VM host
+| {{BlueBackground}} VM host u/c block (?)
+| {{BlueBackground}} VM host u/c block (?)
+| {{BlueBackground}} VM host u/c block (?)
+| {{BlueBackground}} VM host u/c block (?)
 |-
 | style="height: 27px;background-color: #f9f9f9"| Small clock skew attack against NTP <ref name=adversary />, operating system effects:
-| style="background-color: {{Green}}"| Whonix VMs: sdwdate will fix it.
-| style="background-color: {{Green}}"| sdwdate will fix it.
-| style="background-color: {{Green}}"| VM: tails_htp will fix it.
-| style="background-color: {{Green}}"| tails_htp will fix it.
-| style="background-color: {{Red}}"| If the user visits a page which is under observation by the adversary, the adversary knows who is connecting. <ref name=unique>Due to a unique clock skew introduced by the adversary.</ref>
-| style="background-color: {{Red}}"| If the user visits a page which is under observation by the adversary, the adversary knows who is connecting. <ref name=unique />
-| style="background-color: {{Red}}"| If the user visits a page which is under observation by the adversary, the adversary knows who is connecting. <ref name=unique />
+| style="background-color: {{Green}}"| Whonix VMs: sdwdate fixes the clock skew
+| style="background-color: {{Green}}"| sdwdate fixes the clock skew
+| style="background-color: {{Green}}"| VM: tails_htp fixes the clock skew
+| style="background-color: {{Green}}"| tails_htp fixes the clock skew
+| style="background-color: {{Red}}"| If the user visits a page monitored by an adversary, they will know who is connecting <ref name=unique>Due to a unique clock skew introduced by an adversary.</ref>
+| style="background-color: {{Red}}"| If the user visits a page monitored by an adversary, the will know who is connecting <ref name=unique />
+| style="background-color: {{Red}}"| If the user visits a page monitored by an adversary, they will know who is connecting. <ref name=unique />
 |}
 
 = Usability =
