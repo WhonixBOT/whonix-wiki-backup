@@ -53,39 +53,36 @@ There are several security and privacy benefits of using Tor onion services: <re
 * The ISP cannot easily learn what packages are fetched.
 * End-to-end authentication and encryption provides protection against man-in-the-middle attacks e.g. version downgrade attacks.
 
+While Qubes and Whonix maintain both v2 and v3 onion addresses, users are strongly encouraged to enforce v3 onion connections. This allows users to benefit from the many improvements over the v2 legacy system. 
+
 == Qubes Packages ==
 
-The following commands must be run in dom0 in order to use Qubes’ Tor onion service repositories for each type of VM. <ref>https://www.qubes-os.org/doc/hidden-service-repos/</ref> <ref>The cat commands are optional and for confirmation only.</ref>
+The following commands must be run in dom0 in order to use Qubes’ Tor onion service repositories for each type of VM. <ref>The cat commands are optional and for confirmation only.</ref>
 
-The downside of this approach is that repository definitions are managed by a Qubes package, meaning further manual updates need to be applied in the future when they change.
+The downside of this approach is that repository definitions are managed by a Qubes package, meaning manual updates are needed if the the definitions change in the future.
 
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = To enforce v3 onion connections, replace all instances of the v2 onion address below (qubesos4rrrrz6n4.onion) with sik5nlgfc5qylnnsr57qrbm64zbdx6t4lreyhpon3ychmxmiem7tioad.onion <ref>https://groups.google.com/forum/?_escaped_fragment_=topic/qubes-users/4VCPI7SZLhE#!topic/qubes-users/4VCPI7SZLhE</ref> <ref>Tor v3.2 or higher must be running in Whonix-Gateway (<code>sys-whonix</code>).</ref>
-}}
-
+Users that are currently using v2 onion connections can update their system to enforce v3 connections by replacing all instances of the http/URI address (qubes-os.org) below with qubesos4rrrrz6n4.onion
 
 '''Dom0'''
 
 In dom0, run.
 <pre>
-sudo sed -i 's/yum.qubes-os.org/yum.qubesos4rrrrz6n4.onion/' /etc/yum.repos.d/qubes-dom0.repo && cat /etc/yum.repos.d/qubes-dom0.repo
+sudo sed -i 's/yum.qubes-os.org/yum.sik5nlgfc5qylnnsr57qrbm64zbdx6t4lreyhpon3ychmxmiem7tioad.onion/' /etc/yum.repos.d/qubes-dom0.repo && cat /etc/yum.repos.d/qubes-dom0.repo
 </pre>
 <pre>
-sudo sed -i 's/yum.qubes-os.org/yum.qubesos4rrrrz6n4.onion/' /etc/yum.repos.d/qubes-templates.repo && cat /etc/yum.repos.d/qubes-templates.repo
+sudo sed -i 's/yum.qubes-os.org/yum.sik5nlgfc5qylnnsr57qrbm64zbdx6t4lreyhpon3ychmxmiem7tioad.onion/' /etc/yum.repos.d/qubes-templates.repo && cat /etc/yum.repos.d/qubes-templates.repo
 </pre>
 '''Fedora Template'''
 
 In dom0, run.
 <pre>
-qvm-run -a --nogui -p -u root $FedoraTemplateVM 'sed -i "s/yum.qubes-os.org/yum.qubesos4rrrrz6n4.onion/" /etc/yum.repos.d/qubes-r3.repo && cat /etc/yum.repos.d/qubes-r3.repo'
+qvm-run -a --nogui -p -u root <your_fedora_template> 'sed -i "s/yum.qubes-os.org/yum.sik5nlgfc5qylnnsr57qrbm64zbdx6t4lreyhpon3ychmxmiem7tioad.onion/" /etc/yum.repos.d/qubes-r* && cat /etc/yum.repos.d/qubes-r*'
 </pre>
 '''Debian and Whonix Templates'''
 
 In dom0, run.
 <pre>
-qvm-run -a --nogui -p -u root $DebianTemplateVM 'sed -i "s/deb.qubes-os.org/deb.qubesos4rrrrz6n4.onion/" /etc/apt/sources.list.d/qubes-r3.list && cat /etc/apt/sources.list.d/qubes-r3.list'
+qvm-run -a --nogui -p -u root <your_debian_template> 'sed -i "s/deb.qubes-os.org/deb.sik5nlgfc5qylnnsr57qrbm64zbdx6t4lreyhpon3ychmxmiem7tioad.onion/" /etc/apt/sources.list.d/qubes-r* && cat /etc/apt/sources.list.d/qubes-r*'
 </pre>
 
 == Whonix and Debian Packages ==
@@ -139,11 +136,6 @@ Save and exit.
 }}
 
 
-To use the v2 onion, run.
-<pre>
-sudo whonix_repository --baseuri http://deb.kkkkkkkkkk63ava6.onion --enable --repository stable
-</pre>
-
 To use the v3 onion, run. <ref>Requires Tor v3.2 or above running in Whonix-Gateway (<code>sys-whonix</code>).</ref>
 
 <pre>
@@ -167,9 +159,13 @@ sudo apt-get update && sudo apt-get dist-upgrade
 
 Only complete this step if the [[Security_Guide#Tor_Versioning|Tor versions from The Tor Project repository]] are being used. The Tor Project deb apt signing key must be added first (see the link above), or the user will receive error messages when completing these steps.
 
-The following commands are run in either the Whonix-Gateway or <code>whonix-gw</code> TemplateVM (for [[Qubes-Whonix]] users).
+The following commands are run in either the Whonix-Gateway or <code>whonix-gw</code> TemplateVM (for Qubes R3.2 users).
 
-To add the Tor Project deb apt signing key, run.
+Qubes-R4.0 only! Since TemplateVMs are non-network connected by default any attempt to download the apt key in whonix-gw will fail. To work around this issue users can fetch the Tor apt singing key from a (networked) anon-whonix AppVM. Then copy the signing key over to whonix-gw in a text file.
+
+To add the Tor Project deb apt signing key, run. (In anon-whonix VM for Qubes-R4.0) 
+
+Note: Whonix 14 users must replace keys.gnupg.net with .onion address jirk5u4osbsr34t5.onion
 
 <pre>
 sudo apt-key adv --keyserver keys.gnupg.net --recv-keys A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
@@ -182,6 +178,29 @@ sudo apt-key adv --fingerprint A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
 </pre>
 
 Compare the fingerprint displayed in terminal with the one listed on this website https://www.torproject.org/docs/signing-keys.html
+
+(Qubes-R4.0 only!) In anon-whonix, copy the Tor singing key to a new text file named tor.key
+
+
+sudo apt-key export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 > /tmp/tor.key
+
+
+(Qubes-R4.0 only!) In anon-whonix, copy the tor.key text file over to whonix-gw.
+
+
+Note: If users encounter the following error it can be safely ignored.
+
+qfile-agent: Fatal error: stat whonix-gw-version (error type: No such file or directory)
+
+
+qvm-copy /tmp/tor.key whonix-gw
+
+
+(Qubes-R4.0 only!) In whonix-gw, add the Tor signing key to the list of trusted keys.
+
+
+sudo apt-key add ~/QubesIncoming/anon-whonix/tor.key
+
 
 To onionize Tor Project updates first create a torproject.list file using an editor with root rights.
 
