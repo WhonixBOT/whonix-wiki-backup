@@ -53,7 +53,11 @@ There are several security and privacy benefits of using Tor onion services: <re
 * The ISP cannot easily learn what packages are fetched.
 * End-to-end authentication and encryption provides protection against man-in-the-middle attacks e.g. version downgrade attacks.
 
-While Qubes and Whonix maintain both v2 and v3 onion addresses, users are strongly encouraged to enforce v3 onion connections. This allows users to benefit from the many improvements over the v2 legacy system. 
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = While Qubes and Whonix maintain both v2 and v3 onion addresses, users are strongly encouraged to enforce v3 <i>.onion</i> connections. This allows users to benefit from the many improvements over the v2 legacy system.<ref>https://trac.torproject.org/projects/tor/wiki/doc/NextGenOnions</ref> <ref>Tor v3.2 or higher must be running in Whonix-Gateway (`sys-whonix`).</ref>  
+}}
 
 == Qubes Packages ==
 
@@ -61,7 +65,11 @@ The following commands must be run in dom0 in order to use Qubes’ Tor onion se
 
 The downside of this approach is that repository definitions are managed by a Qubes package, meaning manual updates are needed if the the definitions change in the future.
 
-Users that are currently using v2 onion connections can update their system to enforce v3 connections by replacing all instances of the http/URI address (qubes-os.org) below with qubesos4rrrrz6n4.onion
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       =Users that are currently enforcing v2 <i>.onion</i> connections can update their system to v3 <i>.onion</i> connections by replacing all instances of the http/URI address (qubes-os.org) below with qubesos4rrrrz6n4.onion
+}}
 
 '''Dom0'''
 
@@ -161,11 +169,16 @@ Only complete this step if the [[Security_Guide#Tor_Versioning|Tor versions from
 
 The following commands are run in either the Whonix-Gateway or <code>whonix-gw</code> TemplateVM (for Qubes R3.2 users).
 
-Qubes-R4.0 only! Since TemplateVMs are non-network connected by default any attempt to download the apt key in whonix-gw will fail. To work around this issue users can fetch the Tor apt singing key from a (networked) anon-whonix AppVM. Then copy the signing key over to whonix-gw in a text file.
+'''Note:''' Qubes-R4.0 TemplateVMs are non-network connected by default which will cause attempts to download the apt key in <code>whonix-gw</code> to fail.<ref>https://github.com/QubesOS/qubes-issues/issues/1854</ref> To work around this issue users can fetch the Tor apt singing key from a (networked) <code>anon-whonix</code> AppVM. Then copy the key over to <code>whonix-gw</code> in a text file.
 
-To add the Tor Project deb apt signing key, run. (In anon-whonix VM for Qubes-R4.0) 
+To add the Tor Project deb apt signing key, run. (In <code>anon-whonix</code> VM for Qubes-R4.0) 
 
-Note: Whonix 14 users must replace keys.gnupg.net with .onion address jirk5u4osbsr34t5.onion
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = '''Note:''' Whonix 14 users must replace the address keys.gnupg.net with <i>.onion</i> address jirk5u4osbsr34t5.onion
+}}
+
 
 <pre>
 sudo apt-key adv --keyserver keys.gnupg.net --recv-keys A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
@@ -179,27 +192,26 @@ sudo apt-key adv --fingerprint A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
 
 Compare the fingerprint displayed in terminal with the one listed on this website https://www.torproject.org/docs/signing-keys.html
 
-(Qubes-R4.0 only!) In anon-whonix, copy the Tor singing key to a new text file named tor.key
+(Qubes-R4.0 only!) In <code>anon-whonix</code>, copy the Tor singing key to a new text file named tor.key
 
-
+<pre>
 sudo apt-key export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 > /tmp/tor.key
+</pre>
 
+(Qubes-R4.0 only!) In <code>anon-whonix</code>, copy the tor.key text file over to <code>whonix-gw</code>.
 
-(Qubes-R4.0 only!) In anon-whonix, copy the tor.key text file over to whonix-gw.
-
-
-Note: If users encounter the following error it can be safely ignored.
-
-qfile-agent: Fatal error: stat whonix-gw-version (error type: No such file or directory)
-
-
+<pre>
 qvm-copy /tmp/tor.key whonix-gw
+</pre>
 
+If the following error appears, it can be safely ignored (hit "OK" when prompted). 
+  <i>qfile-agent: Fatal error: stat whonix-gw-version (error type: No such file or directory)</i>
 
-(Qubes-R4.0 only!) In whonix-gw, add the Tor signing key to the list of trusted keys.
+(Qubes-R4.0 only!) In <code>whonix-gw</code>, add the Tor signing key to the list of trusted keys.
 
-
+<pre>
 sudo apt-key add ~/QubesIncoming/anon-whonix/tor.key
+</pre>
 
 
 To onionize Tor Project updates first create a torproject.list file using an editor with root rights.
