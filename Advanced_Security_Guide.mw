@@ -879,6 +879,7 @@ Read the script comments and run <code>man whonix_firewall</code> before decidin
 = Whonix-Gateway Security =
 
 == Static VirtualBox IP ==
+
 Instead of using DHCP to obtain the internal IP for the Whonix-Workstation eth0 NAT adapter, a static IP could be used instead. This might marginally improve security, since the DHCP package can then be removed.
 
 Open ''/etc/network/interfaces'' [https://github.com/Whonix/whonix-gw-network-conf/blob/master/etc/network/interfaces.d/30_non-qubes-whonix on github] and read the comments. Then, comment out DHCP and comment in Static VirtualBox IP. 
@@ -915,6 +916,7 @@ Save.
 {{Reload Firewall}}
 
 ===== Deactivate CPFP =====
+
 {{mbox
 | type      = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
@@ -982,6 +984,7 @@ whonixcheck_skip_functions+=" check_tor_bootstrap "
 Save.
 
 ===== Deactivate sdwdate-plugin-anon-shared-con-check =====
+
 TODO: create a ticket and explanation for uninstalling sdwdate-plugin-anon-shared-con-check
 
 Users can either uninstall or deactivate [https://github.com/Whonix/sdwdate-plugin-anon-shared-con-check sdwdate-plugin-anon-shared-con-check]. The latter method is currently easier and outlined below.
@@ -1009,6 +1012,7 @@ sudo service sdwdate restart
 }}
 
 ===== Tor Browser Updater ===== 
+
 If a user wants to update [[Tor Browser]] using [[Tor_Browser#Update_Tor_Browser|Tor Browser Updater by Whonix developers]] while CPFP is disabled, then follow the steps below. <ref>It is simply easier to update using [[Tor_Browser#Tor_Browser_Internal_Updater|Tor Browser's internal updater]] instead.</ref>
 
 {{CodeSelect|code=
@@ -1020,6 +1024,25 @@ Or create a file /etc/torbrowser.d/50_user.conf with the following content.
 {{CodeSelect|code=
 TB_NO_TOR_CON_CHECK="1"
 }}
+
+== Block Networking until sdwdate Finishes ==
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Qubes-Whonix 14 testers only!
+}}
+
+
+<code>sdwdate-gui</code> is effectively unused in Qubes, since it is not yet automatically started due to usability issues. <ref>https://phabricator.whonix.org/T534</ref> <ref>It is installed by default, and is functional when manually started. Users should check back at a later time for further news on sdwdate-GUI development.</ref> Although sdwdate is functional, there are corner cases where time or other server, daemon or client program information might be leaked without a full iptables block of network access. <ref>https://phabricator.whonix.org/T533</ref>
+
+To block network access until [[Sdwdate|sdwdate]] succeeds: <ref>https://forums.whonix.org/t/testers-wanted-blocking-networking-until-sdwdate-finished-status-of-sdwdate-gui/5372</ref> <ref>Time keeping is crucial for security, privacy, and anonymity. sdwdate is a Tor friendly replacement for rdate and ntpdate that sets the system's clock by communicating via onion end-to-end encrypted TCP with Tor onion webservers.</ref> 
+
+# In Whonix-Gateway (<code>sys-whonix</code>), create a file ''/etc/whonix_firewall.d/50_user.conf''
+# Copy and paste the following text: {{CodeSelect|code=
+firewall_mode=
+}}
+# Save the file and reboot.
 
 = whonixcheck Hardening =
 == Prevent Polluting TransPort ==
