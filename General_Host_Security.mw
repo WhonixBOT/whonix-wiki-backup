@@ -1,0 +1,238 @@
+{{Header}}
+<!--
+Copyright:
+
+   Whonix Advanced Security Guide wiki page Copyright (C) Amnesia <amnesia at boum dot org>
+   Whonix Advanced Security Guide wiki page Copyright (C) 2012 - 2017 Patrick Schleizer <adrelanos@riseup.net>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+         
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+      
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to:
+
+    Free Software Foundation, Inc. 
+    51 Franklin St, Fifth Floor
+    Boston, MA 02110-1301, USA.
+
+On Debian GNU/Linux systems, the complete text of the GNU General Public
+License can be found in the /usr/share/common-licenses' directory.
+
+The complete text of the GNU General Public License can also be found online on gnu.org <https://www.gnu.org/licenses/gpl.html>, in Whonix virtual machine images in /usr/share/common-licenses/GPL-3 file or on Github <https://github.com/Whonix/Whonix/blob/master/GPLv3>.
+-->
+<!--
+Wiki pages found in the Advanced Security Guide contain material from the Tails Protection against cold boot attacks page; see: <http://git.immerda.ch/?p=amnesia.git;a=blob;f=wiki/src/doc/advanced_topics/cold_boot_attacks.mdwn;hb=d249db72228b498407d85fb762b49ec155871ded>.
+-->
+{{#seo:
+|description=General Host Security for Advanced Users, Whonix Hardening
+}}
+
+= apt-transport-tor =
+
+{{Apt-Transport-Tor}}
+
+= DMZ =
+
+If users have a shared network - such as a cable modem/router or ADSL/router setup that is used by others - then configuration of a [https://en.wikipedia.org/wiki/DMZ_%28computing%29 DMZ] for the Whonix-Gateway should be considered. 
+
+A properly configured DMZ restricts the Whonix-Gateway from accessing, and being accessible to, other nodes on the network like printers, phones, computers and laptops. This is true even if root access is somehow achieved on the Whonix-Gateway.
+
+Should an incursion take place, a DMZ prevents an adversary from exploring other systems and possibly compromising them. However, in this case a DMZ does not protect the user's anonymity, since the adversary could just ping a remote server and discover the real IP address. Another benefit of a DMZ is that should other systems be compromised, it is more difficult to compromise Whonix-Gateway.
+
+= Hardware Security =
+
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Whonix cannot provide protection against hardware backdoors.
+}}
+
+
+Trusted computer hardware is fundamental to anonymity and security. Users are recommended to purchase and use "clean" computers that have components manufactured by reputable companies. It is preferable to pay in cash so hardware IDs do not leak the user's identity.
+
+As outlined in the [[Computer_Security_Education#Using_a_Dedicated_Host_Operating_System_and_Computer|Computer Security Education]] chapter, it is safest to purchase a computer that is solely used for Whonix activities because this minimizes the risk of a prior hardware compromise.
+
+= Key Hardening Steps =
+
+For greater security, advanced users should harden the host OS as much as is practicably possible. This includes, but is not limited to applying relevant steps from the [[System_Hardening_Checklist|system hardening checklist]] and instructions found later in this chapter:
+
+* [[System_Hardening_Checklist#Disabling_and_Minimizing_Hardware_Risks|Disable and minimize hardware risks]].
+* [[System_Hardening_Checklist#Secure_Downloads_and_Software_Installation|Securely download files and install software on the host]].
+* Avoid [https://www.qubes-os.org/doc/multiboot/ insecure dual-boot arrangements].
+* Choose a host OS that is [[Computer_Security_Education#Host_Operating_System|compatible with privacy and security goals]].
+* [[Advanced_Security_Guide#Harden_Debian|Harden]] the host (Debian) GNU/Linux OS:
+** Use [[Advanced_Security_Guide#Full_Disk_Encryption|Full Disk Encryption (FDE)]] on the host.
+** Apply a [[Advanced_Security_Guide#BIOS_password|BIOS password]] for BIOS set up and boot.
+** [[Advanced_Security_Guide#torify_apt-get_traffic|Torrify apt-get traffic]] on the host to prevent fingerprinting and leakage of sensitive security information.
+** [[Advanced_Security_Guide#Host_Security|Further harden the host OS]] against [[Advanced_Security_Guide#Physical_Attacks|physical attacks]].
+* Apply instructions to [[System_Hardening_Checklist#Networking|harden networking]], including:
+** Use a [[Advanced_Security_Guide#Dedicated_connection|dedicated network connection]].
+** Configure a [[Advanced_Security_Guide#DMZ|de-militarized zone (perimeter network)]] if necessary.
+** Test the router / firewall with a [[Advanced_Security_Guide#Port_Scan|port scanning device]].
+** Change the default administration router password and [[Computer_Security_Education#Recommended_Router_Settings|lock it down with strict settings]].
+** [[System_Hardening_Checklist#Flash_the_Router_with_Opensource_Firmware|Flash the router with opensource firmware]].
+* [[System_Hardening_Checklist#Disable_Intel_ME_Blobs|Disable Intel ME blobs]].
+* Install an [[System_Hardening_Checklist#Install_Libreboot|opensource BIOS or UEFI firmware replacement]].
+* [[Computer_Security_Education#Changing_MAC_Addresses|Spoof MAC addresses]] if necessary.
+* Disable [[Computer_Security_Education#Disable_TCP_Timestamps|TCP]] and [[Computer_Security_Education#Disable_ICMP_Timestamps|ICMP timestamps]].
+* [[Time_Attacks#Clock-Leak_Vectors|Remove the NTP client]] and disable the NTP synchronization feature.
+
+= Layered Defense =
+
+== Attack Surface Reduction ==
+
+In addition to the checklist above, users should also follow the principles of minimizing the [https://en.wikipedia.org/wiki/Attack_surface attack surface] of the OS, and securely configuring services - for example when using SSH, implementing [https://www.fail2ban.org/wiki/index.php/Main_Page Fail2ban] so only key authentication is allowed. 
+
+The attack surface concept deserves more consideration. Simply put, it is the sum of different attack vectors (aggregate of vulnerabilities) where an unauthorized user can try to enter or extract data from an environment. <ref>https://en.wikipedia.org/wiki/Attack_surface attack surface</ref> To reduce the attack surface and mitigate risks, it is necessary to: <ref>http://resources.infosecinstitute.com/attack-surface-reduction/</ref>
+
+* Enforce least privilege for all executed processes and reduce entry points for untrusted users.
+* Control system and network segment access across the network, for example, reduce (unauthenticated) access to network endpoints.
+* Minimize exposed system targets by reducing the amount of code running and removing unnecessary functionality.
+* Remove or shutdown software and services (channels, protocols) that are infrequently or rarely used.
+* Frequently patch security vulnerabilities.
+
+== Proactive Defenses ==
+
+This includes, but is not limited to:
+* [http://wiki.debian.org/Hardening Compile time hardening]
+* [https://en.wikipedia.org/wiki/Mandatory_access_control Mandatory Access Control]
+* [https://en.wikipedia.org/wiki/Intrusion_prevention_system Intrusion Prevention Systems]
+
+== Retroactive Defenses ==
+
+The usefulness of this approach is limited because it does not prevent security breaches; it can only help in making future breaches less probable:
+
+* [https://en.wikipedia.org/wiki/Rkhunter Rootkit Hunter (rkhunter)].
+* [https://en.wikipedia.org/wiki/Intrusion_detection_system Intrusion Detection System (IDS)].
+* [https://en.wikipedia.org/wiki/Snort_%28software%29 Snort network intrusion prevention system].
+* [https://packages.debian.org/jessie/admin/tiger TIGER security auditing program].
+* [https://packages.debian.org/jessie/sxid sxid file and directory change tracker].
+* [[Computer_Security_Education#Malware|Anti-virus and anti-malware programs]].
+
+
+The programs listed in this section are only a very brief introduction to this topic. If interested, users should research these topics in depth on the Internet, as they are beyond the scope of this guide.
+
+= One VM Whonix Configuration =
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = '''Warning:''' The one VM Whonix configuration has been deprecated because there is no maintainer. Use at your own risk!
+}}
+
+
+This platform was developed and tested successfully for Whonix v0.1.3. 
+
+Basically, a user can use one VM instead of two, with Tor running on the host OS and a single client VM routing activities via Tor. This configuration has several advantages and disadvantages relating to security and other matters. For further information, see [[OneVM]]. 
+
+= Separate VirtualBox User Account =
+
+Security-wise, it makes sense to create a separate user account solely for using [[VirtualBox]], which is not in the admin/sudo group.
+
+= Tor =
+
+See [[Tor|Tor]].
+
+= Torify apt-get Traffic =
+
+{{Template:torify apt-get traffic}}
+
+= Tor Traffic Whitelisting Gateway =
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = [[Corridor|corridor]] is a filtering gateway that only allows connections to Tor relays to pass through. It is not a proxying gateway.
+}}
+
+
+It is possible to configure Whonix-Gateway (sys-whonix) to use [[Corridor|corridor]] as a local proxy to establish the following tunnel:
+
+<code>User</code> -> <code>corridor</code> -> <code>Tor</code> > <code>Internet</code>
+
+This approach is not necessarily more anonymous, but it is an additional fail-safe since a Tor traffic whitelisting gateway can help protect from accidental clearnet leaks.
+
+= Virtualization Platform =
+{{Anchor|About VirtualBox}}
+
+== VirtualBox ==
+
+[[VirtualBox]] is developed by Oracle, a company which has a reputation of not being very "open". In the past, concerns have been raised about how they announce security issues in their products and how well they communicate with each other, leading to a negative perception by the security community.
+
+VirtualBox is primarily a simple, "user-friendly", desktop solution and is most certainly not designed with the Whonix threat model in mind. Development is reported to be at a standstill and the author is not aware of any serious code audits having been completed. <ref>https://developers.slashdot.org/story/15/01/30/1530245/virtualbox-development-at-a-standstill/</ref> Whonix developers would like to recommend a different VM solution at least as an alternative, but many popular, open source options like KVM and Xen are not cross-platform. Further, the latter examples seem to still lack a reliable "internal networking" feature, which Whonix heavily depends upon. Any readers who have in-depth knowledge of this issue are encouraged to edit this paragraph accordingly.
+
+Users that have a strong preference for security should strongly consider using [[Qubes-Whonix]], if they have suitably modern hardware. In short, Qubes-Whonix is more secure than the default Whonix configuration using a [[Security_Guide#Type_1_vs_Type_2_Hypervisors|Type 2 hypervisor like VirtualBox]]. 
+
+Related VirtualBox Links:
+
+* [https://www.virtualbox.org/query?summary=~&col=id&col=summary&col=status&col=owner&col=type&col=priority&col=component&order=priority Custom Ticket Search]
+* [https://www.virtualbox.org/newticket New Ticket]
+
+
+See also:
+
+* [https://www.whonix.org/wiki/Dev/Virtualization_Platform Virtualization Platform] for licensing issues.
+* [[KVM#Why_Use_KVM_Over_VirtualBox.3F|Why Use KVM Over VirtualBox?]]
+* [[Qubes/Why_use_Qubes_over_other_Virtualizers|Why use Qubes over other Virtualizers?]]
+
+=== Secure Labeling ===
+
+VirtualBox has a [https://www.virtualbox.org/manual/ch09.html#idm7848 secure labeling feature (VBoxSDL)] which has not yet been implemented in Whonix. <ref>Partially because it is not available on the MacOS X platform.</ref> This feature addresses the security risk of running in full screen mode:
+
+<blockquote>When running guest operating systems in full screen mode, the guest operating system usually has control over the whole screen. This could present a security risk as the guest operating system might fool the user into thinking that it is either a different system (which might have a higher security level) or it might present messages on the screen that appear to stem from the host operating system.
+<br />
+In order to protect the user against the above mentioned security risks, the secure labeling feature has been developed. Secure labeling is currently available only for VBoxSDL. When enabled, a portion of the display area is reserved for a label in which a user defined message is displayed. The label height in set to 20 pixels in VBoxSDL. The label font color and background color can be optionally set as hexadecimal RGB color values.</blockquote>
+
+Any readers who are knowledgeable in this area are encouraged to share their knowledge and edit this section accordingly.
+
+Before this feature could be implemented in Whonix, one prerequisite is that users do not end up with non-standard desktop resolution, as this degrades anonymity as per [https://www.whonix.org/wiki/Protocol-Leak-Protection_and_Fingerprinting-Protection Protocol-Leak-Protection and Fingerprinting-Protection].
+
+
+== Whonix ==
+
+As noted in the [[Security_Guide#Qubes-Whonix_vs_Physically-Isolated_Non-Qubes-Whonix|Security Guide]], there are two platforms providing greater security than the standard host OS / Type 2 hypervisor Whonix configuration:
+
+* [[Qubes-Whonix]].
+* [https://www.whonix.org/wiki/Dev/Build_Documentation/Physical_Isolation Whonix with Physical Isolation], set up using two different computers and virtualization.
+
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = [[Qubes-Whonix]] is recommended for the majority of users seeking a higher security solution.
+}}
+
+
+In contrast to Qubes-Whonix, physical isolation is:
+
+* Difficult to set up.
+* Inconvenient and still experimental.
+* Requires a significant time investment.
+* Not clearly superior to [http://invisiblethingslab.com/resources/2014/Software_compartmentalization_vs_physical_separation.pdf Qubes' compartmentalized software approach].
+* Does not support Qubes features like:
+** DisposableVMs. 
+** A USB VM.
+** Secure copy and paste operations.
+** Secure copying and transfer of files.
+** PDF/image sanitization.
+** An ephemeral Whonix-Gateway ProxyVM and/or Whonix-Workstation AppVM. <ref>In Qubes R4.</ref>
+
+
+Prefer [[Qubes]] for a higher-security solution since it supports [[Qubes/Why_use_Qubes_over_other_Virtualizers|a host of features]] unavailable in the Type 2 hypervisor model (VirtualBox, KVM, VMware etc.).
+
+= Footnotes =
+<references/>
+
+= License =
+{{License_Amnesia|{{FULLPAGENAME}}}}
+
+{{Footer}}
+
+[[Category:Documentation]]
