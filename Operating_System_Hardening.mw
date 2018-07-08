@@ -1,0 +1,121 @@
+{{Header}}
+<!--
+Copyright:
+
+   Whonix Advanced Security Guide wiki page Copyright (C) Amnesia <amnesia at boum dot org>
+   Whonix Advanced Security Guide wiki page Copyright (C) 2012 - 2017 Patrick Schleizer <adrelanos@riseup.net>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+         
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+      
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to:
+
+    Free Software Foundation, Inc. 
+    51 Franklin St, Fifth Floor
+    Boston, MA 02110-1301, USA.
+
+On Debian GNU/Linux systems, the complete text of the GNU General Public
+License can be found in the /usr/share/common-licenses' directory.
+
+The complete text of the GNU General Public License can also be found online on gnu.org <https://www.gnu.org/licenses/gpl.html>, in Whonix virtual machine images in /usr/share/common-licenses/GPL-3 file or on Github <https://github.com/Whonix/Whonix/blob/master/GPLv3>.
+-->
+<!--
+Wiki pages found in the Advanced Security Guide contain material from the Tails Protection against cold boot attacks page; see: <http://git.immerda.ch/?p=amnesia.git;a=blob;f=wiki/src/doc/advanced_topics/cold_boot_attacks.mdwn;hb=d249db72228b498407d85fb762b49ec155871ded>.
+-->
+{{#seo:
+|description=Operating System Hardening
+}}
+
+= Debian = 
+
+== Debian Security Announcements ==
+
+Since Whonix is based on Debian, it takes advantage of all the hard work done by the Debian security team: <ref>http://security.debian.org/</ref>
+
+<blockquote>Debian takes security very seriously. We handle all security problems brought to our attention and ensure that they are corrected within a reasonable timeframe. Many advisories are coordinated with other free software vendors and are published the same day a vulnerability is made public and we also have a Security Audit team that reviews the archive looking for new or unfixed security bugs.<br />
+<br />
+Experience has shown that "security through obscurity" does not work. Public disclosure allows for more rapid and better solutions to security problems. In that vein, this page addresses Debian's status with respect to various known security holes, which could potentially affect Debian.</blockquote>
+
+Users should consider subscribing to the Debian [https://lists.debian.org/debian-security-announce/ security announcement mailing list] to stay informed about the latest security advisories.
+
+== Harden Debian ==
+
+* [http://www.debian.org/security/ Debian Security Information]
+* [http://www.debian.org/doc/manuals/securing-debian-howto/ch-automatic-harden.en.html Securing Debian Manual Chapter 6 - Automatic hardening of Debian systems]
+* [https://www.debian.org/doc/manuals/securing-debian-howto/index.en.html Securing Debian Manual]
+* [http://wiki.debian.org/HardeningWalkthrough Debian Hardening Walkthrough]
+* Feel free to add other hardening resources here.
+
+
+Most hardening steps cannot be easily added to Whonix by default. Before attempting additional hardening measures, users need to understand them and apply steps carefully. This requires knowledge and effort, otherwise system errors or breakage is likely. This issue is still under investigation and the Whonix developers remain open to suggestions, as maintaining a secure operating system will always be an important topic.
+
+== Hardened Kernels ==
+
+The upstream Kernel Self Protection Project<ref>http://www.openwall.com/lists/kernel-hardening</ref> (KSPP) was established in 2015 with the goal of introducing more hardening features into mainline Linux. This includes many features found in the Grsecurity patchset, which was publicly available until early 2017. One advantage of KSPP is that users will no longer need to compile and tweak settings to create a secure kernel, as many hardening features become the default over time in various distributions. Up-to-date information on available hardening features can be viewed [https://github.com/a13xp0p0v/linux-kernel-defence-map here].
+
+The Hardened Kernel Project is a collaborative effort between Arch and Gentoo developers who handled Grsecurity packaging in their respective distributions with the goal of accelerating mainlining of the patchset. <ref>https://wiki.gentoo.org/wiki/Hardened/Hardened_Kernel_Project</ref><ref>https://github.com/thestinger/linux-hardened</ref>
+
+While kernel hardening is important, it only addresses a subset of security risks. It cannot protect against backdoors or security issues related to design, policy or yet unknown exploit classes.
+
+== Harden Software Repositories ==
+
+Many operating systems provide multiple repositories. Since the Whonix implementation is based on Debian, interested users should read [https://help.ubuntu.com/community/Repositories/ Ubuntu Repositories (similar to Debian)] and [http://www.debian.org/doc/debian-policy/ch-archive.html Debian Policy Manual Chapter 2 - The Debian Archive] as an introduction.
+
+In summary, the main repository receives the most developer attention and security updates. This suggests it would make sense to tweak ''/etc/apt/sources.list'' to only use software from the main repository, and only install security fixes and no other updates.
+
+Currently, Whonix does not do that by default and it is an open research question whether this will actually improve security.
+
+= Vulnerabilities at Install Time =
+
+== Introduction ==
+
+Various installation media expose users to vulnerabilities, including:
+* Installer DVDs (including [https://www.debian.org Debian] and others).
+* Live DVDs (such as [https://tails.boum.org Tails] and others).
+* Readily [[Download|downloadable]] and importable VM images (Whonix and [http://virtualboxes.org/ others]).
+* VM images that are built with frozen sources rather than [[Dev/Build_Documentation/9_full#CurrentSources_Builds_.28Optional.29|current sources]] (including Whonix).
+
+
+The reason is that the latest stable releases sometimes contain vulnerable, remotely exploitable applications that are very likely to be used over untrusted networks <ref>Such as Tor exit relays.</ref> which are in a position to run [[Warning#Man-in-the-middle_attacks|man-in-the-middle attacks]]. One example of this in the recent past was vulnerability [[https://lists.debian.org/debian-security-announce/2014/msg00219.html CVE-2014-6273]], which affected apt-get.
+
+Readers are welcome to help research this issue further, and document sane and effective solutions. [https://forums.whonix.org/t/new-chapter-vulnerabilities-at-install-time-in-advanced-security-guide/538 Forum discussion]. 
+
+== Possible Solutions ==
+
+=== Always Up-to-date Builds ===
+
+If Whonix regularly released up-to-date builds, this would be an optimal solution for end users. However, the maintenance effort - building, testing and uploading - is resource intensive and currently not feasible for the Whonix team. Greater community support is needed with [[Contribute#Testing|testing]], alongside an automated test suite for Whonix.
+
+=== apt-cache ===
+
+When using virtual machines, Whonix-Gateway could be configured to use the host apt-cache. [[Physical Isolation|Physically isolated]] Whonix-Gateways could use an apt-cache running on a separate machine. [https://packages.debian.org/wheezy/apt-cacher-ng apt-cacher-ng] is an example implementation of such an apt-cache.
+
+[[Security_Guide#Updates|Operating system updates]] would not be anonymized by default, which is a big disadvantage. <ref>This leaks a list of installed packages to ISP-level adversaries and update servers. For example, it is inadvisable to reveal that a webserver was installed when it is likely to be used to host a hidden web service and so forth.</ref> The user would need to figure out how to configure apt-cacher-ng on the host to force downloads through Tor.
+
+Eventually Whonix-Workstation could use an apt-cache that is running on Whonix-Gateway. Unfortunately, this would increase Whonix-Gateways's attack surface if/when Whonix-Workstation is compromised. On the other hand, it would decrease Whonix-Workstation's attack surface if/when a vulnerable apt-get is used to download via untrusted Tor exit relays.
+
+=== apt-offline ===
+
+Another possibility is somehow using [https://packages.debian.org/wheezy/apt-offline apt-offline] to complete the initial updates of both Whonix-Gateway and Whonix-Workstation. 
+
+=== Building from Source Code using Current Sources ===
+
+Self-created builds from source code using [[Dev/Build_Documentation/9_full#CurrentSources_Builds_.28Optional.29|current sources]] would solve this problem. However, frozen sources have been implemented for reasons outlined in the "Current Sources" chapter; using Current Sources comes with its own issues.
+
+= Footnotes =
+<references/>
+
+= License =
+{{License_Amnesia|{{FULLPAGENAME}}}}
+
+{{Footer}}
+
+[[Category:Documentation]]
