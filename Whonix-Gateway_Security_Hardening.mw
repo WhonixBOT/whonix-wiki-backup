@@ -1,0 +1,245 @@
+{{Header}}
+<!--
+Copyright:
+
+   Whonix Advanced Security Guide wiki page Copyright (C) Amnesia <amnesia at boum dot org>
+   Whonix Advanced Security Guide wiki page Copyright (C) 2012 - 2017 Patrick Schleizer <adrelanos@riseup.net>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+         
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+      
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to:
+
+    Free Software Foundation, Inc. 
+    51 Franklin St, Fifth Floor
+    Boston, MA 02110-1301, USA.
+
+On Debian GNU/Linux systems, the complete text of the GNU General Public
+License can be found in the /usr/share/common-licenses' directory.
+
+The complete text of the GNU General Public License can also be found online on gnu.org <https://www.gnu.org/licenses/gpl.html>, in Whonix virtual machine images in /usr/share/common-licenses/GPL-3 file or on Github <https://github.com/Whonix/Whonix/blob/master/GPLv3>.
+-->
+<!--
+Wiki pages found in the Advanced Security Guide contain material from the Tails Protection against cold boot attacks page; see: <http://git.immerda.ch/?p=amnesia.git;a=blob;f=wiki/src/doc/advanced_topics/cold_boot_attacks.mdwn;hb=d249db72228b498407d85fb762b49ec155871ded>.
+-->
+{{#seo:
+|description=Whonix Gateway Security Hardening
+}}
+
+= Block Networking until sdwdate Finishes =
+
+{{Testing}}
+
+
+[[sdwdate-gui]] is effectively unused in Qubes, since it is not yet automatically started due to usability issues. <ref>https://phabricator.whonix.org/T534</ref> <ref>It is installed by default, and is functional when manually started. Users should check back at a later date for further news on sdwdate-GUI development.</ref> Although sdwdate is functional, there are corner cases where time or other server, daemon or client program information might be leaked before sdwdate changes the time. <ref>https://phabricator.whonix.org/T533</ref> In that case, the user would only be left with the protections afforded by [[Boot Clock Randomization]].
+
+== All Whonix Users ==
+
+To block network access until [[Sdwdate|sdwdate]] succeeds: <ref>https://forums.whonix.org/t/testers-wanted-blocking-networking-until-sdwdate-finished-status-of-sdwdate-gui/5372</ref> <ref>Time keeping is crucial for security, privacy, and anonymity. sdwdate is a Tor friendly replacement for rdate and ntpdate that sets the system's clock by communicating via onion end-to-end encrypted TCP with Tor onion webservers.</ref> 
+
+{{Open with root rights|filename=
+/etc/whonix_firewall.d/50_user.conf
+}}
+
+Copy and paste the following text.
+
+{{CodeSelect|code=
+firewall_mode=
+}}
+
+Save the file and reboot.
+
+== [[Non-Qubes-Whonix]] ==
+
+Make sure sdwdate-gui is always present in systray. TODO: describe better how to achieve that.
+
+== [[Qubes-Whonix]] ==
+
+If users can persist with the usability issues of one sdwdate-gui systray instance per virtual machine, then consider enabling sdwdate-gui autostart. This will keep you informed about the status of the Tor network connection and sdwdate's progress, and will also help to test this feature.
+
+It is recommended to enable autostart of sdwdate-gui.
+
+{{Open with root rights|filename=
+/usr/lib/sdwdate-gui/start-maybe
+}}
+
+Remove the following code.
+
+<pre style="white-space: pre-wrap;">
+if [ -d /usr/lib/qubes ]; then
+   ## Do not automatically start sdwdate-gui in Qubes due to various issues.
+   ## - https://github.com/QubesOS/qubes-issues/issues/2264
+   ## - https://github.com/QubesOS/qubes-issues/issues/2268
+   ## - https://phabricator.whonix.org/T534
+   exit 0
+fi
+</pre>
+
+Save and exit.
+
+The next version of sdwdate-gui will have a more convenient way to enable it. Check back later when sdwdate-gui has been modified to stop automatically starting.
+
+= Disable Control Port Filter Proxy =
+
+== Introduction ==
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = '''Tip:''' Disabling [https://www.whonix.org/wiki/Dev/CPFP Control Port Filter Proxy] (CPFP) can improve security by decreasing the attack surface, while sacrificing usability.
+}}
+
+
+If CPFP is disabled, the user will no longer receive helpful Whonix notifications when Tor is not fully bootstrapped, since the whonixcheck and sdwdate tools rely upon it. 
+
+== How ==
+
+=== On Whonix-Gateway ===
+
+==== Deactivate CPFP in Firewall ====
+
+{{Firewall Settings}}
+
+Add the following content.
+
+{{CodeSelect|code=
+CONTROL_PORT_FILTER_PROXY_ENABLE=0
+}}
+
+Save.
+
+{{Reload Firewall}}
+
+==== Deactivate CPFP ====
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Whonix 13 only. Updated instructions for Whonix 14 will be provided at a later date.
+}}
+
+
+Stop CPFP.
+
+{{CodeSelect|code=
+sudo service control-port-filter-proxy-python stop
+}}
+
+Disable autostart of CPFP.
+
+{{CodeSelect|code=
+sudo systemctl mask control-port-filter-proxy-python
+}}
+
+Reboot.
+
+Check if CPFP is still running or disabled.
+
+<!-- CodeSelect does not like "|". -->
+{{CodeSelect|code=
+ps aux | grep cpfpd
+}}
+
+If the following output appears, then disabling did not work.
+
+<pre>
+debian-+  1005  0.2  1.8  46096 13216 ?        Ss   20:46   0:00 /usr/bin/python /usr/sbin/cpfpd start
+</pre>
+
+==== Deactivate whonixcheck CPFP Running Test ====
+
+{{Open with root rights|filename=
+/etc/whonix.d/50_user.conf
+}}
+
+Add the following content.
+
+{{CodeSelect|code=
+whonixcheck_skip_functions+=" check_control_port_filter_running "
+}}
+
+Save.
+
+=== On Whonix-Workstation ===
+
+==== Deactivate [[whonixcheck]]'s Tor Bootstrap Test ====
+
+Because it relies on CPFP.
+
+{{Open with root rights|filename=
+/etc/whonix.d/50_user.conf
+}}
+
+Add the following content.
+
+{{CodeSelect|code=
+whonixcheck_skip_functions+=" check_tor_bootstrap "
+}}
+
+Save.
+
+==== Deactivate sdwdate-plugin-anon-shared-con-check ====
+
+TODO: create a ticket and explanation for uninstalling sdwdate-plugin-anon-shared-con-check
+
+Users can either uninstall or deactivate [https://github.com/Whonix/sdwdate-plugin-anon-shared-con-check sdwdate-plugin-anon-shared-con-check]. The latter method is currently easier and outlined below.
+
+{{Open with root rights|filename=
+/etc/sdwdate.d/50_anon_dist_con_check_plugin_user
+}}
+
+Add the following content.
+
+{{CodeSelect|code=
+DISPATCH_PREREQUISITE=""
+}}
+
+Save.
+
+<ref>
+This will undo settings set by [https://github.com/Whonix/sdwdate-plugin-anon-shared-con-check/blob/master/etc/sdwdate.d/31_anon_dist_con_check_plugin /etc/sdwdate.d/31_anon_dist_con_check_plugin].
+</ref>
+
+Restart sdwdate.
+
+{{CodeSelect|code=
+sudo service sdwdate restart
+}}
+
+==== Tor Browser Updater ==== 
+
+If a user wants to update [[Tor Browser]] using [[Tor_Browser#Update_Tor_Browser|Tor Browser Updater by Whonix developers]] while CPFP is disabled, then follow the steps below. <ref>It is simply easier to update using [[Tor_Browser#Tor_Browser_Internal_Updater|Tor Browser's internal updater]] instead.</ref>
+
+{{CodeSelect|code=
+update-torbrowser --no-tor-con-check
+}}
+
+Or create a file /etc/torbrowser.d/50_user.conf with the following content.
+
+{{CodeSelect|code=
+TB_NO_TOR_CON_CHECK="1"
+}}
+
+= Static VirtualBox IP =
+
+Instead of using DHCP to obtain the internal IP for the Whonix-Workstation eth0 NAT adapter, a static IP could be used instead. This might marginally improve security, since the DHCP package can then be removed.
+
+Open ''/etc/network/interfaces'' [https://github.com/Whonix/whonix-gw-network-conf/blob/master/etc/network/interfaces.d/30_non-qubes-whonix on github] and read the comments. Then, comment out DHCP and comment in Static VirtualBox IP. 
+
+= Footnotes =
+<references/>
+
+= License =
+{{License_Amnesia|{{FULLPAGENAME}}}}
+
+{{Footer}}
+
+[[Category:Documentation]]
