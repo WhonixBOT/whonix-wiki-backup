@@ -1,0 +1,86 @@
+{{Header}}
+<!--
+Copyright:
+
+   Whonix Advanced Security Guide wiki page Copyright (C) Amnesia <amnesia at boum dot org>
+   Whonix Advanced Security Guide wiki page Copyright (C) 2012 - 2017 Patrick Schleizer <adrelanos@riseup.net>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+         
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+      
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to:
+
+    Free Software Foundation, Inc. 
+    51 Franklin St, Fifth Floor
+    Boston, MA 02110-1301, USA.
+
+On Debian GNU/Linux systems, the complete text of the GNU General Public
+License can be found in the /usr/share/common-licenses' directory.
+
+The complete text of the GNU General Public License can also be found online on gnu.org <https://www.gnu.org/licenses/gpl.html>, in Whonix virtual machine images in /usr/share/common-licenses/GPL-3 file or on Github <https://github.com/Whonix/Whonix/blob/master/GPLv3>.
+-->
+<!--
+Wiki pages found in the Advanced Security Guide contain material from the Tails Protection against cold boot attacks page; see: <http://git.immerda.ch/?p=amnesia.git;a=blob;f=wiki/src/doc/advanced_topics/cold_boot_attacks.mdwn;hb=d249db72228b498407d85fb762b49ec155871ded>.
+-->
+{{#seo:
+|description=Whonix Workstation Security Hardening
+}}
+
+= Introduction =
+
+Whonix is by no means a perfectly hardened system. Additional hardening measures are most welcome, but at the same time, hardening by default is very difficult. Until the Whonix Anonymous Operating System project realizes a significant increase in resources or community assistance, such measures will remain out of scope and hardening will be left to the upstream operating system. See [https://www.whonix.org/wiki/Dev/Virtualization_Platform Operating System] for further details.
+
+= AppArmor =
+
+Learn more about [http://wiki.apparmor.net AppArmor], which helps to protect against vulnerabilities by confining a program's file access based upon strict rule-sets. It is recommended to apply the available Whonix [[AppArmor]] profiles, which are available for various programs which run in both the Whonix-Gateway and Whonix-Workstation, such as Tor, Tor Browser, Thunderbird and others.
+
+= Multiple Tor Browser Instances and Workstations =
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = As the [[Warning]] page states, [[Warning#Whonix_doesn.27t_magically_separate_your_different_contextual_identities|Whonix does not magically separate different contextual identities]]. 
+}}
+
+
+Appropriate compartmentalization of user activities is important when different identities and/or additional software are in use. Multiple Tor Browser instances provide some separation of distinct identities, however this issue has not yet been solved by Tor Browser or Tor Button. A more secure method of compartmentalization is using [[Multiple Whonix-Workstations]]. <ref>One or more additional Whonix-Workstations can be easily created.</ref>
+
+== Multiple Tor Browser Instances ==
+
+To better separate different contextual identities, users should consider starting [[Advanced_Security_Guide#More_than_One_Tor_Browser_in_Whonix|multiple Tor Browser instances]] and running them through different SocksPorts. Follow the instructions in the [[Manually Downloading Tor Browser]] article and make minimal step changes where required, for example, Tor Browser must be extracted into a different folder.
+
+It is also necessary to use a different SocksPort, see [[Tor_Browser#Change.2FRemove_Proxy_Settings|Change/Remove Proxy Settings]]. The [[Stream Isolation]] page explains why different SocksPorts should be used. Additional Tor Browser instances should use one of the custom SocksPorts 'without IsolateDestAddr' and 'without IsolateDestPort'. These SocksPorts are subject to change, but currently range from 9153 to 9159 (see [[Stream Isolation]] for a complete list of SocksPorts).
+
+This method is less secure than using multiple Whonix-Workstations, which is outlined below.
+
+== Multiple Whonix-Workstations ==
+
+For tasks requiring different identities and/or additional software, users are recommended to utilize [[Multiple_Whonix-Workstations|two or more Whonix-Workstation VMs]] since different torified clients are isolated from each other. In this way, an exploit in Tor Browser in one Whonix-Workstation cannot simultaneously read the user's identity in another VM (for example, an IRC account). <ref>This does not protect against the sudden loss of networking, which could reveal to the attacker that two activities / accounts suddenly going off-line are probably related.</ref> Note that this method is less secure than using a [[Qubes/Disposable_VM|Whonix-Workstation DisposableVM]] with Tor Browser in [[Qubes-Whonix]].
+
+= Second Optional (Extra) Firewall =
+
+There is a second, extra firewall available for Whonix-Workstation; it can be found inside Whonix-Workstation in {{WhonixFirewall}}. It is optional and disabled by default because it would otherwise risk breakage of user applications. 
+
+The Whonix anonymity design does not require the Whonix-Workstation firewall be enabled, as the Whonix-Gateway firewall is responsible for routing all traffic over Tor. Nevertheless, it can be enabled for users who want additional security, as it can help protect against various threats, for example:
+
+* A compromised Whonix-Gateway which is trying to attack Whonix-Workstation and exfiltrate sensitive data.
+* In the case of multiple Whonix-Workstations, attacks originating from other compromised Whonix-Workstations.
+
+
+Read the script comments and run <code>man whonix_firewall</code> before deciding to use it.
+
+= Footnotes =
+<references/>
+
+= License =
+{{License_Amnesia|{{FULLPAGENAME}}}}
+
+{{Footer}}
+
+[[Category:Documentation]]
