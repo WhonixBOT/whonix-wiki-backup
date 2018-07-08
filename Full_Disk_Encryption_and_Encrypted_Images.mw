@@ -1,0 +1,198 @@
+{{Header}}
+<!--
+Copyright:
+
+   Whonix Advanced Security Guide wiki page Copyright (C) Amnesia <amnesia at boum dot org>
+   Whonix Advanced Security Guide wiki page Copyright (C) 2012 - 2017 Patrick Schleizer <adrelanos@riseup.net>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+         
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+      
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to:
+
+    Free Software Foundation, Inc. 
+    51 Franklin St, Fifth Floor
+    Boston, MA 02110-1301, USA.
+
+On Debian GNU/Linux systems, the complete text of the GNU General Public
+License can be found in the /usr/share/common-licenses' directory.
+
+The complete text of the GNU General Public License can also be found online on gnu.org <https://www.gnu.org/licenses/gpl.html>, in Whonix virtual machine images in /usr/share/common-licenses/GPL-3 file or on Github <https://github.com/Whonix/Whonix/blob/master/GPLv3>.
+-->
+<!--
+Wiki pages found in the Advanced Security Guide contain material from the Tails Protection against cold boot attacks page; see: <http://git.immerda.ch/?p=amnesia.git;a=blob;f=wiki/src/doc/advanced_topics/cold_boot_attacks.mdwn;hb=d249db72228b498407d85fb762b49ec155871ded>.
+-->
+{{#seo:
+|description=Full Disk Encryption and Encrypted Images, Additional Security Measures
+}}
+
+= Encrypted Guest Images =
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = This encrypted images chapter is mostly theoretical at this point, because it contains numerous open research questions and is currently [[FAQ#What_do_you_mean_by_unsupported.3F|unsupported]].
+}}
+
+
+The greatest security benefit comes from applying full disk encryption [[#On the Host|on the host]] because that is the only place where it is most effective. Nevertheless, for the interested reader this section makes recommendations to deal with the following threat model:
+
+* The host is running when an adversary gets access to it, or the host is unencrypted.
+* The VM is powered down (otherwise the adversary would already have access to it).
+
+
+{{Code2|The following security considerations are based on modified quotes by [http://security.stackexchange.com/users/953/iszi Iszi] from the answer posted on [http://security.stackexchange.com/a/29538 security.stackexchange.com], which was a user contribution to stackexchange, licensed under [http://creativecommons.org/licenses/by-sa/3.0/ cc by-sa 3.0] with [https://blog.stackexchange.com/2009/06/attribution-required/ attribution required].}}
+
+== Full Disk Encryption within the Virtual Machine ==
+
+When using FDE within the VM, never save (suspend/pause) the VM machine state, but instead shut it down completely. If this advice is ignored, the saved machine state could be stored outside of the encrypted image. This includes a RAM dump, which contains the encryption key required to decrypt the image. Upon resuming the VM, that stored file is not necessarily securely deleted, since it is virtualizer-specific. <ref>In the case of [[VirtualBox]], the file could end up in the folder {{Code2|~/.virtualbox}}. A definitive answer requires further research.</ref>
+
+While the VM is running, users should not use the host system's sleep, suspend, or hibernate functions. Similar to the first scenario, these actions leave a RAM dump on disk, but this time it belongs to the host. This also contains sensitive data, such as encryption keys.
+
+== Virtual Machine Files in an Encrypted Container ==
+
+VM files can also be stored in an encrypted container, such as a LUKS container. Newer and native support for LUKS encryption of disk images is available as of libvirt 2.10 <ref>https://libvirt.org/formatstorageencryption.html#StorageEncryptionLuks</ref>
+The same precautions should be taken as outlined in the previous section, as the risks equally apply.
+
+FDE within the VM, LUKS encrypted containers for VM images, and FDE on the host can all be used independently, or in conjunction. However, increasing the layers of encryption may begin to significantly degrade performance. {{Code2|End modified quote by Iszi.}}
+
+== Other Security Considerations ==
+
+Encryption is an area with many pitfalls. The user should also consider the following:
+
+* <u>Swap</u>. An encrypted swap provides no protection so  long as the host is powered up, because the key is still in RAM.
+* <u>Disabling swap</u>. This action requires a special, secure wiping of the existing swap. It is safer to have never used swap before.
+* <u>Memory dumps</u>. These are caused by BSOD or kernel crashes, and can leave unintended traces on the host.
+* <u>Powered down VMs</u>. After a VM has shutdown, the RAM that previously contained the VM's encryption key might not have been wiped yet. Memory pages belonging to a terminated process do not have their contents wiped (zeroed) until they are about to be used by another process. <ref>
+https://security.stackexchange.com/a/42186 : "Linux zeroes out (i.e. fills with zeros) all pages of memory not when they are released, but when they are given to another process. Thus, no process may obtain data excerpts from another process. However, the pages will retain their old contents until they are reused."
+</ref> <ref>https://superuser.com/a/894936</ref> <ref>https://askubuntu.com/a/721207</ref> <ref>The threat is similar to [[#Cold Boot Attacks|cold boot attacks]], but in this case it might even be a "warm" attack, because under this threat model, the machine and RAM is still powered. [http://en.wikibooks.org/wiki/Grsecurity/Appendix/Grsecurity_and_PaX_Configuration_Options#Sanitize_all_freed_memory PAX_MEMORY_SANITIZE] and its [https://github.com/thestinger/linux-hardened/wiki#sanitize-all-freed-memory KSPP successor] may mitigate this, but at the cost of a non-trivial performance hit.</ref>
+* <u>KVM</u>. It is not ''expected'' that KVM guests could access data from other process' memory pages via [https://www.techopedia.com/definition/30466/memory-ballooning memory ballooning], since KVM guests are Linux processes and subject to Linux memory allocation rules. <ref>https://www.techopedia.com/definition/30466/memory-ballooning : "Memory ballooning is a memory management feature used in most virtualization platforms which allows a host system to artificially enlarge its pool of memory by taking advantage or reclaiming unused memory previously allocated to various virtual machines."</ref>
+* <u>Xen</u>. Memory ballooning in Xen creates privacy concerns because it exposes the memory contents of other VMs if ballooning is enabled. <ref>http://docs.openstack.org/security-guide/content/data-privacy-concerns.html : Xen explicitly assigns dedicated memory regions to instances and scrubs data upon the destruction of instances (or domains in Xen parlance). KVM depends more greatly on Linux page management; A complex set of rules related to KVM paging is defined in the KVM documentation. It is important to note that use of the Xen memory balloon feature is likely to result in information disclosure. We strongly recommended to avoid use of this feature.</ref>
+
+
+The host of security considerations suggest that an unrealistic set of operational rules are required to defend the integrity of a purely encrypted guest image, without host FDE.
+
+== Open Security Research Questions ==
+
+The following questions and configurations require further research:
+
+* With swap and crash dumps disabled, it is unknown whether the virtualizer writes parts of the VM's RAM contents to the disk. TODO: Specifically ask virtualizer vendors about this possibility.
+* Potential setup configurations:
+** Theoretically, a fullly encrypted operating system (currently: Debian) could be installed inside a VM and Whonix could be built using <code>--target root</code> inside another VM. This is analogous to the [[Dev/Build_Documentation/Physical_Isolation|physical isolation]] model, but secure VM settings would be missing (similar to [[Manually Create Whonix VM Settings]]).
+** An encryption feature could be added to grml-debootstrap and/or the Whonix build script. There was an  [https://forums.whonix.org/t/whonix-container-encryption-options/193 attempt] to already do that, but this has stalled.
+** cryptsetup-reencrypt could be used, allowing for the shipping of encrypted Whonix images. The master key and the password (potentially blank) would be known to the public at first. Later, users would use cryptsetup-reencrypt to fix the master key and password, that is, to make the encryption effective.
+
+
+For further information about encrypted images, see [https://forums.whonix.org/t/how-useful-is-in-guest-encryption/1253 How Useful is In-Guest Encryption?]. Users interested in running Whonix as a live OS, should read [https://forums.whonix.org/t/whonix-live-mode/3894/9 this entry]. <ref>Live OS systems are designed to not leave traces of user activity on disk.</ref>
+
+= Full Disk Encryption on the Host =
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = As outlined on the [[Warning#Whonix_is_not_Amnesic|Warning page]], Whonix has not been designed as an amnesic operating system. Traces of the installation and user activities will be written to disk. <ref>Until [https://github.com/QubesOS/qubes-issues/issues/904 in-RAM execution of disposableVMs] is implemented in Qubes-Whonix, this threat is not easily mitigated.</ref>
+}}
+
+
+== Protection Against Powerful Adversaries ==
+
+To protect against theft or robbery of personal information or data, users should apply FDE (Full Disk Encryption) on the host, and power off their computer when exposed to higher-risk situations like traveling. Laptop users should temporarily remove the laptop battery after powering off. This ensures that the RAM chips are completely powered down and that any encryption key/s in memory are erased. Hibernation is also a safe alternative, as the swap partition is encrypted in the default FDE configuration for various platforms (like Debian), provided the user did not  change anything. 
+
+Users should follow the standard advice for picking [[Security_Guide#Principles_for_Stronger_Passwords|strong and unique passwords]], so that the password cannot be feasibly brute-forced. If possible, computers should never be left unattended. 
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = It is safest to assume that a machine has been compromised after any unauthorized physical access.
+}}
+
+
+If unauthorized access is strongly suspected or confirmed, the hardware should not be trusted or used after it is back in the user's possession. This scenario is only relevant to a smaller subset of users who are already targeted for physical surveillance. A sufficiently skilled adversary can infect it with spyware or sabotage it in a number of ways that are virtually undetectable. For example, malicious firmware could be installed to record all activities, or the machine rendered inoperable by bricking the hardware. In that eventuality, none of the measures outlined below would help.
+
+=== Additional Measures ===
+
+==== LUKS Suspend Scripts ====
+
+On Linux hosts, there is one interesting solution for the risks posed by a computer in a suspended state; luks-suspend scripts.<ref>https://github.com/vianney/arch-luks-suspend/issues/7</ref> This approach has some limitations because it is not yet packaged for Debian, and it has only been tested in the Ubuntu and Arch distributions. As of 2018, luks-suspend and keyslot nuking (mentioned below) is being merged upstream. <ref>https://blog.freesources.org/posts/2018/06/debian_cryptsetup_sprint_report/</ref>
+
+==== Magic Key Feature ====
+
+In an emergency, [[Non-Qubes-Whonix]] users can power-off the computer immediately with the Magic SysRq key feature. This is invoked by pressing the key combination: <code>Alt</code> + <code>PrintScreen</code> + <code>o</code> (lower-case letter). On bare-metal linux systems, the FDE passphrase is prompted after rebooting.<ref>https://en.wikipedia.org/wiki/Magic_SysRq_key</ref> <ref>http://www.thegeekstuff.com/2008/12/safe-reboot-of-linux-using-magic-sysrq-key/</ref> <ref>https://phabricator.whonix.org/T553</ref>  The magic key feature does not work on Qubes hosts because the Xen hypervisor does not recognize these commands. <ref>https://forums.whonix.org/t/fde-emergency-feature-testing-requested</ref>
+
+==== USBKill ====
+
+[https://en.wikipedia.org/wiki/USBKill USBKill] is an anti-forensics script written in the aftermath of the SilkRoad trial. Its purpose is to trigger protection events that prevent adversaries from siphoning files, installing malware, or running a mouse jiggler. The script creates a white-list of allowable USB devices. If anything else is plugged into the machine, the RAM is erased and the computer is immediately shutdown. 
+
+USBKill can also be configured to exclude all devices from being attached. In another high-security configuration, a white-listed flash drive serves as a key, and must be in the USB port at all times. If the flash drive is forcibly removed, the program will initiate the desired routines. <ref>For example, this can be done quickly if the flash drive is attached to the user's wrist via a lanyard.</ref> <ref>
+* https://github.com/hephaest0s/usbkill 
+* https://en.wikipedia.org/wiki/USBKill 
+* https://7io.net/2015/07/02/python-usbkill-anti-forensic-usb-killswitch/#more-201 
+* https://phabricator.whonix.org/T552</ref>
+
+== Protection Against Lesser Adversaries ==
+
+The reader is reminded that advanced attackers have virtually limitless possibilities to infect a computer under their physical control, such as flashing low-level firmware or adding physical implants.
+
+It may be possible to get plausible deniability on Linux hosts using methods other than thosed listed below, but the topic is a rabbit hole (see footnotes in this section). <ref>https://evilzone.org/operating-system/plausible-deniability-in-qubes-os/msg86174</ref> Plausible deniability and FDE are also useless if the user is subject to physical abuse by a captor.
+
+=== Advice for Solid-state Drives and USB Storage ===
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = In the case of flash-based storage like solid-state drives (SSDs) and USBs, the only way to protect data is to never store it unencrypted in the first place!
+}}
+
+
+Unlike hard-disk drives (HDDs), overwriting data on SSDs is no longer effective in wiping the disk. <ref>http://www.infosecisland.com/blogview/12153-Data-Remains-on-USB-and-SSDs-After-Secure-Erase.html</ref> <ref>http://www.theregister.co.uk/2011/02/21/flash_drive_erasing_peril/</ref> For instance, it is insecure to rely upon a fast erase mechanism by overwriting the header and key-slot area. <ref>[https://gitlab.com/cryptsetup/cryptsetup/wikis/FrequentlyAskedQuestions cryptsetup FAQ - Section: 5.19 What about SSDs, Flash and Hybrid Drives?]</ref>
+
+The most dire potential consequence is that old passwords are not erased, and for a significant period. Consider the following concrete example: a user changes their computer password because they noticed it was exposed to shoulder-surfing or CCTV. On a SSD, the old password is still retrievable and can be used to decrypt the master key and all data. The reason is that secure overwriting is only guaranteed with magnetic disks.
+
+Wear-leveling mechanisms like TRIM also leak information about the filesystem that can aid forensics. <ref>http://asalor.blogspot.com/2011/08/trim-dm-crypt-problems.html</ref> <ref>https://wiki.archlinux.org/index.php/Dm-crypt/Specialties#Discard.2FTRIM_support_for_solid_state_drives_.28SSD.29</ref> <ref>https://wiki.archlinux.org/index.php/Solid_State_Drives#dm-crypt</ref> <ref>http://www.saout.de/pipermail/dm-crypt/2011-September/002019.html</ref> <ref>http://www.saout.de/pipermail/dm-crypt/2012-April/002420.html</ref> It is strongly recommended to keep TRIM ''disabled'' (the default) during Linux LUKS-encrypted installations.
+
+=== Nuke Patch for cryptsetup ===
+
+The Kali penetration testing distro team has written a [https://www.kali.org/tutorials/emergency-self-destruction-luks-kali/ nuke patch for cryptsetup], which adds the option to nuke all keyslots after a certain passphrase is entered.  <ref>https://github.com/offensive-security/cryptsetup-nuke-keys
+</ref> 
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Under most emergency conditions, the user will not have enough time to reboot the computer and enter the dead-man switch passphrase.
+}} 
+
+
+Supplying the dead-man switch as the "real passphrase" to the interceptors of the machine is unlikely to be an effective strategy. It is standard forensics procedure to create multiple images of the drive beforehand.
+
+=== Separate /boot Partition ===
+
+When FDE is used on the host, it is inadvisable to keep any unencrypted files on that same physical media. High-risk users are recommended to move the /boot partition to a separate USB media. The bootloader (Grub) should then also be installed on the separate USB. To read more on this subject, see [https://twopointfouristan.wordpress.com/2011/04/17/pwning-past-whole-disk-encryption/ Pwning Past Whole Disk Encryption].
+
+=== Tips ===
+
+Install the GNOME disk utility on the host to easily encrypt removable storage before use, or to change the passphrase of a LUKS enabled system.
+
+In a terminal, run.
+
+{{CodeSelect|code=
+sudo apt-get install gnome-disk-utility
+}}
+
+=== TRESOR Kernel Patch ===
+
+Another useful protection is the [https://en.wikipedia.org/wiki/TRESOR TRESOR] [https://www1.cs.fau.de/tresor kernel patch], which keeps the disk encryption key outside of RAM by storing it inside the CPU. TRESOR does have several limitations. It is only available for the x86 architecture, and it complicates software debugging by disabling DR registers for security reasons. <ref>https://security.stackexchange.com/a/119835</ref> Moreover, a specialized attacker who can reverse engineer hardware designs is also capable of extracting secrets held in processor caches or specialized chips like TPMs.
+
+= Footnotes =
+<references/>
+
+= License =
+{{License_Amnesia|{{FULLPAGENAME}}}}
+
+{{Footer}}
+
+[[Category:Documentation]]
