@@ -1,0 +1,118 @@
+{{Header}}
+<!--
+Copyright:
+
+   Whonix Advanced Security Guide wiki page Copyright (C) Amnesia <amnesia at boum dot org>
+   Whonix Advanced Security Guide wiki page Copyright (C) 2012 - 2017 Patrick Schleizer <adrelanos@riseup.net>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+         
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+      
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to:
+
+    Free Software Foundation, Inc. 
+    51 Franklin St, Fifth Floor
+    Boston, MA 02110-1301, USA.
+
+On Debian GNU/Linux systems, the complete text of the GNU General Public
+License can be found in the /usr/share/common-licenses' directory.
+
+The complete text of the GNU General Public License can also be found online on gnu.org <https://www.gnu.org/licenses/gpl.html>, in Whonix virtual machine images in /usr/share/common-licenses/GPL-3 file or on Github <https://github.com/Whonix/Whonix/blob/master/GPLv3>.
+-->
+<!--
+Wiki pages found in the Advanced Security Guide contain material from the Tails Protection against cold boot attacks page; see: <http://git.immerda.ch/?p=amnesia.git;a=blob;f=wiki/src/doc/advanced_topics/cold_boot_attacks.mdwn;hb=d249db72228b498407d85fb762b49ec155871ded>.
+-->
+{{#seo:
+|description=Host Firewall Settings and Testing
+}}
+
+= Basics =
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = The recommendation to install a [[Computer Security Education#Host Firewall|host firewall]] is documented in the Computer Security Education chapter, along with basic settings.
+}}
+
+= Dedicated Connection =
+
+If possible, it is safer to avoid sharing the network (LAN, Wi-Fi, hotspot) with other potentially compromised machines.
+
+= Filtering Ports =
+
+== Introduction ==
+
+From time to time a user asks which incoming/outgoing ports are required by Whonix-Gateway. The answer is:
+
+* Incoming: <code>none</code>.
+* Outgoing: <code>all</code>.
+
+
+An alternative technique for controlling ports might be [[Corridor|corridor (a Tor traffic whitelisting gateway)]], since it can act as a firewall. <ref name=corridor-whonix-kvm>W
+[https://phabricator.whonix.org/T524 corridor for Whonix KVM ticket]
+</ref>
+
+== Incoming ==
+
+Whonix-Gateway itself does not open any ports. Users are advised to close all ports on the host as outlined in the [[Pre_Install_Advice#Host_Firewall|Computer Security Education chapter (Host Firewall)]].
+
+== Outgoing ==
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = '''Warning:''' This procedure is not recommended. Port-based filtering of outgoing traffic is not applicable (as in useful) in the case of Whonix-Gateway.
+}}
+
+
+Filtering outgoing ports is difficult, since Tor entry guards or bridges listen on a variety of different ports. Limiting ports Tor uses for outgoing traffic is still possible, but recommended against, since it reduces anonymity. The effect is fewer entry guards or bridges are made available to the user. If users wish to proceed despite the risk, follow the instructions below.
+
+On Whonix-Gateway.
+
+{{Open /etc/tor/torrc}}
+
+Add.
+
+{{CodeSelect|code=
+ReachableDirAddresses *:80
+ReachableORAddresses *:443
+## maybe: FirewallPorts PORTS
+## See Tor manual: https://www.torproject.org/docs/tor-manual.html.en
+}}
+
+Save.
+
+{{Reload Tor}}
+
+This issue has also been discussed [https://sourceforge.net/p/whonix/discussion/general/thread/3a0b673a/ in the old Whonix forum].
+
+= NAT Router =
+
+Being behind an ordinary NAT router may provide a marginal layer of extra security. 
+
+Users should also review the relevant recommendations in the [[Computer_Security_Education#Suitable_Hardware_and_Router_Configurations|Computer Security Education]] chapter. This includes locking down router settings, purchase of a commercial-grade router, and for experts, flashing the router with an open-source GNU/Linux distribution.
+
+= Port Scan =
+
+Using an [https://www.grc.com/shieldsup Internet-based port scanner service] to test the local LAN's router/firewall is a sensible idea. Users must carefully research and find a legitimate service, since many companies only want to sell a product and will purposefully present false positives. A better alternative is to scan the local LAN with a port scanning application from an external IP address. To scan the home IP address, users can either login remotely (SSH) via an external machine, or proxy through an external IP address. Detailed instructions on accomplishing that are beyond the scope of this document.
+
+A special case is presented by users who share a LAN with other PCs (a stand-alone machine is not used). In this instance, the port scanning/testing service or a port scan application from an external IP address will actually only scan the local LAN's router/firewall and not the actual host's PC. If the latter is misconfigured, then the user could be susceptible to attacks from other machines within the LAN which sit behind the router, and a false sense of security could be the result.
+
+For example, if the user shares the LAN with flatmates who are not so sophisticated in computer security, then those foreign machines should be regarded as potentially malicious. There is every possibility they may have been infected with a botnet already, or other harmful programs. Therefore, the user cannot trust the output of a port scan application running on their machine. If there is no spare machine for testing, then foreign computers on the LAN can be booted from a live CD, and the user can scan their personal machine with a port scan application. Details on how to accomplish that task are also outside the scope of this document.
+
+= Footnotes =
+<references/>
+
+= License =
+{{License_Amnesia|{{FULLPAGENAME}}}}
+
+{{Footer}}
+
+[[Category:Documentation]]
