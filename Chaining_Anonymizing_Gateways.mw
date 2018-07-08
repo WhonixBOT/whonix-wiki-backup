@@ -1,0 +1,139 @@
+{{Header}}
+<!--
+Copyright:
+
+   Whonix Advanced Security Guide wiki page Copyright (C) Amnesia <amnesia at boum dot org>
+   Whonix Advanced Security Guide wiki page Copyright (C) 2012 - 2017 Patrick Schleizer <adrelanos@riseup.net>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+         
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+      
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to:
+
+    Free Software Foundation, Inc. 
+    51 Franklin St, Fifth Floor
+    Boston, MA 02110-1301, USA.
+
+On Debian GNU/Linux systems, the complete text of the GNU General Public
+License can be found in the /usr/share/common-licenses' directory.
+
+The complete text of the GNU General Public License can also be found online on gnu.org <https://www.gnu.org/licenses/gpl.html>, in Whonix virtual machine images in /usr/share/common-licenses/GPL-3 file or on Github <https://github.com/Whonix/Whonix/blob/master/GPLv3>.
+-->
+<!--
+Wiki pages found in the Advanced Security Guide contain material from the Tails Protection against cold boot attacks page; see: <http://git.immerda.ch/?p=amnesia.git;a=blob;f=wiki/src/doc/advanced_topics/cold_boot_attacks.mdwn;hb=d249db72228b498407d85fb762b49ec155871ded>.
+-->
+{{#seo:
+|description=Chaining Anonymizing Gateways
+}}
+
+
+= Introduction =
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Only experts should attempt these configurations!
+}}
+
+
+By default, all Whonix-Workstation traffic is forced through Whonix-Gateway. Alternatively, a chain of anonymizing gateways can be built, with sample tunnel configurations outlined below.
+
+= Possible Configurations =
+
+== Post-Tor-VPN ==
+
+<pre>
+## chain:
+Whonix-Workstation -> VPN-Gateway    -> Whonix-Gateway -> clearnet
+## connection scheme:
+user               -> Tor            -> VPN            -> Internet
+</pre>
+
+== Pre-Tor-VPN ==
+
+<pre>
+## chain:
+Whonix-Workstation -> Whonix-Gateway -> VPN-Gateway    -> clearnet
+## connection scheme:
+user               -> VPN            -> Tor            -> Internet
+</pre>
+
+== Pre- and Post-Tor-VPN ==
+
+<pre>
+## chain:
+Whonix-Workstation -> VPN-Gateway    -> Whonix-Gateway -> VPN-Gateway -> Internet
+## connection scheme:
+user               -> VPN            -> Tor            -> VPN         -> Internet
+</pre>
+
+Whonix is not limited to VPN-Gateways; the VPN can be replaced with a Proxy-Gateway.
+
+== Post-Tor-Proxy ==
+
+<pre>
+## chain:
+Whonix-Workstation -> Proxy-Gateway  -> Whonix-Gateway -> clearnet
+## connection scheme:
+user               -> Tor            -> Proxy          -> Internet
+</pre>
+
+== Other Connection Schemes ==
+
+Virtually any combination is possible: a Post-Tor-Proxy; a Pre/Post-Tor-SSH; or the proxy being replaced with JonDo or perhaps I2P.
+
+The user should always remember that the connection will be created in reverse order. This is best explained using an example. <ref>"Internet" below refers to the destination server (a website for example).</ref>
+
+<pre>
+## chain:
+Whonix-Workstation -> Proxy-Gateway  -> Whonix-Gateway -> VPN-Gateway -> clearnet
+## connection scheme:
+user               -> VPN            -> Tor            -> Proxy       -> Internet
+</pre>
+
+Upon reflection, it becomes clear why the connection happens in reverse order:
+
+* Whonix-Workstation has no way but to go through the Proxy-Gateway. 
+* The Proxy-Gateway has no way but to go through Whonix-Gateway. 
+* In this case, the last element in the chain is the VPN-Gateway, which must obviously connect through clearnet. 
+
+
+Thus, the VPN-Gateway uses clearnet, the Whonix-Gateway uses the VPN-Gateway to connect, the Proxy-Gateway uses Whonix-Gateway to connect, and Whonix-Workstation uses the Proxy-Gateway to connect. Since the Proxy-Gateway has option but to go through Whonix-Gateway followed by VPN-Gateway, it is clear why it will be the last hop in front of the destination server.
+
+= Other Considerations =
+
+Whether these combinations make sense in terms of security and anonymity is hotly debated and depends on the user's personal threat model, see [https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN Tor plus VPN or Proxy].
+
+Before attempting complex tunnel configurations, the following basic knowledge is required:
+
+* [[Tunnels/Introduction]]
+* [[Stream Isolation]]
+
+
+This resource may also be useful: [https://www.whonix.org/wiki/Dev/Inspiration Inspiration]. 
+
+Users must also have an understanding of, and be able to edit /etc/network/interfaces on Whonix-Gateway and/or on Whonix-Workstation. In the case of non-Qubes-Whonix, this refers to the virtual internal network name in VirtualBox settings.
+
+This process is generally difficult because there are no other anonymizing gateways (VPN / JonDo / I2P / Proxy / SSH / VPN) available for download in Whonix, just the Whonix-Gateway which uses Tor to anonymize traffic. Users often have to look for instructions and/or build an anonymizing gateway themselves. <ref>There are some instructions for a pfSense based VPN-Gateway which can be found with search engines, but it is untested for leaks.</ref> 
+
+For a VPN-Gateway, see also:
+<br />
+* [https://www.ivpn.net/privacy-guides/advanced-privacy-and-anonymity-part-6 VPN-Gateway] ([http://www.webcitation.org/6RKpGv2y9 w])
+
+= Footnotes =
+<references/>
+
+= License =
+{{License_Amnesia|{{FULLPAGENAME}}}}
+
+{{Footer}}
+
+[[Category:Documentation]]
