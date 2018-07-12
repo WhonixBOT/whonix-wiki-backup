@@ -145,6 +145,68 @@ Should show.
 510 Request filtered
 </pre>
 
+Debugging with curl
+
+Trying to use curl rather than curl.anondist-org is a common mistake when debugging Whonix network issues.
+
+curl is a symlink to curl.anondist. In turn, this symlinks to uwt which runs curl under torsocks. torksocks then forces Tor to run on localhost for stream isolation.
+
+To use curl
+
+* The uwt steam isolation wrapper must be deactivated
+* The command must be run under user clearnet
+        
+In Whonix-Gateway or sys-whonix (Qube-Whonix)
+  
+1. Change to user clearnet
+
+sudo su clearnet
+
+2. Deactivate uwt stream isolation wrapper by appending .anondist-orig to curl
+
+curl.anondist-orig <your_url>
+
+Using curl in Whonix 14
+ 
+In the following examples, the exec calls from the command output shows the difference between running curl with the uwtwrapper both enabled and disabled. 
+
+Example 1
+
+curl is run with the uwtwrapper enabled. 
+
+uwtwrapper_verbose=1 curl <your_url>
+
+This results in the following exec calls. Only the latest (most recent) call matters which shows torsocks is prepended before running curl. 
+
+exec torsocks /usr/lib/uwtexec something <your_url>
+exec -a /usr/bin/curl /usr/bin/curl.anondist-orig <your_url>
+
+Example 2
+
+curl is run with the uwtwrapper disabled.
+
+uwtwrapper_verbose=1 UWT_DEV_PASSTHROUGH=1 curl <your_url>
+
+This command results in the following exec calls which show torsocks does not get prepended before curl. Since curl does not run under torsocks, local connections are not hindered and there is no stream isolation
+
+exec /usr/lib/uwtexec <your_url>
+exec -a /usr/bin/curl /usr/bin/curl.anondist-orig <your_url>
+
+The output from the previous commands establish the following
+
+/usr/bin/curl is symbolically linked to /usr/bin/curl.anondist-orig. This demonstrates /usr/bin/curl.anondist-orig is the actual (real) curl binary.
+
+When /usr/bin/curl.anondist-orig is run with the uwtwrapper disabled all uwt logic is circumvented. 
+
+Users can either run curl under user clearnet  or deactivate the uwt stream isolation
+wrapper either permanently or temporary 
+ 
+Links:
+
+https://www.whonix.org/wiki/Stream_Isolation
+
+https://www.whonix.org/wiki/Stream_Isolation/Disable_Easy
+
 -----
 
 = Application Developers =
