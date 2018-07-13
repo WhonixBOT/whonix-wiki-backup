@@ -145,67 +145,77 @@ Should show.
 510 Request filtered
 </pre>
 
-Debugging with curl
+=== Debugging with curl ===
 
-Trying to use curl rather than curl.anondist-org is a common mistake when debugging Whonix network issues.
+Trying to use curl rather than <code>curl.anondist-org</code> is a common mistake when debugging Whonix network issues.
 
-curl is a symlink to curl.anondist. In turn, this symlinks to uwt which runs curl under torsocks. torksocks then forces Tor to run on localhost for stream isolation.
+<code>curl</code> is a symlink to <code>curl.anondist-orig</code>. In turn, this symlinks to <code>uwt</code> which runs <code>curl</code> under <code>torsocks</code>. <code>torsocks</code> then forces Tor to run on <code>localhost</code> for stream isolation.
 
-To use curl
+==== To use curl ====
 
-* The uwt steam isolation wrapper must be deactivated
-* The command must be run under user clearnet
-        
-In Whonix-Gateway or sys-whonix (Qube-Whonix)
+* The <code>uwt</code> steam isolation wrapper must be deactivated
+* The command must be run under user <code>clearnet</code>
+
+
+In Whonix-Gateway or <code>sys-whonix</code> [[Qubes-Whonix|Qubes-Whonix]]
   
-1. Change to user clearnet
+'''1.''' Change to user <code>clearnet</code>
 
+{{CodeSelect|code=
 sudo su clearnet
+}}
 
-2. Deactivate uwt stream isolation wrapper by appending .anondist-orig to curl
+'''2.''' Deactivate <code>uwt</code> stream isolation wrapper by appending <code>.anondist-orig</code> to <code>curl</code>
 
+{{CodeSelect|code=
 curl.anondist-orig <your_url>
+}}
 
-Using curl in Whonix 14
+==== Using curl in Whonix 14 ====
  
-In the following examples, the exec calls from the command output shows the difference between running curl with the uwtwrapper both enabled and disabled. 
+In the following examples, the <code>exec</code> calls from the command output shows the difference between running <code>curl</code> with the <code>uwtwrapper</code> both enabled and disabled. 
 
-Example 1
+'''<i>Example 1</i>'''
 
-curl is run with the uwtwrapper enabled. 
+<code>curl</code> is run with the <code>uwtwrapper</code> enabled. 
 
+{{CodeSelect|code=
 uwtwrapper_verbose=1 curl <your_url>
+}}
 
-This results in the following exec calls. Only the latest (most recent) call matters which shows torsocks is prepended before running curl. 
+This results in the following <code>exec</code> calls. Only the latest (most recent) call matters which shows <code>torsocks</code> is prepended before running <code>curl</code>. 
 
-exec torsocks /usr/lib/uwtexec something <your_url>
-exec -a /usr/bin/curl /usr/bin/curl.anondist-orig <your_url>
+ exec torsocks /usr/lib/uwtexec something <your_url>
+ exec -a /usr/bin/curl /usr/bin/curl.anondist-orig <your_url>
 
-Example 2
+'''<i>Example 2</i>'''
 
-curl is run with the uwtwrapper disabled.
+<code>curl</code> is run with the <code>uwtwrapper</code> disabled.
 
+{{CodeSelect|code=
 uwtwrapper_verbose=1 UWT_DEV_PASSTHROUGH=1 curl <your_url>
+}}
 
-This command results in the following exec calls which show torsocks does not get prepended before curl. Since curl does not run under torsocks, local connections are not hindered and there is no stream isolation
+This command results in the following <code>exec</code> calls which show <code>torsocks</code> does not get prepended before <code>curl</code>. Since <code>curl</code> does not run under <code>torsocks</code>, local connections are not hindered and there is no stream isolation.
 
-exec /usr/lib/uwtexec <your_url>
-exec -a /usr/bin/curl /usr/bin/curl.anondist-orig <your_url>
+  exec /usr/lib/uwtexec <your_url>
+  exec -a /usr/bin/curl /usr/bin/curl.anondist-orig <your_url>
 
-The output from the previous commands establish the following
+'''The output from the previous commands establish the following'''.
 
-/usr/bin/curl is symbolically linked to /usr/bin/curl.anondist-orig. This demonstrates /usr/bin/curl.anondist-orig is the actual (real) curl binary.
+* <code>/usr/bin/curl</code> is symbolically linked to <code>/usr/bin/curl.anondist-orig</code>. This demonstrates <code>/usr/bin/curl.anondist-orig</code> is the actual (real) <code>curl</code> binary.
 
-When /usr/bin/curl.anondist-orig is run with the uwtwrapper disabled all uwt logic is circumvented. 
+* When <code>/usr/bin/curl.anondist-orig</code> is run with the <code>uwtwrapper</code> disabled all <code>uwt</code> logic is circumvented. 
 
-Users can either run curl under user clearnet  or deactivate the uwt stream isolation
-wrapper either permanently or temporary 
+
+Users can either run <code>curl</code> under user <code>clearnet</code> or deactivate the <code>uwt</code> stream isolation
+wrapper either permanently or temporary. 
  
 Links:
 
-https://www.whonix.org/wiki/Stream_Isolation
+[[Stream_Isolation|https://www.whonix.org/wiki/Stream_Isolation]]
 
-https://www.whonix.org/wiki/Stream_Isolation/Disable_Easy
+[[Stream_Isolation#Disable_Easy|https://www.whonix.org/wiki/Stream_Isolation/Disable_Easy]]
 
 -----
 
