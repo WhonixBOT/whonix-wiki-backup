@@ -1,0 +1,338 @@
+<!--
+Copyright:
+
+   Whonix Computer Security Education wiki page Copyright (C) Amnesia <amnesia at boum dot org>
+   Whonix Computer Security Education wiki page Copyright (C) 2012 - 2018 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+         
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+      
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to:
+
+    Free Software Foundation, Inc. 
+    51 Franklin St, Fifth Floor
+    Boston, MA 02110-1301, USA.
+
+On Debian GNU/Linux systems, the complete text of the GNU General Public
+License can be found in the /usr/share/common-licenses' directory.
+
+The complete text of the GNU General Public License can also be found online on gnu.org <https://www.gnu.org/licenses/gpl.html>, in Whonix virtual machine images in /usr/share/common-licenses/GPL-3 file or on Github <https://github.com/Whonix/Whonix/blob/master/GPLv3>.
+-->
+<!--
+The Whonix Computer Security Education wiki page is forked from the Tails Enable MAC Changer page, from this exact source <http://git.immerda.ch/?p=amnesia.git;a=blob;f=wiki/src/doc/advanced_topics/mac_changer.mdwn;hb=770c6f26f8dcd06452fef1c57dafb2878e0dee11> and on the Tails macchanger page from this exact source <http://git.immerda.ch/?p=amnesia.git;a=blob;f=wiki/src/todo/macchanger.mdwn;hb=f27853e23d7985594d54f00f30153b6acd97312e>.
+-->
+
+{{Header}}
+{{#seo:
+|description=MAC Address Spoofing and Tracking Threats
+}}
+
+= Introduction =
+
+All network cards, both wired and wireless, have a unique identifier called a {{Code2|MAC address}}<ref>https://en.wikipedia.org/wiki/MAC_address</ref>. MAC addresses are stored in hardware and are used to assign an address to computers on the local network. 
+
+The MAC address is <i>normally</i> not traceable because it is not passively sent to computers beyond the local router. <ref>Unless the computer is infected with [https://en.wikipedia.org/wiki/Malware Malware] designed to disclose this identifier.</ref> However, other computers on the local network can potentially log it, which then would provide proof that the user's computer has been connected to that specific network. If users intend to use an untrusted, public network then {{Code2|MAC spoofing}} should be considered. <ref>https://en.wikipedia.org/wiki/MAC_spoofing</ref>
+
+== MAC Spoofing Warning ==
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = 
+'''Warning:''' According to recent research, MAC address spoofing is not effective against advanced tracking techniques that can still enumerate the address by looking at physical characteristics of the Wi-Fi card. <ref>[http://papers.mathyvanhoef.com/asiaccs2016.pdf ''Why MAC Address Randomization is not Enough: An Analysis of Wi-Fi Network Discovery Mechanisms'']</ref> Unfortunately, a solution requires manufacturers to modify drivers or firmware of their hardware products to add privacy preserving mitigations.
+}}
+
+
+One workaround is to buy new "burner" Wi-Fi USB sticks of different brands. Take care to disable the computer's native Wi-Fi functionality in the BIOS setting if pursuing this option. The reason is the computer's characteristics are likely to have already been logged if it was ever used from an untrusted hotspot. Connectivity with these burner devices should only be enabled from the intended public destination. At no point should burner devices be used for network connections at locations tied to, or regularly visited by, the user. Use a different stick for every new location to avoid location profiling/tracking.
+
+== Other Location Tracking Risks ==
+
+Dealing with the MAC address problem is only one piece of the larger location tracking puzzle. [[Tor#Advanced_Topics|Attention]] must also be given to changing the usual Tor entry guards used for connections. To thwart this attack, entry guard changes are necessary for every Tor instance on the user's machine host (apt-transport-tor) and guest.
+
+An authentication technique can fingerprint devices - and also track user devices as a side-effect - by observing inter-packet timings on a LAN's wire-segment. The timing effects are the result of how various components in a machine create packets. <ref>[http://www2.ece.gatech.edu/cap/papers/1569740227-3.pdf ''A Passive Technique for Fingerprinting Wireless Devices with Wired-side Observations'']</ref> Fortunately, this technique cannot be used to identify devices across the internet. <ref>The primary weakness of this technique is that it relies on fine-grained packet timing; timing that is lost as a result of buffering in switches and routers. Therefore, this technique and similar methods are not suited for identification across the Internet. Rather, it is perfectly suited for the significant challenge of local network access control and other local network activities like counterfeit detection.</ref> This technique can be defeated by inducing random delays in a machine's packet stream. Since there is no concern about impersonating other devices on the LAN, it doesn't matter that such an authentication system will view such machines as "unknown". <ref>Figure 7(a) shows attackers that can vary their packet sizes, change their data rate, and tunnel their packets through another protocol. Figure 7(b) presents attackers that can introduce constant or random delays to the packet stream and load the CPU with intensive applications to overshadow normal behavior. Figure 7(c) shows an attacker that can modify or change its operating system. GTID (the passive fingerprinting method) detects these attacks and classifies all of these devices that generated attack traffic from previously seen devices as unknown.</ref> Note that spectrum analyzers are also mentioned as a way to fingerprint the unique electromagnetic (EM) characteristics of a Wi-Fi card. The disposable USB Wi-Fi workaround would mitigate this attack. <ref>There have also been physical layer approaches to fingerprinting wireless devices. Radio frequency (RF) emitter fingerprinting uses the distinct EM characteristics that arise from differences in circuit topology and manufacturing tolerances. This approach has a history of use in cellular systems and has more recently been applied to Wi-Fi and Bluetooth emitters. The EM properties fingerprint the unique transmitter of a signal and these differ from emitter to emitter. This technique requires expensive signal analyzer hardware to be within RF range of the target.</ref>
+
+= Using a Home Connection =
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = '''Tip:''' MAC address changes for home connections are not required.
+}}
+
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = 
+'''Warning:''' This recommendation comes with an important caveat. If a browser exploit is successfully used for activities outside a VM, then the physical MAC address could be revealed to an attacker. If a user is already under suspicion, this would eventually provide proof of identity. In this scenario, if the MAC address was changed beforehand, then root access is required to discover the real physical address (this has <i>not</i> yet been tested).
+}}
+
+
+== Connectivity Risk ==
+
+If the user's home network has a cable modem internet connection, the ISP either provides the cable modem device as part of the service or requires pre-registration of the MAC address of the self-provided cable modem in order to setup the service. 
+
+If a user manages to hack or change the MAC address of the modem, the service would immediately cease functioning because the IP address assignment is apportioned for, and bound to, that specific MAC address. As a result, when connecting from behind a cable modem/NAT router, MAC address spoofing of the computer's ethernet adapter may be pointless. If a user is traced, the trackable endpoint will be the MAC address of the cable modem device.
+
+= Using a Public Computer =
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = This refers to use of computers in public places like libraries and Internet cafes.
+}}
+
+
+The MAC address should not be changed in this scenario, otherwise it may bring undesired administrator attention to the service/user and/or simply prevent access to the Internet.
+
+= Using a Personal Computer in a Public Network =
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = This refers to using a personal laptop, desktop or any other Internet-facing device in a public network.
+}}
+
+
+In this scenario, the MAC address should be changed. A new set of Tor entry guards should be selected by removing <i>/var/lib/tor/state</i>. Attempts should be made to disguise the use of Tor from the administrator of the public network. Depending on the user's configuration, this may involve using an obfsproxy bridge or the tunneling of traffic through SSH or a VPN prior to connecting to the Tor network. 
+
+Depending on the user's threat model, changing the MAC address and using Tor might rule out revisiting that public network again in the future. If the same public network is to be reused, then users must decide whether to use the same MAC address (and set of Tor entry guards) or to create a new MAC address.
+
+If MAC address logging by the administrator is suspected, it could be unwise to change the MAC address, since this may appear suspicious. If the user believes the network is sufficiently public and they have not been observed, then it might be safe to use a new MAC address - with a popular vendor ID and random/unique second part - each time the network is used.
+
+For more discussion on this rather complex topic, see [[Dev/MAC]].
+
+= Random MAC Addresses =
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = 
+'''Warning:''' Using a completely random MAC address is not recommended. While this technique might be sufficient to confuse lessor adversaries, it will not defeat skilled adversaries.
+}}
+
+
+The problem of using a random MAC address is that the vendor ID which is chosen may be non-existent. Even if it exists, the user might end up with a vendor ID which has either never been used or not for decades. When spoofing MAC addresses, it is critical to use a a popular vendor ID. The initial, second part of the MAC address can safely be random or unique. <ref>Also note that if MAC address changing is always enabled, it might cause connectivity problems on some networks.</ref>
+
+Research on this issue is still ongoing. Whonix cannot yet provide detailed instructions on how to create appropriate MAC addresses fulfilling the criteria above.
+
+= Auto-connect Risk =
+
+Apart from the difficulty in creating an appropriate MAC address for spoofing purposes, there are also technical hurdles to overcome in the form of preventing automatic network connections.
+
+Preparing a spoofed MAC address will be futile if (when the computer is booted) it instantly connects to the public network, disclosing the user's real MAC address in the process:
+
+* For VM users: The host operating system most likely automatically connects via updates, perhaps time sync, and other avenues. 
+* For Physical Isolation users: Whonix-Gateway automatically connects to Tor after start.
+* For USB Wi-FI device users: Automatic connections might also occur, depending on the configuration.
+
+= Changing MAC Addresses =
+
+== Qubes Hosts ==
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Qubes OS does not currently “anonymize” or spoof the MAC address automatically.
+}}
+
+
+Qubes users can manually change MAC addresses in the NetVM by following either the Network Manager or macchanger guides. Refer to the following Qubes documentation and related support items:
+
+* https://www.qubes-os.org/doc/anonymizing-your-mac-address/
+* https://groups.google.com/forum/#!searchin/qubes-users/macchanger/qubes-users/gUPK-YqkC3E/WsarnjrddrsJ
+* https://github.com/QubesOS/qubes-issues/issues/938
+
+== Linux Hosts ==
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+If you are interested in MAC address spoofing in [[Non-Qubes-Whonix]], please press on Expand on the right.
+<div class="mw-collapsible-content">
+{{Non-Qubes-Whonix}}
+
+TODO: please help to test and expand these instructions.
+
+'''1. Edit the Network Interfaces File'''
+
+* Standard-[[Download|Whonix]]-Version (VM) users: Edit ''/etc/network/interfaces'' on the host.
+* [[Physical Isolation]] users: Edit ''/etc/network/interfaces'' on Whonix-Gateway.
+
+
+'''2. Get Macchanger'''
+
+In a terminal, run.
+
+{{CodeSelect|code=
+su
+}}
+{{CodeSelect|code=
+apt-get update && apt-get install macchanger
+}}
+
+'''3. Change the MAC Address (I)'''
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = The following steps will manually change the MAC address for the device. An example is provided for a wireless device (wlan0). Replace wlan0 to match your device, such as a ethernet device (eth0) and so on.
+}}
+
+
+{{CodeSelect|code=
+su
+}}
+{{CodeSelect|code=
+ifconfig wlan0 down
+}}
+{{CodeSelect|code=
+macchanger -a wlan0
+}}
+{{CodeSelect|code=
+ifconfig wlan0 up
+}}
+
+If instructions from Step 1+ did not work, the following steps might also work without macchanger. Replace wlan0 to match your specific device.
+{{CodeSelect|code=
+su
+}}
+{{CodeSelect|code=
+ifconfig wlan0 down
+}}
+{{CodeSelect|code=
+ifconfig wlan0 hw ether 00:AA:BB:CC:DD:EE
+}}
+{{CodeSelect|code=
+ifconfig wlan0 up
+}}
+Or use iproute2 commands to change the MAC address.
+{{CodeSelect|code=
+ip link set down wlan0
+}}
+{{CodeSelect|code=
+ip link set wlan0 address 00:AA:BB:CC:DD:EE
+}}
+{{CodeSelect|code=
+ip link set up wlan0
+}}
+
+'''4. Change the MAC Address (II)'''
+
+Below <code>iface eth0 inet dhcp</code>, add.
+
+{{CodeSelect|code=
+hwaddress ether 00:00....
+}}
+
+'''5. ''Optional:'' Automatically Randomize MAC Address on Boot'''
+
+If this is desired, add.
+
+{{CodeSelect|code=
+pre-up macchanger -e eth0
+}}
+
+'''6. Change New Network Interfaces Settings'''
+
+To prevent automatically bringing up new network interfaces, uncomment the following.
+
+{{CodeSelect|code=
+auto eth0
+}}
+
+Then set manual bring ups with the following.
+
+{{CodeSelect|code=
+sudo ifup eth0
+}}
+</div>
+</div>
+
+== Windows Hosts ==
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = In Windows, the MAC address can be changed with specific tools, by editing the registry, or via Device Manager.
+}}
+
+
+The following instructions outline MAC address spoofing in Windows 10 via Device Manager. Complete the following steps: <ref>http://windowsreport.com/mac-address-changer-windows-10/</ref>
+
+<code>Press Windows Key + X</code> -> <code>select Device Manager</code> -> <code>Expand the list of Network adapters</code> -> <code>Right-click the appropriate adapter</code> -> <code>Select Properties</code> -> <code>Navigate to Advanced tab</code> -> <code>Select Network Address</code> -> <code>Enter any 12 digit hexadecimal value</code> -> <code>Click OK</code>
+
+Reboot the computer for the changes to take effect. To check the changes are correct, in a terminal run. 
+
+{{CodeSelect|code=
+ipconfig /all 
+}}
+
+The physical address of the adapter should show the new MAC address.
+
+== macOS Hosts ==
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = These steps are untested.
+}}
+
+
+'''1. Find the Current MAC Address of the Interface''' <ref>http://www.online-tech-tips.com/computer-tips/how-to-change-mac-address/</ref>
+
+<code>Open System Preferences</code> -> <code>Click on Network</code> -> <code>Select the interface from the listbox on the left</code> -> <code>Select the Advanced button</code> -> <code>Click on Hardware tab</code>
+
+The first line is the MAC address of the interface.
+
+'''2. Change the MAC Address'''
+
+Note: There is no eth0 on default configurations of MacOS. By default, <code>en0</code> and <code>en1</code> are the physical network connections (wired and wireless LAN). <ref>https://superuser.com/questions/1190550/physical-and-wireless-interfaces-in-macos</ref> Disconnect from the networks before running these commands.
+
+In a terminal, run as an administrator.
+
+<pre>
+ifconfig en0 | grep ether
+</pre>
+
+The output will show the MAC address for the en0 interface. Depending on how many interfaces there are on the computer, the command might need to be run several times by adding 1 to the number each time.
+
+Once a MAC address is listed that matches the one seen via System Preferences, the user knows which interface (en0, en1....) to change. 
+
+In a terminal, run the following as an administrator. Change "en0" to match the relevant interface, and "XX:XX:XX:XX:XX:XX" for the desired new MAC address (for example: f8:1e:df:d8:9d:8a).
+
+{{CodeSelect|code=
+sudo ifconfig en0 ether XX:XX:XX:XX:XX:XX
+}}
+
+'''3. Check the MAC Address has Changed'''
+
+In a terminal, re-run.
+
+<pre>
+ifconfig en0 | grep ether
+</pre>
+
+The output should show a value matching the user's change.
+
+== Sources ==
+
+See footnote. <ref>
+* https://tails.boum.org/contribute/design/MAC_address/
+* https://tails.boum.org/todo/macchanger/
+* https://tails.boum.org/blueprint/macchanger/
+* Worth reading! Thanks to Tails!
+* [[Dev/MAC]]
+</ref>
+
+= References =
+<references/>
+
+= License =
+{{License_Amnesia|{{FULLPAGENAME}}}}
+
+{{Footer}}
+
+[[Category:Documentation]]
