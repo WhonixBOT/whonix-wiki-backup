@@ -27,8 +27,87 @@ System Tools -> Konsole
 
 '''2. Install Qubes-Whonix'''
 
+1. Install <code>qubes-core-admin-addon-whonix</code>.
+
+{{CodeSelect|code=
+sudo qubes-dom0-update --enablerepo=qubes-dom0-unstable qubes-core-admin-addon-whonix
+}}
+
+2. Add Qubes Community Templates Testing Repository
+
+Your <code>/etc/yum.repos.d/qubes-templates.repo</code> should look like [https://github.com/QubesOS/qubes-installer-qubes-os/blob/master/qubes-release/qubes-templates.repo this]. <ref>
+You need <code>[qubes-templates-itl-testing]<code> in  dom0 <code>/etc/yum.repos.d/qubes-templates.repo</code>.
+</ref>
+
+Qubes <code>templates-community-testing</code> repository definition was introduced in [https://github.com/QubesOS/qubes-installer-qubes-os/commit/30cdd9c 30cdd9c9] in Qubes dom0 package [https://github.com/QubesOS/updates-status/issues/582 v3.2-2-qubes-release #582] which is currently only available in <code>qubes-dom0-current-testing</code>.
+
+In dom0 Upgrade <code>qubes-release</code> from Qubes dom0 <code>qubes-dom0-current-testing</code> repository.
+
+Install <code>qubes-release</code> from Qubes Community Templates Testing Repository.
+
+{{CodeSelect|code=
+sudo qubes-dom0-update --enablerepo=qubes-dom0-current-testing qubes-release
+}}
+
+Make sure you have <code>/etc/yum.repos.d/qubes-templates.repo</code> looks like [https://github.com/QubesOS/qubes-installer-qubes-os/blob/master/qubes-release/qubes-templates.repo this].
+
+If you previously modified file <code>/etc/yum.repos.d/qubes-templates.repo</code> then <code>dnf</code> <ref>Which gets invoked by <code>qubes-dom0-update</code>.</ref> will have preserved your changes and not actually update that file. The updated file contents can be found in file <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> (note the file extension <code>.rpmnew</code> but that file will be disregarded during usage of <code>qubes-dom0-update</code>. So this situation must be resolved. Advanced users could manually take changes from <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> and add them to <code>/etc/yum.repos.d/qubes-templates.repo</code>. However, just overwriting <code>/etc/yum.repos.d/qubes-templates.repo</code> and re-adding your changes afterwards is simpler. Overwrite. You will loose eventual <code>/etc/yum.repos.d/qubes-templates.repo</code> modifications.
+
+{{CodeSelect|code=
+cp /etc/yum.repos.d/qubes-templates.repo.rpmnew /etc/yum.repos.d/qubes-templates.repo
+}}
+
+Should above command fail because <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> did not exist, all good.
+
+Make sure you have <code>/etc/yum.repos.d/qubes-templates.repo</code> looks like [https://github.com/QubesOS/qubes-installer-qubes-os/blob/master/qubes-release/qubes-templates.repo this].
+
+{{CodeSelect|code=
+cat /etc/yum.repos.d/qubes-templates.repo
+}}
+
+Download Whonix. (For reinstallation add <code>--action=reinstall</code>.) Only required for the testers version of Whonix. Otherwise Qubes <code>salt</code> would download Whonix from <code>qubes-templates-community</code>.
+
+Download the Whonix-Gateway (<code>whonix-gw-14</code>) TemplateVM.
+
+{{CodeSelect|code=
+sudo qubes-dom0-update --enablerepo=templates-community-testing qubes-template-whonix-gw-14
+}}
+
+Download Whonix-Workstation (<code>whonix-ws-14</code>) TemplateVM.
+
+{{CodeSelect|code=
+sudo qubes-dom0-update --enablerepo=templates-community-testing qubes-template-whonix-ws-14
+}}
+
+Use Qubes <code>salt</code> to set up <code>sys-whonix</code> and <code>anon-whonix</code>. <ref>
+[[Dev/Qubes#salt]]</ref> <ref>
+https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/anon-whonix.sls
+</ref>
+
 {{CodeSelect|code=
 sudo qubesctl state.sls qvm.anon-whonix
+}}
+
+Optional. Setup <code>whonix-ws-dvm</code> DVM Template as a base for [[Qubes/Disposable_VM|Disposable VMs]]. <ref>
+https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/whonix-ws-dvm.sls
+</ref>
+
+{{CodeSelect|code=
+sudo qubesctl state.sls qvm.whonix-ws-dvm
+}}
+
+Optional. Setup UpdatesProxy to always use sys-whonix all TemplateVMs are upgraded over Tor. <ref>
+https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/updates-via-whonix.sls
+</ref>
+
+{{CodeSelect|code=
+sudo qubesctl state.sls qvm.updates-via-whonix
+}}
+
+Optional. Configure Qubes dom0 updates over Tor by settings Qubes dom0 UpdateVM to <code>sys-whonix</code>.
+
+{{CodeSelect|code=
+qubes-prefs updatevm sys-whonix
 }}
 
 '''3. Enable AppArmor''' '''(optional, testers-only security enhancement)'''
