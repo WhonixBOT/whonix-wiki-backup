@@ -90,38 +90,38 @@ As a KDE user (Non-Qubes-Whonix default) use {{Code2|kdesudo application}}. Othe
 
 = More Security =
 
-== Introduction ==
+== General Advice ==
 
-* Users are free to install their favorite software packages. Almost any application can be installed, with a few exceptions for programs that are [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Howtotorifyspecificprograms impossible to torify].
+Whonix users are free to install their favorite software packages, but should be aware that additional software increases the attack surface of the platform. <ref>https://en.wikipedia.org/wiki/Attack_surface</ref>
+Almost any application can be installed, with a few exceptions for programs that are [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Howtotorifyspecificprograms impossible to torify]. In addition, Whonix provides:
 
-* Users are protected from IP and DNS leaks (see above for details).
+* Protection from IP and DNS leaks (see above for details).
+* Partial protection against [[Protocol-Leak-Protection and Fingerprinting-Protection|protocol leaks and fingerprinting]], but this is far from perfect.
 
-* Users have some protection against [[Protocol-Leak-Protection and Fingerprinting-Protection|protocol leaks and fingerprinting]], but this is far from perfect.
+Users are responsible for trying to prevent any other [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Protocolleaks protocol leaks] using the [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO "Torify: How-to" guide], but most of those are mitigated by Whonix.
 
-* Users must still try to prevent any other [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Protocolleaks protocol leaks] using the [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO "Torify: How-to" guide], but most of those are mitigated by Whonix.
+== apt-get Meta-data ==
 
-* When updating with <i>apt-get</i>, information about which software packages and versions have been installed will leak unless [[Security_Guide#Onionizing_Repositories|Tor onion services are used for repositories]], see [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Softwareupdaters software updaters]. This information cannot be directly linked to any other activity like web browsing, because the Whonix <i>apt-get</i> uwt wrapper forces it to pass through its own circuit. However, there are still risks that updates could be [[Stream Isolation|correlated]] with the same pseudonym. <ref>For example, if a user announced somewhere that they utilized software X and also have a specific application set x, y, and z installed, this information may become available to an adversary. If circuit-isolated <i>apt-get</i> passes through any Tor exit relays, mirrors or ISPs controlled by the adversary, then they may guess it is the same pseudonym which is running it. In that case the adversary gets a list of the user's installed packages, and can run a stale mirror attack (only if the user has a [[Ubuntu#About_Ubuntu|custom Ubuntu build]]), or may try other attacks against <i>apt-get</i>.</ref> <ref>As per the previous note, this threat equally applies to users who run an onion service with a specific set of server software, for example apache, mediawiki, phpbb, and others.</ref>
+When updating with <code>apt-get</code>, information will leak about which software packages and versions have been installed, unless [[Security_Guide#Onionizing_Repositories|Tor onion repositories]] have been configured. <ref>See [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Softwareupdaters software updaters] for more information on this topic.</ref> This meta-data cannot be directly linked to any other activity like web browsing, because the Whonix <i>apt-get</i> uwt wrapper forces it to pass through its own circuit. Despite this isolation, it is still possible for updates to be [[Stream Isolation|correlated]] with the same pseudonym. <ref>Consider the following example. A user announces online that software X is being utilized, and another specific application set x, y, and z is installed. If this information becomes available to an adversary and the circuit-isolated <i>apt-get</i> passes through any Tor exit relays, mirrors or ISPs under their control, then they may guess it is associated with the same pseudonym. In that case, the adversary has a list of the user's installed packages, and can attempt a stale mirror attack (if the user has a [[Ubuntu#About_Ubuntu|custom Ubuntu build]]), or try other attacks against <i>apt-get</i>.</ref> <ref>As per the previous footnote, this threat equally applies to users who run an onion service with a specific set of server software, for example apache, mediawiki, phpbb, and others.</ref>
 
-* If additional software is installed, this increases the attack surface of the platform. <ref>https://en.wikipedia.org/wiki/Attack_surface</ref>
+== Recommendations ==
 
+For greater security when updating:
 
-For greater security when updating, follow the guidelines [[#How to install or update with most caution?|below]].
-
-Extra care is needed when adding extra custom repositories, especially Personal Package Archives (PPAs). Single developers are more easily pressured and/or likely to have malicious intent than the main distribution repositories.
-
-Please read the [[Protocol-Leak-Protection and Fingerprinting-Protection|protocol leak and fingerprinting protection]] entry first. Information highlighted includes the fact that many leaks, such as DNS and IP-related leaks, do not apply to Whonix and so on.
-
-The [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO Torify: How-to] contains documentation about [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Protocolleaks protocol leaks] and how to mitigate them.
-
-Also see [https://trac.torproject.org/projects/tor/wiki/doc/TransparentProxyLeaks Transparent Proxy Leaks], which is particularly relevant for Microsoft Windows.
+* Follow the guidelines [[#How to install or update with most caution?|below]].
+* Be especially careful when adding custom repositories, particularly Personal Package Archives (PPAs). Single developers are more easily pressured and/or likely to have malicious intent than the main distribution repositories.
+* Read the [[Protocol-Leak-Protection and Fingerprinting-Protection|protocol leak and fingerprinting protection]] entry first. It highlights useful information, like the fact that DNS and IP-related leaks do not apply to Whonix.
+* Refer to the Tor Project's [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO Torify: How-to] which discusses various [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Protocolleaks protocol leaks] and how to mitigate them.
+* Review the Tor Project's [https://trac.torproject.org/projects/tor/wiki/doc/TransparentProxyLeaks Transparent Proxy Leaks] documentation, which is particularly relevant for Microsoft Windows.
 
 == How-to: Install or Update with Utmost Caution ==
 
 # Stop all activities and shutdown any open applications like Tor Browser.
-# Change the Tor circuit (this step may not apply if the user is running an onion service). <ref>One option is using [[Tor Controller|Arm]]. Navigate to the Whonix-Gateway (<i>sys-whonix</i> in Qubes-Whonix) and select <code>Arm - Tor Controller</code>. Press <code>n</code> for a "New Identity", or alternatively: <code>Press "m" for the menu</code> -> <code>Scroll down to ''New Identity''</code> -> <code>Press enter</code>.</ref>
+# Change the Tor circuit (this step may not apply if the user is running an onion service). <ref>One option is using [[Tor Controller|Arm]]: Navigate to Whonix-Gateway ([[Qubes-Whonix]]: <code>sys-whonix</code>) and select
+<code>Arm - Tor Controller</code>. Press <code>n</code> for a "New Identity". Alternatively, press <code>m</code> for the menu, scroll down to ''New Identity'' and press <code>Enter</code>.</ref>
 # Update using apt-get after a random delay. By default, a new Tor circuit is generated after 10 seconds.
 # Change the Tor circuit again.
-# Continue user activities after another random delay period.
+# Continue user activities after another random period has elapsed.
 
 = Whonix-Workstation is Firewalled =
 '''Note:''' This is just an informational resource for users interested in server software or other advanced / uncommon applications.
