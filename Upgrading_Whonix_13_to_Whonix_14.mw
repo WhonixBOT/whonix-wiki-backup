@@ -444,14 +444,59 @@ Users can simply download the latest Whonix 14, testers-only images and install 
 | text       = Advanced users only. No command line descriptions are provided.
 }}
 
-
-To manually install the Whonix 14 templates from Qubes' unstable repositories, perform the following steps in dom0. <ref>https://github.com/Qubes-Community/Contents/blob/master/docs/misc/iaq.md#manually-install-whonix-14-templates</ref>
-
-'''1.''' Download the Whonix-Gateway (<code>whonix-gw</code>) and Whonix-Workstation (<code>whonix-ws</code>) TemplateVMs  and make various system adjustments.
+1. Install <code>qubes-core-admin-addon-whonix</code>.
 
 {{CodeSelect|code=
 sudo qubes-dom0-update --enablerepo=qubes-dom0-unstable qubes-core-admin-addon-whonix
-sudo qubes-dom0-update --enablerepo=qubes-dom0-unstable qubes-template-whonix-gw-14
+}}
+
+2. Add Qubes Community Templates Testing Repository
+
+Your <code>/etc/yum.repos.d/qubes-templates.repo</code> should look like [https://github.com/QubesOS/qubes-installer-qubes-os/blob/master/qubes-release/qubes-templates.repo this]. <ref>
+You need <code>[qubes-templates-itl-testing]<code> in  dom0 <code>/etc/yum.repos.d/qubes-templates.repo</code>.
+</ref>
+
+Qubes `templates-community-testing` repository definition was introduced in [30cdd9c9](https://github.com/QubesOS/qubes-installer-qubes-os/commit/30cdd9c) in Qubes dom0 package [installer-qubes-os v3.2-2-qubes-release (r3.2) #582](https://github.com/QubesOS/updates-status/issues/582) which is currently only avaiable in `qubes-dom0-current-testing`.
+
+In dom0 Upgrade <code>qubes-release</code> from Qubes dom0 <code>qubes-dom0-current-testing</code> repository.
+
+Install qubes-release from Qubes Community Templates Testing Repository.
+
+{{CodeSelect|code=
+sudo qubes-dom0-update --enablerepo=qubes-dom0-current-testing qubes-release
+}}
+
+Make sure you have <code>/etc/yum.repos.d/qubes-templates.repo</code> looks like [https://github.com/QubesOS/qubes-installer-qubes-os/blob/master/qubes-release/qubes-templates.repo this].
+
+If you previously modified file <code>/etc/yum.repos.d/qubes-templates.repo</code> then <code>dnf</code> <ref>Which gets invoked by <code>qubes-dom0-update</code>.</ref> will have preserved your changes and not actually update that file. The updated file contents can be found in file <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> (note the file extension <code>.rpmnew</code> but that file will be disregarded during usage of <code>qubes-dom0-update</code>. So this situation must be resolved. Advanced users could manually take changes from <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> and add them to <code>/etc/yum.repos.d/qubes-templates.repo</code>. However, just overwriting <code>/etc/yum.repos.d/qubes-templates.repo</code> and re-adding your changes afterwards is simpler. Overwrite. You will loose eventual <code>/etc/yum.repos.d/qubes-templates.repo</code> modifications.
+
+{{CodeSelect|code=
+cp /etc/yum.repos.d/qubes-templates.repo.rpmnew /etc/yum.repos.d/qubes-templates.repo
+}}
+
+Should above command fail because <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> did not exist, all good.
+
+Make sure you have <code>/etc/yum.repos.d/qubes-templates.repo</code> looks like [https://github.com/QubesOS/qubes-installer-qubes-os/blob/master/qubes-release/qubes-templates.repo this].
+
+{{CodeSelect|code=
+cat /etc/yum.repos.d/qubes-templates.repo
+}}
+
+Download the Whonix-Gateway (<code>whonix-gw-14</code>) TemplateVM. (For reinstallation add <code>--action=reinstall</code>.)
+
+{{CodeSelect|code=
+sudo qubes-dom0-update --enablerepo=templates-community-testing qubes-template-whonix-gw-14
+}}
+
+and Whonix-Workstation (<code>whonix-ws-14</code>) TemplateVMs. (For reinstallation add <code>--action=reinstall</code>.)
+
+{{CodeSelect|code=
+sudo qubes-dom0-update --enablerepo=templates-community-testing qubes-template-whonix-ws-14
+}}
+
+TODO
+
+{{CodeSelect|code=
 qvm-create sys-whonix-14 --class AppVM --template whonix-gw-14 --label black
 qvm-prefs sys-whonix-14 provides_network True
 qvm-tags whonix-gw-14 a whonix-updatevm
@@ -472,10 +517,12 @@ qvm-tags whonix-ws-14 a whonix-updatevm
 qubes-prefs updatevm sys-whonix-14
 }}
 
-Next, edit ''/etc/qubes-rpc/policy/qubes.UpdatesProxy'' and modify the following lines.
+Next, edit <code>/etc/qubes-rpc/policy/qubes.UpdatesProxy</code> and modify the following lines.
 
-<pre>$type:TemplateVM $default allow,target=sys-whonix
-$tag:whonix-updatevm $default allow,target=sys-whonix</pre>
+<pre>
+$type:TemplateVM $default allow,target=sys-whonix
+$tag:whonix-updatevm $default allow,target=sys-whonix
+</pre>
 
 To become.
 
@@ -483,6 +530,9 @@ To become.
 $type:TemplateVM $default allow,target=sys-whonix-14
 $tag:whonix-updatevm $default allow,target=sys-whonix-14
 }}
+
+
+<ref>https://github.com/Qubes-Community/Contents/blob/master/docs/misc/iaq.md#manually-install-whonix-14-templates</ref>
 
 = Footnotes =
 <references />
