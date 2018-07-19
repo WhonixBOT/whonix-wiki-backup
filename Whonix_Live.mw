@@ -1,0 +1,149 @@
+{{Header}}
+{{Title|
+title=Whonix Live Mode
+}}
+{{#seo:
+|description=Whonix Live System
+|og:image=https://www.whonix.org/w/images/f/ff/Whonixlive.jpg
+}}
+{{Maintainer|
+|status=testing
+|about=About this {{Code2|{{PAGENAME}}}} Page
+|difficulty=medium
+|maintainer=[https://forums.whonix.org/u/algernon Algernon]
+|support=[[Support]]
+}}
+
+=== Introduction ===
+
+Starting with Whonix 14, users can optionally run Whonix as a live system. Booting into live mode will make all writes  go to RAM instead of the hard disk. Everything that is created / changed / downloaded in the VM during that session will not persist after shutdown. This also holds true for malicious changes made by malware, so long as it did not break out of the virtual machine. There are two live mode options available: grub-live and ro-mode-init.
+Grub-live will create a new boot menu entry which the user has to select manually but it is the more failsafe and hence the recommended option. With ro-mode-init the boot menu will stay the same and the system will automatically boot into live mode when it detects a read-only disk otherwise it boots normally into persistent mode.
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = 
+Live mode is not amnesic; in particular, memory forensics has not been taken into account. The primary objective is preventing malware from gaining persistence and having an unchanged system after each reboot. When running Whonix as a live system, all changes are written to RAM by default. However, it is possible for this design to be bypassed if swap files, core dumps and other relevant configurations are in effect. Fortunately, most of these can be disabled. <ref>https://www.whonix.org/wiki/Qubes/DisposableVM#Warning:_DisposableVMs_are_not_Amnesic</ref> <ref>https://www.whonix.org/wiki/FAQ#Is_there_a_substitute_for_Whonix.27s_lack_of_an_Amnesic_feature_.2F_Live_CD.2FDVD.3F_Forensics.3F</ref> <ref>https://www.whonix.org/wiki/Warning#Whonix_is_not_amnesic</ref>  <ref>https://www.whonix.org/wiki/Advanced_Security_Guide#Other_Security_Considerations</ref> <ref>https://www.whonix.org/wiki/Computer_Security_Education#Core_Dumps</ref> To stymie disk forensics, ideally full disk encryption should be applied on the host and the computer should be powered off when not in use. Alternatively, the whole host OS could be run from RAM, or a live system run on the host with all writes going to RAM. The latter method also requires a correctly implemented write protection switch.
+To make memory forensics harder, the machine should either be removed from any power source (by pulling the plug / removing the battery) and/or the memory should be wiped upon shutdown.
+}}
+
+=== Live-mode Configuration ===
+
+Create a snapshot of your VM.
+
+Alternatively backup the <code>/boot</code> folder.
+
+{{CodeSelect|code=
+sudo cp -a /boot /boot.back
+}}
+
+[[Update]] the package lists.
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+Upgrade the system.
+
+{{CodeSelect|code=
+sudo apt-get dist-upgrade
+}}
+
+====Option 1====
+Install the <code>grub-live</code> package.
+
+{{CodeSelect|code=
+sudo apt-get install grub-live
+}}
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Since live mode makes each write go to RAM, the user might want to increase the memory assigned to the VM to improve performance; for example, if large files are regularly downloaded.
+}}
+
+Following reboot, a second boot entry called "Whonix Live-mode" will be visible. Simply press <code>Enter</code> to boot the live system and use it as normal.
+
+To increase security, the VM disks can be set to read-only. Otherwise, malware running as root in the VM could theoretically mount the image read-write and gain persistence in this way. 
+
+====Option 2====
+Install the <code>ro-mode-init</code> package.
+
+{{CodeSelect|code=
+sudo apt-get install ro-mode-init
+}}
+
+For this option the VM disk needs to be set to read-only, otherwise it will always boot into persistent mode.
+
+=== Live-mode on KVM ===
+
+For [[KVM]], the hard disk can be set to read-only in the virt-manager GUI before booting into live mode. To boot into normal mode again, simply revert this change.
+
+=== Live-mode on VirtualBox ===
+
+====Option 1====
+
+The easiest way to set a VirtualBox VM to read-only is to use:
+
+{{CodeSelect|code=
+VBoxManage setextradata vmname "VBoxInternal/Devices/lsilogicsas/0/LUN#0/AttachedDriver/Config/Readonly" 1
+}}
+
+to revert the change use:
+
+{{CodeSelect|code=
+VBoxManage setextradata vmname "VBoxInternal/Devices/lsilogicsas/0/LUN#0/AttachedDriver/Config/Readonly"
+}}
+
+Note that this option is not the official way for setting VM's to read-only in VirtualBox. In contrast to the second option it works similar to the read-only option for KVM and won't create a snapshot. 
+
+====Option 2====
+
+First read the footnote below. <ref>VirtualBox implements hard disk write protection differently. If an immutable virtual machine is booted, VirtualBox will always create a snapshot where data is written. After shutting down and booting the VM again (a soft reboot is inadequate) the old snapshot will be deleted and a new one created. The consequence is that data will not persist in the VM, even if Live-mode is not selected. However, since the data is written to the hard disk of the host (instead of memory), it is easily recovered. Therefore, it is necessary to select Live-mode to be safe. A snapshot file is still created, but it will not store any altered content from the VM. </ref>
+
+This option will only work with the grub-live package!
+
+To make a disk on [[VirtualBox]] immutable / read-only, follow these steps:
+
+# In the VirtualBox main window, navigate to: <code>File</code> -> <code>Virtual Media Manager</code>.
+# Select the disk to write protect and release it.
+# Click on <code>Modify</code> -> <code>set it to Immutable</code>. 
+# In the VirtualBox main window, navigate to the settings of the VM. 
+# Under storage, select the top controller and add the existing hard disk there.
+
+
+The user can now boot the VM and select Live-mode.
+
+To revert these changes:
+
+# Navigate to: <code>File</code> -> <code>Virtual Media Manager</code>. 
+# Select the disk. It will now have a snapshot (~12.5 MB) attached to it. 
+# Release the snapshot and delete it. 
+# Click on <code>Modify</code> and set the hard disk to normal.
+# In the VirtualBox main window, navigate to the settings of the VM. 
+# Under storage, select the top controller and add the existing hard disk there.
+
+=== Live-mode on Qubes ===
+
+<code>grub-live</code> is currently [[unsupported]] on [[Qubes]], but may be available in the future. Refer to the following [https://forums.whonix.org/t/whonix-live-mode/3894/31 forum discussion] for further information.
+
+In Qubes R4, [[Qubes/DisposableVM|Qubes DisposableVMs]] are a suitable alternative, as well as the [https://www.qubes-os.org/doc/live-usb/ Qubes Live USB].
+
+=== Debugging/Errors ===
+
+An inconsistent filesystem will likely result in errors during live-boot. Inconsistencies for instance can happen when you just kill the VM instead of doing a normal shutdown in persistent mode. Therefore, make sure it is consistent and run fsck in persistent mode. Debian automatically does this during boot. VMs running in live mode can be killed without problems.
+
+In case of non-fsck related errors using ro-mode-init (like dropping to an initramfs shell) add the following to the kernel command line/GRUB menu for easier debugging:
+
+{{CodeSelect|code=
+debug=1 break=init-premount
+}}
+
+= Misc =
+In the future, running Whonix from a [[FAQ#Will_there_be_a_Whonix_Live_CD_or_DVD.3F|Live CD or DVD]] might be supported. Check this wiki entry at a later date.
+
+To learn more about live mode, refer to the [https://forums.whonix.org/t/whonix-live-mode Live-mode forum discussion].
+
+= Footnotes =
+<references />
+[[Category:Documentation]]
+{{Footer}}
