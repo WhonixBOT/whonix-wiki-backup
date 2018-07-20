@@ -42,10 +42,6 @@ sudo qubes-dom0-update --enablerepo=qubes-dom0-current-testing qubes-core-admin-
 
 2. Add Qubes Community Templates Testing Repository
 
-Your <code>/etc/yum.repos.d/qubes-templates.repo</code> should look like [https://github.com/QubesOS/qubes-installer-qubes-os/blob/master/qubes-release/qubes-templates.repo this]. <ref>
-You need <code>[qubes-templates-itl-testing]</code> in  dom0 <code>/etc/yum.repos.d/qubes-templates.repo</code>.
-</ref>
-
 In dom0 upgrade <code>qubes-release</code> from Qubes dom0 current testing repository. <ref>
 Qubes <code>templates-community-testing</code> repository definition was introduced in [https://github.com/QubesOS/qubes-installer-qubes-os/commit/30cdd9c 30cdd9c9] in Qubes dom0 package [https://github.com/QubesOS/updates-status/issues/582 v3.2-2-qubes-release #582] / [https://github.com/QubesOS/updates-status/issues/584 v4.0-4-qubes-release] which is currently only available in Qubes <code>qubes-dom0-current-testing</code> repository.
 </ref>
@@ -54,15 +50,32 @@ Qubes <code>templates-community-testing</code> repository definition was introdu
 sudo qubes-dom0-update --enablerepo=qubes-dom0-current-testing qubes-release
 }}
 
-Make sure you have <code>/etc/yum.repos.d/qubes-templates.repo</code> looks like [https://github.com/QubesOS/qubes-installer-qubes-os/blob/master/qubes-release/qubes-templates.repo this].
+View your [https://github.com/QubesOS/qubes-installer-qubes-os/blob/master/qubes-release/qubes-templates.repo <code>/etc/yum.repos.d/qubes-templates.repo</code>].
 
-If you previously modified file <code>/etc/yum.repos.d/qubes-templates.repo</code> then <code>dnf</code> <ref>Which gets invoked by <code>qubes-dom0-update</code>.</ref> will have preserved your changes and not actually update that file. The updated file contents can be found in file <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> (note the file extension <code>.rpmnew</code>) but that file will be disregarded during usage of <code>qubes-dom0-update</code>. So this situation must be resolved. Advanced users could manually take changes from <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> and add them to <code>/etc/yum.repos.d/qubes-templates.repo</code>. However, just overwriting <code>/etc/yum.repos.d/qubes-templates.repo</code> and re-adding your changes afterwards is simpler. Overwrite. You will loose eventual <code>/etc/yum.repos.d/qubes-templates.repo</code> modifications.
+{{CodeSelect|code=
+cat /etc/yum.repos.d/qubes-templates.repo
+}}
+
+Make sure your <code>/etc/yum.repos.d/qubes-templates.repo</code> contains <code>[qubes-templates-itl-testing]</code>. The following should be included.
+
+<pre>
+[qubes-templates-community-testing]
+name = Qubes Community Templates repository
+#baseurl = https://yum.qubes-os.org/r$releasever/templates-community-testing
+metalink = https://yum.qubes-os.org/r$releasever/templates-community-testing/repodata/repomd.xml.metalink
+enabled = 0
+fastestmirror = 1
+gpgcheck = 1
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-$releasever-templates-community
+</pre>
+
+If that <code>[qubes-templates-itl-testing]</code> section is missing, then it probably is because of this: You previously modified file <code>/etc/yum.repos.d/qubes-templates.repo</code>. In that case <code>dnf</code> <ref>Which gets invoked by <code>qubes-dom0-update</code>.</ref> will have preserved your changes and not actually update that file. The updated file contents can be found in file <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> (note the file extension <code>.rpmnew</code>) but that file will be disregarded during usage of <code>qubes-dom0-update</code>. So this situation must be resolved. <ref>Advanced users could manually take changes from <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> and add them to <code>/etc/yum.repos.d/qubes-templates.repo</code>.</ref> Just overwriting <code>/etc/yum.repos.d/qubes-templates.repo</code> and re-adding your changes should you desire so afterwards is simpler. Overwrite. You will loose eventual <code>/etc/yum.repos.d/qubes-templates.repo</code> modifications.
 
 {{CodeSelect|code=
 sudo cp /etc/yum.repos.d/qubes-templates.repo.rpmnew /etc/yum.repos.d/qubes-templates.repo
 }}
 
-Should above command fail because <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> did not exist, all good.
+Should above command fail because <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> did not exist and you already have <code>[qubes-templates-itl-testing]</code>, all good.
 
 Make sure you have <code>/etc/yum.repos.d/qubes-templates.repo</code> looks like [https://github.com/QubesOS/qubes-installer-qubes-os/blob/master/qubes-release/qubes-templates.repo this].
 
