@@ -77,12 +77,16 @@ sudo cp /etc/yum.repos.d/qubes-templates.repo.rpmnew /etc/yum.repos.d/qubes-temp
 
 Should above command fail because <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> did not exist and you already have <code>[qubes-templates-itl-testing]</code>, all good.
 
-Download Whonix from Qubes dom0 templates community testing repository.<br />
-(For reinstallation add <code>--action=reinstall</code>.)<br />
+'''3. (Testers only) Download Whonix templates'''
+
 Manual download of Whonix using <code>qubes-dom0-update</code> is only required for the testers version of Whonix.<br />
+
 (Otherwise Qubes <code>salt</code> would download Whonix from <code>qubes-templates-community</code>.) <ref>
 [https://github.com/QubesOS/qubes-issues/issues/4087 Qubes-Whonix salt - allow choice of repository / don't hardcode repository]
 </ref>
+
+Download Whonix from Qubes dom0 templates community testing repository.<br />
+(For reinstallation add <code>--action=reinstall</code>.)<br />
 
 Download the Whonix-Gateway (<code>whonix-gw-14</code>) TemplateVM.
 
@@ -96,7 +100,9 @@ Download Whonix-Workstation (<code>whonix-ws-14</code>) TemplateVM.
 sudo qubes-dom0-update --enablerepo=qubes-templates-community-testing qubes-template-whonix-ws-14
 }}
 
-Use Qubes <code>salt</code> to set up <code>sys-whonix</code> and <code>anon-whonix</code>. <ref>
+'''4. Set up sys-whonix and anon-whonix'''
+
+Qubes R4.0 only: Use <code>salt</code> to set up <code>sys-whonix</code> and <code>anon-whonix</code>. <ref>
 [[Dev/Qubes#salt]]</ref> <ref>
 https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/anon-whonix.sls
 </ref>
@@ -105,38 +111,41 @@ https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm
 sudo qubesctl state.sls qvm.anon-whonix
 }}
 
-Use Qubes R3.2 only: Qubes VM Manager -> sys-whonix -> right click -> VM settings -> Template -> whonix-gw-14 -> OK
+Qubes R3.2 only: Set up <code>sys-whonix</code> and <code>anon-whonix</code> manually:
+  Qubes VM Manager -> sys-whonix -> right click -> VM settings -> Template -> whonix-gw-14 -> OK
+  Qubes VM Manager -> anon-whonix -> right click -> VM settings -> Template -> whonix-ws-14 -> OK
 
-Use Qubes R3.2 only: Qubes VM Manager -> anon-whonix -> right click -> VM settings -> Template -> whonix-ws-14 -> OK
-
-Optional. Qubes R4 and above only. Setup <code>whonix-ws-dvm</code> DVM Template as a base for [[Qubes/Disposable_VM|Disposable VMs]]. <ref>
-https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/whonix-ws-dvm.sls
+'''5. Optional. Qubes R4 and above only. Set up <code>whonix-ws-dvm</code> DVM Template as a base for [[Qubes/Disposable_VM|Disposable VMs]].''' <ref>https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/whonix-ws-dvm.sls
 </ref>
 
 {{CodeSelect|code=
 sudo qubesctl state.sls qvm.whonix-ws-dvm
 }}
 
-Optional. Qubes R4 only can use salt. Qubes R3.2 only manually. Setup UpdatesProxy to always use sys-whonix all TemplateVMs are upgraded over Tor. <ref>
-https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/updates-via-whonix.sls
+'''6. Optional. Make all your TemplateVMs update over tor.''' <ref>https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/updates-via-whonix.sls
 </ref>
 
+Qubes R4 can use salt:
 {{CodeSelect|code=
 sudo qubesctl state.sls qvm.updates-via-whonix
 }}
 
-Optional. Configure Qubes dom0 updates over Tor by settings Qubes dom0 UpdateVM to <code>sys-whonix</code>.
+Qubes R3.2 only manually: For each template, open VM settings and set NetVM to sys-whonix.
+
+'''7. Optional. Make Dom0 update over tor.'''
+
+Set Qubes dom0 UpdateVM to <code>sys-whonix</code>.
 
 {{CodeSelect|code=
 qubes-prefs updatevm sys-whonix
 }}
 
-'''3. Enable AppArmor''' '''(optional, testers-only security enhancement)'''
+'''8. Enable AppArmor''' '''(optional, testers-only security enhancement)'''
 {{Qubes_AppArmor}}
 
-'''4. [[Qubes/Update|Update your Whonix-Gateway and Whonix-Workstation TemplateVMs]]'''
+'''9. [[Qubes/Update|Update your Whonix-Gateway and Whonix-Workstation TemplateVMs]]'''
 
-'''5. start Whonix-Workstation AppVM'''
+'''10. start Whonix-Workstation AppVM'''
 
 For example, start the [[Tor Browser|browser]].
 
@@ -144,7 +153,7 @@ For example, start the [[Tor Browser|browser]].
 Qubes App Launcher (blue/grey "Q") -> {{Code2|Domain: anon-whonix}} -> Privacy Browser
 </code>
 
-'''6. Advanced information''' '''(Optional [security] information.)''' 
+'''11. Advanced information''' '''(Optional [security] information.)''' 
 <div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
 If you are interested, click on Expand on the right.
 <div class="mw-collapsible-content">
