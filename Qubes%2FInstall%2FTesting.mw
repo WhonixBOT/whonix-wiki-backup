@@ -16,19 +16,13 @@ __NOTOC__
 {{First_Time_User}}
 
 '''Installation'''<br />
-Use Qubes R3.2 or above.
+These instructions are for Qubes R3.2 and above.
 
 '''1. Launch dom0 Terminal'''
-<code>
-Qubes App Launcher (blue/grey "Q")
-</code>
 
 [[File:qubes-whonix1.png]]
 
-Then go to:- 
-<code>
-System Tools -> Konsole
-</code>
+Click the Qubes App Launcher (blue/grey "Q"), open Terminal Emulator.
 
 '''2. Install Qubes-Whonix'''
 
@@ -69,13 +63,15 @@ gpgcheck = 1
 gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-$releasever-templates-community
 </pre>
 
-If that <code>[qubes-templates-itl-testing]</code> section is missing, then it probably is because of this: You previously modified file <code>/etc/yum.repos.d/qubes-templates.repo</code>. In that case <code>dnf</code> <ref>Which gets invoked by <code>qubes-dom0-update</code>.</ref> will have preserved your changes and not actually update that file. The updated file contents can be found in file <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> (note the file extension <code>.rpmnew</code>) but that file will be disregarded during usage of <code>qubes-dom0-update</code>. So this situation must be resolved. <ref>Advanced users could manually take changes from <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> and add them to <code>/etc/yum.repos.d/qubes-templates.repo</code>.</ref> Just overwriting <code>/etc/yum.repos.d/qubes-templates.repo</code> and re-adding your changes should you desire so afterwards is simpler. Overwrite. You will loose eventual <code>/etc/yum.repos.d/qubes-templates.repo</code> modifications.
+If that <code>[qubes-templates-itl-testing]</code> section is missing, then you probably modified <code>/etc/yum.repos.d/qubes-templates.repo</code>. In that case <code>dnf</code> <ref>Which gets invoked by <code>qubes-dom0-update</code>.</ref> preserved your changes by saving updates to <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> (note the file extension <code>.repo.rpmnew</code>) instead of overwriting your file. Since the .repo.rpmnew file is ignored by <code>qubes-dom0-update</code>, you'll need to manually update the .repo file.
 
-{{CodeSelect|code=
+Either:
+
+1. Manually add the changes from .repo.rpmnew to the .repo file, or
+
+2. Overwrite the .repo file with the .repo.rpmnew file {{CodeSelect|code=
 sudo cp /etc/yum.repos.d/qubes-templates.repo.rpmnew /etc/yum.repos.d/qubes-templates.repo
-}}
-
-Should above command fail because <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> did not exist and you already have <code>[qubes-templates-itl-testing]</code>, all good.
+}} and then manually add back your changes. If the command fails because <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> did not exist, then you should already have <code>[qubes-templates-itl-testing]</code>, all good.
 
 '''3. (Testers only) Download Whonix templates'''
 
@@ -102,7 +98,7 @@ sudo qubes-dom0-update --enablerepo=qubes-templates-community-testing qubes-temp
 
 '''4. Set up sys-whonix and anon-whonix'''
 
-Both, Qubes R3.2 and Qubes R4.0: Use <code>salt</code> to set up <code>sys-whonix</code> and <code>anon-whonix</code>. <ref>
+Use <code>salt</code> to set up <code>sys-whonix</code> and <code>anon-whonix</code>. <ref>
 [[Dev/Qubes#salt]]</ref> <ref>
 https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/anon-whonix.sls
 </ref>
