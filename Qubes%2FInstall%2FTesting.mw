@@ -1,30 +1,29 @@
 {{Header}}
 {{#seo:
-|description=How to install Qubes-Whonix 14.
+|description=How to Install Qubes-Whonix 14
 |image=https://www.whonix.org/w/images/5/55/Qubes-logo-icon.png
 }}
+__NOTOC__
+= Introduction =
 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       = '''TESTERS ONLY!'''
+| text       = '''Testers only!'''
 }}
 
 {{Template:Qubes}}
-__NOTOC__
 
 '''First time user?'''<br />
 {{First_Time_User}}
 
 '''Installation'''<br />
-These instructions are for Qubes R3.2 and above.
+These instructions apply to Qubes R3.2 and above.
 
-'''1. Launch dom0 Terminal'''
+== Update dom0 ==
+
+To launch a dom0 terminal, click the Qubes App Launcher (blue/grey "Q") and then open the Terminal Emulator (Xfce Terminal).
 
 [[File:qubes-whonix1.png]]
-
-Click the Qubes App Launcher (blue/grey "Q"), open Terminal Emulator.
-
-'''2. Install Qubes-Whonix'''
 
 Update Qubes dom0.
 
@@ -32,31 +31,33 @@ Update Qubes dom0.
 sudo qubes-dom0-update
 }}
 
-1. Qubes R4.0 and above only: Install <code>qubes-core-admin-addon-whonix</code> from Qubes dom0 current testing repository. <ref>
-Waiting for https://github.com/QubesOS/updates-status/issues/583 to enter Qubes stable repository.
+=== Qubes R4 Only ===
+
+Qubes R4 users must also install <code>qubes-core-admin-addon-whonix</code> from Qubes' dom0 current testing repository. <ref>
+[https://github.com/QubesOS/updates-status/issues/583 This issue] must first enter Qubes' stable repository.
 </ref>
 
 {{CodeSelect|code=
 sudo qubes-dom0-update --enablerepo=qubes-dom0-current-testing qubes-core-admin-addon-whonix
 }}
 
-2. Add Qubes Community Templates Testing Repository
+== Add Qubes' Community Templates Testing Repository == 
 
-In dom0 upgrade <code>qubes-release</code> from Qubes dom0 current testing repository. <ref>
-Qubes <code>templates-community-testing</code> repository definition was introduced in [https://github.com/QubesOS/qubes-installer-qubes-os/commit/30cdd9c 30cdd9c9] in Qubes dom0 package [https://github.com/QubesOS/updates-status/issues/582 v3.2-2-qubes-release #582] / [https://github.com/QubesOS/updates-status/issues/584 v4.0-4-qubes-release] which is currently only available in Qubes <code>qubes-dom0-current-testing</code> repository.
+In dom0, upgrade <code>qubes-release</code> to Qubes' dom0 current testing repository. <ref>
+The Qubes <code>templates-community-testing</code> repository definition was introduced in [https://github.com/QubesOS/qubes-installer-qubes-os/commit/30cdd9c 30cdd9c9] in Qubes dom0 package [https://github.com/QubesOS/updates-status/issues/582 v3.2-2-qubes-release #582] / [https://github.com/QubesOS/updates-status/issues/584 v4.0-4-qubes-release] which is currently only available in Qubes' <code>qubes-dom0-current-testing</code> repository.
 </ref>
 
 {{CodeSelect|code=
 sudo qubes-dom0-update --enablerepo=qubes-dom0-current-testing qubes-release
 }}
 
-View your [https://github.com/QubesOS/qubes-installer-qubes-os/blob/master/qubes-release/qubes-templates.repo <code>/etc/yum.repos.d/qubes-templates.repo</code>].
+View the [https://github.com/QubesOS/qubes-installer-qubes-os/blob/master/qubes-release/qubes-templates.repo <code>/etc/yum.repos.d/qubes-templates.repo</code>] file.
 
 {{CodeSelect|code=
 cat /etc/yum.repos.d/qubes-templates.repo
 }}
 
-Make sure your <code>/etc/yum.repos.d/qubes-templates.repo</code> contains <code>[qubes-templates-itl-testing]</code>. The following should be included.
+Ensure the file contains <code>[qubes-templates-itl-testing]</code>. The following text should be included.
 
 <pre>
 [qubes-templates-community-testing]
@@ -69,32 +70,29 @@ gpgcheck = 1
 gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-qubes-$releasever-templates-community
 </pre>
 
-If that <code>[qubes-templates-itl-testing]</code> section is missing, then you probably modified <code>/etc/yum.repos.d/qubes-templates.repo</code>. In that case <code>dnf</code> <ref>Which gets invoked by <code>qubes-dom0-update</code>.</ref> preserved your changes by saving updates to <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> (note the file extension <code>.repo.rpmnew</code>) instead of overwriting your file. Since the <code>.repo.rpmnew</code> file is ignored by <code>qubes-dom0-update</code>, you'll need to manually update the <code>.repo</code> file.
+=== Missing Testing Template Repository ===
+
+If the <code>[qubes-templates-itl-testing]</code> section is missing, then the user has probably already modified the file. In this case <code>dnf</code> <ref>Which is invoked by <code>qubes-dom0-update</code>.</ref> preserves user changes by saving updates to <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> <ref>Note the file extension <code>.repo.rpmnew</code>.</ref> instead of overwriting the file. Since the <code>.repo.rpmnew</code> file is ignored by <code>qubes-dom0-update</code>, users must manually update the <code>.repo</code> file.
 
 Either:
 
-1. Manually add the changes from <code>.repo.rpmnew</code> to the <code>.repo</code> file, or
-
-2. Overwrite the <code>.repo</code> file with the <code>.repo.rpmnew</code> file
-
-{{CodeSelect|code=
+* Manually add the changes from <code>.repo.rpmnew</code> to the <code>.repo</code> file; or
+* Overwrite the <code>.repo</code> file with the <code>.repo.rpmnew</code> file:
+** {{CodeSelect|code=
 sudo cp /etc/yum.repos.d/qubes-templates.repo.rpmnew /etc/yum.repos.d/qubes-templates.repo
 }}
+** And then manually add back necessary changes. If the command fails because <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> does not exist, then the user probably has <code>[qubes-templates-itl-testing]</code> already.
 
-and then manually add back your changes. If the command fails because <code>/etc/yum.repos.d/qubes-templates.repo.rpmnew</code> did not exist, then you should already have <code>[qubes-templates-itl-testing]</code>, all good.
+== Download the Whonix Templates ==
 
-'''3. (Testers only) Download Whonix templates'''
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Only the testers version of Whonix requires manual downloading of templates with <code>qubes-dom0-update</code>, <ref>If Qubes <code>salt</code> was used at this step, it would currently download Whonix from <code>qubes-templates-community</code>. See: [https://github.com/QubesOS/qubes-issues/issues/4087 Qubes-Whonix salt - allow choice of repository / don't hardcode repository].</ref> which downloads Whonix from Qubes' dom0 templates-community-testing repository. Users who wish to reinstall the templates should add <code>--action=reinstall</code>.
+}}
 
-Manual download of Whonix using <code>qubes-dom0-update</code> is only required for the testers version of Whonix.<br />
 
-(Otherwise Qubes <code>salt</code> would download Whonix from <code>qubes-templates-community</code>.) <ref>
-[https://github.com/QubesOS/qubes-issues/issues/4087 Qubes-Whonix salt - allow choice of repository / don't hardcode repository]
-</ref>
-
-Download Whonix from Qubes dom0 templates community testing repository.<br />
-(For reinstallation add <code>--action=reinstall</code>.)<br />
-
-Download the Whonix-Gateway (<code>whonix-gw-14</code>) TemplateVM.
+Download Whonix-Gateway (<code>whonix-gw-14</code>) TemplateVM.
 
 {{CodeSelect|code=
 sudo qubes-dom0-update --enablerepo=qubes-templates-community-testing qubes-template-whonix-gw-14
@@ -106,9 +104,9 @@ Download Whonix-Workstation (<code>whonix-ws-14</code>) TemplateVM.
 sudo qubes-dom0-update --enablerepo=qubes-templates-community-testing qubes-template-whonix-ws-14
 }}
 
-'''4. Set up sys-whonix and anon-whonix'''
+== Configure sys-whonix and anon-whonix ==
 
-Use <code>salt</code> to set up <code>sys-whonix</code> and <code>anon-whonix</code>. <ref>
+To use <code>salt</code> to set up <code>sys-whonix</code> and <code>anon-whonix</code>, run. <ref>
 [[Dev/Qubes#salt]]</ref> <ref>
 https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/anon-whonix.sls
 </ref>
@@ -117,67 +115,70 @@ https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm
 sudo qubesctl state.sls qvm.anon-whonix
 }}
 
-Qubes R3.2 only: Manually update the TemplateVM setting for <code>sys-whonix</code> and <code>anon-whonix</code>:
-  Qubes VM Manager -> sys-whonix -> right click -> VM settings -> Template -> whonix-gw-14 -> OK
-  Qubes VM Manager -> anon-whonix -> right click -> VM settings -> Template -> whonix-ws-14 -> OK
+=== Qubes R3.2 Only ===
 
-'''5. Optional. Qubes R4 and above only. Set up <code>whonix-ws-dvm</code> DVM Template as a base for [[Qubes/Disposable_VM|Disposable VMs]].''' <ref>https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/whonix-ws-dvm.sls
+In Qubes R3.2, users must manually update the TemplateVM setting for <code>sys-whonix</code> and <code>anon-whonix</code>:
+
+# Qubes VM Manager -> sys-whonix -> right click -> VM settings -> Template -> whonix-gw-14 -> OK
+# Qubes VM Manager -> anon-whonix -> right click -> VM settings -> Template -> whonix-ws-14 -> OK
+
+=== Qubes R4 Only: Optional Whonix DVM Template VM ===
+
+In Qubes R4 and above, users can choose to set up a <code>whonix-ws-dvm</code> DVM Template as a base for [[Qubes/Disposable_VM|Disposable VMs]]. <ref>https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/whonix-ws-dvm.sls
 </ref>
 
 {{CodeSelect|code=
 sudo qubesctl state.sls qvm.whonix-ws-dvm
 }}
 
-'''6. Optional. Make all your TemplateVMs update over tor.''' <ref>https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/updates-via-whonix.sls
+== Optional: Tor Updates ==
+
+=== TemplateVMs ===
+
+To force all TemplateVM updates over Tor: <ref>https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/updates-via-whonix.sls
 </ref>
 
-Qubes R4 can use salt:
-{{CodeSelect|code=
+* '''R3.2:''' For each template, manually open VM settings and set NetVM to <code>sys-whonix</code>.
+* '''R4:''' The following salt command can be used:
+** {{CodeSelect|code=
 sudo qubesctl state.sls qvm.updates-via-whonix
 }}
 
-Qubes R3.2 only manually: For each template, open VM settings and set NetVM to sys-whonix.
+=== dom0 ===
 
-'''7. Optional. Make Dom0 update over tor.'''
-
-Set Qubes dom0 UpdateVM to <code>sys-whonix</code>.
+To force dom0 updates over Tor, set Qubes dom0 UpdateVM to <code>sys-whonix</code>.
 
 {{CodeSelect|code=
 qubes-prefs updatevm sys-whonix
 }}
 
-'''8. Enable AppArmor''' '''(optional, testers-only security enhancement)'''
+== Optional: Enable AppArmor ==
 {{Qubes_AppArmor}}
 
-'''9. [[Qubes/Update|Update your Whonix-Gateway and Whonix-Workstation TemplateVMs]]'''
-
-'''10. start Whonix-Workstation AppVM'''
-
-For example, start the [[Tor Browser|browser]].
+== Update and Launch Applications ==
+ 
+Users can now [[Qubes/Update|update both Whonix-Gateway and Whonix-Workstation TemplateVMs]], before starting applications in the Whonix-Workstation AppVM. For example, to start [[Tor Browser|Tor browser]]:
 
 <code>
 Qubes App Launcher (blue/grey "Q") -> {{Code2|Domain: anon-whonix}} -> Privacy Browser
 </code>
 
-'''11. Known Issues'''
+To learn about known bugs affecting this release, see [[Known_Issues#Missing_anon-whonix_Qubes_Appmenu_Entries|here]].
 
-Qubes R3.2 only: See [[Known_Issues#Missing_anon-whonix_Qubes_Appmenu_Entries|Missing anon-whonix Qubes Appmenu Entries]].
-
-'''12. Advanced information''' '''(Optional [security] information.)''' 
+== Additional Information ==  
 <div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
 If you are interested, click on Expand on the right.
 <div class="mw-collapsible-content">
 * {{Post Install Advice}}
 * [[#Stay tuned|Stay tuned]]!
-* <s>[[Qubes/Disposable_VM|DisposableVM]]</s>
 
-=  Stay tuned =
+==  Stay Tuned ==
 {{Stay_tuned}}
 
-= Known bugs =
+== Known Bugs ==
 {{Known_bugs}}
 
-= Footnotes =
+== Footnotes ==
 <references />
 </div>
 </div>
