@@ -1,6 +1,7 @@
 {{Header}}
 {{#seo:
 |description=Getting System DNS working on Whonix-Gateway
+|image=https://www.whonix.org/w/images/e/ee/Robot-162087640.png
 }}
 
 = DNS on Whonix-Gateway =
@@ -10,7 +11,7 @@
 
 {{TorifiedGateway}}
 
-Whonix-Workstation is configured to use various SocksPorts, DnsPort and TransPort, see also [[Stream Isolation]]. Whonix-Gateway is only configured to use various SocksPorts. A global system DNS resolver isn't required for Whonix-Gateway for any common use case to justify enabling it by default. Use cases where this could be useful include:
+Whonix-Workstation is configured to use various SocksPorts, DnsPort and TransPort, see also [[Stream Isolation]]. Whonix-Gateway is only configured to use various SocksPorts. A global system DNS resolver is not required for Whonix-Gateway for any common use case to justify enabling it by default. Use cases where this could be useful include:
 
 * resolving the hostname of a proxy used in {{Code2|/etc/tor/torrc}} through Tor would be useful ([http://sourceforge.net/p/whonix/discussion/general/thread/41116dda/ technical explanation])
 * resolving the hostname of a VPN. But then using a VPN configuration using IPs only would be better.
@@ -22,25 +23,35 @@ Working. Using Whonix-Gateway's user {{Code2|clearnet}}.
 {{mbox
 
 | type      = critical
-| image   = [[File:Ambox_warning_pn.svg.png|40px|alt=<translate>Whonix first time users warning</translate>]]
+| image   = [[File:Ambox_warning_pn.svg.png|40px|alt=Whonix first time users warning]]
 | text       = Using the clearnet user, traffic will be sent over normal internet! Not over Tor! Will not be anonymous!
 }}
+
+Disable /etc/dhcp/dhclient-enter-hooks.d/nodnsupdate by making it no longer executable so DHCP will write to /etc/resolv.conf
 
 {{CodeSelect|code=
 sudo chmod -x /etc/dhcp/dhclient-enter-hooks.d/nodnsupdate
 }}
 
+Make /etc/resov.conf mutable. Don't worry if the next command causes an error. It's not required anymore in recent Whonix versions.
+
 {{CodeSelect|code=
 sudo chattr -i /etc/resolv.conf
 }}
+
+Delete /etc/resolv.conf so we can regenerate it.
 
 {{CodeSelect|code=
 sudo rm /etc/resolv.conf
 }}
 
+Restart networking.
+
 {{CodeSelect|code=
 sudo service networking restart
 }}
+
+Login as user clearnet.
 
 {{CodeSelect|code=
 sudo su clearnet
@@ -56,7 +67,7 @@ ping google.com
 * [[Whonix-Gateways Own Traffic Transparent Proxy|Enable Transparent Proxying for Whonix-Gateway's own traffic]]
 
 = Footnotes =
-<references/>
+{{reflist|close=1}}
 
 {{Footer}}
 
