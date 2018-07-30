@@ -151,21 +151,37 @@ In all cases, users are advised to use additional message encryption for email, 
 
 <ref>Quoted from [https://en.wikipedia.org/wiki/Man-in-the-middle_attack wikipedia Man-in-the-middle_attack] ([http://www.webcitation.org/6EUyk0IKX w]) and [https://blog.torproject.org/blog/detecting-certificate-authority-compromises-and-web-browser-collusion Tor Project: Detecting Certificate Authority compromises and web browser collusion] ([http://www.webcitation.org/6EUykcmES w]).</ref>
 
-== Confirmation Attacks ==
+== Tor Network Attacks ==
+
+Tor is not invulnerable to attacks. Several techniques are already in use to deanonymize users, and Whonix users can be similarly affected.
+
+=== Confirmation Attacks ===
 
 The Tor Project makes it clear that advanced network adversaries can [https://blog.torproject.org/blog/one-cell-enough de-anonymize users under specific conditions]: <ref>http://www.webcitation.org/6EUyo9u9N</ref>
 
 <blockquote>
-The Tor design doesn't try to protect against an attacker who can see or measure both traffic going into the Tor network and also traffic coming out of the Tor network. That's because if you can see both flows, some simple statistics let you decide whether they match up.
-</blockquote>
-
-<blockquote>
-That could also be the case if your ISP (or your local network administrator) and the ISP of the destination server (or the destination server itself) cooperate to attack you.
-</blockquote>
-
-<blockquote>
+The Tor design doesn't try to protect against an attacker who can see or measure both traffic going into the Tor network and also traffic coming out of the Tor network. That's because if you can see both flows, some simple statistics let you decide whether they match up.<br />
+<br />
+That could also be the case if your ISP (or your local network administrator) and the ISP of the destination server (or the destination server itself) cooperate to attack you.<br />
+<br />
 Tor tries to protect against traffic analysis, where an attacker tries to learn whom to investigate, but Tor can't protect against traffic confirmation (also known as end-to-end correlation), where an attacker tries to confirm a hypothesis by monitoring the right locations in the network and then doing the math.
 </blockquote>
+
+Adversaries conducting traffic analysis are able to discover a varying amount of user information, depending on the position they are occupying in the network. The following observations reveal various information, in increasing order: <ref>https://blog.torproject.org/tors-open-research-topics-2018-edition</ref>
+
+* Observing the client-to-guard-node network path.
+* Controlling the guard relay, as individual circuits can be examined.
+* Observing the paths to the guard relay and from the Tor exit relay.
+* Controlling the guard and exit relays (or client guard and onion service guard).
+* Controlling both ends of the communication, and able to inject and manipulate traffic patterns.
+
+=== Guard Discovery ===
+
+Advanced adversaries are capable of identifying the guard node(s) in use by an onion service or Tor client. Many connections are made to the onion service, forcing it to create multiple circuits until one of the adversary's nodes is chosen as the middle relay (next to the guard). A traffic analysis side channel then confirms the relay is next to the onion service, confirming the identity of the service's guard node. The guard node is then compromised, forced or surveilled to discover the actual IP address of the onion service or client. <ref>https://blog.torproject.org/tors-open-research-topics-2018-edition</ref>
+
+=== Tor Defenses ===
+
+Tor has implemented some defenses against limited adversaries that can gather traffic statistics from internet routers along the path to the guard node, and is planning defenses against website traffic fingerprinting by guard node adversaries. However, a number of other attacks remain viable at present such as end-to-end correlation attacks, alternate guard node exploits, circuit fingerprinting attacks and so on.
 
 = Documents = 
 
