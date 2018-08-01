@@ -1,22 +1,117 @@
 {{Header}}
 {{#seo:
 |description=Combining Whonix with ZeroNet. ZeroNet over Tor. Connecting to Tor before ZeroNet (User -> Tor -> ZeroNet -> Internet).
+|image=https://www.whonix.org/w/images/c/c4/Zeronetlogo.png
 }}
+[[File:Zeronetlogo.png|100px||thumb|ZeroNet - Decentralized websites]]
+__FORCETOC__
+__TOC__
+----
+{{Testing}}
 
 = Introduction =
-TODO: document
+
+ZeroNet uses Bitcoin cryptography and BitTorrent technology to build a decentralized censorship-resistant network.
+
+Users can publish static or dynamic websites into ZeroNet and visitors can choose to also serve the website. Websites will remain online even if it is being served by only one peer.
+
+https://zeronet.readthedocs.io/en/latest/
+----
 
 = Connecting to Tor before ZeroNet =
-'''User -> Tor -> ZeroNet -> Internet'''
 
-TODO: document
+'''<code>User</code> -> <code>Tor</code> -> <code>ZeroNet</code> -> <code>Internet</code>'''
 
-<ref>
+Since ZeroNet is not yet packaged for Debian, it must be manually installed. <ref>
 https://github.com/HelloZeroNet/ZeroNet/issues/241
+</ref> <ref>
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=850474
+</ref>
+----
+Inside '''Whonix-Gateway ([[Qubes-Whonix]]: <code>sys-whonix</code>)'''.
+
+{{Control_Port_Filter_Python_Profile_Add|
+filename=/usr/share/onion-grater-merger/examples/40_zeronet.yml
+}}
+
+----
+To download and verify Zeronet via git, run the following commands in a terminal inside '''Whonix-Workstation''':
+
+'''First install dependencies'''.
+
+[[Qubes-Whonix]]:
+If the ZeroNet qube is based on a template, complete this action in the template.
+
+{{Update}}
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+{{CodeSelect|code=
+sudo apt-get install git python-msgpack python-gevent
+}}
+
+'''Install ZeroNet:'''
+
+[[Qubes-Whonix]]:
+The actual install can be done in the ZeroNet qube.
+
+Retrieve ZeroNet's signing key. <ref>
+https://github.com/HelloZeroNet/ZeroNet/issues/759
 </ref>
 
+{{CodeSelect|code=
+gpg --recv-keys "960F FF2D 6C14 5AA6 13E8 491B 5B63 BAE6 CB96 13AE"
+}}
+
+Download ZeroNet.
+
+{{CodeSelect|code=
+git clone https://github.com/HelloZeroNet/ZeroNet.git
+}}
+
+Change into the ZeroNet folder.
+
+{{CodeSelect|code=
+cd ZeroNet
+}}
+
+Check the ZeroNet signature.
+
+{{CodeSelect|code=
+git log --show-signature
+}}
+----
+'''Start ZeroNet:'''
+
+[[Qubes-Whonix]]:
+
+{{CodeSelect|code=
+./zeronet.py --tor always --fileserver_ip $(qubesdb-read /qubes-ip)
+}}
+
+[[Non-Qubes-Whonix]]:
+
+{{CodeSelect|code=
+./zeronet.py --tor always --fileserver_ip 10.152.152.11
+}}
+
+----
+
+{{Template:TBB_localhost}}
+
+----
+
+{{Tor_Browser_Start}}
+
+----
+
+Navigate to the ZeroNet web interface. Paste http://127.0.0.1:43110 into Tor Browser's url field and press enter.
+
+The process is now complete and ZeroNet can be used. Note that full ZeroNet functionality has been confirmed in Whonix. <ref>As at May 2018.</ref>
+
 = Footnotes =
-<references />
+{{reflist|close=1}}
 
 {{Footer}}
 
