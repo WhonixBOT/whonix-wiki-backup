@@ -1,0 +1,228 @@
+{{Header}}
+{{#seo:
+|description=apt-get
+}}
+
+= Bugs =
+Moved to [[Dev/Automatic_Updates#apt-get_upstream_bugs]].
+
+= Security Issues when using apt-get update in Scripts =
+Moved to [[Dev/Automatic_Updates#Security_Issues_when_using_apt-get_update_in_Scripts]].
+
+= apt-get Install Signed vs Unsigned Packages =
+== Preparation ==
+<pre>
+sudo apt-get update
+sudo apt-get install faketime
+sudo apt-get clean
+sudo apt-get autoclean
+sudo rm -rf /var/lib/apt/lists/*
+sudo faketime 2030-01-01 apt-get update
+</pre>
+
+== Just using --yes ==
+<pre>
+sudo apt-get install --yes python-gflags 
+</pre>
+
+<pre>
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following packages were automatically installed and are no longer required:
+  libavahi-core7 libdaemon0
+Use 'apt-get autoremove' to remove them.
+The following NEW packages will be installed:
+  python-gflags
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+Need to get 40.7 kB of archives.
+After this operation, 287 kB of additional disk space will be used.
+WARNING: The following packages cannot be authenticated!
+  python-gflags
+E: There are problems and -y was used without --force-yes
+</pre>
+
+== Just using --force-yes ==
+<pre>
+sudo apt-get install --force-yes python-gflags 
+</pre>
+
+<pre>
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following packages were automatically installed and are no longer required:
+  libavahi-core7 libdaemon0
+Use 'apt-get autoremove' to remove them.
+The following NEW packages will be installed:
+  python-gflags
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+Need to get 40.7 kB of archives.
+After this operation, 287 kB of additional disk space will be used.
+WARNING: The following packages cannot be authenticated!
+  python-gflags
+Install these packages without verification [y/N]?
+</pre>
+
+== Using --yes and --force-yes ==
+'''In combination with --yes and --force-yes it would install unsigned packages.'''
+
+<pre>
+~ $ sudo rm -rf /var/lib/apt/lists/*
+</pre>
+
+<pre>
+~ $ sudo faketime 2030-01-01 apt-get update
+</pre>
+
+<pre>
+Get:1 http://ftp.us.debian.org wheezy Release.gpg [1,655 B]                                                  
+Get:2 http://security.debian.org wheezy/updates Release.gpg [836 B]                                           
+Get:3 http://deb.torproject.org wheezy Release.gpg [490 B]                                                                    
+Get:4 http://security.debian.org wheezy/updates Release [102 kB]               
+Get:5 http://ftp.us.debian.org wheezy Release [168 kB]                                                                                                                             
+Ign http://security.debian.org wheezy/updates Release                                                                                                                              
+Get:6 http://deb.torproject.org wheezy Release [3,707 B]                                                                                                                           
+Ign http://deb.torproject.org wheezy Release                                                                                                                                       
+Ign http://ftp.us.debian.org wheezy Release                                                                                                                                        
+Get:7 http://security.debian.org wheezy/updates/main Sources [152 kB]                                                                                                              
+Get:8 http://security.debian.org wheezy/updates/contrib Sources [14 B]                                                                                                             
+Get:9 http://security.debian.org wheezy/updates/non-free Sources [14 B]                                                                                                            
+Get:10 http://ftp.us.debian.org wheezy/main Sources [5,971 kB]                                                                                                                     
+Get:11 http://security.debian.org wheezy/updates/main i386 Packages [241 kB]   
+Get:12 http://security.debian.org wheezy/updates/contrib i386 Packages [14 B]                                                                                                      
+Get:13 http://deb.torproject.org wheezy/main i386 Packages [3,930 B]                                                                                                               
+Get:14 http://security.debian.org wheezy/updates/non-free i386 Packages [14 B]                                                                                                     
+Get:15 http://security.debian.org wheezy/updates/contrib Translation-en [14 B]                                                                                                     
+Ign http://deb.torproject.org wheezy/main Translation-en_US                                                                                                                        
+Ign http://deb.torproject.org wheezy/main Translation-en                                                                                                                           
+Get:16 http://security.debian.org wheezy/updates/main Translation-en [136 kB]                                                                                                      
+Get:17 http://ftp.us.debian.org wheezy/contrib Sources [47.7 kB]                                                                                                                   
+Get:18 http://security.debian.org wheezy/updates/non-free Translation-en [14 B]                                                                                                    
+Get:19 http://ftp.us.debian.org wheezy/non-free Sources [93.5 kB]                                                                                                                  
+Ign http://security.debian.org wheezy/updates/contrib Translation-en_US                                                                                                            
+Ign http://security.debian.org wheezy/updates/main Translation-en_US
+Ign http://security.debian.org wheezy/updates/non-free Translation-en_US
+Get:20 http://ftp.us.debian.org wheezy/main i386 Packages [5,859 kB]
+Get:21 http://ftp.us.debian.org wheezy/contrib i386 Packages [42.3 kB]                                                                                                             
+Get:22 http://ftp.us.debian.org wheezy/non-free i386 Packages [77.6 kB]                                                                                                            
+Get:23 http://ftp.us.debian.org wheezy/contrib Translation-en [34.8 kB]                                                                                                            
+Get:24 http://ftp.us.debian.org wheezy/main Translation-en [3,848 kB]                                                                                                              
+Get:25 http://ftp.us.debian.org wheezy/non-free Translation-en [66.1 kB]                                                                                                           
+Ign http://ftp.us.debian.org wheezy/contrib Translation-en_US                                                                                                                      
+Ign http://ftp.us.debian.org wheezy/main Translation-en_US
+Ign http://ftp.us.debian.org wheezy/non-free Translation-en_US
+Fetched 16.9 MB in 3min 27s (81.3 kB/s)
+Reading package lists... Done
+W: GPG error: http://security.debian.org wheezy/updates Release: The following signatures were invalid: KEYEXPIRED 1587841717
+W: GPG error: http://deb.torproject.org wheezy Release: The following signatures were invalid: KEYEXPIRED 1598716850 KEYEXPIRED 1598716850 KEYEXPIRED 1535644863 KEYEXPIRED 1535644863 KEYEXPIRED 1598716850 KEYEXPIRED 1598716850 KEYEXPIRED 1535644863 KEYEXPIRED 1598716850 KEYEXPIRED 1598716850 KEYEXPIRED 1535644863
+W: GPG error: http://ftp.us.debian.org wheezy Release: The following signatures were invalid: KEYEXPIRED 1587841717 KEYEXPIRED 1557241909
+</pre>
+
+<pre>
+~ $ sudo apt-get install --yes --force-yes python-gflags 
+</pre>
+
+<pre>
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following packages were automatically installed and are no longer required:
+  libavahi-core7 libdaemon0
+Use 'apt-get autoremove' to remove them.
+The following NEW packages will be installed:
+  python-gflags
+0 upgraded, 1 newly installed, 0 to remove and 12 not upgraded.
+Need to get 40.7 kB of archives.
+After this operation, 287 kB of additional disk space will be used.
+WARNING: The following packages cannot be authenticated!
+  python-gflags
+0% [Working]^C~ $
+</pre>
+
+== Using --yes and --force-yes and --assume-no ==
+<pre>
+sudo apt-get install --yes --force-yes python-gflags --assume-no
+</pre>
+
+<pre>
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following packages were automatically installed and are no longer required:
+  libavahi-core7 libdaemon0
+Use 'apt-get autoremove' to remove them.
+The following NEW packages will be installed:
+  python-gflags
+0 upgraded, 1 newly installed, 0 to remove and 1 not upgraded.
+Need to get 40.7 kB of archives.
+After this operation, 287 kB of additional disk space will be used.
+WARNING: The following packages cannot be authenticated!
+  python-gflags
+0% [Working]^C
+</pre>
+
+In combination with --yes and --force-yes and a --assume-no at the very end it would still install unsigned packages.
+
+== Using --yes and --force-yes and -o APT::Get::force-yes=0 ==
+<pre>
+sudo apt-get install --yes --force-yes python-gflags -o APT::Get::force-yes=0
+</pre>
+
+<pre>
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following packages were automatically installed and are no longer required:
+  libavahi-core7 libdaemon0
+Use 'apt-get autoremove' to remove them.
+The following NEW packages will be installed:
+  python-gflags
+0 upgraded, 1 newly installed, 0 to remove and 1 not upgraded.
+Need to get 40.7 kB of archives.
+After this operation, 287 kB of additional disk space will be used.
+WARNING: The following packages cannot be authenticated!
+  python-gflags
+E: There are problems and -y was used without --force-yes
+</pre>
+
+= grml issue62 test =
+<pre>
+~ $ sudo su
+root@host:/home/user# 
+root@host:/home/user# DEBIAN_FRONTEND=noninteractive apt-get --force-yes -y --no-install-recommends install -o Acquire::http::Timeout=180 -o Acquire::ftp::Timeout=180 -o Acquire::Retries=3 -o Acquire::Check-Valid-Until=false -o APT::Get::force-yes=0 libreoffice
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following packages were automatically installed and are no longer required:
+  libavahi-core7 libdaemon0
+Use 'apt-get autoremove' to remove them.
+The following extra packages will be installed:
+  fonts-sil-gentium-basic libcolamd2.7.1 libhsqldb-java liblucene2-java libreoffice-base libreoffice-calc libreoffice-draw libreoffice-filter-mobiledev libreoffice-impress
+  libreoffice-report-builder-bin libservlet2.5-java libvisio-0.0-0 lp-solve ttf-sil-gentium-basic
+Suggested packages:
+  java-virtual-machine libhsqldb-java-doc libhsqldb-java-gcj hunspell-dictionary libreoffice-help-3.5 libreoffice-l10n-3.5 unixodbc cups-bsd libsane hyphen-hyphenation-patterns
+  mythes-thesaurus libreoffice-grammarcheck libreoffice-gnome libreoffice-kde openclipart-libreoffice pstoedit gstreamer0.10-plugins-ugly libreoffice-officebean libmyodbc
+  odbc-postgresql libsqliteodbc tdsodbc mdbtools libmysql-java libpg-java libjtds-java libreoffice-gcj libreoffice-report-builder
+Recommended packages:
+  fonts-sil-gentium libcommons-beanutils-java libcommons-collections3-java libcommons-compress-java libcommons-digester-java libcommons-logging-java libdb-java libdb-je-java
+  libicu4j-java libjline-java libjtidy-java libregexp-java ttf-liberation ttf-mscorefonts-installer
+The following NEW packages will be installed:
+  fonts-sil-gentium-basic libcolamd2.7.1 libhsqldb-java liblucene2-java libreoffice libreoffice-base libreoffice-calc libreoffice-draw libreoffice-filter-mobiledev
+  libreoffice-impress libreoffice-report-builder-bin libservlet2.5-java libvisio-0.0-0 lp-solve ttf-sil-gentium-basic
+0 upgraded, 15 newly installed, 0 to remove and 0 not upgraded.
+Need to get 19.3 MB of archives.
+After this operation, 60.1 MB of additional disk space will be used.
+WARNING: The following packages cannot be authenticated!
+  fonts-sil-gentium-basic libcolamd2.7.1 libservlet2.5-java libhsqldb-java liblucene2-java lp-solve libreoffice-calc libvisio-0.0-0 libreoffice-draw libreoffice-impress
+  libreoffice-base libreoffice-report-builder-bin ttf-sil-gentium-basic libreoffice-filter-mobiledev libreoffice
+E: There are problems and -y was used without --force-yes
+root@host:/home/user# 
+</pre>
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Development]]
