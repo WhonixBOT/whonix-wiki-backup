@@ -309,54 +309,55 @@ sudo apt-get install --no-install-recommends thunderbird anon-workstation-packag
 
 Related to: [[Whonix Debian Packages]].
 
-== Install Software in TemplateBasedVM ==
+== Install Software in a TemplateBasedVM ==
 
-[[Qubes|Qubes-Whonix]] only!
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = [[Qubes|Qubes-Whonix]] only! Custom scripting is recommended, which is beyond the scope of this entry; numerous free articles and instructions can be found on the Internet with a search engine.   
+}}
 
-There is no reason to avoid installing software in [https://www.qubes-os.org/doc/glossary/#templatebasedvm TemplateBasedVMs]. Although software installed using this method will not remain persistent across reboots. Users may opt to use a custom script to automate this process thereby minimizing time spent re-installing packages. 
+
+There is no reason to avoid installing software in [https://www.qubes-os.org/doc/glossary/#templatebasedvm TemplateBasedVMs], although software installed this way will not persist across reboots. Users can opt to use a custom script to automate this process, thereby minimizing time spent re-installing packages. 
 
 ==== Advantages ====
 
-This method of installing software affords a single [https://www.qubes-os.org/doc/glossary/#vm VM] many of the benefits of both TemplateBasedVMs and [https://www.qubes-os.org/doc/glossary/#standalonevm StandaloneVMs].
+This software installation method means a single [https://www.qubes-os.org/doc/glossary/#vm VM] assumes many of positive characteristics found in both TemplateBasedVMs and [https://www.qubes-os.org/doc/glossary/#standalonevm StandaloneVMs].
 
-*'''Centralized Updates''' - [https://www.qubes-os.org/doc/glossary/#templatebasedvm AppVMs] are based on a [https://www.qubes-os.org/doc/glossary/#templatebasedvm TemplateVM]. This means their root filesystem is based on the root filesystem of the corresponding template. Users need only update the TemplateVM and those updates will be reflected in TemplateBasedVM's root filesystem when the VM is restarted.<ref name="qubes-software">[https://www.qubes-os.org/doc/software-update-vm/ Qubes install software]</ref>
+*'''Centralized Updates:''' [https://www.qubes-os.org/doc/glossary/#templatebasedvm AppVMs] are based on a [https://www.qubes-os.org/doc/glossary/#templatebasedvm TemplateVM]. This means the AppVM's root filesystem is based on the corresponding template's root filesystem. Users need only update the TemplateVM and those updates will be reflected in the TemplateBasedVM's root filesystem upon restart.<ref name="qubes-software">[https://www.qubes-os.org/doc/software-update-vm/ Qubes install software]</ref>
 
-*'''Minimal Disk Usage''' - TemplateBasedVMs require much less disk space than StandaloneVMs. Since the AppVM's root filesystem is based the corresponding template. The AppVM only requires enough disk space to hold user files in the /home directory  
+*'''Minimal Disk Usage:''' TemplateBasedVMs require much less disk space than StandaloneVMs since the AppVM's root filesystem is based the corresponding template. The AppVM only requires enough disk space to hold user files in the <code>/home</code> directory.
 
-*'''Semi-Persistent Storage''' - User data stored in <code>/home</code> , <code>/rw</code> and <code>/usr/local</code> survives reboot. Many applications such as [https://www.whonix.org/wiki/Signal signal] and [https://en.wikipedia.org/wiki/Wire_(software) wire] store user data in the <code>/home</code> folder. Since the custom script installs the software seamlessly with little to no user interaction. It gives the AppVM, in a sense <i>"quasi full persistence"</i> not unlike a StandaloneVMs full persistence.
-
-{{mbox
-| image   = [[File:Ambox_notice.png|40px|alt=Qubes info box]]
-| text       ='''Note:''' Although these instructions include the use of custom scripting. Writing this script is beyond the scope of these instructions. Users can find numerous free articles and instructions on the web using a search engine.   
-}}
+*'''Semi-Persistent Storage:''' User data stored in <code>/home</code> , <code>/rw</code> and <code>/usr/local</code> survives reboot. Many applications like [https://www.whonix.org/wiki/Signal Signal] and [https://en.wikipedia.org/wiki/Wire_(software) Wire] store user data in the <code>/home</code> folder. Since the custom script installs the software seamlessly with little or no user interaction, the AppVM has <i>"quasi-full persistence"</i>, not unlike a StandaloneVM's full persistence.
 
 ==== AppVM Preparation ====
 
 1. Create an AppVM based on <code>whonix-ws</code>.
 
-2. To speed up the repetitive software installation process. Users can pre-install any needed dependencies available from [https://packages.debian.org/stable/ packages.debian.org] in the TemplateVM. This is done so only packages or software missing from [https://packages.debian.org/stable packages.debian.org] would be repetitively installed in the AppVM.
+2. Pre-install any necessary dependencies available from [https://packages.debian.org/stable/ packages.debian.org] in the TemplateVM to speed up the repetitive software installation process. This means only packages or software missing from [https://packages.debian.org/stable packages.debian.org] will be repeatedly installed in the AppVM.
 
-3. Create a custom script that runs at VM start up. The purpose of this script is to automate software installation that would otherwise require manual completion. <i>Note:</i> The functionality of the script can vary greatly. This can be dependent on the software packages being installed along with the experience of the user.
+3. Create a custom script that runs at VM boot. The purpose of this script is to automate software installation that would otherwise require manual user steps. Note that script functionality is variable, dependent on the software packages being installed and the experience of the user.
 
-Common tasks that scripting could be used to complete.  
+Scripting is useful for common tasks such as:  
 
-* add the desired software repository
-* add the verified signing key 
-* update the package list with <code>apt-get update</code> after the repository and signing key are added 
-* finally, the script would run <code>apt-get install <your-desired-software></code> 
+* Adding specific software repositories.
+* Importing verified signing keys.
+* Updating the package list with <code>apt-get update</code>, after the repository and signing key are imported.
+* Finally running <code>apt-get install</code> to install the relevant software package(s). 
+
+==== AppVM Use ====
 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       = '''Warning:''' Some users may be tempted to use the AppVM's root filesystem as a [https://www.qubes-os.org/doc/software-update-vm/#note-on-treating-appvms-root-filesystem-non-persistence-as-a-security-feature non-persistent security feature]. However, malware may persist if the AppVM is infected since all data in the normal user filesystem, <code>/home</code> , <code>/rw</code> and <code>/usr/local</code> survives reboot. It is feasible that advanced malware (or malware specifically targeted at Qubes-based AppVMs) could install its hooks inside the user home directory files only. <ref name=print-qubes>[[https://www.qubes-os.org/doc/software-update-vm/#note-on-treating-appvms-root-filesystem-non-persistence-as-a-security-feature [https://www.qubes-os.org/doc/software-update-vm/#note-on-treating-appvms-root-filesystem-non-persistence-as-a-security-feature]</ref>
+| text       = The AppVM's root filesystem does not provide a strong [https://www.qubes-os.org/doc/software-update-vm/#note-on-treating-appvms-root-filesystem-non-persistence-as-a-security-feature non-persistent security feature]. Malware can persist in AppVMs if the infection targets the <code>/home</code> , <code>/rw</code> and <code>/usr/local</code> directories, since all data in those locations survives reboot. It is feasible that advanced malware already exists which can target Qubes-based AppVMs by installing hooks inside the user <code>/home</code> directory files. <ref name=print-qubes>[https://www.qubes-os.org/doc/software-update-vm/#note-on-treating-appvms-root-filesystem-non-persistence-as-a-security-feature] [https://www.qubes-os.org/doc/software-update-vm/#note-on-treating-appvms-root-filesystem-non-persistence-as-a-security-feature]</ref>
 }}
 
-==== AppVM Use ====
-Once preparation is complete. The user needs only to start the AppVM for the script to begin the process of installing software. Once this process is complete. The AppVM can be used as any other TemplateBasedVM. When the AppVM is shutdown. All data not in the users persistent <code>/home</code> folder, including the newly installed software packages is lost. However, a user needs only to start the VM to install the software packages once again.
+
+Once user preparation is complete and the AppVM is started, it will automatically start the script to begin installing software. Once the process finishes, the AppVM can be used like any other TemplateBasedVM. However when the AppVM is shutdown, all data outside of the persistent <code>/home</code> folder, including the newly installed software packages, will be lost. Following reboot, the VM will again install the software packages automatically.
  
 === Using bind-dirs Selective Persistence ===
 
-* Using selective [https://www.qubes-os.org/doc/bind-dirs/ bind-dirs] persistence is currently undocumented. Further research is required to ascertain which files require persistence across VM reboots. 
-* This task would also be difficult.
+Using selective [https://www.qubes-os.org/doc/bind-dirs/ bind-dirs] persistence is currently a difficult problem and undocumented. Further research is required to ascertain which files require persistence across VM reboots.
 
 = Foreign Sources =
 
