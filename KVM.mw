@@ -645,6 +645,17 @@ On the host chmod must be applied to the shared folder's contents to access the 
 sudo chmod 777 -R  /home/yourusername/shared
 </pre>
 
+
+If you don’t have SELinux enabled everything should work now. If you do, you will need to add a policy for files under your shared folder on your host. SELinux won’t allow you to share this folder until it’s labeled svirt_image_t. Here is how to add this policy on your host using semanage. Note that you will need to re-apply these steps everytime you transfer something:<ref>http://nts.strzibny.name/how-to-set-up-shared-folders-in-virt-manager/</ref><ref>https://unix.stackexchange.com/questions/60799/selinux-interfering-with-host-guest-file-sharing-using-kvm</ref>
+
+<pre>
+root@host# semanage fcontext -a -t svirt_image_t “/home/yourusername/shared(/.*)?”
+</pre>
+<pre>
+root@host# restorecon -vR /home/yourusername/shared
+</pre>
+
+
 If you are using commandline instead of virt-manager to edit your vm's device settings, add this next section to the xml. 
 
 <pre style="white-space: pre-wrap;">
