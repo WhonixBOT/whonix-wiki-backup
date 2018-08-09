@@ -9,16 +9,15 @@ See [[DoNot#Prevent_Tor_over_Tor_scenarios.]]
 = Implementation =
 TODO:
 
-* needs update (moved to socat with Whonix 13 <code>anon-ws-disable-stacked-tor</code> <code>3:2.4-1</code> stable upgrade)
-* needs update (moved to systemd-socket-proxyd with Whonix 14)
-
 Implemented in three ways on Whonix-Workstation.
 
 * Implemented in [https://github.com/Whonix/anon-ws-disable-stacked-tor anon-ws-disable-stacked-tor], [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/debian/control {{Code|debian/control}}]. The package uses the "Provides: tor" field<ref>See "7.5 Virtual packages - Provides" on http://www.debian.org/doc/debian-policy/ch-relationships.html</ref>, which should avoid any kinds of conflicts, in case upstream releases a higher version of Tor. This won't work for packages, which depend on an explicit version of Tor (such as TorChat). This is non-ideal, since for example the {{Code|torchat}} package will install Tor, but still acceptable, because of the following additional implementations.
 
-* Tor's autostart is disabled in {{Code|/etc/default/tor}} (dpkg-diverted using config-package-dev), so even if the {{Code|tor}} package gets installed, it won't be automatically started.
+* Tor's binary was replaced (dpkg-diverted using config-package-dev) with dummy executables, so even if the {{Code|tor}} package gets installed, it won't be automatically started.
+** https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/bin/tor.anondist
+** https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/sbin/tor.anondist
 
-* {{Code|rinetd}} is configured by [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/etc/rinetd.conf.anondist {{Code|/etc/rinetd.conf}}] to listen on
+* listening using systemd-socket-proxyd
 ** Tor's default ports. I.e.
 *** system Tor's {{Code|127.0.0.1:9050}}, {{Code|127.0.0.1:9051}} and,
 *** Tor Browser's {{Code|127.0.0.1:9150}}, {{Code|127.0.0.1:9051}}
@@ -27,8 +26,6 @@ Implemented in three ways on Whonix-Workstation.
 ** This prevents the default Tor Browser, Tor Messenger and/or Tor package by The Tor Project from opening these default ports, which will result in Tor failing to open its listening port and therefore exiting, thus preventing Tor over Tor.
 
 https://forums.whonix.org/t/socat-running-on-ws-called-from/2225
-
-https://www.whonix.org/wiki/Dev/Whonix_Packages#anon-ws-disable-stacked-tor
 
 We mimic a functional Tor as well as possible.
 
