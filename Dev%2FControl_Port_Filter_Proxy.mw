@@ -86,8 +86,51 @@ Both real Tor control connection and onion-grater close the connection if comman
 
 Should Tor authentication fail, this is logged and onion-grater closes client connection.
 
-== Debugging Inspiration ==
-==== Introduction ====
+= TorButton =
+To get a list of Tor ControlPort commands, that TorButton uses, get into TorButton source code, extract TorButton, then run.
+
+<pre>
+grep -r -i torbutton_send_ctrl_cmd *
+</pre>
+
+<pre>
+grep -r -i sendCommand *
+</pre>
+
+== TorButton Network Settings ==
+<pre>
+TorButton -> Open Network Settings...
+</pre>
+
+Is using.
+
+<pre>
+   "GETCONF Socks4Proxy"
+   "GETCONF Socks5Proxy"
+   "GETCONF HTTPSProxy"
+   "GETCONF ReachableAddresses"
+   "GETCONF ReachableAddresses"
+   "GETCONF UseBridges"
+   "GETCONF Bridge"
+</pre>
+
+As the next logical step by the way, they are likely going to add.
+
+<pre>
+   "GETCONF HTTPProxy"
+</pre>
+
+We are [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh setting] environment variable <code>[https://trac.torproject.org/projects/tor/ticket/14100 export TOR_NO_DISPLAY_NETWORK_SETTINGS=1]</code> to disable the "TorButton" -> "Open Network Settings..." menu item. It is not useful and confusing to have on a workstation, because Tor must be configured on the gateway, which is for security reasons forbidden from the workstation.
+
+= TorLauncher =
+To get a list of Tor ControlPort commands, that TorLauncher uses, get into TorLauncher source code, extract TorLauncher, then run.
+
+<pre>
+grep -r -i getconf
+</pre>
+
+= Debugging Inspiration =
+== Introduction ==
 Quickly install files from package to system.
 
 <pre>
@@ -104,22 +147,6 @@ Watch onion-grater's log on Whonix-Gateway while using it.
 
 <pre>
 sudo journalctl -f -u onion-grater
-</pre>
-
-To get a list of Tor ControlPort commands, that TorButton uses, get into TorButton source code, extract TorButton, then run.
-
-<pre>
-grep -r -i torbutton_send_ctrl_cmd *
-</pre>
-
-<pre>
-grep -r -i sendCommand *
-</pre>
-
-To get a list of Tor ControlPort commands, that TorLauncher uses, get into TorLauncher source code, extract TorLauncher, then run.
-
-<pre>
-grep -r -i getconf
 </pre>
 
 Watch kern.log for eventual iptables log messages, run this on Whonix-Gateway.
@@ -182,7 +209,7 @@ Command.
 QUIT
 </pre>
 
-==== Talking to the real Tor Control Port ====
+== Talking to the real Tor Control Port ==
 On Whonix-Gateway. ({{Code2|test}} is the example password being used. Feel free to use a different/stronger one.
 
 <pre>
@@ -253,31 +280,6 @@ Will do nothing after this, but when you start using Tor (i.e. by running Tor Br
 650 STREAM 211 NEW 0 pop.riseup.net:995 SOURCE_ADDR=10.152.152.11:47036 PURPOSE=USER
 ...
 </pre>
-
-== TorButton Network Settings ==
-<pre>
-TorButton -> Open Network Settings...
-</pre>
-
-Is using.
-
-<pre>
-   "GETCONF Socks4Proxy"
-   "GETCONF Socks5Proxy"
-   "GETCONF HTTPSProxy"
-   "GETCONF ReachableAddresses"
-   "GETCONF ReachableAddresses"
-   "GETCONF UseBridges"
-   "GETCONF Bridge"
-</pre>
-
-As the next logical step by the way, they are likely going to add.
-
-<pre>
-   "GETCONF HTTPProxy"
-</pre>
-
-We are [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh setting] environment variable <code>[https://trac.torproject.org/projects/tor/ticket/14100 export TOR_NO_DISPLAY_NETWORK_SETTINGS=1]</code> to disable the "TorButton" -> "Open Network Settings..." menu item. It is not useful and confusing to have on a workstation, because Tor must be configured on the gateway, which is for security reasons forbidden from the workstation.
 
 == Indicator for current Circuit Status and Exit IP ==
 * The Tor Project Ticket: [https://trac.torproject.org/projects/tor/ticket/8641 Create Browser UI indication for current circuit status and exit IP ]
