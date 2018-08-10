@@ -61,81 +61,59 @@ qvm-run -a --nogui -p -u root <your_debian_template> 'sed -i "s/deb.qubes-os.org
 
 = Whonix and Debian Packages =
 
+== Whonix Templates ==
+
 {{mbox
 | type      = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = '''Tip:''' [[About#Whonix_Version|Whonix 14]] will use clearnet repositories, with v3 Tor onion services (<i>.onion</i> repositories) planned for a later time. <ref>v3 onion stability is currently insufficient to risk defaulting to this option. Eventually this will occur, even when fetching third-party resources.</ref>
+| text       = '''Tip:''' [[About#Whonix_Version|From Whonix 14]], the v3 onion service is preferred for Whonix package updates, while Debian's v2 onion service is also preferred for updates. It is no longer necessary to manually configure this setting.
 }}
 
+== Debian Templates ==
 
-Advanced users can optionally edit their sources.list to point to the Whonix and Debian <i>.onion</i> mirrors in order to install or update more securely.
-
-The whonix.list and debian.list files in the <i>/etc/apt/sources.list.d</i> directory should be changed in ''both'' the Whonix-Workstation and Whonix-Gateway. [[Qubes-Whonix]] users note: Complete these steps in the <code>whonix-gw</code> and <code>whonix-ws</code> TemplateVMs.
+Advanced Qubes-Whonix users may want to edit the sources.list of their Debian TemplateVM, so that it points to the Debian .onion mirrors. This is a more secure method for updates or general software installation.
 
 '''1. Edit sources.list'''
 
-In the Whonix-Gateway, edit the debian.list file using an editor with root rights.
+Edit the debian.list file using an editor with root rights.
 
-If you are using a graphical Whonix or Qubes-Whonix, run.
-<pre>
-kdesudo kwrite /etc/apt/sources.list.d/debian.list
-</pre>
-If you are using a terminal-only Whonix, run.
-<pre>
+{{CodeSelect|code=
 sudo nano /etc/apt/sources.list.d/debian.list
-</pre>
+}}
 
 '''2. Reference the Onionized Debian Repositories'''
+
+Note: This setting below is for Debian stretch. Modify it accordingly if Debian buster is in use.
 
 Cut and paste the following <i>.onion</i> mirrors and comment out (#) the corresponding http repositories.
 
 <pre>
-#deb http://ftp.debian.org/debian jessie main contrib non-free
-deb http://vwakviie2ienjx6t.onion/debian jessie main contrib non-free
+#deb http://ftp.debian.org/debian stretch main contrib non-free
+deb http://vwakviie2ienjx6t.onion/debian stretch main contrib non-free
 
-#deb http://security.debian.org jessie/updates main contrib non-free
-deb http://sgvtcaew4bxjd7ln.onion jessie/updates main contrib non-free
+#deb http://security.debian.org stretch/updates main contrib non-free
+deb http://sgvtcaew4bxjd7ln.onion stretch/updates main contrib non-free
 
 #Optional Backports
-#deb http://ftp.debian.org/debian jessie-backports main contrib non-free
-deb http://vwakviie2ienjx6t.onion/debian jessie-backports main contrib non-free
+#deb http://ftp.debian.org/debian stretch-backports main contrib non-free
+deb http://vwakviie2ienjx6t.onion/debian stretch-backports main contrib non-free
 </pre>
 
 Save and exit.
 
-'''3. Reference the Onionized Whonix APT Repository'''
+'''3. Confirm the Onionized Repositories are Functional'''
 
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = '''Tip:''' Whonix users have four package preferences available: stable, stable-proposed-updates, testers and developers. Change the entry below to reflect this preference. <ref>https://www.whonix.org/wiki/Whonix-APT-Repository#Whonix_APT_Repository_Overview</ref>
+{{CodeSelect|code=
+sudo apt-get update && sudo apt-get dist-upgrade
 }}
 
+Optionally repeat steps 1 to 3 for any other Debian templates in use.
 
-To use the v3 onion, run. <ref>Requires Tor v3.2 or above running in Whonix-Gateway (<code>sys-whonix</code>).</ref>
-
-<pre>
-sudo whonix_repository --baseuri http://deb.dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion --enable --repository stable
-</pre>
-
-'''4. Confirm the Onionized Repositories are Functional'''
-
-<pre>sudo apt-get update && sudo apt-get dist-upgrade</pre>
-
-'''5. Repeat Steps 1 to 4 for the Whonix-Workstation'''
-
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = '''Tip:''' Qubes users can repeat the first two steps in the Debian TemplateVM to onionize future installations and updates.
-}}
-
-
-'''6. ''Optional:'' Onionize Tor Project Updates'''
+= Onionize Tor Project Updates =
 
 Only complete this step if the [[Tor_Versioning|Newer Tor versions from The Tor Project Repository]] are being used. The Tor Project deb apt signing key must be added first (see the link above), or the user will receive error messages when completing these steps.
 
-'''Non-Qubes-Whonix and Qubes-Whonix R3.2'''
+== Non-Qubes-Whonix and Qubes-Whonix R3.2 ==
 
 The following commands are run in either the Whonix-Gateway or <code>whonix-gw</code> TemplateVM.
 
@@ -143,15 +121,15 @@ To onionize Tor Project updates first create a torproject.list file using an edi
 
 If you are using a graphical Whonix or Qubes-Whonix, run.
 
-<pre>
+{{CodeSelect|code=
 kdesudo kwrite /etc/apt/sources.list.d/torproject.list
-</pre>
+}}
 
 If you are using a terminal-only Whonix, run.
 
-<pre>
+{{CodeSelect|code=
 sudo nano /etc/apt/sources.list.d/torproject.list
-</pre>
+}}
 
 Next, cut and paste the following text and comment out (#) the corresponding http repository.
 
@@ -163,70 +141,68 @@ deb http://sdscoq7snqtznauu.onion/torproject.org jessie main
 
 Save and exit.
 
---------
-
-'''Qubes R4'''
+== Qubes R4 ==
 
 {{mbox
 | type      = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = Qubes-R4.0 TemplateVMs are non-network connected by default which will cause attempts to download the apt key in <code>whonix-gw</code> to fail.<ref>https://github.com/QubesOS/qubes-issues/issues/1854</ref>
+| text       = Qubes-R4.0 TemplateVMs are non-network connected by default which will cause attempts to download the apt key in <code>whonix-gw</code> to fail. <ref>https://github.com/QubesOS/qubes-issues/issues/1854</ref>
 }}
 
+=== Add the Tor Signing Key ===
 
 To work around this issue, users can fetch the Tor apt singing key from a (networked) <code>anon-whonix</code> AppVM, then copy the key over to <code>whonix-gw</code> in a text file.
 
 To add the Tor Project deb apt signing key, run the following in <code>anon-whonix</code>:
 
-* '''Whonix 13:'''
-** <pre>sudo apt-key adv --keyserver keys.gnupg.net --recv-keys A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89</pre>
-* '''Whonix 14:'''
-** <pre>sudo apt-key adv --keyserver jirk5u4osbsr34t5.onion --recv-keys A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89</pre>
+{{CodeSelect|code=
+sudo apt-key adv --keyserver jirk5u4osbsr34t5.onion --recv-keys A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
+}}
 
 To display the keys fingerprint, run.
 
-<pre>
+{{CodeSelect|code=
 sudo apt-key adv --fingerprint A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
-</pre>
+}}
 
 Compare the fingerprint displayed in the terminal with the one listed on this website https://www.torproject.org/docs/signing-keys.html ([http://expyuzz4wqqyqhjn.onion/docs/signing-keys.html v2 onion]).
 
 In <code>anon-whonix</code>, copy the Tor singing key to a new text file named tor.key
 
-<pre>
+{{CodeSelect|code=
 sudo apt-key export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 > /tmp/tor.key
-</pre>
+}}
 
 In <code>anon-whonix</code>, copy the tor.key text file over to <code>whonix-gw</code>.
 
-<pre>
+{{CodeSelect|code=
 qvm-copy /tmp/tor.key whonix-gw
-</pre>
+}}
 
 If the following error appears, it can be safely ignored (hit "OK" when prompted). 
   <i>qfile-agent: Fatal error: stat whonix-gw-version (error type: No such file or directory)</i>
 
 In <code>whonix-gw</code>, add the Tor signing key to the list of trusted keys.
 
-<pre>
+{{CodeSelect|code=
 sudo apt-key add ~/QubesIncoming/anon-whonix/tor.key
-</pre>
+}}
 
---------
+=== Onionize the Sources File ===
 
 To onionize Tor Project updates first create a torproject.list file using an editor with root rights.
 
 If you are using a graphical Whonix or Qubes-Whonix, run.
 
-<pre>
+{{CodeSelect|code=
 kdesudo kwrite /etc/apt/sources.list.d/torproject.list
-</pre>
+}}
 
 If you are using a terminal-only Whonix, run.
 
-<pre>
+{{CodeSelect|code=
 sudo nano /etc/apt/sources.list.d/torproject.list
-</pre>
+}}
 
 Next, cut and paste the following text and comment out (#) the corresponding http repository.
 
