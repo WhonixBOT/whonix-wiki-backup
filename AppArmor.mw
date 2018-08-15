@@ -206,13 +206,39 @@ Advanced users can imitate the method outlined above to resolve similar AppArmor
 * Shutdown both TemplateVMs and any running instances of <code>sys-whonix</code> and <code>anon-whonix</code>.
 * Restart the <code>sys-whonix</code> and <code>anon-whonix</code> AppVMs.
 
-== Disabling AppArmor Notifications ==
+== Inspecting and Disabling AppArmor Notifications ==
 
-If applications are functional and AppArmor "denied" messages constantly appear, some users might want to disable notifications rather than update the relevant AppArmor profile(s). In the offending Whonix (App)VM, launch Konsole and run.
+From Whonix 14, [https://packages.debian.org/stretch/apparmor-notify apparmor-notify] is no longer installed by default. This means desktop notifications will not appear concerning AppArmor denied messages, which are stored in ''/var/log/audit/audit.log'' <ref>To install it, run: <code>sudo apt-get update && sudo apt-get install apparmor-notify</code></ref> <ref>https://forums.whonix.org/t/whonix-14-debian-stretch-apparmor-related-changes/3563</ref> <ref>The Debian default location is ''/var/log/kern.log''</ref> 
 
-<pre>
+'''Inspect Notifications'''
+
+To inspect relevant logs, run.
+
+{{CodeSelect|code=
+kdesudo kwrite /var/log/audit/audit.log
+}}
+
+To show denied AppArmor messages of any age, run.
+
+{{CodeSelect|code=
+sudo cat /var/log/audit/audit.log | grep -i DENIED
+}}
+
+It is possible to keep watching the file as it is appended. This is useful for reproducing AppArmor denied messages and testing amended profiles.
+
+{{CodeSelect|code=
+sudo tail -f /var/log/audit/audit.log | grep --line-buffered DENIED
+}}
+
+'''Disable AppArmor Notifications'''
+
+If users installed apparmor-notify manually, then some applications may be functional, but AppArmor "denied" messages can constantly appear on the desktop. Rather than updating the relevant AppArmor profile(s), it is possible to disable notifications.
+
+In the offending Whonix (App)VM, launch Konsole and run.
+
+{{CodeSelect|code=
 sudo killall aa-notify
-</pre>
+}}
 
 To revert this change, reboot the VM.
 
