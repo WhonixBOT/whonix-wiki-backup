@@ -44,22 +44,63 @@ Wiki pages found in the Advanced Security Guide contain material from the Tails 
 
 = Block Networking until sdwdate Finishes =
 
+[[Sdwdate|sdwdate]] is a Tor-friendly replacement for rdate and ntpdate that sets the system's clock by communicating via onion end-to-end encrypted TCP with Tor onion webservers. Since timekeeping is crucial for security, privacy and anonymity, blocking network access until sdwdate succeeds is sensible. <ref>https://forums.whonix.org/t/testers-wanted-blocking-networking-until-sdwdate-finished-status-of-sdwdate-gui/5372</ref> 
+
 {{mbox
 | type    = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
 | text    = [[sdwdate-gui]] is effectively unused in Qubes, since it is not yet automatically started due to usability issues. <ref>https://phabricator.whonix.org/T534</ref> <ref>It is installed by default, and is functional when manually started. Users should check back at a later date for further news on sdwdate-GUI development.</ref> 
 }}
 
-[[sdwdate]] is functional, but there are cases where time leaks might occur before the time is changed; for example, when Tor Browser is being used before sdwdate succeeded, information relating to time or other servers, daemons, or client programs. <ref>https://phabricator.whonix.org/T533</ref> In this case, the user is only left with the protections afforded by [[Boot Clock Randomization]]. <ref>
+
+[[sdwdate]] is functional on both Whonix-Gateway and Whonix-Workstation, but in some cases it is possible for the time to leak before it is changed. Possible leak channels include time or other servers, daemons, and client programs such as Tor Browser which are used before sdwdate successfully finishes. <ref>https://phabricator.whonix.org/T533</ref> In this case, the user is only left with the protections afforded by [[Boot Clock Randomization]]. <ref>
 [[Dev/TimeSync#Block_Networking_until_sdwdate_Finishes]]
 </ref>
 
-== All Whonix Users ==
+== TemplateVMs ==
 
-To block network access until [[Sdwdate|sdwdate]] succeeds: <ref>https://forums.whonix.org/t/testers-wanted-blocking-networking-until-sdwdate-finished-status-of-sdwdate-gui/5372</ref> <ref>Time keeping is crucial for security, privacy, and anonymity. sdwdate is a Tor friendly replacement for rdate and ntpdate that sets the system's clock by communicating via onion end-to-end encrypted TCP with Tor onion webservers.</ref> 
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = [[Non-Qubes-Whonix]] and [[Qubes-Whonix]].
+}}
+
+
+It is easiest to apply changes in the Whonix-Gateway and Whonix-Workstation TemplateVMs. In Qubes-Whonix, these settings will be inherited by all TemplateBasedVMs.
+
+In ''both'' Whonix-Gateway (<code>whonix-gw-14</code>) and Whonix-Workstation (<code>whonix-ws-14</code>), run.
 
 {{Open with root rights|filename=
 /etc/whonix_firewall.d/50_user.conf
+}}
+
+Copy and paste the following text.
+
+{{CodeSelect|code=
+firewall_mode=
+}}
+
+Save the file and reboot.
+
+To have changes take effect:
+* Non-Qubes-Whonix: restart Whonix-Gateway and Whonix-Workstation.
+* Qubes-Whonix: shutdown the Whonix-Gateway (<code>whonix-gw-14</code>) and Whonix-Workstation (<code>whonix-ws-14</code>) TemplateVMs and restart the TemplateBasedVMs (<code>sys-whonix</code> and <code>anon-whonix</code>).
+
+== Qubes-Whonix TemplateBasedVMs (AppVMs) ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = [[Qubes-Whonix]] only.
+}}
+
+
+The procedure can optionally be completed in select TemplateBasedVMs like <code>sys-whonix</code> and <code>anon-whonix</code>.
+
+In the chosen Whonix TemplateBasedVM(s), run.
+
+{{Open with root rights|filename=
+/rw/config/whonix_firewall.d/*.conf
 }}
 
 Copy and paste the following text.
