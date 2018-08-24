@@ -238,40 +238,31 @@ All of the changes to home folder in the DVM Template should now persist.
 Changes to the underlying TemplateVM (<code>whonix-ws-14</code>) are detected automatically and the DVM Template is updated without user intervention. That means package updates that are applied to <code>whonix-ws-14</code> are also applied to the <code>whonix-ws-14-dvm</code>.
 
 ===== Updating Tor Browser =====
-Tor Browser presents a special situation because it is installed in a user's home directory. As a result, the TemplateVM (<code>whonix-ws-14</code>) never updates existing Tor Browser installations.
+To obtain the latest Tor Browser, the simplest method is to use Whonix's built-in Tor Browser downloader functionality. Simply update using [[Tor_Browser#Tor_Browser_Downloader_by_Whonix|Tor Browser Downloader by Whonix (tb-updater)]] in <code>whonix-ws-14</code> when performing your usual maintenance [https://www.qubes-os.org/doc/whonix/update/ upgrading].
 
-'''Non-Customized DVM Templates Users''' 
+<code>Qubes App Launcher (blue/grey "Q")</code> -> <code>System Tools</code> -> <code>Konsole or Xfce Terminal</code>
 
-To obtain the latest Tor Browser, the simplest method is to use Whonix's built-in Tor Browser downloader functionality. Simply update using [[Tor_Browser#Tor_Browser_Downloader_by_Whonix|Tor Browser Downloader by Whonix (tb-updater)]] in <code>whonix-ws-14</code> when performing your usual maintenance [https://www.qubes-os.org/doc/whonix/update/ upgrading]. 
-
-Update and upgrade.
+{{Update}}
 
 {{CodeSelect|code=
-sudo apt-get update && sudo apt-get dist-upgrade
+sudo apt-get update
 }}
 
-Then, create a new DisposableVM to overwrite the existing one.
-
-Open a dom0 terminal.
-
-<code> Qubes App Launcher (blue/grey "Q")</code> -> <code>System Tools</code> -> <code>Konsole or Xfce Terminal</code>
-
-Create a new DVM Template using the updated <code>whonix-ws-14</code> TemplateVM.
+Upgrade.
 
 {{CodeSelect|code=
-qvm-create-default-dvm whonix-ws
+sudo apt-get dist-upgrade
 }}
 
-'''Customized DVM Template Users'''
+If it's not upgraded, use {{Code2|update-torbrowser}} to download a new copy of Tor Browser.
 
-Users have two choices: 
+<code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>right-click on 'whonix-ws-14'</code> -> <code>click 'Run command in VM'</code> -> <code>type 'konsole'</code> 
 
-# [[Tor_Browser#Tor_Browser_Downloader_by_Whonix|Tor Browser Downloader by Whonix (tb-updater)]] (update-torbrowser)
-# [[Tor_Browser#Tor_Browser_Internal_Updater|Tor Browser's internal updater]].
-<br />
-'''Option #1: Use {{Code2|update-torbrowser}} to download a new copy of Tor Browser'''
-
-<code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>right-click on 'whonix-ws-14-dvm'</code> -> <code>click 'Run command in VM'</code> -> <code>type 'konsole'</code> <ref>On the command line (dom0), run. {{CodeSelect|code=qvm-run -a whonix-ws-14-dvm konsole}}</ref>
+<ref>
+On the command line (dom0), run.
+{{CodeSelect|code=
+qvm-run -a whonix-ws-14 konsole
+}}</ref>
 
 Launch Tor Browser Downloader by Whonix and follow the instructions.
 
@@ -279,48 +270,18 @@ Launch Tor Browser Downloader by Whonix and follow the instructions.
 update-torbrowser --input gui
 }}
 
-Shutdown the DVM Template. <ref>On the command line (dom0), run. {{CodeSelect|code=qvm-shutdown whonix-ws-14-dvm}}
+Shutdown the DVM Template. <ref>
+On the command line (dom0), run.
+{{CodeSelect|code=
+qvm-shutdown whonix-ws-14
+}}
 or<br />
-DVM Template command line (domU), run. {{CodeSelect|code=sudo poweroff}}
+DVM Template command line (domU), run. {{CodeSelect|code=
+sudo poweroff
+}}
 </ref>
 
 <code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>right-click on 'whonix-ws-14-dvm'</code> -> <code>click 'Shutdown VM'</code>
-
-Regenerate the DVM Template.
-
-Open a dom0 terminal.
-
-<code>Qubes App Launcher (blue/grey "Q")</code> -> <code>System Tools</code> -> <code>Konsole or Xfce Terminal</code>
-
-Then run.
-
-{{CodeSelect|code=
-qvm-create-default-dvm whonix-ws
-}}
-
-'''Option #2: Use Tor Browser's internal updater and download new updates only'''
-
-<code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>right-click on 'whonix-ws-14-dvm'</code> -> <code>click 'Run command in VM'</code> -> <code>type 'torbrowser'</code> <ref> On the command line (dom0), run. {{CodeSelect|code=qvm-run -a whonix-ws-14-dvm torbrowser}}</ref>
-
-Use Tor Browser's Internal Updater by clicking TorButton and selecting <code>Check for Tor Browser Update</code>. Close and restart Tor Browser.
-
-Shutdown the DVM Template. <ref>On the command line (dom0), run. {{CodeSelect|code=qvm-shutdown whonix-ws-14-dvm}}</ref>
-
-<code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>right-click on 'whonix-ws-14-dvm'</code> -> <code>click 'Shutdown VM'</code>
-
-Regenerate the DVM Template.
-
-Open a dom0 terminal.
-
-<code>Qubes App Launcher (blue/grey "Q")</code> -> <code>System Tools</code> -> <code>Konsole or Xfce Terminal</code>
-
-Regenerate the template.
-
-{{CodeSelect|code=
-qvm-create-default-dvm whonix-ws
-}}
-
-----
 
 == Usage ==
 DisposableVMs are well-suited for risky and largely independent activities, like web browsing or opening untrusted files. In contrast, AppVMs might be better suited for activities necessitating file persistence, like email clients with local email storage. Qubes' VM integration tools, like secure file copy <ref>Qubes documentation: [https://www.qubes-os.org/doc/copying-files/ Copying and Moving Files Between Domains]</ref> and secure clipboard, <ref>Qubes documentation: [https://www.qubes-os.org/doc/copy-paste Copying and Pasting Text Between Domains]</ref> mean that clean, trusted files and text can be easily and safely transferred to trusted VMs should it be necessary.
