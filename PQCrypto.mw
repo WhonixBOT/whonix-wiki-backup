@@ -80,111 +80,106 @@ Competent cryptographers are gradually improving the performance of PQ Crypto an
 
 == Software ==
 
-This is a listing of Free Software known to known to resist quantum computers and not an endorsement for any particular tool. You are better off setting up arbitrary protocols over Tor [[Onion_Services|Onion Services]] once PQ crypto is deployed to mitigate exposure in case of unknown implementation failures in each and every other tool (with the exception of one-time pads that are information theoretically secure).<ref>https://en.wikipedia.org/wiki/Information_theoretic_security</ref>
+The Free Software listed below is known to resist quantum computers, but this is not an endorsement for any particular tool. To mitigate potential exposure to unknown software implementation failures, it is recommended to set up arbitrary protocols over Tor [[Onion_Services|Onion Services]] once PQ Crypto is deployed. The exception is the use of one-time pads which are secure from an [https://en.wikipedia.org/wiki/Information_theoretic_security information-theoretic perspective].
 
 * [https://github.com/exaexa/codecrypt Codecrypt]
-* [https://tinyssh.org/ TinySSH (PQC planned)]
 * [https://www.cyph.com/ Cyph]
 * [http://red-bean.com/onetime/ OneTime]
+* [https://tinyssh.org/ TinySSH (PQC planned)]
 
 
-Informal adoption checklist:<ref>https://forums.whonix.org/t/post-quantum-cryptography-pqc/2011/17</ref>
+Before adopting any software, first consider if: <ref>https://forums.whonix.org/t/post-quantum-cryptography-pqc/2011/17</ref>
 
+* Cryptographic libraries were written by competent cryptographers and audited for correct implementation.
 * Quantum-resistant algorithms have withstood susbstantial cryptanalytic efforts.
-* Crypto libraries written by competent cryptographers and audited for correct implementation.
-* Widely adopted for better blending in.
-
+* The software has been widely adopted to help users blend in.
 
 === Setup Guides ===
 
 ==== Codecrypt ====
 
-This is a GnuPG-like unix program for encryption and signing that uses only quantum-computer-resistant algorithms:<ref>https://github.com/exaexa/codecrypt</ref><ref>http://e-x-a.org/codecrypt/</ref>
+This is a GnuPG-like Unix program for encryption and signing that only uses quantum-resistant algorithms:<ref>https://gitea.blesmrt.net/exa/codecrypt</ref> <ref>http://e-x-a.org/codecrypt/</ref>
 
-* McEliece cryptosystem (compact QC-MDPC variant) for encryption
-* Hash-based Merkle tree algorithm (FMTSeq variant) for digital signatures
+* McEliece cryptosystem (compact QC-MDPC variant) for encryption.
+* Hash-based Merkle tree algorithm (FMTSeq variant) for digital signatures.
 
-Codecrypt is free software. The code is licensed under terms of LGPL3 in a good hope that it will make combinations with other tools easier.
+Codecrypt is free software. The code is licensed under terms of LGPL3 in order to make combinations with other tools easier.
 
 ===== Use Instructions =====
 
-Codecrypt is now included by default within Whonix 14. See the [http://e-x-a.org/codecrypt/ccr.1.html manual page] for common use-cases. 
+From Whonix 14, Codecrypt is included by default. See the [http://e-x-a.org/codecrypt/ccr.1.html Codecrypt manual page] for common use-cases. 
 
+'''Basic Commands'''
 
-Common commands for basic usage:
+Generate a strong(er) asymmetric encryption key.
 
-
-Generate strong(er) asymmetric encryption key:
-<pre>
+{{CodeSelect|code=
 ccr -g ENC-256 -N adrelanos@riseup.net
-</pre>
+}}
 
+Export your own private key.
 
-Export own private key:
-<pre>
+{{CodeSelect|code=
 ccr -aP > myprivatekey
-</pre>
+}}
 
+Export your public key for sharing with contacts.
 
-Export public key for sharing with contacts:
-<pre>
+{{CodeSelect|code=
 ccr -ap > adrelanos@riseup.net
-</pre>
+}}
 
+Import a key.
 
-Import key:
-<pre>
+{{CodeSelect|code=
 ccr -i < keyfilename
-</pre>
+}}
 
+Encrypt a plaintext message file to an already imported contact key, while also making a copy for yourself.
 
-Encrypt plaintext message file to contact key (assuming it's imported) while also making a copy for yourself:
-<pre>
+{{CodeSelect|code=
 ccr -aer adrelanos@riseup.net -R plaintext > ciphertext && ccr -aer johndoe@example.com -R plaintext >> ciphertext
-</pre>
+}}
 
+Encrypt a plaintext message file only to an already imported contact key.
 
-Encrypt plaintext message file only to contact key (assuming it's imported):
-<pre>
+{{CodeSelect|code=
 ccr -aer johndoe@example.com -R plaintext > ciphertext
-</pre>
+}}
 
+Decrypt a ciphertext message creating plaintext output.
 
-Decrypt ciphertext message creating plaintext output:
-<pre>
+{{CodeSelect|code=
 ccr -adR ciphertext > plaintext
-</pre>
+}}
 
 ===== Message Formatting =====
 
-It is still possible to format your messages to account for replies without direct Thunderbird support. However pay attention to prevent mistakenly sending unencrypted replies. TorBirdy disables syncing drafts with your e-mail host's server however its advised to disable your internet connection temporarily in case you hit send without encrypting the message in Codecrypt. 
+Even without direct Thunderbird support, it is still possible to format messages to account for replies. However users should be careful to not mistakenly send unencrypted replies. TorBirdy disables draft syncing on the host e-mail server, however it is still advisable to disable the Internet connection temporarily in case the send button is accidentally pressed before the message is encrypted with Codecrypt. 
 
 Steps: 
 
 * Click reply in Thunderbird and copy the string "John Doe:"
-
-* Format what your correspondent said as a reply by pasting it like so: <code>Edit</code> -> <code>Paste As Quotation</code> 
-
-* Copy the result to the text editor window and continue composing your message with your replies interspersed between the quotes then save and encrypt 
-
-* Paste the ciphertext into the Thunderbird reply window, completely replacing what was there 
-
-* Re-enable internet then send.
+* Format the correspondent's text as a reply by pasting it: <code>Edit</code> -> <code>Paste As Quotation</code> 
+* Copy the result to the text editor window. Continue composing the message with your replies interspersed between the quotes.
+* Save and encrypt.
+* Paste the ciphertext into the Thunderbird reply window and completely replace the existing text. 
+* Re-establish the Internet connection, then press send.
 
 ==== OneTime ====
 
-[http://red-bean.com/onetime/ OneTime]<ref>https://github.com/kfogel/OneTime</ref> is a program that sets up a one-time pad on your computer and protects from reusing pads and shooting yourself in the foot. OneTime is available in Debian.<ref>https://packages.debian.org/search?searchon=names&keywords=onetime</ref> One-time pads are the only provably unbreakable encryption scheme ever invented (assuming a  functional/non-backdoored RNG).<ref>https://en.wikipedia.org/wiki/One-time_pad</ref><ref>http://users.telenet.be/d.rijmenants/en/onetimepad.htm</ref>
+One-time pads are the only provably unbreakable encryption scheme ever invented, assuming a functional and non-backdoored random number generator (RNG). <ref>https://en.wikipedia.org/wiki/One-time_pad</ref> <ref>http://users.telenet.be/d.rijmenants/en/onetimepad.htm</ref> [http://red-bean.com/onetime/ OneTime] <ref>https://github.com/kfogel/OneTime</ref> is a program that sets up a one-time pad on a user's computer, and helps to protect from reuse of pads which breaks the overall security model. OneTime is available in Debian. <ref>https://packages.debian.org/search?searchon=names&keywords=onetime</ref> 
 
-OneTime can encrypt any kind of file -- it doesn't matter if the file's contents are Base64-encoded or not, because OneTime is not interpreting the contents of the file. It just treats the file as a string of bits. (The same is true of just about all encryption software, by the way; OneTime is not unique in this regard.)
+OneTime can encrypt any kind of file -- it does not matter if the file's contents are Base64-encoded or not, because OneTime is not interpreting the contents. OneTime simply treats the file as a string of bits. Notably this is true for most encryption software; OneTime is not unique in this regard.
 
-One-time pads should be secure against cryptographic attacks by quantum computers for the same reason they're secure against any other kind of attack: if the encryption key is truly random, and the key is as long as the message, then all possible plaintexts are equally likely. Quantum computers are not telepathic, so there shouldn't be any way they can attack a message properly encrypted with a one-time pad. Indeed, there really is no possible cryptographic attack against such a message. (Of course, using the system in practice can be difficult, due to the logistics of key exchange, but quantum computing won't affect that.)<ref>https://github.com/kfogel/OneTime/issues/14#issuecomment-218038898</ref>
+One-time pads should be completely secure against cryptographic attacks by quantum computers or other avenues. So long as the encryption key is truly random and the key is as long as the message, then all possible plaintexts are equally likely. Quantum computers are not telepathic, so messages properly encrypted with a one-time pad will remain impervious to cryptographic attacks. Of course, using the system is difficult in practice due to the logistics of key exchange, but quantum computing does not affect that reality. <ref>https://github.com/kfogel/OneTime/issues/14#issuecomment-218038898</ref>
 
-Limitations:
+One-time pads come with several limitations:
 
-* The message and the key are identical in size - but with large hard-disks these days this is not a problem.
-* There is no way to securely contact someone you don't know - you must exchange the pad file in person or by other trustworthy peers. Sending the pad online makes it as strong as the asymmetric crypto you are using.
-* No message integrity. There is no way for the recipient to discover if the ciphertext has been tampered with during transit.
-* You must never ever reuse the pad to encrypt another message. Doing so breaks the the encryption.<ref>https://en.wikipedia.org/wiki/Venona_project#Decryption</ref>
+* The message and the key are identical in size; this issue is negated by the large size of contemporary HDD/SSDs.
+* It is impossible to securely contact strangers because the pad file must be exchanged in person or by other trustworthy peers. Sending the pad online only makes it as strong as the asymmetric cryptography that is in use.
+* Message integrity cannot be verified, meaning there is no way for the recipient to discover if the ciphertext was  tampered with during transit.
+* The pad can never be used to encrypt additional messages. If this advice is ignored, the encryption is broken. <ref>https://en.wikipedia.org/wiki/Venona_project#Decryption</ref>
 
 = Misc =
 * [https://forums.whonix.org/t/post-quantum-cryptography-pqc Forum discussion about this wiki page]
