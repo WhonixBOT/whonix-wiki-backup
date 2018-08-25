@@ -25,51 +25,91 @@ When whonixcheck auto-starts, it first waits for a randomized period of time ran
 
 {{Running_Whonixcheck}}
 
-= Checks =
-* If run either on supported platforms bare metal ([[Physical Isolation]]), [[VirtualBox]], [[KVM]] or [[Qubes]]. Warns when using an unsupported (by Whonix developers) virtualizer. Reports only if not. Otherwise quiet unless using --verbose.
-* Checks if the clock source is KVMClock and warns if that is the case. Might probably only happen for users using the [[KVM]] instructions. Reports only if KVMClock is detected. Otherwise quiet unless using --verbose.
-* Checks that whonixsetup is done. Reports only if not. Otherwise quiet unless using --verbose.
-* Checks that Tor is enabled. Reports only if not. Otherwise quiet unless using --verbose.
-* Check the validity of Tor's config files by using {{Code|sudo tor --verify-config}}. Whonix-Gateway only. Reports only error. Otherwise quiet unless using --verbose.
-* Check if a package manager is currently running. Waits as long as a package manager is running until it continues. It waits, because the Tor package or [[Dev/CPFP]] is currently upgraded, connection checks would fail. Otherwise quiet unless using --verbose.
-* Checks, that Tor has been enabled (i.e., that {{Code|DisableNetwork 1}}) has been commented out from /usr/local/etc/torrc.d/50_user.conf (by whonixsetup or manually). Reports only if not. Otherwise quiet unless using --verbose.
-* Check if the Tor process (pid) is running. Only on Whonix-Gateway. Reports error if not. Otherwise quiet unless using --verbose.
-* Checks if IP forwarding is disabled on gateway.
-* entropy availability check: Checks is {{Code2|/proc/sys/kernel/random/entropy_avail}} contains no less than 112 bytes.
-* When using --verbose: Checks if {{Code|~/.whonix/msgdispatcher-error.log}} or {{Code|~/.whonix/whonix_torbrowser_updater_error.log}} exist and reports, if so.
+= System Checks =
+
+In all the checks below, whonixcheck warnings appear if a problem is detected. Conversely, whonixcheck output is otherwise quiet unless using the <code>--verbose</code> option. Any operating system updates, downloads or other network activity are [[Stream_Isolation|stream-isolated]] by default.
+
+'''Clock Source'''
+
+* Checks if the clock source is KVMClock and warns if that is the case. <ref>This is only expected to affect those following the [[KVM]] instructions.</ref>
+
+'''Control Port Filter Proxy'''
+
 * Checks if [[Dev/CPFP|Control Port Filter Proxy]] is running.
-* Tor connection / IP
-** Tor Bootstrap Status
-** (1) downloads https://check.torproject.org with curl through extra SocksPort
-** (2) downloads https://check.torproject.org with curl through TransPort
-** The Whonix design ensures, that never the users real IP can be detected. Why check it anyway? Sometimes check.tpo reports false positives and fails to detect Tor exit nodes. The user should be informed about that possibility. That reduces support requests and bad press. It is fine to investigate if the Tor exit node could not be detected, but we're quite confident, that the outcome will be, that it is a Tor exit node IP. Some users may do dangerous and/or unsupported things, such as changing Whonix-Workstation's network interface from {{Code|internal}} network {{Code|"Whonix"}} to {{Code|bridged}} or {{Code|NAT}} or other creative and adventurous things, such as using virtualizers which are entirely unsupported and untested by Whonix developers. Last but not least, users can and are encouraged to install upgrades using {{Code|apt-get}} and free to install arbitrary packages on Whonix-Workstation. In a totally unexpected case, that may open up for a leak and whonixcheck is Whonix's last layer of defenses against such leaks.
-** On Whonix-Workstation: [[Stream Isolation]], checks IP from (1) and (2) differ.
-* Tor Browser version
-** downloads https://check.torproject.org/RecommendedTBBVersions with curl through extra SocksPort
-* Checks if a package manager is currently running. (Eventually the system is locked or the package manager in a broken state. Advices what to do in such situations.)
-* operating system updates: Runs ''apt-get update'' through separate apt-get SocksPort (for stream isolation) and inform about the system being up to date or requiring updates. Using security workaround for unreliable apt-get exit codes. <ref>
-https://phabricator.whonix.org/T194<br />
-https://phabricator.whonix.org/T170
-</ref>
-* Meta Package Check: Accordingly checks if on a the whonix-gateway or whonix-workstation package is installed. (The packages which depend on all other recommended/default installed packages. See also [[Whonix_Debian_Packages]].)
-* [[Download#Whonix_Version_Check_and_Whonix_News|Whonix version and Whonix news]]
-** Supposed to work even if Whonix repository is down / changed.
-** Supposed to work also for users who do not wish to use [[Whonix-APT-Repository]] (at all times).
-** Not yet implemented: to [[Dev/ptt|defeat a permanent takedown threat]].
-** Downloads Whonix News Files with curl through extra whonix news SocksPort.
-** Is supposed to reflect most important news for people not even following Whonix Important Blog. In theory, if an IP leak in Whonix where found or exit nodes actively exploiting apt-get traffic, this would be used to briefly inform users about the danger.
-** [[Dev/News|Whonix News Format]]
-** Whonix version and news file must be signed by Whonix developer Patrick.
-** Patrick's gpg key got copied to {{Code2|whonix_shared/usr/share/whonix/keys/whonix-keys.d/}} at build time.
-** Warns if the file can not be gpg verified with Patrick's gpg key. In that case version and news is ignored.
-** Messages signed more than one month ago are rejected and the user is informed about the message being no longer valid.
-** Also see [[Trust]].
-* Hostname
-** Checks, if {{Code|hostname --fqdn}} outputs {{Code|host.localdomain}}.
-** Checks, if {{Code|hostname }} outputs {{Code|host}}.
-** Checks, if {{Code|hostname --ip-address }} outputs {{Code|127.0.0.1}}.
-** Checks, if {{Code|hostname --domain }} outputs {{Code|localdomain}}.
-* Informs if [[Whonix-APT-Repository]] is enabled and if yes, which one is enabled.
+
+'''Entropy Test'''
+
+* An entropy availability check confirms {{Code|/proc/sys/kernel/random/entropy_avail}} contains no less than 112 bytes.
+
+'''Hostname'''
+
+* Checks if:
+** {{Code|hostname --fqdn}} outputs {{Code|host.localdomain}}.
+** {{Code|hostname }} outputs {{Code|host}}.
+** {{Code|hostname --ip-address }} outputs {{Code|127.0.0.1}}.
+** {{Code|hostname --domain }} outputs {{Code|localdomain}}.
+* Informs if [[Whonix-APT-Repository]] is enabled, and if so, which repository has been selected.
+
+'''IP Address Routing'''
+
+* Checks if IP forwarding is disabled on Whonix-Gateway (<code>sys-whonix</code>).
+
+'''Log Inspection'''
+
+* When using the <code>--verbose</code> option, checks if {{Code|~/.whonix/msgdispatcher-error.log}} or {{Code|~/.whonix/whonix_torbrowser_updater_error.log}} exist and reports this if confirmed.
+
+'''Meta-package Check'''
+
+* Checks if the relevant meta-packages <ref>These capture packages which depend on all other recommended / default-installed packages.</ref> are installed on Whonix-Gateway (<code>sys-whonix</code>) or Whonix-Workstation (<code>anon-whonix</code>). Also see: [[Whonix_Debian_Packages|Whonix Debian Packages]].
+
+'''Network Connection'''
+
+* Checks whonixsetup has properly configured networking.
+
+'''Operating System Updates'''
+
+* ''apt-get update'' is run through a separate apt-get SocksPort for stream isolation. A notification is provided whether the system is up-to-date or requires updating.
+
+'''Package Manager'''
+
+* Checks if a package manager is currently running and waits until the process is finished. <ref>Otherwise, eventually the system is locked or the package manager is left in a broken state. Advice is provided on what to do in such circumstances.</ref> This prevents connection failures during concurrent upgrades of the Tor or [[Dev/CPFP|Control Port Filter Proxy]] packages.
+
+'''Tor'''
+
+* Checks if Tor has been enabled by inspecting if {{Code|DisableNetwork 1}} has been commented out from {{Code|/usr/local/etc/torrc.d/50_user.conf}} either manually or via whonixsetup.
+* Checks if the Tor process (pid) is running on Whonix-Gateway (<code>sys-whonix</code>).
+* Checks the validity of Tor configuration files in Whonix-Gateway (<code>sys-whonix</code>) by using {{Code|sudo tor --verify-config}}.
+* Notifies about the Tor connection / IP address. <ref>Some users may wonder why it is necessary to check the IP address if the Whonix design ensures that the real IP cannot be leaked. Sometimes check.tpo reports false positives and fails to detect Tor exit nodes, so it is better to provide information about that possibility. This also reduces support requests and bad press. Users are welcome to investigate a Tor exit node that could not be detected, but it can be stated with high confidence that the IP address will be associated with a known Tor exit node.</ref> <ref>Another reason to perform this check is to some users set up dangerous and/or unsupported configurations, such as:
+* Changing the Whonix-Workstation (<code>anon-whonix</code>) network interface from {{Code|internal}} network {{Code|"Whonix"}} to {{Code|bridged}} or {{Code|NAT}}.
+* Using virtualizers which are entirely unsupported and untested by Whonix developers.
+* Install arbitrary packages on Whonix-Workstation (<code>anon-whonix</code>). This could theoretically create leak vectors, and whonixcheck is the last layer of defense against such leaks.</ref>
+
+'''Tor Bootstrap and Browser Version'''
+
+* Tor Bootstrap Status:
+** (1) Downloads https://check.torproject.org with curl through an extra SocksPort.
+** (2) Downloads https://check.torproject.org with curl through TransPort.
+* On Whonix-Workstation (<code>anon-whonix</code>), a [[Stream Isolation]] test checks the IP addresses from (1) and (2) differ.
+* Tor Browser version:
+** Downloads https://check.torproject.org/RecommendedTBBVersions with curl through an extra SocksPort.
+
+'''Virtualization Platform'''
+
+* Checks Whonix is being run on one of the supported virtualizer platforms, including bare metal ([[Physical Isolation]]), [[VirtualBox]], [[KVM]] or [[Qubes]].
+
+'''Whonix Version and News'''
+
+* [[Download#Whonix_Version_Check_and_Whonix_News|Downloads the Whonix version and Whonix news]]. <ref>One future development goal is to provide protection against a [[Dev/ptt|Permanent Takedown Attack]].</ref> <ref>Also see [[Trust]].</ref>
+** Downloads Whonix News Files with curl through an extra Whonix news SocksPort.
+* This check is designed to be functional:
+** If the Whonix repository is down or has changed.
+** For users who have disabled [[Whonix-APT-Repository]] permanently or only enable it intermittently.
+* News features:
+** The [[Dev/News|Whonix News Format]] only reports the most important news for those not following Whonix developments. <ref>For example, if a theoretical IP address leak was discovered in Whonix, or exit nodes were discovered to be actively exploiting apt-get traffic, then this avenue would briefly inform users about the danger.</ref>
+** The Whonix version and news file is cryptographically signed by lead Whonix developer Patrick Schleizer.
+** Patrick's GPG key is copied to {{Code|whonix_shared/usr/share/whonix/keys/whonix-keys.d/}} at build time.
+** A warning appears if the file can not be GPG-verified with Patrick's OpenPGP key. In that instance the version information and news is ignored.
+** Messages signed more than one month in the past are rejected and the user is informed the message is no longer valid.
 
 = Version Numbers =
 == Whonix Build Version ==
