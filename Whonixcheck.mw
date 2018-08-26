@@ -142,23 +142,29 @@ Interested readers can learn more about why this feature is not enabled by defau
 
 = Source Code Introduction =
 
-[https://github.com/Whonix/whonixcheck/blob/master/usr/bin/whonixcheck /usr/bin/whonixcheck] {{Code2|source}}es:
-* [https://github.com/Whonix/msgcollector/blob/master/usr/lib/msgcollector/error_handler /usr/lib/msgcollector/error_handler]
-* [https://github.com/Whonix/anon-shared-helper-scripts/blob/master/usr/lib/anon-shared-helper-scripts/tor_enabled_check /usr/lib/anon-shared-helper-scripts/tor_enabled_check]
-* [https://github.com/Whonix/anon-shared-helper-scripts/blob/master/usr/lib/anon-shared-helper-scripts/pkg_manager_running_check /usr/lib/anon-shared-helper-scripts/pkg_manager_running_check]
-* followed by all files in [https://github.com/Whonix/whonixcheck/tree/master/usr/lib/whonixcheck /usr/lib/whonixcheck/] in lexical order
+== whonixcheck Information Sources ==
 
-Then runs functions {{Code2|whonixcheck_main}} while passing command line arguments.
+[https://github.com/Whonix/whonixcheck/blob/master/usr/bin/whonixcheck /usr/bin/whonixcheck] {{Code2|source}}s:
+# [https://github.com/Whonix/msgcollector/blob/master/usr/lib/msgcollector/error_handler /usr/lib/msgcollector/error_handler]
+# [https://github.com/Whonix/anon-shared-helper-scripts/blob/master/usr/lib/anon-shared-helper-scripts/tor_enabled_check /usr/lib/anon-shared-helper-scripts/tor_enabled_check]
+# [https://github.com/Whonix/anon-shared-helper-scripts/blob/master/usr/lib/anon-shared-helper-scripts/pkg_manager_running_check /usr/lib/anon-shared-helper-scripts/pkg_manager_running_check]
+# Followed by all files in [https://github.com/Whonix/whonixcheck/tree/master/usr/lib/whonixcheck /usr/lib/whonixcheck/] in lexical order.
+
+== whonixcheck Operation ==
+
+After gathering the above information, whonixcheck runs functions in {{Code2|whonixcheck_main}} while passing command line arguments.
 
 Function {{Code2|whonixcheck_main}} then calls:
 
-* function [https://github.com/Whonix/whonixcheck/blob/master/usr/lib/whonixcheck/parse_cmd {{Code2|parse_cmd_options}}] while passing command line arguments
-* function [https://github.com/Whonix/whonixcheck/blob/master/usr/lib/whonixcheck/preparation#L82 {{Code2|preparation}}]
-* then uses function [https://github.com/Whonix/whonixcheck/blob/master/usr/lib/whonixcheck/preparation#L17 {{Code2|whonixcheck_run_function}}] to run all other functions. The order differs for Whonix-Gateway and Whonix-Workstation. To find out how exactly and in which order, please have a look at {{Code2|/usr/bin/whonixcheck}}. The purpose of function {{Code2|whonixcheck_run_function}} is to allow users adding function names to configuration variable {{Code2|whonixcheck_skip_functions}} which allows to skip certain functions. (See also [[Advanced_Security_Guide#whonixcheck_Hardening|whonixcheck Hardening]].)
+# Function [https://github.com/Whonix/whonixcheck/blob/master/usr/lib/whonixcheck/parse_cmd {{Code2|parse_cmd_options}}] while passing command line arguments.
+# Function [https://github.com/Whonix/whonixcheck/blob/master/usr/lib/whonixcheck/preparation#L82 {{Code2|preparation}}].
+# Then uses function [https://github.com/Whonix/whonixcheck/blob/master/usr/lib/whonixcheck/preparation#L17 {{Code2|whonixcheck_run_function}}] to run all other functions. <ref>The order differs for Whonix-Gateway (<code>sys-whonix</code>) and Whonix-Workstation (<code>anon-whonix</code>). For detailed information concerning differences, see {{Code2|/usr/bin/whonixcheck}}. The purpose of function {{Code2|whonixcheck_run_function}} is to allow users to add function names to configuration variable {{Code2|whonixcheck_skip_functions}}, which permits the skipping of certain functions. Also see: [[Whonixcheck_Hardening|whonixcheck Hardening]].</ref>
 
-The {{Code2|/usr/lib/whonixcheck/}} folder is not a real .d style plugin drop-in folder. Shell function for separate [Whonix, unit] checks can be be put into separate files for better readability. The provided functions are then supposed to be run from {{Code2|/usr/bin/whonixcheck}} function {{Code2|whonixcheck_main}}.
+== Additional Functions ==
 
-For a simple example have a look at file [https://github.com/Whonix/whonixcheck/blob/master/usr/lib/whonixcheck/check_entropy {{Code2|/usr/lib/whonixcheck/check_entropy}}] which contains function {{Code2|check_entropy}}. You can just do any information gathering and analysis as you want. In essence, in the function {{Code2|check_entropy}} example, that is.
+The {{Code2|/usr/lib/whonixcheck/}} folder is not a real .d style plugin drop-in folder. The shell function for separate [Whonix, unit] checks can be placed in separate files for better readability. The provided functions are then supposed to be run from {{Code2|/usr/bin/whonixcheck}} function {{Code2|whonixcheck_main}}.
+
+As a simple example, inspect the file [https://github.com/Whonix/whonixcheck/blob/master/usr/lib/whonixcheck/check_entropy {{Code2|/usr/lib/whonixcheck/check_entropy}}] which contains function {{Code2|check_entropy}}. Users can gather as much information as they like for analysis via this function.
 
 <pre>
 entropy_file="/proc/sys/kernel/random/entropy_avail"
@@ -166,20 +172,20 @@ entropy_size="$(cat "$entropy_file")"
 if [ "${entropy_size}" -lt "112" ]; then
 </pre>
 
-Then you can use, copy and paste, common boilerplate for making what you found out visible.
+Now it is possible to use, copy and paste, or create a common boilerplate for making discoveries visible.
 <pre>
 local MSG="<p>Entropy Available Check Result: low. <code>$entropy_file</code>: <code>$entropy_size</code> Please report this issue!</p>"
 $output ${output_opts[@]} --messagex --typex "warning" --message "$MSG"
 $output ${output_opts[@]} --messagecli --typecli "warning" --message "$MSG"
 </pre>
 
-Or if you wanted to only output it, if the user has run whonixcheck with --verbose, then you could use.
+To limit the notifications to those running whonixcheck with the <code>--verbose</code> option, add.
 
 <pre>
  if [ "$verbose" = "1" ]; then
 </pre>
 
-Other useful variables are available.
+Other useful variables include:
 
 * $TEMP_DIR
 * $VM "Whonix-Gateway" or "Whonix-Workstation"
@@ -194,7 +200,7 @@ Other useful variables are available.
 * $whonix_build_version
 * $whonix_deb_package_version
 
-For more examples, please look what other functions in folder {{Code2|/usr/lib/whonixcheck/}} are doing.
+For further examples, please inspect the behavior of other functions in folder {{Code2|/usr/lib/whonixcheck/}}.
 
 = Silent Mode =
 {| class="wikitable" style="background-color: #fff;text-align: center"
