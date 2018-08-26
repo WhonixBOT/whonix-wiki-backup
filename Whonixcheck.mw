@@ -210,72 +210,92 @@ For further examples, please inspect the behavior of other functions in folder {
 ! Whonix-Workstation
 
 |-
-! run in after boot (autostart mode)
-| {{Yes}} <ref>To possibly give feedback in case of Tor bootstrapping is slow or grave issues.</ref>
-| {{No}}  <ref>Less popups. Avoid duplicate popups (such as Tor bootstrapping not done yet).</ref>
+! Runs after boot (autostart mode)
+| {{Yes}} <ref>It is necessary to provide feedback if Tor bootstrapping is slow or there are other grave problems.</ref>
+| {{No}}  <ref>This is designed to reduce the number and duplication of popups, like when Tor bootstrapping has not  yet finished.</ref>
 
 |-
-! run regularly during run (daemon mode)
-| {{No}} <ref>Could result in a disruptive error popup while the user is doing something entirely different. Such as if the user has not been using Whonix-Gateway/Tor for a while and Tor is no longer connected, it would report this issue. If it is only a transient error, we are better off. If it is a permanent error that will get visible later, the user will hopefully run whonixcheck manually.</ref>
-| {{No}} <ref>When using for example 5 AppVMs that would cause 5 error popups.</ref>
+! Runs regularly during Whonix operation (daemon mode)
+| {{No}} <ref>Otherwise this could lead to a disruptive error popup while the user is doing something entirely different. One example is if the user has not used Whonix-Gateway (<code>sys-whonix</code>) / Tor for a while and Tor is no longer connected, this would be reported. If it is only a transient error, users are better off. If it is a permanent error that will be visible later, the user will hopefully run whonixcheck manually.</ref>
+| {{No}} <ref>For example, if five AppVMs were in operation that would cause five error popups.</ref>
 
 |}
 
 {| class="wikitable" style="background-color: #fff;text-align: center"
 
-! <u>situation</u>
-! <u>action</u>
+! <u>Circumstance</u>
+! <u>Outcome</u>
 
 |-
-! Tor bootstrapping fast enough <ref>(Tor connected when whonxicheck runs function {{Code2|check_tor_bootstrap}})</ref>
-! "Connected to Tor" passive popup only.
+! Tor bootstrapping completes promptly <ref>Tor is connected when whonxicheck runs function {{Code2|check_tor_bootstrap}}</ref>
+! "Connected to Tor" passive popup only
 
 |-
-! Tor bootstrapping not done
-! "Connecting to Tor" passive popup + success "Connected to Tor" passive popup when done or active error popup with advice when failed
+! Tor bootstrapping is incomplete
+! "Connecting to Tor" passive popup and successful "Connected to Tor" passive popup when finished, or an active error popup with advice when it fails
 
 |-
-! grave issue <ref>For example, if unwanted packages are installed</ref> <ref>See also [[#Checks]].</ref> found
-! active error popup with advice
+! Grave issue <ref>For example, if unwanted packages are installed.</ref> <ref>Also see: [[#System_Checks|System Checks]].</ref> found
+! Active error popup with advice
 
 |-
-! no grave issue found
-! no gui output
+! No grave issue found
+! No GUI output
 
 |-
-! manual run of whonixcheck
-! Then <code>silent</code> gets set to <code>0</code>. Resulting in progress bar + run all tests <ref>Verbose ones only when using --verbose.</ref> + active popup with results when done (like in Whonix 11).
+! Manual run of whonixcheck
+! Then <code>silent</code> is set to <code>0</code>, resulting in a progress bar and run of all tests <ref>Verbose output still requires the <code>--verbose</code> option.</ref> and active popup with results when complete
 
 |}
 
-* always skip disclaimer when running inside Qubes
-* made whonixcheck more silent, suitable for Qubes AppVM design
-<br />
-1) If running in Qubes, when autostarted (after boot) -> silent=3<br />
-2) If running in Qubes, when daemon (planed iteration during run) -> silent=3<br />
-3) Silent only applies to autostart and daemon mode. When manually run, show all messages. Same as Whonix 11.<br />
-4) overview of various silent levels
-<br />
-* silent lower/equal 0: show SocksPort and TransPort "Test Result: Connected to Tor. IP" messages
+== Other Silent Mode Settings ==
 
-* silent greater/equal 1: no "whonixcheck was recently run, no need to run it again, you could still manually start it" message.
+When running inside Qubes, whonixcheck will always skip the disclaimer. whonixcheck was specifically made more silent to suit the Qubes AppVM design:
 
-* silent lower/equal 2: do test SocksPort and TransPort but only report errors (no connectivity, Tor not detected and false positives)
+* When autostarted (after boot): <code>silent=3</code>
+* Daemon mode (planed iteration during run): <code>silent=3</code>
+* Silent only applies to autostart and daemon mode. When it is manually run, all messages are shown. <ref>The same as Whonix 11.</ref>
 
-* silent greater/equal 2: no "Tor Bootstrap Result: Connected to Tor." message unless bootstrapping took a while and a progress bar was shown
-* silent greater/equal 2: do test stream isolation, but only report errors
-* silent greater/equal 2: no Whonix News result if there are no news and debian and build version up to date
-* silent greater/equal 2: no "No updates found via apt-get" message
-    
-* silent greater/equal 3: no Tor SocksPort / TransPort test at all
-* silent greater/equal 3: no stream isolation test at all
-* silent greater/equal 3: no Whonix News check at all
-* silent greater/equal 3: no apt-get update check at all
-* silent greater/equal 3: skip to inform if Whonix repository is enabled
-* silent greater/equal 3: no progress bar for the usual tests. Except a progress bar if Tor is not bootstrapped yet.
-* silent greater/equal 3: skip test if a package manager is already running.
 
-* silent greater/equal 4: skip test whether Whonix repository enabled/disabled test at all. In other words, do not report disabled Whonix repository.
+'''Table:''' ''Silent Levels Overview''
+
+{|   class="wikitable"
+!| Silent Level
+!| Action
+|-
+| Silent <= 0
+| 
+* Show SocksPort and TransPort "Test Result: Connected to Tor. IP" messages
+|-
+| Silent >= 1 
+| 
+* No "whonixcheck was recently run, no need to run it again, you could still manually start it" message
+|-
+| Silent <= 2 
+| 
+* Complete a SocksPort and TransPort test, but only report errors <ref>Relating to no connectivity, Tor not being detected and false positives.</ref>
+|-
+| Silent >= 2  
+| 
+* No "Tor Bootstrap Result: Connected to Tor." message unless bootstrapping was slow and a progress bar was shown
+* Perform test stream isolation, but only report errors
+* No Whonix News result if there is no news and the Debian and build version are up-to-date
+* Absent "No updates found via apt-get" message
+|-
+| Silent >= 3 
+| 
+* No Tor SocksPort / TransPort test is conducted
+* No stream isolation test at all
+* No Whonix News check at all
+* No apt-get update check at all
+* Skip notification if Whonix repository is enabled
+* No progress bar for the usual tests, except a progress bar if Tor has not bootstrapped yet
+* Skip the test for a concurrently running package manager
+|-
+| Silent >= 4 
+| 
+* Skip the test for whether Whonix repository is enabled/disabled. <ref>In other words, do not notify about a disabled Whonix repository.</ref>
+|}
 
 = Development =
 == Use Cases ==
