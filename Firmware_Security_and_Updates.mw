@@ -70,39 +70,47 @@ Unfortunately most end users must blindly trust the hardware producer, so it pro
 
 The reality is that advanced adversaries are routinely hacking the firmware of [https://www.wired.com/2013/09/nsa-router-hacking/ Internet routers, switches and firewalls], along with [https://www.wired.com/2015/02/nsa-firmware-hacking/ harddrive firmware], and [https://wikileaks.org/vault7/#Dark%20Matter UEFI/EFI and ethernet adapters]. The number of targets is already in the tens of thousands on an annual basis. Subverting firmware in this manner provides a stealthy and persistent presence that can eavesdrop on or re-route all network data, or access information in invisible storage areas that are unecrypted (bypassing disk encryption). Worst of all, firmware sabotage is believed to survive software updates or complete OS re-installations. Attacks may also be designed to corrupt firmware so machines are prevented from booting, even with an external drive. <ref>http://www.darkreading.com/partner-perspectives/intel/raising-the-stakes-when-software-attacks-hardware/a/d-id/1319423</ref>
 
-== Install Microcode Package ==
+== Processor Microcode Updates ==
+
+One recent example of a firmware vulnerability is the processor microcode update for Intel chips to address [https://security-tracker.debian.org/tracker/CVE-2018-3620 speculative] [https://security-tracker.debian.org/tracker/CVE-2018-3646 execution flaws]. The [https://www.debian.org/security/2018/dsa-4279 Debian package] is only available in the non-free repository, meaning it is not installed by default in all Whonix variants. <ref>Relevant Debian packages for processor microcode: [https://packages.debian.org/stretch/intel-microcode Intel] and [https://packages.debian.org/stretch/amd64-microcode amd64].</ref> <ref>Installing these updates by default would require the Debian non-free repository, and logically also make Whonix images non-free.</ref> It is unnecessary to apply these updates in standard non-Qubes-Whonix and Qubes-Whonix guest VMs, as they do not have the ability to alter the microcode.  However, processor microcode updates <u>should</u> be applied on the host OS / baremetal configurations if running: <ref>See: https://forums.whonix.org/t/whonix-vulerable-due-to-missing-processor-microcode-packages/5739</ref>
+
+* [[Physical_Isolation|Physical Isolation]]; or
+* ARM architecture. <ref>ARM is less affected than Intel architecture.</ref>
+
+=== Install Microcode Package ===
 {{Update}}
 
 {{CodeSelect|code=
 sudo apt-get update
 }}
 
-For Intel.
+For the Intel platform, run.
 
 {{CodeSelect|code=
 sudo apt-get install intel-microcode
 }}
 
-For AMD.
+For the AMD platform, run.
 
 {{CodeSelect|code=
 sudo apt-get install amd64-microcode
 }}
 
+=== spectre-meltdown-checker ===
+It is possible to check if the system is vulnerable to the [https://arstechnica.com/gadgets/2018/01/meltdown-and-spectre-every-modern-processor-has-unfixable-security-flaws/ Spectre] and [https://meltdownattack.com/ Meltdown] attacks, which use flaws in modern chip design to bypass system protections.
 
-== spectre-meltdown-checker ==
-=== Installation ===
+==== Installation ====
 {{Install Backport|package=
 spectre-meltdown-checker
 }}
 
-=== Usage ===
+==== Usage ====
 {{CodeSelect|code=
 sudo spectre-meltdown-checker --paranoid ; echo $?
 }}
 
 === Forum Discussion ===
-https://forums.whonix.org/t/whonix-vulerable-due-to-missing-processor-microcode-packages
+See: https://forums.whonix.org/t/whonix-vulerable-due-to-missing-processor-microcode-packages
 
 = References =
 {{reflist|close=1}}
