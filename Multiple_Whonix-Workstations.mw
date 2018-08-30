@@ -6,46 +6,62 @@
 
 == Introduction ==
 
-Whonix is a secure operating system comprised of two virtual machines which are isolated both from each other and the host. This configuration averts many threats posed by malware, misbehaving applications, and user error. While Whonix protects against real world threats,<ref>Read [[Security in Real World]] to see how Whonix protects against real world attacks</ref>it still possible for an adversary with the proper skills to compromise Whonix-Workstation (<code>anon-whonix</code> [[Qubes-Whonix]]). Moreover, if only one Whonix-Workstation is used for anonymous activities, the attacker would have access to all data on the Whonix-Workstations and could monitor all online activity. To minimize the impact of compromise, users are encouraged to use muliple Whonix-Workstations to compartmentalize different identities and/or additional software. Depending on the users requirements, a second (or nth) Whonix-Workstation VM could be used.
+Whonix is a secure operating system comprised of two virtual machines which are isolated both from each other and the host. This configuration averts many threats posed by malware, misbehaving applications, and user error. While Whonix protects against real world threats, <ref>Read [[Security in Real World|Security in the Real World]] to see how Whonix protects against real world attacks.</ref> it still possible for skilled adversaries to compromise Whonix-Workstation ([[Qubes-Whonix]]: <code>anon-whonix</code>). 
 
-'''Why use multiple Whonix-Workstations'''
+If only one Whonix-Workstation is used for anonymous activities and is exploited, the attacker gains access to available data and can monitor all online activity. To minimize the impact of a compromise, users are encouraged to use multiple Whonix-Workstations to compartmentalize different identities and/or additional software. Depending on the user's preference and requirements, a second, third ... n<sup>th</sup> Whonix-Workstation VM can be created.
 
-Mulitple Whonix-Workstations can be used to run different torifed clients in isolated Whonix-Workstation VMs. By compartmentalizing each different identity or client, an attacker can read only the data in the compromised VM. For example, if Tor Browser in VM-1 was compromised it could not read your IRC identity in VM-2.  However, keep in mind, if Tor inside the Whonix-Gateway or your host internet connection goes offline, all Whonix-Workstations will go offline. If multiple Tor clients were running simultaneously, an attacker could guess that you are the same person. For example, if two Tor users in one IRC channel go offline at the same moment.
+=== Multiple Whonix-Workstation Rationale ===
 
-'''Qubes-Whonix vs Non-Qubes-Whonix'''
+Different torifed clients can be used in a completely isolated manner with Multiple Whonix-Workstations. By compartmentalizing each different identity or client, an attacker can only read the data in the compromised VM. For example, if Tor Browser in VM-1 was compromised it could not read a user's IRC identity in VM-2. <ref>Without using an additional exploit to successfully break out of the infected VM, which is a difficult task.</ref> 
 
-When using multiple Whonix-Workstations, [[Qubes|Qubes-Whonix]] is the recommended choice. This is because [[Qubes|Qubes-Whonix]] is specifically designed for compartmentalization (a.k.a. sandboxing) within multiple running VMs. This gives [[Qubes|Qubes-Whonix]] a significant advantage in both speed and security when compared to the traditional model of running multiple Virtual Machines within an existing OS (for example, running two VM's under [[VirtualBox]] or [[KVM]]). For more information, see [[Qubes/Why_use_Qubes_over_other_Virtualizers|Why use Qubes over other Virtualizers]].
+One downside of this approach is that if the host Internet connection goes offline or Tor on Whonix-Gateway (<code>sys-whonix</code>) suddenly fails, then all Whonix-Workstations will go offline simultaneously. If multiple Tor clients were running and abruptly stop in unison, a network observer could link these activities to the same person. For instance, a strong correlation is formed if two Tor users in one IRC channel go offline at exactly the same time.
 
-[[Qubes-Whonix]] also provides the benefit of a TemplateBased filesystem which saves time and provides much better usability over to Non-Qube-Whonix. 
-* '''Centralized updates''' - [https://qubes-os.org/doc/glossary/#appvm AppVMs] are based on a TemplateVM. This means their root filesystem is based on the root filesystem of the corresponding template. Users need only update the TemplateVM and those updates will be reflected in [https://qubes-os.org/doc/glossary/#templatebasedvm TemplateBasedVM's] root filesystem. This saves a great amount of time over [[Non-Qubes-Whonix]] which requires each VM to be updates individaully  .
-*  '''Minimal disk usage''' - TemplateBasedVMs require much less disk space than traditinal Virtual Machines. Since the AppVM's root filesystem is based the corresponding template. The AppVM only requires enough disk space to hold user files in the <code>/home</code> directory
-* '''VM management''' - Cloning VMs is a simple two step process which can be done in Qubes Manager. This is a time saver compared to Non-Qubes-Whonix that uses a multi-step process to clone and configure each VM. 
+=== Qubes-Whonix vs Non-Qubes-Whonix ===
 
+When using multiple Whonix-Workstations, [[Qubes|Qubes-Whonix]] is the recommended choice. This is because Qubes-Whonix is specifically designed for compartmentalization (a.k.a. sandboxing) of multiple running VMs. This provides a significant advantage in both speed and security compared to the traditional Type 2 hypervisor model, where two (or more) Whonix VMs are run inside programs like [[VirtualBox]] on top of the host OS. For more information, see: [[Virtualization_Platform_Security#Type_1_vs_Type_2_Hypervisors|Type 1 vs Type 2 Hypervisors]] and [[Qubes/Why_use_Qubes_over_other_Virtualizers|Why use Qubes over other Virtualizers]].
 
-'''Safety-precautions'''
+Qubes-Whonix also has a TemplateBased filesystem which saves time and provides much better usability compared to Non-Qubes-Whonix:
 
-While multiple Whonix-Workstations are recommended, it is safer to use only one Whonix-Workstation at any given time, and for a single activity.
+* '''Centralized Updates:''' [https://qubes-os.org/doc/glossary/#appvm AppVMs] are based on a TemplateVM. This means their root filesystem is based on the root filesystem of the corresponding template. Users need only update the TemplateVM and those updates will be reflected in the root filesystem of every [https://qubes-os.org/doc/glossary/#templatebasedvm TemplateBasedVM]. [[Non-Qubes-Whonix]] users must spend more time in updating each VM individually.
+*  '''Minimal Disk Usage:''' TemplateBasedVMs require far less disk space than traditional VMs, since the AppVM's root filesystem is based the corresponding template. The AppVM only requires enough disk space to hold user files in the <code>/home</code> directory.
+* '''VM Management:''' Cloning VMs is a simple two-step process which can be done in Qubes Manager. Non-Qubes-Whonix users must spend more time with a multi-step process to clone and configure each VM.
+
+=== Safety Precautions ===
+
+While multiple Whonix-Workstations are recommended, this is <u>not</u> an endorsement for using them simultaneously. It is far safer to only use one Whonix-Workstation at any given time, and for a single activity.
 
 Leaving multiple Whonix-Workstations running at the same time introduces new risks. If one of the Whonix-Workstation VMs was compromised, it can perform various attacks and not all of them can be defeated. Depending on the activities a user was performing in other Whonix-Workstations, a skilled adversary could correlate the various running Whonix-Workstations to the same pseudonym.
 
-* An adversary could stress either/and CPU, HDD, RAM, network connection and other Whonix-Workstations. It is possible the host could be negatively affected as well.
-* DDOSing: 
-** Other Whonix-Workstations.
-*** There is no defense against DOSing other Whonix-Workstations.
-** Whonix-Gateway 
-*** There is no defense against DOSing other Whonix-Gateway.
-* Exploits:
-** This risk can be reduced by following the recommendations found in the [[System Hardening Checklist]].
-** The adversary could try to exploit the Whonix-Gateway.
-** The adversary could try to exploit other Whonix-Workstations.
-*** Non-Qubes-Whonix: Applies
-*** Qubes-Whonix: Not applicable. [Unless Whonix-Gateway is compromised first.] (Details in chapter [[#Firewall]].)
-* Impersonating
-** Non-Qubes-Whonix: A defense against impersonating (i.e. MITM or malicious gateway) other Whonix-Workstations or the Whonix-Gateway can be implemented using authentication, this is linked in the [[#How to use more than one Whonix-Workstation - More Security]] section below.
-** Qubes-Whonix: Not required. (Details in chapter [[#Firewall]].)
-* Identity correlation through circuit sharing <ref>See [[Stream Isolation]] page for definition.</ref>
-** Non-Qubes-Whonix: Is not at risk as long as the Whonix-Workstations aren't compromised. Multiple Whonix-Workstations using different internal IPs (as recommended in the instructions below) are automatically using [[Stream Isolation]].<ref>Because [https://www.torproject.org/docs/tor-manual.html.en IsolateClientAddr] is Tor's default.</ref>
-** Qubes-Whonix: Not required. (Details in chapter [[#Firewall]].)
+'''[https://en.wikipedia.org/wiki/Denial-of-service_attack Distributed Denial of Service (DDOS) Attack]'''
+
+* Other Whonix-Workstations can be DDOSed, and there is no current defense.
+* Other Whonix-Gateways can be DDOSed, and there is no current defense. 
+
+
+'''Exploits'''
+
+* Reduce the risk of exploits by following the recommendations found in the [[System_Hardening_Checklist|System Hardening Checklist]].
+* The adversary could try to exploit the Whonix-Gateway.
+* The adversary could try to exploit other Whonix-Workstations.
+** Non-Qubes-Whonix: At risk.
+** Qubes-Whonix: Safe, unless Whonix-Gateway is compromised first. <ref>For details, see [[#Firewall]].</ref>
+
+
+'''Identity Correlation through Circuit Sharing''' <ref>See the [[Stream Isolation]] page for a definition.</ref>
+
+* Non-Qubes-Whonix: This is not a threat so long as the Whonix-Workstations are not compromised. Multiple Whonix-Workstations using different internal IPs (as recommended in the instructions below) are automatically using [[Stream Isolation]]. <ref>Because [https://www.torproject.org/docs/tor-manual.html.en IsolateClientAddr] is Tor's default.</ref>
+* Qubes-Whonix: No further action is necessary; see details in chapter [[#Firewall]].
+
+
+'''Impersonation'''
+
+* Non-Qubes-Whonix: A defense against impersonation <ref>Like a man-in-the-middle attack or malicious gateway</ref> of other Whonix-Workstations or the Whonix-Gateway can be implemented using authentication. This is outlined in the [[#How to use more than one Whonix-Workstation - More Security]] section below.
+* Qubes-Whonix: No further defenses are required; for details see [[#Firewall]].
+
+
+'''System Stressing'''
+
+* An adversary could stress any system, network or software components like CPU, HDD, RAM, network connection and other Whonix-Workstations. It is possible the host could be negatively affected as well.
 
 == How to use more than one Whonix-Workstation - EASY ==
 === Qubes-Whonix ===
