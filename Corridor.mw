@@ -61,30 +61,13 @@ Enable the {{Code2|corridor}} qvm service.
 
 <code>Qubes VM Manager -> click on {{Code2|sys-corridor}} -> right-click -> VM settings -> services -> type in the field -> {{Code2|corridor}} -> press {{Code2|+}} -> press OK</code>
 
-== sys-corridor setup ==
+== sys-corridor Setup ==
+
+If a BridgeFirewall is required, [[#Optional:_BridgeFirewall_corridor_Configuration|first configure Tor to use bridges]] before installing corridor.
+
+=== Install corridor ===
+
 Start {{Code2|sys-corridor}} and open a terminal using Qubes start menu.
-
-Inside {{Code2|sys-corridor}}...
-
-Optional. If you want to use corridor as a [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO/BridgeFirewall BridgeFirewall], configure Tor to use [https://www.torproject.org/docs/bridges.html.en bridges] now. (The Whonix page about [[Bridges]] might help but it does not apply one to one.) Also if you want to do that, create folder {{Code2|/etc/corridor.d}} and configuration file {{Code2|/etc/corridor.d/21-bridges-user.conf}} now. Otherwise if you like to use Tor entry guards <ref>
-https://www.torproject.org/docs/faq.html.en#EntryGuards
-</ref>, you can skip that.
-
-Note: ''Bridges are less reliable and tend to have lower performance than other entry points. If you live in a uncensored area, they are not necessarily more secure than entry guards.'' ''Source: [https://lists.torproject.org/pipermail/tor-talk/2012-May/024378.html bridge vs non-bridge users anonymity].''
-
-{{Open with root rights|filename=
-/etc/corridor.d/21-bridges-user.conf
-}}
-
-Add. TODO: doesn't work
-
-{{CodeSelect|code=
-TODO: doesn't work
-
-BRIDGES=`grep -Ei '^[[:space:]]*Bridge[[:space:]]' /usr/local/etc/torrc.d/*`
-}}
-
-Save.
 
 {{Whonix-APT-Repository-Add}}
 
@@ -100,7 +83,7 @@ Install corridor.
 sudo apt-get install corridor
 }}
 
-As long as this instructions are experimental, you are advised to run the following systemctl commands to check if everything is alright.
+While these instructions remain experimental, you are advised to run the following systemctl commands to check if everything is functioning correctly.
 
 {{CodeSelect|code=
 sudo systemctl --no-pager status corridor-data
@@ -110,6 +93,35 @@ sudo systemctl --no-pager status corridor-init-snat
 }}
 
 Reboot {{Code2|sys-corridor}}.
+
+=== Optional: BridgeFirewall corridor Configuration ===  
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = "Bridges are less reliable and tend to have lower performance than other entry points. If you live in a uncensored area, they are not necessarily more secure than entry guards." <ref>[https://lists.torproject.org/pipermail/tor-talk/2012-May/024378.html bridge vs non-bridge users anonymity].</ref>
+}}
+
+
+In order to use corridor as a [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO/BridgeFirewall BridgeFirewall], configure Tor to use [https://www.torproject.org/docs/bridges.html.en bridges] before installing corridor. <ref>The Whonix [[Bridges]] page can help, but the steps do not apply one-to-one.</ref> 
+
+'''1.''' Start {{Code2|sys-corridor}} and open a terminal using Qubes start menu.<br />
+'''2.''' Create folder {{Code2|/etc/corridor.d}} and configuration file {{Code2|/etc/corridor.d/21-bridges-user.conf}} first. <ref>This skip is stepped if [https://www.torproject.org/docs/faq.html.en#EntryGuards Tor entry guards] are preferred.</ref> <br />
+'''3.''' Create a bridges configuration file.
+
+{{Open with root rights|filename=
+/etc/corridor.d/21-bridges-user.conf
+}}
+
+'''4.''' Add the following text.
+
+TODO: This step is not currently functional.
+
+{{CodeSelect|code=
+BRIDGES=`grep -Ei '^[[:space:]]*Bridge[[:space:]]' /usr/local/etc/torrc.d/*`
+}}
+
+Save.
 
 == test corridor ==
 Run the above systemctl commands again.
