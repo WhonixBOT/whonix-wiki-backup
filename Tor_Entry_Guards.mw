@@ -1,0 +1,393 @@
+{{Header}}
+{{#seo:
+|description=Tor Entry Guards, Alternate Configurations, Fingerprinting Risks
+}}
+
+=== Introduction ===
+
+{{Persistent Tor Entry Guards Introduction}}
+
+<ref>
+As concluded in ticket [https://phabricator.whonix.org/T469 research non-persistent Tor directory guards], these are covered by the following instructions.
+</ref>
+=== Manual Rotation of Tor Guards ===
+
+==== Security and Performance Related Issues ====
+
+Users may be tempted to create a new Whonix-Gateway (sys-whonix) in the following circumstances:
+
+* Bootstrapping is slow or regularly fails.
+* Tor logs show warnings suggesting evidence of route manipulation attacks or other oddities.
+* Logs reveal attempted attacks on Whonix or Tor processes, for example in AppArmor logs.
+* Current Tor performance is very slow or unreliable due to collapsing circuits or other factors.
+* The user is concerned about the amount of Tor data that could be revealed if the Whonix-Gateway is infected, particularly after a long period of use.
+
+Creating a new Whonix-Gateway or <code>sys-whonix</code> will ''likely'' lead to a new set of Tor entry guards, which is [https://blog.torproject.org/improving-tors-anonymity-changing-guard-parameters proven to degrade anonymity].  Forcing the rotation of guards more often than Tor’s default is dangerous for several reasons:
+
+* It increases the likelihood of a compromised or malicious Tor guard being selected. This increases the chance of a successful [https://securityaffairs.co/wordpress/17489/intelligence/traf%EF%AC%81c-correlation-vs-anonymity-on-tor.html correlation attack] if the adversary runs Tor exit relays in the network. 
+* The user is more likely to traverse a [http://freehaven.net/anonbib/#feamster:wpes2004 given] [http://freehaven.net/anonbib/#DBLP:conf:ccs:EdmanS09 set] of [http://freehaven.net/anonbib/#ndss13-relay-selection Internet infrastructure links] that are under the adversary's control, such as Autonomous Systems (ASes) or Internet Exchange Points (IXPs).
+* Every change of Tor guards acts like a fingerprinting mechanism, since other users are less likely to pick the same set. If the adversary is able to enumerate a user's Tor guards, and later observes someone with the same set, the chance is high the two observations stem from the same person. 
+
+For these reasons the Tor Project changed its design in 2014 to have a solitary primary guard node, and increased the set period for guard rotation. Users should also not discount the possibility that an adversary might purposefully cause poor Tor throughput, in the hope Tor guards are manually changed:
+
+<blockquote>We should also consider whether an adversary can *induce* congestion or resource exhaustion to cause a target user to switch away from her guard. Such an attack could work very nicely coupled with the guard enumeration attacks discussed above.</blockquote>
+
+In one sense, slow Tor entry guards should be welcomed - “honeypot” operators on the Tor network are unlikely to have constrained bandwidth which might chase away intended targets. 
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       ='''Warning:''' Users considering using disposable Whonix-Gateway ProxyVMs in Qubes R4 are [[Qubes/DisposableVM#Warning:_Avoid_Ephemeral_Whonix-Gateway_ProxyVMs_in_Qubes_R4|warned]] that this technique severely degrades anonymity; <b>new Tor guards are created during each distinct Whonix session.</b>
+}}
+
+If users feel compelled in their circumstances to proceed despite the anonymity risks, then it may be safer to first try:
+
+* One of the fallback primary entry guards.
+* A configured [[Bridges|bridge]].
+* Chaining other [[Tunnels/Introduction|tunnels]] with Tor.
+* Creating a fresh Whonix-Gateway (<code>sys-whonix</code>), and copying across the Tor state file.
+
+The safest decision is to persist with poor performance and wait for normal guard rotation.
+
+=== Mitigate the Threat of Guard Fingerprinting ===
+
+If guard fingerprinting across different locations is a concern, there are several ways to mitigate this threat. Viable options include: bridges, temporarily rotating guards, or cloning Whonix-Gateway (sys-whonix) with new guards.
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       ='''Note:''' Weigh the fingerprinting risks outlined in the previous section before proceeding. In most cases the decision to not rotate guards (even temporarily) is the correct one.
+}}
+
+=== Clone Whonix-Gateway (sys-whonix) with New Entry Guards ===
+
+It is possible to clone the current Whonix-Gateway (<code>sys-whonix</code>) VM and regenerate the Tor state file. Once the VM is cloned, it is important that the original is not unintentionally used for any anonymous activities. To nullify this threat, consider disabling networking in the original Whonix-Gateway until returning home. 
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       ='''Warning:''' Users should not clone the Whonix-Gateway (<code>sys-whonix</code>) with new guards at the home address. If the Tor client connects through the home network, the new guards might be correlated to the home address.
+}}
+
+Create a clone of the Whonix-Gateway (<code>sys-whonix</code>) and name it Whonix-Gateway-temp VM (<code>sys-whonix-temp</code> VM) . 
+
+** Virtualbox: follow [https://dirkstrauss.com/clone-virtualbox-vm/ these instructions] to create a VM snapshot.
+** Qubes-Whonix: <code>Right-click on sys-whonix</code> -> <code>Clone VM</code>
+* [[Tor#Fresh_Tor_Entry_Guards_by_Regenerating_the_Tor_State_File|Regenerate the Tor State File]].
+
+=== Regenerate the Tor State After Saving the Tor State Folder ===
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Non-Qubes-Whonix only!
+}}
+
+Prior to arriving at the remote location, the Whonix-Gateway Tor state folder is moved to the <code>$HOME</code> directory, and the Tor state file is regenerated.
+
+'''1.''' In Whonix-Gateway konsole, stop Tor.
+
+{{CodeSelect|code=
+sudo systemctl stop tor@default
+}}
+
+'''2.''' In Whonix-Gateway konsole, remove the temporary Tor state folder.
+
+{{CodeSelect|code=
+sudo rm -r /var/lib/tor
+}}
+
+'''3.''' In Whonix-Gateway konsole, restore the Tor state folder.
+
+{{CodeSelect|code=
+sudo mv ~/tor /var/lib
+}}
+
+'''4.''' In Whonix-Gateway konsole, restart Tor.
+
+{{CodeSelect|code=
+sudo systemctl restart tor@default
+}}
+
+Before returning home, the Tor state folder is restored to its original settings.
+
+'''1.''' In Whonix-Gateway konsole, Stop Tor.
+
+{{CodeSelect|code=
+sudo systemctl stop tor@default
+}}
+
+'''2.''' In Whonix-Gateway konsole, move the Tor state folder to the <code>$HOME</code> directory.
+
+{{CodeSelect|code=
+sudo mv /var/lib/tor ~/
+}}
+
+'''3.''' In Whonix-Gateway konsole, restart Tor.
+
+{{CodeSelect|code=
+sudo systemctl restart tor@default
+}}
+
+=== Alternating Bridges ===
+
+If [[bridges|bridges]] are already in use, alternate bridges are recommended for different locations. If bridges are not used, consideration should be given to using entry guards in your primary location and relying on alternate bridges in different locations.
+
+Complete the following steps on Whonix-Gateway ([[Qubes-Whonix]]: <code>sys-whonix</code>).
+
+'''1.''' {{Disable_Tor}}
+
+'''2.''' Configure Tor to use bridges. Refer to the [[Bridges|Bridges]] documentation.
+
+'''3.''' Enable Tor using whonixsetup / whonix-setup-wizard at the new location.
+
+'''4.''' Before leaving this location, disable Tor. If traveling to a different area, add a different bridge address. To revert to the usual guard nodes used at home, remove the torrc bridge settings before enabling the network, or rollback to a VM snapshot created at home.
+
+=== Copy Tor Configuration files and Settings to Another sys-whonix Instance ===
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = [[Qubes-Whonix]] only!
+}}
+
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       ='''Warning:''' Users are strongly encouraged to follow the instructions as they are written to avoid unforeseen consequences.<ref>If users were to use an alternate command to remove the Tor state folder, this could result in broken file persistence across reboots. This relates to the [[Qubes-Whonix]] design, which uses <code>bind-dirs</code> file persistence for the Tor folder and other select directories. At the very least, users would need to mount, then unmount the Tor folder in the same way as <code>bind-dirs</code> does. This would likely be a complicated and time consuming task.</ref> 
+}}
+
+
+On occasion, [[Qubes-Whonix]] users may want to copy the Tor state along with custom configuration options from an existing <code>sys-whonix</code> ProxyVM to another <code>sys-whonix</code> instance. For example, this is useful for testing later Whonix releases without aiding deanonymization attempts by advanced adversaries, <ref>As the same Tor entry guard is used.</ref> or creating an identical backup that does not share any other persistent data, except for Tor state and custom torrc options.
+
+==== Copy Tor State Files to Another sys-whonix Instance ====
+
+The following instructions copy the Tor state from <code>sys-whonix-old</code> to <code>sys-whonix-new</code>.
+
+'''1.''' In <code>sys-whonix-new</code>, stop Tor'''
+
+{{CodeSelect|code=
+sudo systemctl stop tor@default
+}}
+
+'''2.''' In <code>sys-whonix-new</code>, remove the Tor state file.'''
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       ='''Warning:'''  Care is required when removing files so extra spaces are not added to the file path! As an example, if a space is accidentally placed before the asterisk in the command to remove the Tor state file, the removal of the <code>/</code> (root directory) and all system data would be the unfortunate consequence.
+}}
+
+{{CodeSelect|code=
+sudo su
+}}
+
+{{CodeSelect|code=
+sudo rm /var/lib/tor/*
+}}
+
+'''3.''' In <code>sys-whonix-old</code>, stop Tor'''
+
+{{CodeSelect|code=
+sudo systemctl stop tor@default
+}}
+
+'''4.''' In <code>sys-whonix-old</code>, copy the Tor state file across to <code>sys-whonix-new</code>'''
+
+{{CodeSelect|code=
+sudo qvm-copy /var/lib/tor sys-whonix-new
+}}
+
+If the following error appears, it can be safely ignored (hit "OK" when prompted).
+
+<pre>
+qfile-agent: Fatal error: stat “VM” (error type: No such file or directory)
+</pre>
+
+'''5.''' In <code>sys-whonix-new</code>, list the QubesIncoming directory to ensure the Tor state file was copied over successfully'''
+
+{{CodeSelect|code=
+ls ~/QubesIncoming/sys-whonix-old/tor
+}}
+
+The output should include the files below.
+
+   <code>cached-certs cached-microdescs lock</code>
+   <code>cached-microdesc-consensus cached-microdescs.new state</code>
+
+'''6.''' In <code>sys-whonix-new</code>, move the newly copied Tor state file to ''/var/lib/tor'''''
+
+{{CodeSelect|code=
+sudo mv ~/QubesIncoming/sys-whonix-old/tor/* /var/lib/tor
+}}
+
+'''7.''' In <code>sys-whonix-new</code>, change ownership of all files in the Tor state folder to <code>debian-tor</code>'''
+
+{{CodeSelect|code=
+sudo chown -R debian-tor:debian-tor /var/lib/tor
+}}
+
+'''8.''' In <code>sys-whonix-new</code>, start Tor'''
+
+{{CodeSelect|code=
+sudo systemctl start tor@default
+}}
+
+'''9.''' In <code>sys-whonix-new</code>, run [[whonixcheck]] to verify Tor is functioning properly'''<ref>If Tor fails to start, users should verify the Tor folder has the proper file permissions with the following command <code>sudo ls -l /var/lib/tor</code></ref>
+
+{{CodeSelect|code=
+whonixcheck
+}}
+
+==== Copy Tor Configuration Options (torrc) to Another sys-whonix ====
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = '''Note:''' Users may also migrate Whonix 13 torrc options to Whonix 14 based <code>sys-whonix</code> instances. To do this users must revise the instructions to use <code>/usr/local/etc/torrc.d/50_user.conf</code> as the destination for the torrc options in place of <code>/etc/tor/torrc</code><ref>When users reach step 3 in the instructions,
+ move the torrc options from the QubesIncoming directory to the torrc file
+ <code>sudo mv ~/QubesIncoming/sys-whonix-old/torrc /usr/local/etc/torrc.d/50_user.conf</code></ref>
+<br>
+For migration between Whonix 14 based <code>sys-whonix</code> VMs, use <code>/usr/local/etc/torrc.d/50_user.conf</code> as both the source and destination file for torrc options.<ref>
+Users should revise instructions as follows<br>
+  Step 1 <code>qvm-copy /usr/local/etc/torrc.d/50_user.conf sys-whonix-new</code> <br>
+  Step 2 <code>cat ~/QubesIncoming/sys-whonix-old/50_user.conf</code><br> 
+  Step 3 <code>sudo mv ~/QubesIncoming/sys-whonix-old/50_user.conf /usr/local/etc/torrc.d/50_user.conf</code><br> 
+  Step 4 <code>sudo chown -R root:root /usr/local/etc/torrc.d</code></ref>
+}}
+
+<br>
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       ='''Note:'''  For Whonix 14 and later releases, all user unique Tor configurations (torrc) options should be stored in <code>/usr/local/etc/torrc.d/50_user.conf</code> and not anywhere else.
+}}
+
+
+The following instructions copy the custom Tor configuration options (torrc) from <code>sys-whonix-old</code> to <code>sys-whonix-new</code>.
+
+'''1.'''  In <code>sys-whonix-old</code>, copy the <i>torrc</i> options across to <code>sys-whonix-new</code>
+
+{{CodeSelect|code=
+qvm-copy /usr/local/etc/torrc.d/50_user.conf sys-whonix-new
+}}
+
+If the following error appears, it can be safely ignored (hit "OK" when prompted).
+
+  qfile-agent: Fatal error: stat “VM” (error type: No such file or directory)
+
+'''2.''' In <code>sys-whonix-new</code>, print the <i>QubesIncoming</i> directory to ensure the <i>torrc</i> options were copied over successfully
+
+{{CodeSelect|code=
+cat ~/QubesIncoming/sys-whonix-old/50_user.conf
+}}
+
+'''3.''' In <code>sys-whonix-new</code>, move the <i>50_user.conf</i> options from the <i>QubesIncoming</i> directory to the <i>50_user.conf</i> file
+
+{{CodeSelect|code=
+sudo mv ~/QubesIncoming/sys-whonix-old/50_user.conf /usr/local/etc/torrc.d/50_user.conf
+}}
+
+'''4.''' In <code>sys-whonix-new</code>, change ownership of the Tor configuration file
+
+{{CodeSelect|code=
+sudo chown -R root:root /etc/tor
+}}
+
+'''5.''' In <code>sys-whonix-new</code>, restart Tor so the newly copied Tor config options take affect
+
+{{CodeSelect|code=
+sudo systemctl restart tor@default
+}}
+
+'''6.''' In <code>sys-whonix-new</code>, run [[whonixcheck]] to verify Tor is functioning properly.<ref>If Tor is not running after restart, users can verify the newly migrated torrc options are valid with this command <code>anon-verify</code>The output should be similar to the following.
+<br><i>
+/===================================================================\
+|                      Report Summary                               |
+\===================================================================/
+No error detected in your Tor configuration.
+</i></ref>
+
+{{CodeSelect|code=
+whonixcheck
+}}
+
+=== Fresh Tor Entry Guards by Regenerating the Tor State File ===
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = The action is inadvisable unless the user is aware of the consequences; see [[#Introduction|Introduction]]. 
+}}
+
+
+The following instructions manually change a user's Tor entry guards. One use case for this action is before a user permanently relocates to a new area.
+
+Complete the following steps on Whonix-Gateway ([[Qubes-Whonix]]: <code>sys-whonix</code>).
+
+'''1.''' {{Disable_Tor}}
+
+'''2.''' Delete Tor's state file.
+
+{{CodeSelect|code=
+sudo rm /var/lib/tor/state
+}}
+
+'''3.''' Enable Tor using whonixsetup / whonix-setup-wizard at the new location.
+
+=== Configure Non-Persistent Entry Guards ===
+
+Some users may consider configuring non-persistent entry guards so they constantly change. In almost all cases this is inadvisable, because persistent entry guards are a critical security feature as explained in the [[#Introduction|introduction]]. A far more secure alternative is [[#Alternating Bridges|Alternating Bridges]], although this requires a considerable time investment.
+
+<div class="toccolours mw-collapsible mw-collapsed" style="width:800px">
+To proceed in spite of the warning, press on expand on the right.
+<div class="mw-collapsible-content">
+Complete these steps in Whonix-Gateway ([[Qubes-Whonix]]: <code>sys-whonix</code>).
+
+'''1.''' If using Whonix 12 or earlier, adjust whonixcheck settings.
+
+{{Open with root rights|filename=
+/etc/whonix.d/50_user.conf
+}}
+
+Add.
+
+{{CodeSelect|code=
+whonixcheck_skip_functions+=" check_tor_pid "
+}}
+
+Save.
+
+'''2.''' {{Disable_Tor}}
+
+'''3.''' Modify Tor settings.
+
+{{Open /usr/local/etc/torrc.d/50_user.conf}}
+
+Add.
+
+{{CodeSelect|code=
+DataDirectory /var/run/tor
+}}
+
+Save.
+
+'''4.''' Enable Tor using whonixsetup / whonix-setup-wizard at the new location.
+
+'''5.''' Before leaving this location, disable Tor and repeat the above steps if traveling to a different area. To revert to the usual guard nodes at home, remove the torrc setting before enabling the network, or rollback to a VM snapshot that was created there.
+</div>
+</div>
+
+=== Notes ===
+
+* The proposed Tails solutions towards AdvGoalTracking have disadvantages <ref>https://tails.boum.org/blueprint/persistent_Tor_state/</ref> <ref>https://blog.torproject.org/blog/tor-weekly-news-%E2%80%94-june-17th-2015#A_persistent_Tor_state_for_Tails</ref> and are not suitable options for Whonix. The reason is Whonix does not connect directly to a user's internet LAN, so trying to remember a network based on its SSID will not work. Unlike wireless access points, physical or virtual wired networks lack SSIDs and cannot be "remembered" that way.
+
+* Even if it were possible, it is best to avoid letting adversaries influence guard changes in any way. Spoofing MAC addresses or SSIDs would trigger the use of the alternate entry guard recorded for another "location profile". Global networks also have generic characteristics that cannot be differentiated from the point of view of a connecting device, resulting in the same guards being used on different networks.
+
+* Developers/Auditors-only: The development discussion related to this documentation chapter: [https://phabricator.whonix.org/T94 research non-persistent entry guards].
+
+== Footnotes ==
+{{reflist|close=1}}
+
+== License ==
+{{License_Amnesia|{{FULLPAGENAME}}}}
+
+{{Footer}}
+
+[[Category:Documentation]]
