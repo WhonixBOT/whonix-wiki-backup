@@ -27,41 +27,91 @@ There are several security and privacy benefits of using Tor onion services: <re
 
 = Qubes Packages =
 
-The following commands must be run in dom0 in order to use Qubes’ Tor onion service repositories for each type of VM. <ref>The cat commands are optional and for confirmation only.</ref>
+Configuring Qubes to use Tor onion service repositories for updates is a simple process. Since Qubes .onion repositories definitions are installed by default users only need to comment out the http:// URI repository definitions and uncomment the Tor .onion repositories definitions. 
 
-The downside of this approach is that repository definitions are managed by a Qubes package, meaning manual updates are needed if the the definitions change in the future.
-
-{{mbox
-| type    = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text    = Users that are currently enforcing v2 <i>.onion</i> connections can update their system to v3 <i>.onion</i> connections by replacing all instances of the http/URI address (qubes-os.org) below with {{Qubes_onion}}
-}}
+If the term "comment" is unfamiliar to you, please follow https://www.howtogeek.com/118389/how-to-comment-out-and-uncomment-lines-in-a-configuration-file/ on how to comment out and uncomment lines in a configuration file. 
 
 == dom0 ==
 
-In dom0, run.
-{{CodeSelect|code=
-sudo sed -i 's/yum.qubes-os.org/yum.{{Qubes_onion}}/' /etc/yum.repos.d/qubes-dom0.repo && cat /etc/yum.repos.d/qubes-dom0.repo
-}}
-{{CodeSelect|code=
-sudo sed -i 's/yum.qubes-os.org/yum.{{Qubes_onion}}/' /etc/yum.repos.d/qubes-templates.repo && cat /etc/yum.repos.d/qubes-templates.repo
-}}
+1. In a dom0 terminal, open the qubes-dom0.repo configuration file in a text editor.
+
+sudo nano /etc/yum.repos.d/qubes-dom0.repo
+
+Comment out (#) the 4 lines that contain qubes-os.org. 
+
+Next, uncomment the 4 lines that contain sik5nlgfc5qylnnsr57qrbm64zbdx6t4lreyhpon3ychmxmiem7tioad.onion.
+
+When completed each of the 4 code blocks will have http repository lines similar to the following example.
+
+#baseurl = http://yum.qubes-os.org/r$releasever/current/dom0/fc25
+baseurl = http://yum.sik5nlgfc5qylnnsr57qrbm64zbdx6t4lreyhpon3ychmxmiem7tioad.onion/r$releasever/current/dom0/fc25
+
+Save and exit
+
+2. In a dom0 terminal, open the qubes-templates.repo configuration file in a text editor.
+
+sudo nano /etc/yum.repos.d/qubes-templates.repo
+
+Comment out (#) all lines that contain qubes-os.org. 
+
+Next, uncomment all lines that contain sik5nlgfc5qylnnsr57qrbm64zbdx6t4lreyhpon3ychmxmiem7tioad.onion.
+
+When completed each of the 4 code blocks will have http repository lines similar to the following example. 
+
+#baseurl = http://yum.qubes-os.org/r$releasever/templates-itl
+baseurl = http://yum.sik5nlgfc5qylnnsr57qrbm64zbdx6t4lreyhpon3ychmxmiem7tioad.onion/r$releasever/templates-itl
+
+Save and exit.
+
+3. In dom0 terminal, confirm both onionized repositories are functional.
+
+sudo qubes-dom0-update
 
 == Fedora Template ==
-To update Qubes packages in Qubes Fedora Template exclusively over onions.
 
-In dom0, run.
-{{CodeSelect|code=
-qvm-run -a --nogui -p -u root <your_fedora_template> 'sed -i "s/yum.qubes-os.org/yum.{{Qubes_onion}}/" /etc/yum.repos.d/qubes-r* && cat /etc/yum.repos.d/qubes-r*'
-}}
+1. To update Qubes packages in Qubes Fedora Template exclusively over onions.
+
+In Fedora TemplateVM, open the qubes-r4.repo configuration file in a text editor.
+
+sudo gedit /etc/yum.repos.d/qubes-r4.repo
+
+Comment out (#) all lines that contain qubes-os.org.
+
+Next, uncomment all lines that contain an sik5nlgfc5qylnnsr57qrbm64zbdx6t4lreyhpon3ychmxmiem7tioad.onion.
+
+When completed each of the 4 code blocks will have http repository lines similar to the following example.
+
+#baseurl = http://yum.qubes-os.org/r4.0/current/vm/fc$releasever
+baseurl = http://yum.sik5nlgfc5qylnnsr57qrbm64zbdx6t4lreyhpon3ychmxmiem7tioad.onion/r4.0/current/vm/fc$releasever
+
+Save and exit.
+
+2. In Fedora terminal, confirm the onionized repositories are functional.
+
+sudo dnf update
 
 == Debian and Whonix Templates ==
-To update Qubes packages in Qubes Debian and Whonix Template exclusively over onions. 
 
-In dom0, run.
-{{CodeSelect|code=
-qvm-run -a --nogui -p -u root <your_debian_template> 'sed -i "s/deb.qubes-os.org/deb.{{Qubes_onion}}/" /etc/apt/sources.list.d/qubes-r* && cat /etc/apt/sources.list.d/qubes-r*'
-}}
+To update Qubes packages in Debian and Whonix Templates exclusively over onions. 
+
+In Debian and Whonix TempateVMs, open the sources.list in a text editor.
+
+sudo nano /etc/apt/sources.list.d/qubes-r*.list
+
+Comment out (#) the first line under Main qubes updates repository. The first code block should look similar to this.
+ 
+# Main qubes updates repository
+#deb [arch=amd64] http://deb.qubes-os.org/r4.0/vm stretch main
+#deb-src http://deb.qubes-os.org/r4.0/vm stretch main
+
+Next, uncomment the corresponding line under Qubes Tor updates repositories. The first code block should look similar to this.
+
+# Qubes Tor updates repositories
+# Main qubes updates repository
+deb [arch=amd64] http://deb.sik5nlgfc5qylnnsr57qrbm64zbdx6t4lreyhpon3ychmxmiem7tioad.onion/r4.0/vm stretch main
+#deb-src http://deb.sik5nlgfc5qylnnsr57qrbm64zbdx6t4lreyhpon3ychmxmiem7tioad.onion/r4.0/vm stretch main
+
+Save and exit.
 
 = Fedora Packages =
 Updating Fedora packages in Qubes Fedora Template exclusively over onions is unavailable since Fedora does not provide updates over onions. 
