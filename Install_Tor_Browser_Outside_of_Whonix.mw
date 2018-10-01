@@ -1,0 +1,173 @@
+{{Header}}
+{{#seo:
+|description=Installing Tor Browser outside of Whonix. Fallback if Whonix breaks. Test Tor connectivity outside of Whonix.
+}}
+
+= Introduction =
+
+Various sections of the Whonix wiki suggest users maintain a functional Tor Browser outside of the Whonix platform. This is useful in various cases:
+
+* Should Whonix ever break, users can search for a solution anonymously.
+* System-wide Tor problems can be detected by testing connectivity outside of the Whonix platform.
+* Certain Tor Browser activities might be difficult to configure in Whonix, but trivial in the standard configuration. <ref>Such as configuring a Snowflake pluggable transport client.</ref>
+
+For non-Qubes-Whonix, it is recommended to have Tor Browser installed on the Linux / macOS / Windows host platform. Qubes-Whonix users are recommended to install Tor Browser in a debian-9 AppVM.
+
+= Easy =
+
+== All Platforms: Manual Tor Browser Download ==
+
+Follow [[Manually_Downloading_Tor_Browser#Manually_Downloading_Tor_Browser |these instructions]] to manually download Tor Browser with Firefox ESR via the available onion services. This method is not anonymous, unless Qubes-Whonix users temporarily set <code>sys-whonix</code> as the NetVM for the non-Whonix AppVM.
+
+== Debian Linux Hosts ==
+
+Tor Browser can optionally be downloaded with [https://github.com/Whonix/tb-updater <code>tb-updater</code>] by Whonix. This method below is not anonymous.
+
+'''1.''' Add the Whonix signing key.
+
+{{CodeSelect|code=
+sudo apt-key --keyring /etc/apt/trusted.gpg.d/whonix.gpg adv --keyserver hkp://ipv4.pool.sks-keyservers.net:80 --recv-keys 916B8D99C38EAF5E8ADC7A2A8D66066A2EEACCDA
+}}
+
+'''2.''' Add the Whonix APT repository.
+
+{{CodeSelect|code=
+echo “deb http://deb.whonix.org stretch main” | sudo tee /etc/apt/sources.list.d/whonix.list
+}}
+
+'''3.''' Update the package lists.
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+'''4.''' Install <code>tb-updater</code>.
+
+{{CodeSelect|code=
+sudo apt-get install tb-updater
+}}
+
+= Moderate: Qubes-Whonix =
+
+{{mbox
+| image   = [[File:Ambox_notice.png|40px]]
+| text    = Qubes-Whonix R4 only!
+}}
+
+
+The Qubes-Whonix R4 instructions using Whonix's <code>tb-updater</code> are a little more difficult because TemplateVMs are non-networked by default. Qubes R3.2 users should use one of the Easy methods outlined above.
+
+These instructions:
+
+* Anonymously retrieve and verify the Whonix signing key.
+* Copy the Whonix signing key to a debian-9 TemplateVM clone (<code>debian-9-tor</code>).
+* Add the Whonix signing key to a list of trusted keys.
+* Install apt-transport-tor in debian-9-tor TemplateVM.
+* Add the Whonix onion repository.
+* Install tb-updater from the Whonix stable repository.
+* Create a <code>debian-9-tor</code> AppVM.
+* Temporarily set <code>sys-whonix</code> as the NetVM for <code>debian-9-tor</code>.
+* Complete the anonymous installation of Tor Browser in the non-Whonix VM.
+
+== Clone the debian-9 TemplateVM ==
+
+In Qube Manager: <code>Right-click debian-9 template</code> -> <code><u>C</u>lone qube</code> -> <code>Rename to debian-9-tor</code>
+
+== anon-whonix Steps ==
+
+Run all the following commands in <code>anon-whonix</code> Konsole.
+
+'''1.''' Add the Whonix signing key.
+
+{{CodeSelect|code=
+sudo apt-key adv --keyserver jirk5u4osbsr34t5.onion --recv-keys 916B8D99C38EAF5E8ADC7A2A8D66066A2EEACCDA
+}}
+
+'''2.''' Display the key fingerprint.
+
+{{CodeSelect|code=
+sudo apt-key adv --fingerprint 916B8D99C38EAF5E8ADC7A2A8D66066A2EEACCDA
+}}
+
+'''3.''' Verify the Whonix signing key fingerprint.
+
+Compare the fingerprint to the one found [[Whonix_Signing_Key|here]].
+
+'''4.''' Copy the Whonix signing key to a temporary <code>whonix.key</code> file.
+
+{{CodeSelect|code=
+sudo apt-key export 916B8D99C38EAF5E8ADC7A2A8D66066A2EEACCDA > /tmp/whonix.key
+}}
+
+'''5.''' Copy the <code>whonix.key</code> text file to the <code>debian-9-tor</code> TemplateVM.
+
+{{CodeSelect|code=
+qvm-copy /tmp/whonix.key debian-9-tor
+}}
+
+== debian-9-tor TemplateVM Steps ==
+
+Complete all the following steps in <code>debian-9-tor</code> Konsole.
+
+'''1.''' Add the Whonix signing key to the list of trusted keys.
+
+{{CodeSelect|code=
+sudo apt-key add ~/QubesIncoming/anon-whonix/whonix.key
+}}
+
+'''2.''' Install [https://packages.debian.org/stretch/apt-transport-tor <code>apt-transport-tor</code>] from the Debian repository. <ref>For support in downloading APT packages anonymously via the Tor network.</ref>
+
+{{CodeSelect|code=
+sudo apt-get install apt-transport-tor
+}}
+
+'''3.''' Add the Whonix stable onion APT repository.
+
+Note: tor+http does not work in this configuration.
+
+{{CodeSelect|code=
+echo "deb http://deb.dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion stretch main contrib non-free" | sudo tee /etc/apt/sources.list.d/whonix.list
+}}
+
+'''4.''' Update the package lists.
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+5. Install <code>tb-updater</code> by Whonix.
+
+{{CodeSelect|code=
+sudo apt-get install tb-updater
+}}
+
+Note: This step will correctly install <code>tb-updater</code>, but when it tries to automatically download Tor Browser, it will fail as the download attempt from the Tor Project is blocked by default.
+
+== debian-9-tor AppVM Steps ==
+
+'''1.''' Create an AppVM based on the debian-9-tor TemplateVM.
+
+'''2.''' Temporarily set the NetVM of the AppVM to <code>sys-whonix</code> in Qube Manager.
+
+'''3.''' Download Tor Browser.
+
+In the AppVM Konsole, run.
+
+{{CodeSelect|code=
+update-torbrowser
+}}
+
+Once the download has finished, do not launch Tor Browser. Close the AppVM, revert the NetVM to <code>sys-firewall</code> and restart the AppVM.
+
+'''4.''' Launch Tor Browser and check it is functional.
+
+Launch Tor Browser from the AppVM menu and check it is working correctly.
+
+Note: Tor Browser can be kept up-to-date using Tor Browser's internal updater. It is not necessary to run the update-torbrowser command again.
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
