@@ -44,9 +44,60 @@ Wiki pages found in the Advanced Security Guide contain material from the Tails 
 
 == Protection Against Powerful Adversaries ==
 
-To protect against theft or robbery of personal information or data, users should apply FDE (Full Disk Encryption) on the host, and power off their computer when exposed to higher-risk situations like traveling. Laptop users should temporarily remove the laptop battery after powering off. This ensures that the RAM chips are completely powered down and that any encryption key/s in memory are erased. Hibernation is also a safe alternative, as the swap partition is encrypted in the default FDE configuration for various platforms (like Debian), provided the user did not  change anything. 
+To protect against theft or robbery of personal information or data, users should apply FDE (Full Disk Encryption) on the host, and power off their computer when exposed to higher-risk situations like traveling. Laptop users should temporarily remove the laptop battery after powering off. This ensures that the RAM chips are completely powered down and that any encryption key/s in memory are erased. Hibernation is also a safe alternative, as the swap partition is encrypted in the default FDE configuration for various platforms (like Debian), provided the user did not change anything. 
 
 Users should follow the standard advice for picking [[Passwords#Generating_Unbreakable_Passwords|strong and unique passwords]], so that the password cannot be feasibly brute-forced. If possible, computers should never be left unattended. 
+
+*'''Debian Hosts:''' Configuring FDE during system install is straight forward. Default cipher is AES-256 in XTS mode. 
+
+*'''Removable Media:''' 
+
+<u>New Removable Media:</u>
+
+Gnome Disks Utility creates LUKS partitions with AES-128 by default which is insufficient in even of quantum computers materializing. Therefore an appropriately secure container must be manually created. Afterwards unlock device and format the internal filesystem as EXT4 in Gnome Disks. 
+
+
+Enumerate device first. They will usually be called 'sdb1' as sdaX is reserved for the system on default installs. To avoid confusion, only connect one removable device at a time:
+{{CodeSelect|code=
+# ls /dev/
+}}
+
+
+Create LUKS container changing the device name as needed then follow the prompts:
+{{CodeSelect|code=
+# cryptsetup -v --cipher aes-xts-plain64 --key-size 512 --use-random luksFormat <device>
+}}
+
+
+
+<u>Legacy Device Encryption Upgrade:</u>
+
+It is safer to re-encrypt the device with a stronger key than doing a quick format that will otherwise leave the old/weaker header intact. 
+
+
+Enumerate device first. They will usually be called 'sdb1' as sdaX is reserved for the system on default installs. To avoid confusion, only connect one removable device at a time:
+{{CodeSelect|code=
+# ls /dev/
+}}
+
+
+To view LUKS header data to make adjustments accordingly run:
+{{CodeSelect|code=
+cryptsetup luksDump --debug <device>
+}}
+
+
+LUKS header data legend: 'MK' means 'Master Key'.<ref>https://security.stackexchange.com/questions/109981/how-can-i-extract-the-encrypted-master-key-from-luks-header</ref> AES in XTS mode uses a keysize double its bit size since with XTS the key is split in 2 so you actually get AES with 256-bit keys.<ref>https://unix.stackexchange.com/questions/254017/how-to-interpret-cryptsetup-benchmark-results</ref> 'Payload offset' is 4096 for 256 bit keys and 2048 for 128 bit.<ref>https://wiki.archlinux.org/index.php/dm-crypt/Device_encryption#Re-encrypting_an_existing_LUKS_partition</ref>
+
+
+Re-encrypting device with stronger keys.<ref>https://jlk.fjfi.cvut.cz/arch/manpages/man/cryptsetup-reencrypt.8</ref> Fortunately no header resizing is usually necessary (otherwise it will abort process):
+{{CodeSelect|code=
+# cryptsetup-reencrypt <device> -c aes-xts-plain64 -s 512 --use-directio
+}}
+
+
+Abruptly disconnecting power can cause data loss. To safely pause the process (in case of system sleep/shutdown) cryptsetup can be suspended (e.g. by ctrl+c) and it will automatically restart from where it left off if temporary header files are present in home directory.<ref>https://asalor.blogspot.com/2012/08/re-encryption-of-luks-device-cryptsetup.html</ref>
+
 
 {{mbox
 | type      = notice
