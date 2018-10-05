@@ -46,14 +46,14 @@ While DisposableVMs ensure that files do not persist without user intervention, 
 Qubes uses a two-layered approach to DisposableVMs. At the core of the system is a ''TemplateVM'' upon which a ''[https://www.qubes-os.org/doc/glossary/#dvm-template DVM Template]'' is based. Every time a new DisposableVM is launched, it is based on the ''DVM Template'' - hence, two layers. In a standard Qubes-Whonix installation:
 
 * The Whonix-Workstation default TemplateVM is <code>{{whonix-ws}}</code>. 
-* The Whonix-Workstation default DVM Template is called <code>{{{{whonix-ws}}-dvm}}</code>.
-* Each Whonix-Workstation default DisposableVM (<code>disp1, disp2, ...</code>) is based on <code>{{{{whonix-ws}}-dvm}}</code>. 
+* The Whonix-Workstation default DVM Template is called <code>{{whonix-ws-dvm}}</code>.
+* Each Whonix-Workstation default DisposableVM (<code>disp1, disp2, ...</code>) is based on <code>{{whonix-ws-dvm}}</code>. 
 
 Once a DVM Template is created, its <i>/home/user/</i> directory can be customized <ref>https://www.qubes-os.org/doc/dispvm-customization/</ref> independently of the TemplateVM. In this special case, the DVM Template will continue to inherit changes from the base TemplateVM's root filesystem (for example, package updates), but user files in <i>/home/user/</i> will persist independently.
 
 It is possible to have multiple DVM Templates and DispVMs at the same time. <i>Any</i> TemplateBasedVM can be enabled for use as a template for dispvms, by setting its [https://www.qubes-os.org/doc/dispvm-customization/ <code>template_for_dispvms</code>] property.
 
-In Qubes R4, Qubes-Whonix 14's default DVM Template (<code>{{{{whonix-ws}}-dvm}}</code>) can be easily created [[#Setup|using salt]] and will have this property set.
+In Qubes R4, Qubes-Whonix 14's default DVM Template (<code>{{whonix-ws-dvm}}</code>) can be easily created [[#Setup|using salt]] and will have this property set.
 
 ===== DisposableVM Traffic is Stream Isolated from Other VMs =====
 
@@ -149,7 +149,7 @@ Step 1: Open a dom0 terminal.
 
 <code>Qubes App Launcher (blue/grey "Q")</code> -> <code>System Tools</code> -> <code>Konsole or Xfce Terminal</code>
 
-Step 2: Create <code>{{{{whonix-ws}}-dvm}}</code> DVM Template.
+Step 2: Create <code>{{whonix-ws-dvm}}</code> DVM Template.
 
 {{CodeSelect|code=
 sudo qubesctl state.sls qvm.{{whonix-ws}}-dvm
@@ -173,7 +173,7 @@ Do NOT include <code>-dvm</code> into the names of DispVMs! That would result in
 TODO: what is the following useful for?
 
 {{CodeSelect|code=
-qvm-create -C DispMV -l red --template {{{{whonix-ws}}-dvm}} anon-whonix-disp
+qvm-create -C DispMV -l red --template {{whonix-ws-dvm}} anon-whonix-disp
 }}
 
 {{CodeSelect|code=
@@ -185,7 +185,7 @@ If a DVM Template has been customized by the user and the user wishes to undo th
 
 TODO: document that no VM may use that DVM Template as its DVM Template anymore, otherwise deletion will fail
 
-<code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>right-click on '{{{{whonix-ws}}-dvm}}'</code> -> <code>click 'Remove VM'</code>
+<code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>right-click on '{{whonix-ws-dvm}}'</code> -> <code>click 'Remove VM'</code>
 <ref>On the command line (dom0), run. {{CodeSelect|code=qvm-remove <vmname>}}</ref>
 
 ==== Customizing DVM Templates ====
@@ -216,7 +216,7 @@ Either open dom0 terminal and run.
 qvm-run -a {{whonix-ws-dvm}} <app>
 }}
 
-Or open Qube Manager, right-click {{{{whonix-ws}}-dvm}} > Run command in qube, type name of the <app>.
+Or open Qube Manager, right-click {{whonix-ws-dvm}} > Run command in qube, type name of the <app>.
 
 '''2.''' Customize Application Settings
 
@@ -236,12 +236,12 @@ qvm-shutdown {{whonix-ws-dvm}}
 
 Or use Qube Manager:
 
-<code>dom0</code> -> <code>Qube Manager</code> -> <code>right-click '{{{{whonix-ws}}-dvm}}'</code> -> <code>left-click 'Shutdown VM'</code>
+<code>dom0</code> -> <code>Qube Manager</code> -> <code>right-click '{{whonix-ws-dvm}}'</code> -> <code>left-click 'Shutdown VM'</code>
 
 The changes will be available next time a DispVM is started.
 
 ==== Updating a DVM Template ====
-Changes to the underlying TemplateVM (<code>{{whonix-ws}}</code>) are detected automatically and the DVM Template is updated without user intervention. That means package updates that are applied to <code>{{whonix-ws}}</code> are also applied to the <code>{{{{whonix-ws}}-dvm}}</code>.
+Changes to the underlying TemplateVM (<code>{{whonix-ws}}</code>) are detected automatically and the DVM Template is updated without user intervention. That means package updates that are applied to <code>{{whonix-ws}}</code> are also applied to the <code>{{whonix-ws-dvm}}</code>.
 
 ==== Keeping Tor Browser Updated ====
 To obtain the latest Tor Browser, the simplest method is to use Whonix's built-in Tor Browser downloader functionality. Simply update using [[Tor_Browser#Tor_Browser_Downloader_by_Whonix|Tor Browser Downloader by Whonix (tb-updater)]] in Whonix-Workstation TemplateVM (<code>{{whonix-ws}}</code>) when performing your usual maintenance [https://www.qubes-os.org/doc/whonix/update/ upgrading].
@@ -281,7 +281,7 @@ update-torbrowser --input gui
 Shutdown the DVM Template. <ref>
 On the command line (dom0), run.
 {{CodeSelect|code=
-qvm-shutdown {{{{whonix-ws}}-dvm}}
+qvm-shutdown {{whonix-ws-dvm}}
 }}
 or<br />
 DVM Template command line (domU), run. {{CodeSelect|code=
@@ -289,7 +289,7 @@ sudo poweroff
 }}
 </ref>
 
-<code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>right-click on '{{{{whonix-ws}}-dvm}}'</code> -> <code>click 'Shutdown VM'</code>
+<code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>right-click on '{{whonix-ws-dvm}}'</code> -> <code>click 'Shutdown VM'</code>
 
 ----
 
@@ -322,11 +322,11 @@ TODO: fix links and generally check
 ==== Start Tor Browser in a DisposableVM ====
 
 Using the GUI:
-<code>Qubes App Launcher (blue/grey "Q")</code> -> <code>Disposable: {{{{whonix-ws}}-dvm}}</code> -> <code>Tor Browser (AnonDist)</code>
+<code>Qubes App Launcher (blue/grey "Q")</code> -> <code>Disposable: {{whonix-ws-dvm}}</code> -> <code>Tor Browser (AnonDist)</code>
 
 Using the dom0 command line:
 {{CodeSelect|code=
-qvm-run --dispvm={{{{whonix-ws}}-dvm}} torbrowser
+qvm-run --dispvm={{whonix-ws-dvm}} torbrowser
 }}
 
 After launch, do not forget to [[Qubes/DisposableVM#Warning:_Check_the_Tor_Browser_Version|check the Tor Browser version]]!
@@ -336,7 +336,7 @@ After launch, do not forget to [[Qubes/DisposableVM#Warning:_Check_the_Tor_Brows
 == TODO ==
 * TODO document first startup vs subsequent startup - https://forums.whonix.org/t/whonix-14-starting-a-whonix-14-dispvm-actually-starts-the-templatebasedvm-instead/5579
 * TODO document spawning DispVMs from other Whonix (and non-Whonix?) TemplateBased AppVMs (and DispVMs?)
-* TODO document how to use multiple DVM Templates - https://forums.whonix.org/t/is-anyone-interested-in-using-multiple-dvm-templates-based-on-{{{{whonix-ws}}}}/5757/5
+* TODO document how to use multiple DVM Templates - https://forums.whonix.org/t/is-anyone-interested-in-using-multiple-dvm-templates-based-on-whonix-ws-dvm/5757/5
 
 ----
 
