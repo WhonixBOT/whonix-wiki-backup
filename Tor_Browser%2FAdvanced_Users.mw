@@ -1,110 +1,71 @@
 = Tor Browser Adversary Model =
-
 The Tor Browser design has carefully considered the goals, capabilities and types of attacks undertaken by adversaries and planned accordingly. 
 
 The design specifications address: proxy obedience, state separation, disk avoidance, application data isolation, cross-origin identifier unlinkability, cross-origin fingerprinting unlinkability, long-term unlinkability via the "New Identity" button, and other security measures to address many of the risks outlined below. <ref>https://www.torproject.org/projects/torbrowser/design/#Implementation</ref> <ref>This has also informed the development of the Torbutton extension.</ref>
 
 == Adversary Goals ==
-
 Goals of the adversary include: <ref>https://www.torproject.org/docs/torbutton/en/design/index.html.en#adversary</ref> <ref>https://www.torproject.org/projects/torbrowser/design/#adversary</ref>
 
 * '''Bypassing proxy settings:''' Directly compromising and bypassing Tor, or having the user connect to specific IP addresses.
-
 * '''Correlating Tor and non-Tor activity:''' If a proxy bypass is not possible, correlation of Tor and non-Tor activity is sought via cookies, cache identifiers, JavaScript events and Cascading Style Sheets (CSS).
-
 * '''History disclosure:''' Querying user history for censored search queries or websites.
-
 * '''Correlating activity across multiple sites:''' Learning if the user who visited site A is the same user who visited site B, in order to serve targeted advertisements.
-
 * '''Location information:''' Seeking timezone and locality information to determine if the user originates from a specific region they are trying to control, or focusing in on dissidents or whistleblowers.
-
 * '''Anonymity set reduction (fingerprinting):''' To identify specific individuals, system data like the browser build,  timezone or display resolution is used to track down (or at least track) their activities.
-
 * '''History records and other on-disk information:''' Seizing the computers of all Tor users in a given area and extracting history records, cache data, hostnames and disk-logged spoofed MAC address history.
 
 == Adversary Positioning Capabilities == 
-
 Adversary positioning capabilities include: <ref>https://www.torproject.org/docs/torbutton/en/design/index.html.en#adversary</ref> <ref>https://www.torproject.org/projects/torbrowser/design/#adversary</ref>
 
 * '''Exit node or upstream router:''' Running exit nodes or controlling routers upstream of exit nodes. <ref>This has already been observed.</ref>
-
 * '''Adservers and/or malicious websites:''' Running websites or contracting ad space from adservers to inject content. Reducing a Tor user's anonymity is also good for marketing purposes. <ref>Partially explaining the unholy alliance between the corporate sector and government.</ref>
-
 * '''Local Network / ISP / upstream router:''' Injecting malicious content at the user's upstream router when Tor is disabled in order to correlate Tor and non-Tor activity. Additionally, block Tor or attempt to recognize traffic patterns of specific web pages at the entrance to the Tor network.
-
 * '''Physical access:''' Constant or intermittent physical access to computer equipment. This may happen to Internet cafe users or those in jurisdictions where equipment is confiscated due to general suspicion or solely for Tor use.
 
 == Adversary Attack Capabilities == 
-
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text       = '''Warning:''' Advanced adversaries have numerous surveillance methods and attack vectors to deanonymize and spy on users. <ref>https://www.torproject.org/docs/torbutton/en/design/index.html.en#adversary</ref> <ref>https://www.torproject.org/projects/torbrowser/design/#adversary</ref>
 }}
 
 === Inserting JavaScript ===
-
 * '''Extracting fingerprinting information:''' Available fonts, DOM objects to ascertain the user agent, WebGL to reveal the video card in use, and high precision timing information to reveal the CPU and interpreter speed.
-
 * '''Executing history disclosure attacks:''' Query the history of different attributes of visited links for specific queries, sites, or for profiling of users (gender, interests etc.).
-
 * '''Querying:''' The user's timezone via the date object and reducing the anonymity set by querying the navigator object for operating system, CPU, location and user agent information.
 
 === Inserting or Exploiting Plugins ===
-
 * '''Using plugins:''' Perform network activity that is independent of browser (or its own) proxy settings in order to obtain a user's non-Tor IP address.
-
 * '''Using active plugin exploits:''' Leak the non-Tor IP address.
-
 * '''Enumerating:''' The list of plugins to fingerprint the user.
-
 * '''Gathering information:''' Use plugins capable of extracting font lists, interface addresses and other machine information.
-
 * '''Retrieving:''' Unique plugin identifiers.
 
 === Inserting CSS ===
-
 * '''Using CSS pop-ups:''' Correlate Tor and non-Tor activity and reveal a user's non-Tor IP address.
-
 * '''Using CSS and JavaScript:''' Perform CSS-only history disclosure attacks.
-
 * '''CSS media queries:''' Gather information about desktop size, widget size, display type, DPI, user agent type and other information.
 
 === Reading and Inserting Identifiers ===
-
 * '''Storing identifiers:''' HTTP auth, DOM storage, cached scripts, other elements with embedded identifiers, client certificates and TLS session IDs.
-
 * '''Performing a man-in-the-middle (MITM) attack:''' Inject elements to both read and inject cookies for arbitrary domains (affecting even SSL/TLS secured websites).
 
 === Other Attacks ===
-
 * '''Creating arbitrary cached content:''' Reading the browser cache which stores unique identifiers.
-
 * '''Observing request behavior:''' Fingerprinting is aided by observing the user agent, Accept-* headers, pipeline usage, and request ordering. Fingerprinting is worsened by custom filters like AdBlock and UBlock Origin.
-
 * '''Fingerprinting:''' Using the large number of browser attributes to reduce the anonymity set, or even uniquely fingerprinting individual users. <ref>For instance, there is an estimated 29 bit-identifier based on the browser and desktop window resolution information alone.</ref>
-
 * '''Website traffic fingerprinting:''' Attempting to recognize the encrypted traffic patterns of specific websites, either between the user and the Guard node, or at the Guard node itself. <ref>This attack is somewhat mitigated by the ocean of Tor traffic, which rapidly increases the rate of false positives when larger traffic sets are analyzed.</ref>
-
 * '''Remotely or locally exploiting the browser and/or OS:''' Exploiting the browser, plugin or OS vulnerabilities to install malware or surveillance software, or physically access the machine to do the same.
 
 = Torbutton Design =
-
 Torbutton's functions in Tor Browser behavior are gradually being moved into direct Firefox patches, <ref>https://www.torproject.org/projects/torbrowser/design/#components</ref> but it is designed to address: <ref>https://www.torproject.org/docs/torbutton/en/design/index.html.en#requirements</ref> <ref>Some of the design features have been deprecated due to changes in the Tor / Tor Browser design.</ref>
 
 * '''Proxy obedience:''' Tor Browser must not bypass Tor proxy settings.
-
 * '''State separation:''' Cookies, cache, history, DOM storage, and more accumulated in one Tor state must not be accessible via the network in another Tor state.
-
 * '''Disk avoidance:''' Tor Browser should not write any Tor-related state to disk, or store it in memory beyond one Tor toggle.
-
 * '''Location neutrality:''' Tor Browser should not leak location-specific information, like the timezone or locale via Tor.
-
 * '''Anonymity set preservation:''' Tor Browser should not leak any other anonymity set reducing or fingerprinting information (such as user agent, extension presence, and resolution information) automatically via Tor. 
-
 * '''Update safety:''' Tor Browser should not perform unauthenticated updates or upgrades via Tor.
-
 * '''Interoperability:''' Torbutton should inter-operate with third-party proxy switchers that enable the user to switch between a number of different proxies, with full Tor protection.
-
 
 Tor Browser patches and the Torbutton extension can potentially disable some functionality or interfere with the proper operation of some Internet sites, but the vast majority of websites work well. To learn more about Torbutton, see:
 
@@ -114,7 +75,6 @@ Tor Browser patches and the Torbutton extension can potentially disable some fun
 * The Torbutton function design section immediately below.
 
 == New Identity Design ==
-
 The Tor Browser design document describes the full features provided by this extension: <ref>https://trac.torproject.org/projects/tor/ticket/523</ref> <ref>https://www.torproject.org/projects/torbrowser/design/#new-identity</ref>
 
 * Disables Javascript and plugins on all tabs and windows.
@@ -141,15 +101,12 @@ The Tor Browser design document describes the full features provided by this ext
 * Closes all remaining HTTP keep-alive connections.
 * Sends Tor the "newnym" signal to issue a new Tor circuit.
 
-
 After this process above, a fresh browser window is opened and the current browser window is closed (this does not spawn a new Firefox process, only a new window). When the final window is closed, any blob:UUID URLs that were created by websites are purged. <ref>https://www.torproject.org/projects/torbrowser/design/#new-identity</ref>
 
 == New Tor Circuit Design ==
-
 The "New Tor Circuit for this Site" Torbutton feature sends the "newnym" signal to the Tor control port to cause a new circuit to be created for the <i>current</i> Tor Browser tab. <ref>https://trac.torproject.org/projects/tor/ticket/9442</ref> Other open tabs and windows from the same website will use the new circuit as well once they have reloaded, but connections to other websites on separate tabs are not affected. <ref>https://tb-manual.torproject.org/en-US/managing-identities.html</ref>
 
 == Security Slider Design ==
-
 The Tor Project manual describes the exact effect of each level and which features are disabled or partially disabled: <ref>https://tb-manual.torproject.org/en-US/security-slider.html</ref> <ref>The security slider options have now been renamed to "Standard", "Safer" and "Safest", but the Tor Project manual has not yet been updated to reflect this.</ref>
 
 <blockquote>High
@@ -166,7 +123,6 @@ At this level, all browser features are enabled. This is the most usable option.
 == Disabled Torbutton Functions ==
 
 === Open Network Settings ===
-
 {{mbox
 | type      = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
@@ -182,7 +138,6 @@ In Whonix, the environment variable export <code>TOR_NO_DISPLAY_NETWORK_SETTINGS
 * For security reasons, Tor must be manually configured in ''/usr/local/etc/torrc.d/50_user.conf'' on the Whonix-Gateway, and not from the Whonix-Workstation (see [[Features#VPN_.2F_Tunnel_support|VPN/Tunnel support]] for more information).
 
 === Tor Circuit View ===
-
 {{mbox
 | type      = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
@@ -198,9 +153,10 @@ Normally, this option in Torbutton shows the three Tor relays used for the websi
 
 = Tor Browser without Tor =
 
-Interested users can follow the instructions found [[Tor_Browser_without_Tor|here]]. It is also recommended to review the [http://forums.kkkkkkkkkk63ava6.onion/t/todo-research-and-document-how-to-use-tor-browser-for-security-not-anonymity-how-to-use-tbb-using-clearnet/3822 forum discussion] in relation to this topic before proceeding.
+Interested users can follow the instructions found [[Tor_Browser_without_Tor|here]]. It is also recommended to review the [http://forums.whonix.org/t/todo-research-and-document-how-to-use-tor-browser-for-security-not-anonymity-how-to-use-tbb-using-clearnet/3822 forum discussion] in relation to this topic before proceeding.
 
 = Custom Homepage =
+
 It is unclear whether [https://forums.whonix.org/t/new-whonix-bugs setting a custom homepage] in Tor Browser settings will currently work. Previous user attempts lead to the Whonix default homepage being loaded on startup, even though a different homepage was manually set. The custom homepage only appeared following use of the New Identity function. <ref>This is a potential bug since the user-set custom homepage does not overrule the {{Code2|TOR_DEFAULT_HOMEPAGE}} environment variable. No bug has yet been reported.</ref>
 
 '''Technical Background'''
@@ -231,7 +187,6 @@ A recent forum discussion in relation to this topic can be found [https://forums
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
 | text       = Custom configurations is an advanced topic. Only a small minority of users ever need to apply the steps in this section.
 }}
-
 
 == Verify New Identity ==
 {{mbox
@@ -474,7 +429,6 @@ The only safe place to run Tor Browser Downloader by Whonix is in either:
 * The TemplateVM (<code>whonix-ws</code>); or
 * The AppVM which is based on this template (<code>anon-whonix</code>). 
 
-
 The reason is because Tor Browser is stored in ''/var/cache/tb-binary'' which is non-persistent in Qubes' DVM Template (<code>{{whonix-ws-dvm}}</code>), but persistent in Qubes' TemplateVM (<code>whonix-ws</code>).
 
 {{Qubes persistence}}
@@ -556,9 +510,9 @@ Once Tor Browser moves to SocksSocket, these instructions will certainly no long
 * https://phabricator.whonix.org/T192
 </ref>
 
-'''1. [[Manually_Downloading_Tor_Browser|Manually Download and Install Tor Browser]]'''
+'''1.''' [[Manually_Downloading_Tor_Browser|Manually Download and Install Tor Browser]]
 
-'''2. Set Multiple Environment Variables'''
+'''2.''' Set Multiple Environment Variables
 
 {{Qubes persistence note}}
 <br />
@@ -591,7 +545,7 @@ Save and reboot.
 
 From this point, only the browser component of Tor Browser will be started.
 
-'''3. Verify Environment Variables'''
+'''3.''' Verify Environment Variables
 
 {{CodeSelect|code=
 env | grep -i tor
@@ -605,7 +559,7 @@ TOR_SKIP_CONTROLPORTTEST=1
 TOR_SKIP_LAUNCH=1
 </pre>
 
-'''4. Configure Network Settings''' <ref>
+'''4.''' Configure Network Settings <ref>
 Learn more about the network settings.
 
 {{Tor Browser Manual Proxy Configuration}}
@@ -654,14 +608,14 @@ The process is now complete.
 
 These steps are required to use Tor Browser when operating a [[Other_Operating_Systems|Custom-Whonix-Workstation]], specifically a Windows-Whonix-Workstation.
 
-'''1. Install Tor Browser'''
+'''1.''' Install Tor Browser
 
 * [[Manually_Downloading_Tor_Browser|Download Tor Browser]] from [http://rqef5a5mebgq46y5.onion/torbrowser/ The Tor Project].
 * Verify the download.
 * Extract the download.
 
 
-'''2. Use Tor Browser without Bundled Tor'''
+'''2.''' Use Tor Browser without Bundled Tor
 
 Create a new text file in the folder where Tor Browser was extracted. For example, the file could have the following name.
 
@@ -679,7 +633,7 @@ SET TOR_SKIP_LAUNCH=1
 
 Save.
 
-'''3. Configure Network Settings'''
+'''3.''' Configure Network Settings
 
 Start Tor Browser. 
 
@@ -689,7 +643,7 @@ How this is accomplished on Windows is currently undocumented, but user contribu
 
 {{Tor Browser Manual Proxy Configuration}}
 <br />
-'''4. Figure Out Missing Instructions'''
+'''4.''' Figure Out Missing Instructions
 
 Missing instructions need to be ported from Linux-specific to Windows-specific, see [[Tor_Browser/Advanced_Users#Whonix-Custom-Linux-Workstation|Whonix-Custom-Linux-Workstation]].
 
