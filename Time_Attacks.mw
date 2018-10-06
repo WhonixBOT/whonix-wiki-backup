@@ -45,7 +45,7 @@ It is practically possible to block all of the clock leak vectors in the precedi
 === GNU/Linux Host ===
 
 <div class="toccolours mw-collapsible mw-collapsed">
-* Uninstall any NTP clients and disable systemd's timdatectl NTP synchronization feature. <ref>http://www.freedesktop.org/software/systemd/man/timedatectl.html</ref>
+'''1.''' Uninstall any NTP clients and disable systemd's timdatectl NTP synchronization feature. <ref>http://www.freedesktop.org/software/systemd/man/timedatectl.html</ref>
 <div class="mw-collapsible-content">
 {{CodeSelect|code=
 sudo timedatectl set-ntp 0
@@ -59,7 +59,9 @@ sudo systemctl disable systemd-timesyncd.service
 </div>
 </div>
 <div class="toccolours mw-collapsible mw-collapsed">
-* Disable TCP timestamps via kernel sysctl. This boolean disables both IPv4 and IPv6 TCP timestamps since they are controlled by the same sysctl option.
+'''2.''' Disable TCP timestamps via kernel sysctl. 
+
+This boolean disables both IPv4 and IPv6 TCP timestamps since they are controlled by the same sysctl option.
 <div class="mw-collapsible-content">
 Become root.
 
@@ -93,7 +95,7 @@ sysctl -a | grep net.ipv4.tcp_timestamps
 </div>
 </div>
 <div class="toccolours mw-collapsible mw-collapsed">
-* Block incoming ICMP messages and any other incoming traffic with iptables or any of its frontends, such as ufw. <ref>https://www.digitalocean.com/community/tutorials/how-to-setup-a-firewall-with-ufw-on-an-ubuntu-and-debian-cloud-server</ref>
+'''3.''' Block incoming ICMP messages and any other incoming traffic with iptables or any of its frontends, such as ufw. <ref>https://www.digitalocean.com/community/tutorials/how-to-setup-a-firewall-with-ufw-on-an-ubuntu-and-debian-cloud-server</ref>
 <div class="mw-collapsible-content">
 {{CodeSelect|code=
 sudo apt-get install ufw
@@ -105,7 +107,6 @@ sudo ufw enable
 sudo ufw default deny incoming
 }}
 
-
 To check the status of ufw, run.
 
 {{CodeSelect|code=
@@ -114,13 +115,13 @@ sudo ufw status
 </div>
 </div>
 <div class="toccolours mw-collapsible mw-collapsed">
-* TCP Initial Sequence Numbers mitigation.
+'''4.''' TCP Initial Sequence Numbers mitigation.
 <div class="mw-collapsible-content">
 An artificially induced CPU-load temperature influences the timer crystal and skews its frequency. TCP ISNs are a permanent feature and are necessary from a security standpoint to prevent arbitrary TCP connection hijacking by non-global network adversaries. <ref>https://blog.patternsinthevoid.net/cve-2016-5696-and-its-effects-on-tor.html</ref> See the following reference about removing the timer output function from Linux's TCP ISN code. <ref>[http://sec.cs.ucl.ac.uk/users/smurdoch/talks/eurobsdcon07hotornot.pdf - slide 9]</ref>
 </div>
 </div>
 <div class="toccolours mw-collapsible mw-collapsed">
-* Application-level  mitigation.
+'''5.''' Application-level mitigation.
 <div class="mw-collapsible-content">
 For application-level leak mitigation, avoid sending any clearnet traffic. Without clock information leaking from the host, network adversaries do not have non-anonymous timestamp sources to match this data with, even if software on Whonix-Workstation (<code>anon-whonix</code>) misbehaves.
 </div>
