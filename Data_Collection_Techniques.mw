@@ -1,4 +1,4 @@
-{{DISPLAYTITLE:Titel}}
+{{DISPLAYTITLE:Data Collection Techniques}}
 {{Header}}
 {{#seo:
 |description=How is Data Mining on the Web technically done? Overview of Data Collection Techniques.
@@ -11,80 +11,6 @@
 |maintainer=[https://forums.whonix.org/users/torjunkie torjunkie]
 |support=[[Support]]
 }}
-
-= Cookies =
-
-== Introduction ==
-
-Cookies have been in existence since 1994, when they were conceived by a programmer working for Netscape Communications as a reliable method for e-commerce applications. According to Wikipedia: <ref name=HTTP_cookie>https://en.wikipedia.org/wiki/HTTP_cookie</ref>
-
-<blockquote>An HTTP cookie (also called web cookie, Internet cookie, browser cookie, or simply cookie) is a small piece of data sent from a website and stored on the user's computer by the user's web browser while the user is browsing. Cookies were designed to be a reliable mechanism for websites to remember stateful information (such as items added in the shopping cart in an online store) or to record the user's browsing activity (including clicking particular buttons, logging in, or recording which pages were visited in the past). They can also be used to remember arbitrary pieces of information that the user previously entered into form fields such as names, addresses, passwords, and credit card numbers.</blockquote>
-
-== Cookie Classification ==
-
-Whonix users are probably most familiar with [https://en.wikipedia.org/wiki/HTTP_cookie#Third-party_cookie third-party cookies] since they can be used to track browsing history via web page content sourced from external websites, such as banner advertisements. However, cookies have a range of both useful and potentially harmful applications: <ref name=HTTP_cookie />
-
-*<b>Authentication cookies:</b> Used by web servers to know whether a user is logged in, and the account being used.
-* <b>Session cookies:</b> Exist temporarily in memory while a website is navigated and are normally deleted when the browser is closed.
-* <b>Persistent cookies:</b> Expire after a specific period of time, or on a set date. They transmit information to servers every time a user browses websites that are associated with the cookie. Persistent cookies can track a user's browsing habits over an extended period, possibly years. <ref>They also have legitimate functions such as keeping users logged into specific accounts.</ref>
-* <b>Secure cookies:</b> Transmitted over encrypted (HTTPS) connections, making them less vulnerable to cookie theft.
-* <b>Third-party cookies:</b> Belong to domains that are different from the URL shown in the web browser address bar. Tracking is enabled via the following process:
-** Website A contains an advertisement served by {{Code|eviladvertiser.org}}
-** A cookie belonging to {{Code|eviladvertiser.org}} is downloaded and stored on the user's computer.
-** Website B is visited and also contains advertising content from {{Code|eviladvertiser.org}}, setting another cookie belonging to that domain.
-** Both cookies are eventually sent to {{Code|eviladvertiser.org}}, and an extensive profile of browsing history is gradually acquired over time.
-* <b>Supercookies:</b> Have an origin of a [https://en.wikipedia.org/wiki/Top-level_domain top-level domain] like {{Code|.org}} or a public suffix such as {{Code|.com.de}}. If not blocked by the browser, adversaries in control of malicious websites can set supercookies and then impersonate or disrupt user requests to another website sharing the same top-level domain or public suffix.
-
-== Evercookies ==
-
-With 80% of users disapproving of tracking while browsing the Internet, they have progressively started to delete cookies with relevant browser settings and extensions. Advertisement and tracking networks have responded in kind, using more sophisticated methods - evercookies - to distinguish users.
-
-Evercookies come in various forms:
-
-* <b>Entity tag (ETag) cookies:</b> HTTP supports simple cache control mechanisms, including ETags which store either a version number or a user identifier (ETag cookie). The purpose is to save bandwidth and have browsers use caches for web content when it has not changed, instead of reloading the complete web server content again. <ref>https://en.wikipedia.org/wiki/HTTP_ETag</ref> Unfortunately this provides a tracking mechanism which can be persistently stored, and has been used by various websites including {{Code|Hulu.com}}. ETag cookies can be, and often are respawned. <ref>http://cyberlaw.stanford.edu/blog/2011/08/tracking-trackers-microsoft-advertising</ref>
-* <b>Zombie cookies:</b> Automatically recreated after being deleted. Cookie content is stored in multiple locations such as [https://en.wikipedia.org/wiki/Web_storage HTML5 web storage], [https://en.wikipedia.org/wiki/Web_storage Flash Local shared object], client-side and server-side locations. When the cookie is deleted on a user's computer, this is detected and restored from one of the other cookie storage locations.
-* <b>Flash cookies (LSOs):</b> Flash cookies are also known as [https://en.wikipedia.org/wiki/Flash_cookies local shared objects (LSOs)] and store data from websites that use Adobe Flash. User permission is not sought when cookies are stored, and they are stored outside of normal browser local storage system. <ref>http://www.popularmechanics.com/technology/security/how-to/a6134/what-are-flash-cookies-and-how-can-you-stop-them/</ref> Previously, it was difficult to delete Flash cookies, as they could not be located easily with browsers. <ref>https://www.ghacks.net/2007/05/04/flash-cookies-explained/</ref> However, modern browsers, extensions and [https://en.wikipedia.org/wiki/Flash_cookies#Editors_and_toolkits software] have [https://support.mozilla.org/en-US/questions/939710?db=5 relevant settings] to easily remove them. <ref>In Linux, LSOs are normally stored in:
-* {{Code|~/.macromedia/Flash_Player/#SharedObjects/}}
-* {{Code|~/.macromedia/Flash_Player/macromedia.com/support/flashplayer/sys/}}
-</ref> LSOs can be used to: <ref>https://en.wikipedia.org/wiki/Flash_cookies</ref>
-** Store and retrieve information from local storage when a user access webpages with a Flash application. 
-** Store user preferencs.
-** Save data from Flash games.
-** Track users' Internet activity, even across different browsers. For example:
-*** Firefox is used to visit a site showing a relevant product.
-*** Firefox is closed, but that information was stored in a LSO.
-*** The same person on the same machine uses Chrome to access a website viewed in Firefox.
-*** The website is able to read the LSO value(s) in Chrome, and display relevant content or targeted information.
-* <b>[https://www.w3schools.com/jsref/prop_doc_cookie.asp HTML5 DOM] [https://en.wikipedia.org/wiki/Web_storage cookies]:</b> Allow web application software to store data persistently in a manner similar to cookies. Local storage and session-only storage are both possible. The storage size is far greater than that available to cookies, but it is not automatically transmitted on every HTTP request. Instead, client-side scripts allow the desired interaction with the server. It is possible to remove DOM cookies without about:config changes in Firefox <ref>Set <code>dom.storage.enabled</code> to false.</ref>, or by using relevant extensions (like Click&Clean or BetterPrivacy). However, this action is no longer necessary since DOM cookies are disabled in Firefox 58 onward. [[Tor Browser]] also defends against this technique by default. <ref>https://nakedsecurity.sophos.com/2017/10/30/firefox-takes-a-bite-out-of-the-canvas-super-cookie/</ref>
-* Samy Kamkar has shown that there are other [http://samy.pl/evercookie/ possible methods] to track Internet users using evercookies.
-
-In a [http://papers.ssrn.com/sol3/papers.cfm?abstract_id=1898390 study by the University of California, Berkeley] the methods of Space Pencil Inc. (aka KISSmetrics) were exposed. In addition to cookies and flash cookies, KISSmetrics used cache cookies via ETags, DOMStorage and IE-userData to distinguish each user. KISSmetrics was sued as a result and dispensed with using ETags. It also allegedly now respects the [http://donottrack.us/ Do Not Track] HTTP header. <ref>Users should never rely on DNT preferences, since they are [https://en.wikipedia.org/wiki/Do_Not_Track#Effectiveness rarely respected by industry].</ref>
-
-[[Tor Browser]], which comes with Whonix, resists evercookies.
-
-== Cookie Threats ==
-
-{{mbox
-| image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       = Over 95 percent of websites use cookies <ref name=Cookie_threat>https://www.digitaltrends.com/computing/history-of-cookies-and-effect-on-privacy/</ref> and embedded, external advertisement and analytics services are increasingly common.
-}}
-
-
-It is evident that cookies are useful for website personalization, logins, monitoring purchases and other functions, but they also present a dire tracking threat. The average website places 34 cookies on a device on the first visit, and 70 percent of these are third-party cookies. Expiry dates are often set to the year "9999", indicating there is no intention to ever stop recording user behavior. <ref name=Cookie_threat />
-
-The tracking service [http://help.yahoo.com/l/us/yahoo/ywa/documentation/install_guide/ig_get_started.html Yahoo! Web Analytics] has made claims of being able to set cookies on 99.9% of users. This [http://smorgasbork.com/component/content/article/84-a-study-of-internet-users-cookie-and-javascript-settings indicates] that [http://www.truststc.org/reu/10/Reports/GomezG,YalajuJ_paper.pdf cookie-generating JavaScript] and/or Flash cookies are deployed as the primary mechanisms.
-
-A 2011 [http://papers.ssrn.com/sol3/papers.cfm?abstract_id=1898390 study by the University of California, Berkeley] found that the top 100 websites at that time stored a total of 5,675 cookies. Of these, 4,914 cookies were set by third party domains and not the first-party domain being purposefully visited by the user. When browsing these 100 websites, data was transmitted to 600 servers.
-
-Cookie security is dependent on whether cookie data is encrypted, since adversaries may otherwise use this information to gain access to user data or to access websites with the user's credentials. Examples of this attack include [https://en.wikipedia.org/wiki/Cross-site_scripting cross-site scripting] and [https://en.wikipedia.org/wiki/Cross-site_request_forgery cross-site request forgery].
-
-As well as gathering the IP address and/or the HTTP referrer field of the computer requesting the web page, cookies can also store the requested URL and the date/time of the request. Web hosts are therefore capable of recording a large proportion of browsing behavior over many years, and correlating the accumulated profile data with individuals. The typical Internet user has collected hundreds of cookies from various websites on their PC without their knowledge. For instance, the following figure exhibits a small number of the cookies that are stored when a request is made to {{Code|www.nytimes.com}}.
-
-'''Figure:''' ''Cookies set by the New York Times''
-
-[[Image:cookies_nytimes.png|frame|none]]
-
-Most modern browsers integrate an optional function to block cookies, but the option has to be first set by the user.  [[Tor Browser]], which comes bundled with Whonix, has activated cookie blocking by default. Firefox has also adopted Tor Browser's [https://www.bleepingcomputer.com/news/software/another-tor-browser-feature-makes-it-into-firefox-first-party-isolation/ first party isolation] feature since version 55, meaning cookies are separated on a per-domain basis. Advertisement trackers are unable to see all the cookies stored on a user's computer (only the cookie for the currently viewed domain), meaning they cannot aggregate persistent cookie data for profiling. In the future, it is expected that more functions will become available to administrate preferences and acquired cookie collections.
 
 = Active Web Contents =
 
@@ -99,71 +25,6 @@ Web content that is accessible by browser plugins such as [https://en.wikipedia.
 Limiting browsing to trusted websites does not mitigate the risk from applets. In the recent past, numerous popular websites have been hacked and infected with malicious code. Greater security requires these plugins to be blocked, deactivated or removed.
 
 With Whonix, an adversary will not benefit from learning the IP address via this method: it is either a local IP address shared among all Whonix users or the IP address of a Tor exit relay, both of which do not reduce the user's anonymity set. Further, the [[#MAC Address|MAC address]] is a virtual one which is also shared among all Whonix users, and is therefore worthless to attackers. Although active content will not reveal the real [[Data_Collection_Techniques#IP_Address|IP address]], it is deactivated in Tor Browser by default. See [[Browser Plugins]] for a detailed discussion of browser plugins in Whonix and the potential effects on anonymity, security, and privacy.
-
-= JavaScript =
-
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = Do not confuse JavaScript with [https://www.java.com/en/download/faq/java_javascript.xml Java] or the active [https://stackoverflow.com/questions/11568648/difference-between-jre-and-java-plugin Java plugin], which are [http://www.differencebetween.com/difference-between-java-and-javascript/ completely different things] despite the similar name (see above). <ref>In short, JavaScript is not part of the Java platform and is a scripting language, while Java is an object-oriented programming language. The Java plugin is bundled with Java runtime and runs inside the browser; allowing Java code to run inside a client's browser process.</ref>
-}}
-
-== Introduction ==
-
-[https://en.wikipedia.org/wiki/JavaScript JavaScript] is one of the fundamental core technologies for Internet content production, alongside [https://en.wikipedia.org/wiki/HTML HTML] and [https://en.wikipedia.org/wiki/CSS CSS]. It allows sites to be interactive and dynamic, as well as provide for online applications such as video games. In contrast, HTML is a markup language that is used to create static content on sites, and Cascading Style Sheets (CSS) are designed for user formatting like interfaces, layout, colors and fonts. Modern browsers frequently use JavaScript ("scripts", "active scripting") and it is marginally safer against security and privacy vulnerabilities compared to the aforementioned plugins.
-
-In the past, JavaScript has been responsible for an estimated 84% of all security vulnerabilities on the Internet via [http://en.wikipedia.org/wiki/Cross-site_scripting cross-site scripting]. This attack allows adversaries to inject malicious client-side script into web pages, leading to users redirecting to malicious sites that phish for login credentials, bank accounts, personal information, or other sensitive data. <ref>https://gizmodo.com/why-are-javascript-attacks-so-dangerous-1453269240</ref> Similarly, JavaScript can be used by web hosts to access detailed information about a user's browser, desktop setting, operating system and hardware specifications, which forms a unique digital fingerprint of an individual. <ref> Refer to the following [http://ip-check.info/?lang=en ip-check.info anonymity test] to view some sample values which can be gathered via JavaScript (if enabled).</ref> <ref>[https://anonymous-proxy-servers.net/forum/viewtopic.php?f=10&t=7319 ip-check.info returns some false values and confuses TBB users] ([http://www.webcitation.org/6cJ0l5mvC w])</ref>
-
-== JavaScript Attack Classification ==
-
-JavaScript is essential to a fully functional browsing experience, but several classes of attacks rely upon it and are often successful: <ref>https://www.sophos.com/en-us/security-news-trends/security-trends/malicious-javascript.aspx</ref> <ref>http://worldcomp-proceedings.com/proc/p2016/SAM9734.pdf</ref> <ref>https://en.wikipedia.org/wiki/Cross-site_scripting#Related_vulnerabilities</ref>
-
-* <b>Malicious JavaScript email attachments:</b> When a harmless looking document is opened by the user, ransomware is downloaded to the HDD/SSD, later encrypting the computer and demanding a ransom to unlock the files.
-* <b>Drive-by download attacks:</b> When users visit a compromised website running malicious code, <ref>82% of malicious sites are hacked legitimate ones.</ref> users are redirected to another site controlled by the attackers. Attackers then run code in the victim's web browser that loads an exploit kit which probes the user's OS, browser and software to find vulnerabilities. Payloads/malware are then downloaded that access personal data, encrypt the computer or other intended criminal activity.
-* <b>[https://en.wikipedia.org/wiki/Cross-site_scripting Cross-site scripting]:</b> Since the 1990s it has been possible to inject JavaScript client-side into web-based applications, servers or plug-in systems, bypassing the [https://en.wikipedia.org/wiki/Same-origin_policy same-origin policy]. After successful exploitation, users visiting the compromised site are served malicious content which is presumed to be from a trusted source. Attackers can then access sensitive page content, session cookies and other information.
-* <b>Universal cross-site scripting:</b> Vulnerabilities in the browser or plugins are exploited to take control over the network. For example Firefox and other browsers, as well as plugins like Flash and ActiveX controls, all have flaws which can lead to [https://en.wikipedia.org/wiki/Buffer_overflow buffer overflows]. These are often exploitable via JavaScript and allows attackers to gain access to to OS's [https://en.wikipedia.org/wiki/API Application Programming Interface (API)] with root privileges. <ref>Sandbox implementation errors can also lead to Javascript running outside of the sandbox and with elevated privileges e.g. create or delete files.</ref>
-* <b>[https://en.wikipedia.org/wiki/Cross-site_request_forgery Cross-site request forgery]:</b> Unauthorized commands are transmitted from a user by trusted web applications. Malicious websites can use specially crafted image tags, hidden forms, and JavaScript XMLHttpRequests for this purpose. Depending on the specific vulnerability, when these elements are clicked by the user, the attacker may be able to: 
-** Execute remote code with root privileges.
-** Forge login requests and view private information.
-** Change personal information or fully compromise online accounts.
-** Conduct illicit money transfers.
-** Performance nearly all actions of a logged in user.
-
-== Session Replay Scripts ==
-
-Enabling Javascript does more than reveal additional information about a user's system and increase the probability of a successful browser exploit. It can also lead to a complete, literal recording of the entire browsing session if the user is unlucky enough to browse one of nearly [https://webtransparency.cs.princeton.edu/no_boundaries/session_replay_sites.html 500 sites] in the Alexa top 50,000: <ref name=Session_replay_script>https://freedom-to-tinker.com/2017/11/15/no-boundaries-exfiltration-of-personal-data-by-session-replay-scripts/</ref> <ref>This includes the usual privacy offenders such as microsoft.com, skype.com and adobe.com, along with various sites providing banking, media, torrenting, educational, telecommunications, forums, shopping, and anti-virus services.</ref>
-
-<blockquote>You may know that most websites have third-party analytics scripts that record which pages you visit and the searches you make. But lately, more and more sites use “session replay” scripts. These scripts record your keystrokes, mouse movements, and scrolling behavior, along with the entire contents of the pages you visit, and send them to third-party servers. Unlike typical analytics services that provide aggregate statistics, these scripts are intended for the recording and playback of individual browsing sessions, as if someone is looking over your shoulder.</blockquote>
-
-The law as it stands allows corporate entities to embed Javascript functions on sites in order to record highly personal information. This includes what is typed, exact movements of the mouse, and even "co-browsing", whereby an unseen intruder can watch what it is done in real time, without any form of notification. There are few limits to the data harvested;  name, email, phone number, address, social security numbers and date of birth are all considered fair game by companies like FullStory, Hotjar, and Smartlook. Many offer the option to [https://web.archive.org/web/20171114004942/https://www.smartlook.com/docs/identify-visitors explicitly] [https://web.archive.org/web/20170623160320/http://help.fullstory.com/develop-js/identify link] recordings to real identities.
-
-Although full or part redactions are attempted on passwords, credit card numbers, CVC numbers, and credit card expiry dates, sensitive information was found to leak in many instances, such as: <ref name=Session_replay_script />
-
-* Passwords entered into registration forms.
-* Leaking of credit card details on payment pages, even in real time.
-* Leaking of specific medical conditions and prescriptions.
-
-The same tracking companies often use insecure HTTP pages to deliver the recording playbacks or publisher page contents,  providing an enticing man-in-the-middle attack opportunity for advanced adversaries. <ref>Reinforcing the perception that the private sector really is a comfortable and principal ally in the surveillance-industrial complex.</ref> Fortunately, disabling Javascript is sufficient to prevent this activity completely, and ad-blocking lists are also useful in preventing data exfiltration. <ref>For instance, the EasyList and EasyPrivacy blocking lists that are available in popular extensions. However, they did not block all the major companies at the time of writing.</ref> Users should not solely rely on ad-blockers for general tracking protection, as [https://ericmathison.com/blog/bypass-ad-blockers-and-track-your-visitors-with-piwik/ tools have already been developed] which successfully defeat the most popular extensions, including Adblock Plus, Adblocker Ultimate, Ghostery and uBlock Origin.
-
-== Conclusion ==
-
-=== Enabling or Disabling JavaScript ===
-
-JavaScript is a clear and present danger for a host of attack vectors, however, there is a [[Tor_Browser#Security_vs_Usability_Trade-off|security versus usability trade-off]] to consider before disabling JavaScript completely: <ref>See also [https://lists.torproject.org/pipermail/tor-talk/2012-May/024224.html Tor Browser disabling JavaScript anonymity set reduction].</ref>
-
-<blockquote>The take-home message is disabling all JavaScript with white-list based, pre-emptive script-blocking may better protect against vulnerabilities (many attacks are based on scripting), but it reduces usability on many sites and acts as a fingerprinting mechanism based on the select sites where it is enabled. On the other hand, allowing JavaScript by default increases usability and the risk of exploitation, but the user also has a fingerprint more in common with the larger pool of users.</blockquote>
-
-=== Safest Browser Against Exploitation ===
-
-It is clearly unwise to browse the Internet without a well secured browser, otherwise there is a danger of a browser exploit leading to an infected system. Personally configuring a browser to be secure is an enormous effort requiring expertise and significant trial and error. The safer path is to use [[Tor Browser]], preferably on a Whonix platform, since it is already hardened against data leakage. As noted in the [[Tor Browser]] chapter:
-
-<blockquote>Tor Browser is a fork of the Mozilla Firefox web browser. It is developed by The Tor Project and optimized and designed for Tor, anonymity and security.<br />
-... <br />
-Features like proxy obedience, state separation, network isolation, anonymity set preservation and a host of others are simply unsupported by other browsers.<br />
-<br />
-In stark contrast to regular browsers, Tor Browser is optimized for anonymity and has a plethora of privacy-enhancing patches and add-ons. With Tor Browser, the user "blends in" and shares the Fingerprint of nearly three million other users, which is advantageous for privacy.</blockquote>
-
-Tor Browser blocks most dangerous technologies by default, but most popular websites like Youtube will still resolve correctly. For media portals which rely on Flash or alternative plugins, the user can download the relevant files with special software and then view it with an open source media player like [[Software#Media_Player|VLC]]. Websites should be avoided if they insist on the use of active plugins, see [[Browser Plugins]].
 
 = Browser Fingerprinting =
 
@@ -285,6 +146,226 @@ The only reliable protection against analysis of a user's browser history is to 
 
 Deactivating the browser cache is not recommended, since it can have a deleterious impact on browsing speed.
 
+= Cookies =
+
+== Introduction ==
+
+Cookies have been in existence since 1994, when they were conceived by a programmer working for Netscape Communications as a reliable method for e-commerce applications. According to Wikipedia: <ref name=HTTP_cookie>https://en.wikipedia.org/wiki/HTTP_cookie</ref>
+
+<blockquote>An HTTP cookie (also called web cookie, Internet cookie, browser cookie, or simply cookie) is a small piece of data sent from a website and stored on the user's computer by the user's web browser while the user is browsing. Cookies were designed to be a reliable mechanism for websites to remember stateful information (such as items added in the shopping cart in an online store) or to record the user's browsing activity (including clicking particular buttons, logging in, or recording which pages were visited in the past). They can also be used to remember arbitrary pieces of information that the user previously entered into form fields such as names, addresses, passwords, and credit card numbers.</blockquote>
+
+== Cookie Classification ==
+
+Whonix users are probably most familiar with [https://en.wikipedia.org/wiki/HTTP_cookie#Third-party_cookie third-party cookies] since they can be used to track browsing history via web page content sourced from external websites, such as banner advertisements. However, cookies have a range of both useful and potentially harmful applications: <ref name=HTTP_cookie />
+
+*<b>Authentication cookies:</b> Used by web servers to know whether a user is logged in, and the account being used.
+* <b>Session cookies:</b> Exist temporarily in memory while a website is navigated and are normally deleted when the browser is closed.
+* <b>Persistent cookies:</b> Expire after a specific period of time, or on a set date. They transmit information to servers every time a user browses websites that are associated with the cookie. Persistent cookies can track a user's browsing habits over an extended period, possibly years. <ref>They also have legitimate functions such as keeping users logged into specific accounts.</ref>
+* <b>Secure cookies:</b> Transmitted over encrypted (HTTPS) connections, making them less vulnerable to cookie theft.
+* <b>Third-party cookies:</b> Belong to domains that are different from the URL shown in the web browser address bar. Tracking is enabled via the following process:
+** Website A contains an advertisement served by {{Code|eviladvertiser.org}}
+** A cookie belonging to {{Code|eviladvertiser.org}} is downloaded and stored on the user's computer.
+** Website B is visited and also contains advertising content from {{Code|eviladvertiser.org}}, setting another cookie belonging to that domain.
+** Both cookies are eventually sent to {{Code|eviladvertiser.org}}, and an extensive profile of browsing history is gradually acquired over time.
+* <b>Supercookies:</b> Have an origin of a [https://en.wikipedia.org/wiki/Top-level_domain top-level domain] like {{Code|.org}} or a public suffix such as {{Code|.com.de}}. If not blocked by the browser, adversaries in control of malicious websites can set supercookies and then impersonate or disrupt user requests to another website sharing the same top-level domain or public suffix.
+
+== Evercookies ==
+
+With 80% of users disapproving of tracking while browsing the Internet, they have progressively started to delete cookies with relevant browser settings and extensions. Advertisement and tracking networks have responded in kind, using more sophisticated methods - evercookies - to distinguish users.
+
+Evercookies come in various forms:
+
+* <b>Entity tag (ETag) cookies:</b> HTTP supports simple cache control mechanisms, including ETags which store either a version number or a user identifier (ETag cookie). The purpose is to save bandwidth and have browsers use caches for web content when it has not changed, instead of reloading the complete web server content again. <ref>https://en.wikipedia.org/wiki/HTTP_ETag</ref> Unfortunately this provides a tracking mechanism which can be persistently stored, and has been used by various websites including {{Code|Hulu.com}}. ETag cookies can be, and often are respawned. <ref>http://cyberlaw.stanford.edu/blog/2011/08/tracking-trackers-microsoft-advertising</ref>
+* <b>Zombie cookies:</b> Automatically recreated after being deleted. Cookie content is stored in multiple locations such as [https://en.wikipedia.org/wiki/Web_storage HTML5 web storage], [https://en.wikipedia.org/wiki/Web_storage Flash Local shared object], client-side and server-side locations. When the cookie is deleted on a user's computer, this is detected and restored from one of the other cookie storage locations.
+* <b>Flash cookies (LSOs):</b> Flash cookies are also known as [https://en.wikipedia.org/wiki/Flash_cookies local shared objects (LSOs)] and store data from websites that use Adobe Flash. User permission is not sought when cookies are stored, and they are stored outside of normal browser local storage system. <ref>http://www.popularmechanics.com/technology/security/how-to/a6134/what-are-flash-cookies-and-how-can-you-stop-them/</ref> Previously, it was difficult to delete Flash cookies, as they could not be located easily with browsers. <ref>https://www.ghacks.net/2007/05/04/flash-cookies-explained/</ref> However, modern browsers, extensions and [https://en.wikipedia.org/wiki/Flash_cookies#Editors_and_toolkits software] have [https://support.mozilla.org/en-US/questions/939710?db=5 relevant settings] to easily remove them. <ref>In Linux, LSOs are normally stored in:
+* {{Code|~/.macromedia/Flash_Player/#SharedObjects/}}
+* {{Code|~/.macromedia/Flash_Player/macromedia.com/support/flashplayer/sys/}}
+</ref> LSOs can be used to: <ref>https://en.wikipedia.org/wiki/Flash_cookies</ref>
+** Store and retrieve information from local storage when a user access webpages with a Flash application. 
+** Store user preferencs.
+** Save data from Flash games.
+** Track users' Internet activity, even across different browsers. For example:
+*** Firefox is used to visit a site showing a relevant product.
+*** Firefox is closed, but that information was stored in a LSO.
+*** The same person on the same machine uses Chrome to access a website viewed in Firefox.
+*** The website is able to read the LSO value(s) in Chrome, and display relevant content or targeted information.
+* <b>[https://www.w3schools.com/jsref/prop_doc_cookie.asp HTML5 DOM] [https://en.wikipedia.org/wiki/Web_storage cookies]:</b> Allow web application software to store data persistently in a manner similar to cookies. Local storage and session-only storage are both possible. The storage size is far greater than that available to cookies, but it is not automatically transmitted on every HTTP request. Instead, client-side scripts allow the desired interaction with the server. It is possible to remove DOM cookies without about:config changes in Firefox <ref>Set <code>dom.storage.enabled</code> to false.</ref>, or by using relevant extensions (like Click&Clean or BetterPrivacy). However, this action is no longer necessary since DOM cookies are disabled in Firefox 58 onward. [[Tor Browser]] also defends against this technique by default. <ref>https://nakedsecurity.sophos.com/2017/10/30/firefox-takes-a-bite-out-of-the-canvas-super-cookie/</ref>
+* Samy Kamkar has shown that there are other [http://samy.pl/evercookie/ possible methods] to track Internet users using evercookies.
+
+In a [http://papers.ssrn.com/sol3/papers.cfm?abstract_id=1898390 study by the University of California, Berkeley] the methods of Space Pencil Inc. (aka KISSmetrics) were exposed. In addition to cookies and flash cookies, KISSmetrics used cache cookies via ETags, DOMStorage and IE-userData to distinguish each user. KISSmetrics was sued as a result and dispensed with using ETags. It also allegedly now respects the [http://donottrack.us/ Do Not Track] HTTP header. <ref>Users should never rely on DNT preferences, since they are [https://en.wikipedia.org/wiki/Do_Not_Track#Effectiveness rarely respected by industry].</ref>
+
+[[Tor Browser]], which comes with Whonix, resists evercookies.
+
+== Cookie Threats ==
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = Over 95 percent of websites use cookies <ref name=Cookie_threat>https://www.digitaltrends.com/computing/history-of-cookies-and-effect-on-privacy/</ref> and embedded, external advertisement and analytics services are increasingly common.
+}}
+
+
+It is evident that cookies are useful for website personalization, logins, monitoring purchases and other functions, but they also present a dire tracking threat. The average website places 34 cookies on a device on the first visit, and 70 percent of these are third-party cookies. Expiry dates are often set to the year "9999", indicating there is no intention to ever stop recording user behavior. <ref name=Cookie_threat />
+
+The tracking service [http://help.yahoo.com/l/us/yahoo/ywa/documentation/install_guide/ig_get_started.html Yahoo! Web Analytics] has made claims of being able to set cookies on 99.9% of users. This [http://smorgasbork.com/component/content/article/84-a-study-of-internet-users-cookie-and-javascript-settings indicates] that [http://www.truststc.org/reu/10/Reports/GomezG,YalajuJ_paper.pdf cookie-generating JavaScript] and/or Flash cookies are deployed as the primary mechanisms.
+
+A 2011 [http://papers.ssrn.com/sol3/papers.cfm?abstract_id=1898390 study by the University of California, Berkeley] found that the top 100 websites at that time stored a total of 5,675 cookies. Of these, 4,914 cookies were set by third party domains and not the first-party domain being purposefully visited by the user. When browsing these 100 websites, data was transmitted to 600 servers.
+
+Cookie security is dependent on whether cookie data is encrypted, since adversaries may otherwise use this information to gain access to user data or to access websites with the user's credentials. Examples of this attack include [https://en.wikipedia.org/wiki/Cross-site_scripting cross-site scripting] and [https://en.wikipedia.org/wiki/Cross-site_request_forgery cross-site request forgery].
+
+As well as gathering the IP address and/or the HTTP referrer field of the computer requesting the web page, cookies can also store the requested URL and the date/time of the request. Web hosts are therefore capable of recording a large proportion of browsing behavior over many years, and correlating the accumulated profile data with individuals. The typical Internet user has collected hundreds of cookies from various websites on their PC without their knowledge. For instance, the following figure exhibits a small number of the cookies that are stored when a request is made to {{Code|www.nytimes.com}}.
+
+'''Figure:''' ''Cookies set by the New York Times''
+
+[[Image:cookies_nytimes.png|frame|none]]
+
+Most modern browsers integrate an optional function to block cookies, but the option has to be first set by the user.  [[Tor Browser]], which comes bundled with Whonix, has activated cookie blocking by default. Firefox has also adopted Tor Browser's [https://www.bleepingcomputer.com/news/software/another-tor-browser-feature-makes-it-into-firefox-first-party-isolation/ first party isolation] feature since version 55, meaning cookies are separated on a per-domain basis. Advertisement trackers are unable to see all the cookies stored on a user's computer (only the cookie for the currently viewed domain), meaning they cannot aggregate persistent cookie data for profiling. In the future, it is expected that more functions will become available to administrate preferences and acquired cookie collections.
+
+= HTML5 Canvas Image Data =
+
+Websites routinely request browser configuration settings in order to help select the best page format for the visitor. One of those variables is HTML5 canvas image data, which is related to graphical rendering. Canvas is a drawable region in HTML code with height and width attributes, and Javascript code can access this area though a large set of drawing functions related to animation, games, images and so on.<ref>https://en.wikipedia.org/wiki/Canvas_element</ref> 
+
+When combined with other exposed browser settings this can be enough to uniquely identify an individual, even without access to the specific IP address. <ref>https://tor.stackexchange.com/questions/4029/html-5-canvas-imagedata-extraction-what-does-it-actually-mean</ref>
+
+The Tor Project provides a good explanation of this fingerprinting method: <ref>https://www.torproject.org/projects/torbrowser/design/</ref>
+
+<blockquote>After plugins and plugin-provided information, we believe that the [https://developer.mozilla.org/en-US/docs/HTML/Canvas HTML5 Canvas] is the single largest fingerprinting threat browsers face today. [https://cseweb.ucsd.edu/~hovav/dist/canvas.pdf Studies] [https://securehomes.esat.kuleuven.be/~gacar/persistent/the_web_never_forgets.pdf show] that the Canvas can provide an easy-access fingerprinting target: The adversary simply renders WebGL, font, and named color data to a Canvas element, extracts the image buffer, and computes a hash of that image data. Subtle differences in the video card, font packs, and even font and graphics library versions allow the adversary to produce a stable, simple, high-entropy fingerprint of a computer. In fact, the hash of the rendered image can be used almost identically to a tracking cookie by the web server.</blockquote>
+
+Tor Browser has been patched to prompt before returning valid image data to the Canvas APIs. By default, if the site has not been given previous permission to extract canvas image data, then white image data is returned to the Javscript APIs. Third parties are not allowed to extract canvas image data at all.
+
+When browsing, if a prompt appears with a message like that below, it is recommended to select {{code|n}}.
+
+<pre>This website (github.com) attempted to extract HTML5 canvas image data, which may be used to uniquely identify your computer.
+
+Should Tor browser allow this website to extract HTML5 canvas image data? </pre>
+
+= IP Address =
+
+== Introduction ==
+
+The Privacy Commissioner of Canada provides a succinct definition of an IP address: <ref name=IP_address>https://www.priv.gc.ca/en/opc-actions-and-decisions/research/explore-privacy-research/2013/ip_201305/</ref>
+
+<blockquote>An Internet Protocol (IP) address is a numerical identification and logical address that is assigned to devices participating in a computer network utilizing the Internet Protocol. Although IP addresses are stored as binary numbers, they are usually displayed in a more human-readable notation, such as 208.77.188.166. The Internet Protocol also has the task of routing data packets between networks, and IP addresses specify the locations of the source and destination nodes in the topology of the routing system.</blockquote>
+
+Internet Service Providers (ISPs) assign or lease IP addresses to individuals and these can be static or dynamic. Static IP addresses have a permanent address that is assigned to the network-connected device such as a firewall or router. Dynamic IP addresses are assigned to network-connected devices on a temporary basis (typically a few months), which is often the case for household customers. 
+
+In both cases, the IP address acts as a unique identifier and the ISP may save (meta)data for months or even years. This may include browsing records, time spent online, and any direct connection to Internet services. This is possible because the IP address tells the server where to send a response. So long as the IP address does not change, it is easy for ISPs to monitor when and where a user has connected.
+
+== Information Linked to IP Addresses ==
+
+Knowledge of an IP address can reveal various information about devices, networks or services: <ref name=IP_address />
+
+* '''ISP provider:''' Personal data might be retrieved if the provider is known. For example, information might be sought on email addresses associated with an IP address, which in turn might relate to requests for subscriber information. 
+* '''Personal Information:''' 
+** Searching the WHOIS database might reveal other information about an individual, including organizational affiliations. <ref>This might include organizational address, name and phone number.</ref>
+** Internet searches using the IP address or computer names might show relevant peer-to-peer (P2P) activities (such as file sharing), fragments in web server log files, or evidence of other individual activities (like Wikipedia edits). Small pieces of online history can reveal a range of personal characteristics, preoccupations and individual interests.
+* '''Physical location:''' It is possible to geo-locate an IP address to the country, city and regional level:
+** [http://www.netop.org/services/ip-geolocation Geo-location] [http://www.maxmind.com/app/ip-location services] are available to refine the search further to districts or office buildings. In the case of a company or computer center, it is sometimes possible to determine which terminal a user is on.
+** Traceroutes can find the path to a computer, which provides information on its logical and physical location. <ref>This technique displays the path of packets across an IP network.</ref> 
+** Some lookup tools reveal latitude/longitude, telephone area code and a map of the location.
+* '''Access Technology:''' 
+** Databases can help reveal what hardware is being used to browse the Internet. For example, it is possible to distinguish whether a user is relying on DSL, a modem or a mobile device for connectivity.
+** A reverse lookup can be performed to obtain a computer name, which can reveal the physical location or other details. <ref>This technique links the resolution of an IP address to its domain name.</ref>
+
+Interested readers can refer to online sites to review some of the information that is revealed by an [https://browserleaks.com/ip IP address] or [https://browserleaks.com/ browser].
+
+== Conclusion ==
+
+Based on the preceding information, it is clear that without privacy or anonymity software, individuals are "browsing naked" on the Internet. While many of the threats in this chapter may be mitigated fully or partially without any special services, this is not the case for the IP address which is often uniquely linked to one person.
+
+This is why projects like Tor were founded, to blur any connection between a user's IP address and the websites that are visited. Similarly, this is why the Whonix platform relies on the Tor network as the foundation for anonymous activities. <font size="-3">[https://www.torproject.org/about/overview.html.en How Tor works]</font>
+
+= JavaScript =
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Do not confuse JavaScript with [https://www.java.com/en/download/faq/java_javascript.xml Java] or the active [https://stackoverflow.com/questions/11568648/difference-between-jre-and-java-plugin Java plugin], which are [http://www.differencebetween.com/difference-between-java-and-javascript/ completely different things] despite the similar name (see above). <ref>In short, JavaScript is not part of the Java platform and is a scripting language, while Java is an object-oriented programming language. The Java plugin is bundled with Java runtime and runs inside the browser; allowing Java code to run inside a client's browser process.</ref>
+}}
+
+== Introduction ==
+
+[https://en.wikipedia.org/wiki/JavaScript JavaScript] is one of the fundamental core technologies for Internet content production, alongside [https://en.wikipedia.org/wiki/HTML HTML] and [https://en.wikipedia.org/wiki/CSS CSS]. It allows sites to be interactive and dynamic, as well as provide for online applications such as video games. In contrast, HTML is a markup language that is used to create static content on sites, and Cascading Style Sheets (CSS) are designed for user formatting like interfaces, layout, colors and fonts. Modern browsers frequently use JavaScript ("scripts", "active scripting") and it is marginally safer against security and privacy vulnerabilities compared to the aforementioned plugins.
+
+In the past, JavaScript has been responsible for an estimated 84% of all security vulnerabilities on the Internet via [http://en.wikipedia.org/wiki/Cross-site_scripting cross-site scripting]. This attack allows adversaries to inject malicious client-side script into web pages, leading to users redirecting to malicious sites that phish for login credentials, bank accounts, personal information, or other sensitive data. <ref>https://gizmodo.com/why-are-javascript-attacks-so-dangerous-1453269240</ref> Similarly, JavaScript can be used by web hosts to access detailed information about a user's browser, desktop setting, operating system and hardware specifications, which forms a unique digital fingerprint of an individual. <ref> Refer to the following [http://ip-check.info/?lang=en ip-check.info anonymity test] to view some sample values which can be gathered via JavaScript (if enabled).</ref> <ref>[https://anonymous-proxy-servers.net/forum/viewtopic.php?f=10&t=7319 ip-check.info returns some false values and confuses TBB users] ([http://www.webcitation.org/6cJ0l5mvC w])</ref>
+
+== JavaScript Attack Classification ==
+
+JavaScript is essential to a fully functional browsing experience, but several classes of attacks rely upon it and are often successful: <ref>https://www.sophos.com/en-us/security-news-trends/security-trends/malicious-javascript.aspx</ref> <ref>http://worldcomp-proceedings.com/proc/p2016/SAM9734.pdf</ref> <ref>https://en.wikipedia.org/wiki/Cross-site_scripting#Related_vulnerabilities</ref>
+
+* <b>Malicious JavaScript email attachments:</b> When a harmless looking document is opened by the user, ransomware is downloaded to the HDD/SSD, later encrypting the computer and demanding a ransom to unlock the files.
+* <b>Drive-by download attacks:</b> When users visit a compromised website running malicious code, <ref>82% of malicious sites are hacked legitimate ones.</ref> users are redirected to another site controlled by the attackers. Attackers then run code in the victim's web browser that loads an exploit kit which probes the user's OS, browser and software to find vulnerabilities. Payloads/malware are then downloaded that access personal data, encrypt the computer or other intended criminal activity.
+* <b>[https://en.wikipedia.org/wiki/Cross-site_scripting Cross-site scripting]:</b> Since the 1990s it has been possible to inject JavaScript client-side into web-based applications, servers or plug-in systems, bypassing the [https://en.wikipedia.org/wiki/Same-origin_policy same-origin policy]. After successful exploitation, users visiting the compromised site are served malicious content which is presumed to be from a trusted source. Attackers can then access sensitive page content, session cookies and other information.
+* <b>Universal cross-site scripting:</b> Vulnerabilities in the browser or plugins are exploited to take control over the network. For example Firefox and other browsers, as well as plugins like Flash and ActiveX controls, all have flaws which can lead to [https://en.wikipedia.org/wiki/Buffer_overflow buffer overflows]. These are often exploitable via JavaScript and allows attackers to gain access to to OS's [https://en.wikipedia.org/wiki/API Application Programming Interface (API)] with root privileges. <ref>Sandbox implementation errors can also lead to Javascript running outside of the sandbox and with elevated privileges e.g. create or delete files.</ref>
+* <b>[https://en.wikipedia.org/wiki/Cross-site_request_forgery Cross-site request forgery]:</b> Unauthorized commands are transmitted from a user by trusted web applications. Malicious websites can use specially crafted image tags, hidden forms, and JavaScript XMLHttpRequests for this purpose. Depending on the specific vulnerability, when these elements are clicked by the user, the attacker may be able to: 
+** Execute remote code with root privileges.
+** Forge login requests and view private information.
+** Change personal information or fully compromise online accounts.
+** Conduct illicit money transfers.
+** Performance nearly all actions of a logged in user.
+
+== Session Replay Scripts ==
+
+Enabling Javascript does more than reveal additional information about a user's system and increase the probability of a successful browser exploit. It can also lead to a complete, literal recording of the entire browsing session if the user is unlucky enough to browse one of nearly [https://webtransparency.cs.princeton.edu/no_boundaries/session_replay_sites.html 500 sites] in the Alexa top 50,000: <ref name=Session_replay_script>https://freedom-to-tinker.com/2017/11/15/no-boundaries-exfiltration-of-personal-data-by-session-replay-scripts/</ref> <ref>This includes the usual privacy offenders such as microsoft.com, skype.com and adobe.com, along with various sites providing banking, media, torrenting, educational, telecommunications, forums, shopping, and anti-virus services.</ref>
+
+<blockquote>You may know that most websites have third-party analytics scripts that record which pages you visit and the searches you make. But lately, more and more sites use “session replay” scripts. These scripts record your keystrokes, mouse movements, and scrolling behavior, along with the entire contents of the pages you visit, and send them to third-party servers. Unlike typical analytics services that provide aggregate statistics, these scripts are intended for the recording and playback of individual browsing sessions, as if someone is looking over your shoulder.</blockquote>
+
+The law as it stands allows corporate entities to embed Javascript functions on sites in order to record highly personal information. This includes what is typed, exact movements of the mouse, and even "co-browsing", whereby an unseen intruder can watch what it is done in real time, without any form of notification. There are few limits to the data harvested;  name, email, phone number, address, social security numbers and date of birth are all considered fair game by companies like FullStory, Hotjar, and Smartlook. Many offer the option to [https://web.archive.org/web/20171114004942/https://www.smartlook.com/docs/identify-visitors explicitly] [https://web.archive.org/web/20170623160320/http://help.fullstory.com/develop-js/identify link] recordings to real identities.
+
+Although full or part redactions are attempted on passwords, credit card numbers, CVC numbers, and credit card expiry dates, sensitive information was found to leak in many instances, such as: <ref name=Session_replay_script />
+
+* Passwords entered into registration forms.
+* Leaking of credit card details on payment pages, even in real time.
+* Leaking of specific medical conditions and prescriptions.
+
+The same tracking companies often use insecure HTTP pages to deliver the recording playbacks or publisher page contents,  providing an enticing man-in-the-middle attack opportunity for advanced adversaries. <ref>Reinforcing the perception that the private sector really is a comfortable and principal ally in the surveillance-industrial complex.</ref> Fortunately, disabling Javascript is sufficient to prevent this activity completely, and ad-blocking lists are also useful in preventing data exfiltration. <ref>For instance, the EasyList and EasyPrivacy blocking lists that are available in popular extensions. However, they did not block all the major companies at the time of writing.</ref> Users should not solely rely on ad-blockers for general tracking protection, as [https://ericmathison.com/blog/bypass-ad-blockers-and-track-your-visitors-with-piwik/ tools have already been developed] which successfully defeat the most popular extensions, including Adblock Plus, Adblocker Ultimate, Ghostery and uBlock Origin.
+
+== Conclusion ==
+
+=== Enabling or Disabling JavaScript ===
+
+JavaScript is a clear and present danger for a host of attack vectors, however, there is a [[Tor_Browser#Security_vs_Usability_Trade-off|security versus usability trade-off]] to consider before disabling JavaScript completely: <ref>See also [https://lists.torproject.org/pipermail/tor-talk/2012-May/024224.html Tor Browser disabling JavaScript anonymity set reduction].</ref>
+
+<blockquote>The take-home message is disabling all JavaScript with white-list based, pre-emptive script-blocking may better protect against vulnerabilities (many attacks are based on scripting), but it reduces usability on many sites and acts as a fingerprinting mechanism based on the select sites where it is enabled. On the other hand, allowing JavaScript by default increases usability and the risk of exploitation, but the user also has a fingerprint more in common with the larger pool of users.</blockquote>
+
+=== Safest Browser Against Exploitation ===
+
+It is clearly unwise to browse the Internet without a well secured browser, otherwise there is a danger of a browser exploit leading to an infected system. Personally configuring a browser to be secure is an enormous effort requiring expertise and significant trial and error. The safer path is to use [[Tor Browser]], preferably on a Whonix platform, since it is already hardened against data leakage. As noted in the [[Tor Browser]] chapter:
+
+<blockquote>Tor Browser is a fork of the Mozilla Firefox web browser. It is developed by The Tor Project and optimized and designed for Tor, anonymity and security.<br />
+... <br />
+Features like proxy obedience, state separation, network isolation, anonymity set preservation and a host of others are simply unsupported by other browsers.<br />
+<br />
+In stark contrast to regular browsers, Tor Browser is optimized for anonymity and has a plethora of privacy-enhancing patches and add-ons. With Tor Browser, the user "blends in" and shares the Fingerprint of nearly three million other users, which is advantageous for privacy.</blockquote>
+
+Tor Browser blocks most dangerous technologies by default, but most popular websites like Youtube will still resolve correctly. For media portals which rely on Flash or alternative plugins, the user can download the relevant files with special software and then view it with an open source media player like [[Software#Media_Player|VLC]]. Websites should be avoided if they insist on the use of active plugins, see [[Browser Plugins]].
+
+= MAC Address =
+
+The [https://en.wikipedia.org/wiki/MAC_address Media Access Control (MAC) address] is the hardware address of each individual network device. It is sometimes referred to as the Ethernet-ID, Airport-ID, or physical / hardware / adapter address. Standard computer systems may have several physical or virtual network devices. These devices can be bound to a cable (LAN), wireless (WLAN), mobile (GPRS, UMTS) or virtual (VPS) environment, or another setup. 
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = "MAC addresses are typically 6 groups of two hexadecimal digits (0-9,A,B,C,D,E,F), separated either by colons (:) or hyphens (-)." <ref>http://accc.uic.edu/answer/what-my-ip-address-mac-address</ref>
+}}
+
+
+The MAC address serves as a unique identifier for the respective device in a local area network. Unless the computer is infected with [[malware]] designed to disclose this identifier, it is neither used nor transmitted on the Internet. Also, an access provider can only see the MAC address if the computer is connected directly to the Internet (for example by a modem), rather than over a router.
+
+Despite the limited risk of disclosure, MAC addresses ''can'' be used for tracking purposes by adversaries. For instance, other computers on the local network can potentially log it, which would then provide proof that the user's computer has been connected to a specific network. Moreover, advanced tracking techniques exist that are able to [http://papers.mathyvanhoef.com/asiaccs2016.pdf enumerate the MAC address] of a Wi-Fi card in use, by examining its physical characteristics. For these reasons [http://translate.google.com/translate?hl=en&sl=de&tl=en&u=http://de.wikipedia.org/wiki/MAC-Adresse MAC spoofing] should be considered for particular circumstances, like when an untrusted, public network will be used. See the [[MAC_Address|MAC address entry]] for further information.
+
+= TCP Timestamps =
+
+The Transmission Control Protocol (TCP) is a session-layer protocol for transferring data between computers. It is necessary for using Internet protocols like http (www), smtp (email) and ftp. For example, when a computer sends a request for a website, this data is sent within many small TCP packets. In addition to the data request, a TCP packet also contains optional information fields in the header (metadata), such as the TCP timestamp. The timestamp's value is proportional to the current time of the computer and is incremented according to the computer's internal clock.
+
+The timestamp can be used by the client and/or server machine for performance metrics and optimization. However, an Internet server may recognize and track a computer by observing those timestamps. By measuring the clock skew of the timestamps to millisecond precision, an adversary can remotely calculate the [http://www.cs.washington.edu/homes/yoshi/papers/PDF/ individual clock skew profile] for a computer, and determine the system uptime and boot time. These techniques work even if the user has otherwise perfectly anonymized their Internet connections.
+
+The Whonix documentation recommends that [[Disable_TCP_and_ICMP_Timestamps#Disable_TCP_Timestamps|TCP timestamps be disabled on the host operating system]] due to the risk. <ref>Even though TCP timestamps protect against [https://en.wikipedia.org/wiki/Protection_Against_Wrapped_Sequence_Numbers#TCP_timestamps wrapped sequence numbers].</ref> <ref>The disabling of [[Computer_Security_Education#Disable_ICMP_Timestamps|ICMP timestamps]] is also recommended for the same reason.</ref>  [[Non-Qubes-Whonix]] and [[Qubes-Whonix]] users are already protected from this threat. The clock in Whonix-Workstation (<code>anon-whonix</code>) does not match the clock on the host and is also set securely by [[Dev/TimeSync|sdwdate]] over {{Code|https}}, which results in a slightly different result compared to the more accurate NTP.
+
+Tor users are also being protected from being profiled by TCP timestamps in another way: Tor relays automatically replace the potentially insecure TCP packets with their own.
+
+<font size="-3"> [https://trac.torproject.org/projects/tor/ticket/8169 source 1: Tor trac #8169 replace TCP timestamp] [https://trac.torproject.org/projects/tor/wiki/doc/TorFAQ#DoesTorresistremotephysicaldevicefingerprinting source 2: Tor wiki FAQ] </font>
+
 = Web (Email) Beacons and Banner Ads =
 
 == Introduction ==
@@ -324,87 +405,6 @@ The same profiling technique via beacons can be utilized with email: <ref name=E
 This technique is popular with email marketers, spammers, and phishers. It confirms the validity of email addresses, tests whether emails made it past the spam filters, and informs if/when the email is displayed. Detection of these emails by users and mail filters is difficult, and emails do not need to contain advertisements or any other commercial material.
 
 The general advice is to use an email client (like Mozilla Thunderbird) rather than a browser, and to  disable the downloading of remote images whose URLs are embedded in HTML emails. Alternatively, text-based mail readers are available (like Pine or Mutt) or graphical email clients with text-based HTML capabilities (such as Mulberry), which do not interpret HTML or display images. Plain text email messages close off this attack vector completely, because web beacons cannot be embedded; the contents are interpreted as display characters, rather than as embedded HTML code. <ref name=Email_beacons /> <ref>Users can also disconnect from the Internet before reading any downloaded messages, and then delete them before reconnecting.</ref>
-
-= TCP Timestamps =
-
-The Transmission Control Protocol (TCP) is a session-layer protocol for transferring data between computers. It is necessary for using Internet protocols like http (www), smtp (email) and ftp. For example, when a computer sends a request for a website, this data is sent within many small TCP packets. In addition to the data request, a TCP packet also contains optional information fields in the header (metadata), such as the TCP timestamp. The timestamp's value is proportional to the current time of the computer and is incremented according to the computer's internal clock.
-
-The timestamp can be used by the client and/or server machine for performance metrics and optimization. However, an Internet server may recognize and track a computer by observing those timestamps. By measuring the clock skew of the timestamps to millisecond precision, an adversary can remotely calculate the [http://www.cs.washington.edu/homes/yoshi/papers/PDF/ individual clock skew profile] for a computer, and determine the system uptime and boot time. These techniques work even if the user has otherwise perfectly anonymized their Internet connections.
-
-The Whonix documentation recommends that [[Disable_TCP_and_ICMP_Timestamps#Disable_TCP_Timestamps|TCP timestamps be disabled on the host operating system]] due to the risk. <ref>Even though TCP timestamps protect against [https://en.wikipedia.org/wiki/Protection_Against_Wrapped_Sequence_Numbers#TCP_timestamps wrapped sequence numbers].</ref> <ref>The disabling of [[Computer_Security_Education#Disable_ICMP_Timestamps|ICMP timestamps]] is also recommended for the same reason.</ref>  [[Non-Qubes-Whonix]] and [[Qubes-Whonix]] users are already protected from this threat. The clock in Whonix-Workstation (<code>anon-whonix</code>) does not match the clock on the host and is also set securely by [[Dev/TimeSync|sdwdate]] over {{Code|https}}, which results in a slightly different result compared to the more accurate NTP.
-
-Tor users are also being protected from being profiled by TCP timestamps in another way: Tor relays automatically replace the potentially insecure TCP packets with their own.
-
-<font size="-3"> [https://trac.torproject.org/projects/tor/ticket/8169 source 1: Tor trac #8169 replace TCP timestamp] [https://trac.torproject.org/projects/tor/wiki/doc/TorFAQ#DoesTorresistremotephysicaldevicefingerprinting source 2: Tor wiki FAQ] </font>
-
-= IP Address =
-
-== Introduction ==
-
-The Privacy Commissioner of Canada provides a succinct definition of an IP address: <ref name=IP_address>https://www.priv.gc.ca/en/opc-actions-and-decisions/research/explore-privacy-research/2013/ip_201305/</ref>
-
-<blockquote>An Internet Protocol (IP) address is a numerical identification and logical address that is assigned to devices participating in a computer network utilizing the Internet Protocol. Although IP addresses are stored as binary numbers, they are usually displayed in a more human-readable notation, such as 208.77.188.166. The Internet Protocol also has the task of routing data packets between networks, and IP addresses specify the locations of the source and destination nodes in the topology of the routing system.</blockquote>
-
-Internet Service Providers (ISPs) assign or lease IP addresses to individuals and these can be static or dynamic. Static IP addresses have a permanent address that is assigned to the network-connected device such as a firewall or router. Dynamic IP addresses are assigned to network-connected devices on a temporary basis (typically a few months), which is often the case for household customers. 
-
-In both cases, the IP address acts as a unique identifier and the ISP may save (meta)data for months or even years. This may include browsing records, time spent online, and any direct connection to Internet services. This is possible because the IP address tells the server where to send a response. So long as the IP address does not change, it is easy for ISPs to monitor when and where a user has connected.
-
-== Information Linked to IP Addresses ==
-
-Knowledge of an IP address can reveal various information about devices, networks or services: <ref name=IP_address />
-
-* '''ISP provider:''' Personal data might be retrieved if the provider is known. For example, information might be sought on email addresses associated with an IP address, which in turn might relate to requests for subscriber information. 
-* '''Personal Information:''' 
-** Searching the WHOIS database might reveal other information about an individual, including organizational affiliations. <ref>This might include organizational address, name and phone number.</ref>
-** Internet searches using the IP address or computer names might show relevant peer-to-peer (P2P) activities (such as file sharing), fragments in web server log files, or evidence of other individual activities (like Wikipedia edits). Small pieces of online history can reveal a range of personal characteristics, preoccupations and individual interests.
-* '''Physical location:''' It is possible to geo-locate an IP address to the country, city and regional level:
-** [http://www.netop.org/services/ip-geolocation Geo-location] [http://www.maxmind.com/app/ip-location services] are available to refine the search further to districts or office buildings. In the case of a company or computer center, it is sometimes possible to determine which terminal a user is on.
-** Traceroutes can find the path to a computer, which provides information on its logical and physical location. <ref>This technique displays the path of packets across an IP network.</ref> 
-** Some lookup tools reveal latitude/longitude, telephone area code and a map of the location.
-* '''Access Technology:''' 
-** Databases can help reveal what hardware is being used to browse the Internet. For example, it is possible to distinguish whether a user is relying on DSL, a modem or a mobile device for connectivity.
-** A reverse lookup can be performed to obtain a computer name, which can reveal the physical location or other details. <ref>This technique links the resolution of an IP address to its domain name.</ref>
-
-Interested readers can refer to online sites to review some of the information that is revealed by an [https://browserleaks.com/ip IP address] or [https://browserleaks.com/ browser].
-
-== Conclusion ==
-
-Based on the preceding information, it is clear that without privacy or anonymity software, individuals are "browsing naked" on the Internet. While many of the threats in this chapter may be mitigated fully or partially without any special services, this is not the case for the IP address which is often uniquely linked to one person.
-
-This is why projects like Tor were founded, to blur any connection between a user's IP address and the websites that are visited. Similarly, this is why the Whonix platform relies on the Tor network as the foundation for anonymous activities. <font size="-3">[https://www.torproject.org/about/overview.html.en How Tor works]</font>
-
-= MAC Address =
-
-The [https://en.wikipedia.org/wiki/MAC_address Media Access Control (MAC) address] is the hardware address of each individual network device. It is sometimes referred to as the Ethernet-ID, Airport-ID, or physical / hardware / adapter address. Standard computer systems may have several physical or virtual network devices. These devices can be bound to a cable (LAN), wireless (WLAN), mobile (GPRS, UMTS) or virtual (VPS) environment, or another setup. 
-
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = "MAC addresses are typically 6 groups of two hexadecimal digits (0-9,A,B,C,D,E,F), separated either by colons (:) or hyphens (-)." <ref>http://accc.uic.edu/answer/what-my-ip-address-mac-address</ref>
-}}
-
-
-The MAC address serves as a unique identifier for the respective device in a local area network. Unless the computer is infected with [[malware]] designed to disclose this identifier, it is neither used nor transmitted on the Internet. Also, an access provider can only see the MAC address if the computer is connected directly to the Internet (for example by a modem), rather than over a router.
-
-Despite the limited risk of disclosure, MAC addresses ''can'' be used for tracking purposes by adversaries. For instance, other computers on the local network can potentially log it, which would then provide proof that the user's computer has been connected to a specific network. Moreover, advanced tracking techniques exist that are able to [http://papers.mathyvanhoef.com/asiaccs2016.pdf enumerate the MAC address] of a Wi-Fi card in use, by examining its physical characteristics. For these reasons [http://translate.google.com/translate?hl=en&sl=de&tl=en&u=http://de.wikipedia.org/wiki/MAC-Adresse MAC spoofing] should be considered for particular circumstances, like when an untrusted, public network will be used. See the [[MAC_Address|MAC address entry]] for further information.
-
-= HTML5 Canvas Image Data =
-
-Websites routinely request browser configuration settings in order to help select the best page format for the visitor. One of those variables is HTML5 canvas image data, which is related to graphical rendering. Canvas is a drawable region in HTML code with height and width attributes, and Javascript code can access this area though a large set of drawing functions related to animation, games, images and so on.<ref>https://en.wikipedia.org/wiki/Canvas_element</ref> 
-
-When combined with other exposed browser settings this can be enough to uniquely identify an individual, even without access to the specific IP address. <ref>https://tor.stackexchange.com/questions/4029/html-5-canvas-imagedata-extraction-what-does-it-actually-mean</ref>
-
-The Tor Project provides a good explanation of this fingerprinting method: <ref>https://www.torproject.org/projects/torbrowser/design/</ref>
-
-<blockquote>After plugins and plugin-provided information, we believe that the [https://developer.mozilla.org/en-US/docs/HTML/Canvas HTML5 Canvas] is the single largest fingerprinting threat browsers face today. [https://cseweb.ucsd.edu/~hovav/dist/canvas.pdf Studies] [https://securehomes.esat.kuleuven.be/~gacar/persistent/the_web_never_forgets.pdf show] that the Canvas can provide an easy-access fingerprinting target: The adversary simply renders WebGL, font, and named color data to a Canvas element, extracts the image buffer, and computes a hash of that image data. Subtle differences in the video card, font packs, and even font and graphics library versions allow the adversary to produce a stable, simple, high-entropy fingerprint of a computer. In fact, the hash of the rendered image can be used almost identically to a tracking cookie by the web server.</blockquote>
-
-Tor Browser has been patched to prompt before returning valid image data to the Canvas APIs. By default, if the site has not been given previous permission to extract canvas image data, then white image data is returned to the Javscript APIs. Third parties are not allowed to extract canvas image data at all.
-
-When browsing, if a prompt appears with a message like that below, it is recommended to select {{code|n}}.
-
-<pre>This website (github.com) attempted to extract HTML5 canvas image data, which may be used to uniquely identify your computer.
-
-Should Tor browser allow this website to extract HTML5 canvas image data? </pre>
 
 = License =
 
