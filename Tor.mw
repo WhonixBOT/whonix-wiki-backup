@@ -4,19 +4,6 @@
 |image=https://www.whonix.org/w/images/3/32/Menger-702837640.jpg
 }}
 
-= Version Number =
-To discover what Tor version is currently in use, run the following command inside Whonix-Gateway ([[Qubes-Whonix]]: <code>sys-whonix</code>).
-
-{{CodeSelect|code=
-anon-info
-}}
-
-The output should be similar to the following.
-
-<pre>
-INFO: version of the 'tor' package: 0.3.4.8-1~d90.stretch+1
-</pre>
-
 = Configuration Check =
 To discover if there are any Tor configuration syntax errors and to see which Tor configuration files are processed in which order, run the following command inside Whonix-Gateway ([[Qubes-Whonix]]: <code>sys-whonix</code>).
 
@@ -49,6 +36,9 @@ Configuration was valid
 /usr/share/tor/tor-service-defaults-torrc /etc/tor/torrc /etc/torrc.d/95_whonix.conf /usr/local/etc/torrc.d/40_tor_control_panel.conf /usr/local/etc/torrc.d/50_user.conf
 =====================================================================
 </pre>
+
+= Edit Tor Configuration =
+{{Open /usr/local/etc/torrc.d/50 user.conf}}
 
 = Log Analysis =
 
@@ -91,9 +81,6 @@ To [[#Restart Tor|restart Tor]], run the following command.
 sudo service tor@default restart
 }}
 
-= Edit Tor Configuration =
-{{Open /usr/local/etc/torrc.d/50 user.conf}}
-
 = Non-Issues =
 
 {| class="wikitable" style="background-color: #fff;text-align: left"
@@ -124,7 +111,72 @@ This warning is caused by [[whonixcheck]], specifically the function {{Code2|che
 
 |}
 
+= Version Number =
+To discover what Tor version is currently in use, run the following command inside Whonix-Gateway ([[Qubes-Whonix]]: <code>sys-whonix</code>).
+
+{{CodeSelect|code=
+anon-info
+}}
+
+The output should be similar to the following.
+
+<pre>
+INFO: version of the 'tor' package: 0.3.4.8-1~d90.stretch+1
+</pre>
+
 = Advanced Topics =
+
+== Additional SocksPorts ==
+
+Adding additional Tor SocksPorts to ''/usr/local/etc/torrc.d/50_user.conf'' is non-intuitive. <ref>https://trac.torproject.org/projects/tor/ticket/15261</ref>
+
+As noted in the Tor man page (<code>man tor</code>):
+
+<blockquote>
+By default, an option on the command line overrides an option found in the configuration file, and an option in a configuration file overrides one in the defaults file. <br />
+<br />
+This rule is simple for options that take a single value, but it can become complicated for options that are allowed to occur more than once: if you specify four SOCKSPorts in your configuration file, and one more SOCKSPort on the command line, the option on the command line will replace <u>all</u> of the SOCKSPorts in the configuration file.  If this is not what you want, prefix the option name with a plus sign, and it will be appended to the previous set of options instead.
+</blockquote>
+
+Nick Mathewson from The Tor Project has also noted: <ref>https://trac.torproject.org/projects/tor/ticket/15261#comment:1</ref>
+
+<blockquote>
+So to make sure that the SocksPort in the torrc does what you want, write it as <code>+SocksPort</code>.
+</blockquote>
+
+After adding custom ports, a user would also have to edit the Whonix firewall unless they were lucky. For example, various custom ports for such use cases have already been added. Those are documented [[Stream_Isolation#How_to_mitigate_identity_correlation|here]].
+
+== Blacklist Certain Onion Services from Connecting ==
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = This procedure is experimental. Testers only.
+}}
+
+{{Open /usr/local/etc/torrc.d/50_user.conf}}
+
+The following is an example onion service that is added to {{Code2|/usr/local/etc/torrc.d/50_user.conf}}. Replace {{Code2|bbbbbb6qtmqg65g6.onion}} with the actual onion service that should be blacklisted.
+
+{{CodeSelect|code=
+MapAddress bbbbbb6qtmqg65g6.onion 127.0.0.1
+}}
+
+{{Reload_Tor}}
+
+== Entry Guards ==
+{{Anchor|Manual Rotation of Tor Guards}}
+{{Anchor|Security and Performance Related Issues}}
+{{Anchor|Mitigate the Threat of Guard Fingerprinting}}
+{{Anchor|Clone Whonix-Gateway (sys-whonix) with New Entry Guards}}
+{{Anchor|Regenerate the Tor State After Saving the Tor State Folder}}
+{{Anchor|Alternating Bridges}}
+{{Anchor|Copy Tor State Files to Another sys-whonix Instance}}
+{{Anchor|Fresh Tor Entry Guards by Regenerating the Tor State File}}
+{{Anchor|Notes}}
+
+This entry has been moved [[Tor_Entry_Guards|here]].
+
 == Manual Bridge Configuration ==
 It is recommended to first read the main [[Bridges]] article.
 
@@ -261,70 +313,19 @@ Follow this procedure if it has not been previously completed.
 
 {{Reload_Tor}}
 
-== Entry Guards ==
-{{Anchor|Manual Rotation of Tor Guards}}
-{{Anchor|Security and Performance Related Issues}}
-{{Anchor|Mitigate the Threat of Guard Fingerprinting}}
-{{Anchor|Clone Whonix-Gateway (sys-whonix) with New Entry Guards}}
-{{Anchor|Regenerate the Tor State After Saving the Tor State Folder}}
-{{Anchor|Alternating Bridges}}
-{{Anchor|Copy Tor State Files to Another sys-whonix Instance}}
-{{Anchor|Fresh Tor Entry Guards by Regenerating the Tor State File}}
-{{Anchor|Notes}}
+== Tor Functions ==
 
-This entry has been moved [[Tor_Entry_Guards|here]].
-
-== Blacklist Certain Onion Services from Connecting ==
-
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = This procedure is experimental. Testers only.
-}}
-
-{{Open /usr/local/etc/torrc.d/50_user.conf}}
-
-The following is an example onion service that is added to {{Code2|/usr/local/etc/torrc.d/50_user.conf}}. Replace {{Code2|bbbbbb6qtmqg65g6.onion}} with the actual onion service that should be blacklisted.
-
-{{CodeSelect|code=
-MapAddress bbbbbb6qtmqg65g6.onion 127.0.0.1
-}}
-
-{{Reload_Tor}}
-
-== Additional SocksPorts ==
-
-Adding additional Tor SocksPorts to ''/usr/local/etc/torrc.d/50_user.conf'' is non-intuitive. <ref>https://trac.torproject.org/projects/tor/ticket/15261</ref>
-
-As noted in the Tor man page (<code>man tor</code>):
-
-<blockquote>
-By default, an option on the command line overrides an option found in the configuration file, and an option in a configuration file overrides one in the defaults file. <br />
-<br />
-This rule is simple for options that take a single value, but it can become complicated for options that are allowed to occur more than once: if you specify four SOCKSPorts in your configuration file, and one more SOCKSPort on the command line, the option on the command line will replace <u>all</u> of the SOCKSPorts in the configuration file.  If this is not what you want, prefix the option name with a plus sign, and it will be appended to the previous set of options instead.
-</blockquote>
-
-Nick Mathewson from The Tor Project has also noted: <ref>https://trac.torproject.org/projects/tor/ticket/15261#comment:1</ref>
-
-<blockquote>
-So to make sure that the SocksPort in the torrc does what you want, write it as <code>+SocksPort</code>.
-</blockquote>
-
-After adding custom ports, a user would also have to edit the Whonix firewall unless they were lucky. For example, various custom ports for such use cases have already been added. Those are documented [[Stream_Isolation#How_to_mitigate_identity_correlation|here]].
-
-= UDP =
-{{Tor_UDP}}
-
-= Tor Functions =
-
-== Disable Tor ==
+=== Disable Tor ===
 {{Disable_Tor}}
 
-== Reload Tor ==
+=== Reload Tor ===
 {{Reload_Tor}}
 
-== Restart Tor ==
+=== Restart Tor ===
 {{Restart_Tor}}
+
+== UDP ==
+{{Tor_UDP}}
 
 = Further Reading =
 
