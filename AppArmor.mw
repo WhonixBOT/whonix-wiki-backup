@@ -5,11 +5,11 @@
 }}
 __FORCETOC__
 
-=== Introduction ===
+= Introduction =
 [https://en.wikipedia.org/wiki/AppArmor AppArmor] profiles. For better security.
 
-=== Installation ===
-==== Introduction ====
+= Installation =
+== Introduction ==
 {{mbox
 | image      = [[File:Ambox_warning_pn.svg.png|40px|alt=Exterimental AppArmor Profile Warning]]
 | text       = 
@@ -19,7 +19,7 @@ Testers only!
 {{mbox
 | image   = [[File:Ambox_notice.png|40px|alt=Qubes-Whonix Note]]
 | text       =
-[[Qubes-Whonix]] users require some extra instructions for setting up AppArmor. [[Non-Qubes-Whonix]] users can skip this section. ({{Non-Qubes-Whonix}})
+[[Qubes-Whonix]] users require some extra instructions for setting up AppArmor. [[Non-Qubes-Whonix]] users can skip this section. <ref>{{Non-Qubes-Whonix}}</ref>
 }}
 <br />
 {{Qubes AppArmor}}
@@ -47,15 +47,15 @@ In Whonix-Workstation as well as on Whonix-Gateway.
 sudo apt-get update
 }}
 
-==== Install All AppArmor Profiles ====
+== Install All AppArmor Profiles ==
 The easiest method is to install all available AppArmor profiles. This can result in a few profiles being enforced for software that is not installed, but this will not have any adverse impacts.
 {{CodeSelect|code=
 sudo apt-get install apparmor-profiles-whonix
 }}
 
-==== Install Select AppArmor Profiles ====
+== Install Select AppArmor Profiles ==
 <div class="toccolours mw-collapsible mw-collapsed">
-Click on expand on the right side.
+Click on Expand on the right side.
 <div class="mw-collapsible-content">
 Profile for [[Tor Browser]]. Useful in Whonix-Workstation. <ref>Tor Browser is installed by [[Tor Browser#Update Tor Browser|tb-updater]], which comes installed by default in Whonix.</ref>
 {{CodeSelect|code=
@@ -89,7 +89,7 @@ sudo apt-get install apparmor-profile-virtualbox
 </div>
 </div>
 
-==== Revert any Whonix Repository Change ====
+== Revert any Whonix Repository Change ==
 
 If AppArmor profiles were installed from the testers repository, reverting to the {{Code2|stable}} repository is recommended.
 
@@ -103,7 +103,7 @@ Update the package lists.
 sudo apt-get update
 }}
 
-=== Profile Unloading ===
+== Profile Unloading ==
 <div class="toccolours mw-collapsible mw-collapsed">
 {{mbox
 | type      = notice
@@ -130,23 +130,25 @@ The name of the specific profile to unload must be known in advance - refer to t
 </div>
 </div>
 
+= Common Operations =
+
 == Maintain a Functional Tor Browser ==
 
-Tor Browser upgrades frequently break the Whonix AppArmor profile used to contain it. Even when AppArmor related fixes are confirmed in Phabricator, most often the packages are not made available to Whonix stable or even the developer version. This means manual profile fixes are required until [[About#Whonix_Version|the next Whonix version is released]].
+Tor Browser upgrades frequently break the Whonix AppArmor profile used to contain it. Even when AppArmor-related fixes are confirmed in Phabricator, most often the packages are not made available to Whonix stable or even the developer version. This means manual profile fixes are required until [[About#Whonix_Version|the next Whonix version is released]].
 
 At the time of writing, Tor Browser is non-functional with the available profile in the repositories. Advanced users can follow these steps to rectify the problem.
 
-1. Open a terminal in Whonix-Workstation TemplateVM
+'''1.''' Open a terminal in Whonix-Workstation TemplateVM.
 
 <code>Whonix-WS TemplateVM</code> -> <code>Konsole</code>
 
-2. List the available AppArmor profiles
+'''2.''' List the available AppArmor profiles.
 
 {{CodeSelect|code=
 ls /etc/apparmor.d/
 }}
 
-3. Edit the Tor Browser AppArmor profile
+'''3.''' Edit the Tor Browser AppArmor profile.
 
 Note: change the name of the file to match whatever version is installed on the system.
 
@@ -154,7 +156,7 @@ Note: change the name of the file to match whatever version is installed on the 
 sudo nano /etc/apparmor.d/home.*.tor-browser_*Browser.firefox
 }}
 
-4. Navigate to the Whonix Github resource for AppArmor
+'''4.''' Navigate to the Whonix Github resource for AppArmor.
 
 The latest git commits can be found [https://github.com/Whonix/apparmor-profile-torbrowser here].
 
@@ -171,7 +173,7 @@ Select the <code>Raw</code> button on the right-hand side. <ref>Otherwise essent
 
 Cut and paste the profile text into the old Tor Browser profile which is open in nano. Save and exit.
 
-5. Enforce the new Tor Browser profile
+'''5.''' Enforce the new Tor Browser profile.
 
 Note: In the command below, change the name of the file to match whatever version is installed on the system. 
 
@@ -181,15 +183,15 @@ In the Whonix-Workstation TemplateVM, run.
 sudo aa-enforce /etc/apparmor.d/home.*.tor-browser_*.Browser.firefox
 }}
 
-6. Shutdown Whonix-Workstation TemplateVM and any running instances of Whonix-Workstation AppVM
+'''6.''' Shutdown Whonix-Workstation TemplateVM and any running instances of Whonix-Workstation AppVM.
 
-7. Restart the Whonix-Workstation AppVM
+'''7.''' Restart the Whonix-Workstation AppVM.
 
 Launch Tor Browser. If everything has been applied correctly, Tor Browser will have full functionality. If the following AppArmor warning appears, it can be safely ignored.
 
 <pre>Profile: /home/**/tor-browser*/Browser/firefox Operation: open Name: /dev/ Denied: r Logfile: /var/log/kern.log For more information, please see: https://wiki.ubuntu.com/DebuggingApparmor</pre>
 
-To manually check AppArmor is really running and enforced, in a terminal run.
+To manually check AppArmor is correctly running and enforced, in a terminal run.
 
 {{CodeSelect|code=
 sudo aa-status
@@ -197,9 +199,9 @@ sudo aa-status
 
 The output should show the Tor Browser profile is loaded and in enforce mode.
 
-== Fixing Other Whonix AppArmor Profiles ==
+== Correcting Other Whonix AppArmor Profiles ==
 
-Advanced users can imitate the method outlined above to resolve similar AppArmor problems impacting full functionality of applications in Whonix. For instance, at the time of writing the <code>whonixcheck</code> AppArmor profile causes continuous "denied" messages in [[Qubes-Whonix]]. Resolving this is quite simple: <ref>This issue has been fixed in Whonix 14.</ref>
+Advanced users can follow the same method to resolve other AppArmor problems impacting full functionality of applications in Whonix. For instance, in Whonix 13 the <code>whonixcheck</code> AppArmor profile caused continuous "denied" messages in [[Qubes-Whonix]]. Resolving this was quite simple: <ref>This issue was fixed in the Whonix 14 release.</ref>
 
 * Navigate to the [https://raw.githubusercontent.com/Whonix/whonixcheck/master/etc/apparmor.d/usr.bin.whonixcheck raw updated whonixcheck profile].
 * In <u>both</u> the Whonix-Gateway (<code>{{whonix-gw}}</code>) and Whonix-Workstation (<code>{{whonix-ws}}</code>) TemplateVMs, replace the existing content in ''/etc/apparmor.d/usr.bin.whonixcheck'' with the updated github content.
@@ -210,7 +212,7 @@ Advanced users can imitate the method outlined above to resolve similar AppArmor
 
 From Whonix 14, [https://packages.debian.org/stretch/apparmor-notify apparmor-notify] is no longer installed by default. This means desktop notifications will not appear concerning AppArmor denied messages, which are stored in ''/var/log/audit/audit.log'' <ref>To install it, run: <code>sudo apt-get update && sudo apt-get install apparmor-notify</code></ref> <ref>https://forums.whonix.org/t/whonix-14-debian-stretch-apparmor-related-changes/3563</ref> <ref>The Debian default location is ''/var/log/kern.log''</ref> 
 
-'''Inspect Notifications'''
+=== Inspect Notifications ===
 
 To inspect relevant logs, run.
 
@@ -230,7 +232,7 @@ It is possible to keep watching the file as it is appended. This is useful for r
 sudo tail -f /var/log/audit/audit.log {{!}} grep --line-buffered DENIED
 }}
 
-'''Disable AppArmor Notifications'''
+=== Disable AppArmor Notifications ===
 
 If users installed apparmor-notify manually, then some applications may be functional, but AppArmor "denied" messages can constantly appear on the desktop. Rather than updating the relevant AppArmor profile(s), it is possible to disable notifications.
 
@@ -245,18 +247,18 @@ To revert this change, reboot the VM.
 == More Profiles ==
 Users can also utilize profiles by other vendors, but this is unsupported by Whonix developers. It is not necessary to install an AppArmor profile for applications that will not be used. For example, it is unnecessary to install the dovecot AppArmor profile if it will never be run.
 
-* Debian has packages that you can be easily installed from the apt repository - https://wiki.debian.org/AppArmor/HowToUse#Enable_.2F_install_more_profiles
-* Ubuntu also provides profiles. These are not so easy to download as a package to be installed in Debian. The profiles may or may not differ or complement those profiles listed further above. http://bazaar.launchpad.net/~apparmor-dev/apparmor-profiles/master/files/head:/ubuntu/16.04/
+* Debian has packages that you can be [https://wiki.debian.org/AppArmor/HowToUse#Enable_.2F_install_more_profiles easily installed from the apt repository]. 
+* Ubuntu also [https://bazaar.launchpad.net/~apparmor-dev/apparmor-profiles/master/files/head:/ubuntu/16.10/ provides profiles]. These are not so easy to download as a package to be installed in Debian. The profiles may or may not differ or complement those profiles listed further above, see: 
 
-== Support ==
-* Need help? Go to [https://forums.whonix.org/c/apparmor Whonix AppArmor Forum].
-* [https://forums.whonix.org/t/profile-creation-advice/1127 Profile Creation Advice]
+= Support =
+* Need help? Visit the [https://forums.whonix.org/c/apparmor Whonix AppArmor Forum].
+* [https://forums.whonix.org/t/profile-creation-advice/1127 Profile Creation Advice].
 
-== Development ==
-* [https://forums.whonix.org/t/whonix-apparmor-profiles-development-discussion/108 Whonix AppArmor Profiles Development Discussion]
-* [https://phabricator.whonix.org/tag/apparmor/ Open Tasks]
+= Development =
+* [https://forums.whonix.org/t/whonix-apparmor-profiles-development-discussion/108 Whonix AppArmor Profiles Development Discussion].
+* [https://phabricator.whonix.org/tag/apparmor/ Open Tasks].
 
-== Footnotes ==
+= Footnotes =
 {{reflist|close=1}}
 
 {{Footer}}
