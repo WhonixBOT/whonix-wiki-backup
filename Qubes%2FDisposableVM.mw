@@ -1,7 +1,7 @@
 {{DISPLAYTITLE:Qubes DisposableVMs}}
 {{Header}}
 {{#seo:
-|description=How to use DisposableVM with Qubes-Whonix
+|description=How to use DisposableVMs in Qubes-Whonix.
 |image=https://www.whonix.org/w/images/5/55/Qubes-logo-icon.png
 }}
 {{Maintainer|
@@ -16,13 +16,13 @@
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text    = 
-These DisposableVM instructions <u>only</u> apply to Qubes-Whonix 14 in Qubes R4. <ref>DisposableVMs have significant improvements; see https://github.com/QubesOS/qubes-issues/issues/866#issuecomment-220495485</ref> Qubes R3.2 is unsupported by Whonix developers. <ref>A serious [https://phabricator.whonix.org/T695 privacy bug] is unresolved in Qubes R3.2 / R3.2.1 and below.</ref>
+These DisposableVM (DispVM) instructions <u>only</u> apply to Qubes-Whonix 14 in Qubes R4. <ref>DispVMs have significant improvements; see https://github.com/QubesOS/qubes-issues/issues/866#issuecomment-220495485</ref> Qubes R3.2 is unsupported by Whonix developers. <ref>A serious [https://phabricator.whonix.org/T695 privacy bug] is unresolved in Qubes R3.2 / R3.2.1 and below.</ref>
 }}
 <br />
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text    = 
-A [[#Warnings|few usability issues]] in DisposableVMs affect anonymity. If the risks are unknown to the user, then first carefully read this page.
+A [[#Warnings|few usability issues]] in DispVMs affect anonymity. If the risks are unknown to the user, then first carefully read this page.
 }}
 
 __TOC__
@@ -37,7 +37,7 @@ Qubes does not have a built-in snapshot capability like VirtualBox that can comp
 Apart from [https://www.qubes-os.org/doc/dom0-tools/qvm-revert-template-changes/ qvm-revert-template-changes] which can only revert to the state existing before the last shutdown of the TemplateVM.
 </ref> <ref>
 [https://forums.whonix.org/t/qubes-vm-snapshots-using-git-svn Qubes VM snapshots using git / SVN].
-</ref> In other words, no method exists within AppVMs to reverse changes made to the persistent file system  without implementing some type of custom solution. To ensure that ''all'' filesystem changes are discarded after a session, Qubes offers DisposableVMs (DispVMs). When a DispVM is shutdown, the VM is removed from Qubes and all related VM images are deleted from the host filesystem. This method is [[Qubes/Disposable_VM#Warning:_Disposable_VMs_are_not_amnesic|not yet amnesic]] and should not be relied upon for anti-forensics!
+</ref> In other words, no method exists within AppVMs to reverse changes made to the persistent file system  without implementing some type of custom solution. To ensure that ''all'' filesystem changes are discarded after a session, Qubes offers DispVMs. When a DispVM is shutdown, the VM is removed from Qubes and all related VM images are deleted from the host filesystem. This method is [[Qubes/Disposable_VM#Warning:_Disposable_VMs_are_not_amnesic|not yet amnesic]] and should not be relied upon for anti-forensics!
 
 While DispVMs ensure that files do not persist without user intervention, the downside is the user can no longer decide whether or not the current VM state should be kept or destroyed; users must choose beforehand to use a standard AppVM or a DispVM.
 
@@ -65,23 +65,23 @@ DispVMs work especially well with Whonix-Gateway. <ref>Because each VM is assign
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text       = 
-If a DisposableVM is created from within a VM that is not connected to Whonix-Gateway, the new DisposableVM may route its traffic over clearnet. <ref>DisposableVMs are created in one of two ways: 
+If a DispVM is created from within a VM that is not connected to Whonix-Gateway, the new DispVM may route its traffic over clearnet. <ref>DispVMs are created in one of two ways: 
 * <code>Open in DisposableVM</code>. On the command line (domU), run. {{CodeSelect|code=qvm-open-in-dvm}}
 * <code>Run in DisposableVM</code>. On the command line (domU), run. {{CodeSelect|code=qvm-run --dispvm}} </ref> 
 }}
 
 
-The reason is because DisposableVMs inherit their NetVMs from the calling VM, or the calling VM's <code>dispvm_netvm</code> setting, if different. The <code>dispvm_netvm</code> setting can be configured per VM via: 
+The reason is because DispVMs inherit their NetVMs from the calling VM, or the calling VM's <code>dispvm_netvm</code> setting, if different. The <code>dispvm_netvm</code> setting can be configured per VM via: 
 
 <code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>VM Settings</code> -> <code>Advanced</code> -> <code>NetVM for DisposableVM</code> <ref>On the command line (dom0), run. {{CodeSelect|code=qvm-prefs -s vmname dispvm_netvm sys-whonix}} </ref> 
 
-If the calling VM is connected to Whonix-Gateway, this step is not necessary and the DisposableVM's traffic will be routed over Tor. See: [https://github.com/QubesOS/qubes-issues/issues/1954 Whonix default NetVM settings fixes].
+If the calling VM is connected to Whonix-Gateway, this step is not necessary and the DispVM's traffic will be routed over Tor. See: [https://github.com/QubesOS/qubes-issues/issues/1954 Whonix default NetVM settings fixes].
 
 == Warning: DisposableVMs are not Amnesic ==
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text       = 
-All changes to a DisposableVM's file system are discarded upon shutdown. However, DisposableVMs are similar to snapshots insofar as they can leave traces of their activity on storage and in memory. <u>These traces may be later recoverable through data forensics.</u> 
+All changes to a DispVM's file system are discarded upon shutdown. However, DispVMs are similar to snapshots insofar as they can leave traces of their activity on storage and in memory. <u>These traces may be later recoverable through data forensics.</u> 
 }}
 
 
@@ -91,7 +91,7 @@ This is further justification for using [[Full_Disk_Encryption_and_Encrypted_Ima
 
 == Warning: DisposableVMs may be Linkable to other VMs Connected to the Same Whonix-Gateway ==
 
-The Tor Project developer Teor has stated that [[Tor]] caches {{Code|DNS, HS descriptors, pre-emptive circuits, etc.}} <ref>https://lists.torproject.org/pipermail/tor-dev/2016-October/011591.html</ref> which may lead to linkage between AppVMs and DisposableVMs sharing the same gateway. The extent to which this is a threat for Whonix users is still being investigated. <ref>[https://phabricator.whonix.org/T567 Multi GW Documentation].</ref>
+The Tor Project developer Teor has stated that [[Tor]] caches {{Code|DNS, HS descriptors, pre-emptive circuits, etc.}} <ref>https://lists.torproject.org/pipermail/tor-dev/2016-October/011591.html</ref> which may lead to linkage between AppVMs and DispVMs sharing the same gateway. The extent to which this is a threat for Whonix users is still being investigated. <ref>[https://phabricator.whonix.org/T567 Multi GW Documentation].</ref>
 
 == Warning: Do not Start Tor Browser in a DVM Template ==
 For reasons why, see: [[Tor_Browser/Advanced_Users#Running_Tor_Browser_in_Qubes_TemplateVM|Running Tor Browser in Qubes TemplateVM]].
@@ -106,13 +106,13 @@ Instead, [[Qubes/DisposableVM#Keep Tor Browser Up-to-date|run Tor Browser Downlo
 == Warning: Check the Tor Browser Version ==
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text    = When using DisposableVMs, use the [[Tor_Browser#Tor_Browser_Internal_Updater|Tor Browser Internal Updater]] daily to check the browser is up-to-date!
+| text    = When using DispVMs, use the [[Tor_Browser#Tor_Browser_Internal_Updater|Tor Browser Internal Updater]] daily to check the browser is up-to-date!
 }}
 
 
 To learn about recent Tor Browser versions, follow [https://blog.torproject.org The Tor Project blog] or look at raw data for the latest [https://www.torproject.org/projects/torbrowser/RecommendedTBBVersions Recommended TBB Versions]. Tor Browser's version number can also be checked manually: <code>Tor Browser</code> -> <code>Menu</code> -> <code><u>H</u>elp</code> -> <code>About Tor Browser</code>. See [[Qubes/Disposable_VM#Updating_Tor_Browser|Updating Tor Browser]] for more information.
 
-Note that keeping Tor Browser updated in a (customized) DisposableVM can be difficult for several reasons, but it is necessary; see footnote. <ref> These references may have less relevance following the release of Qubes R4 and Qubes-Whonix 14, and equally applies to future releases:
+Note that keeping Tor Browser updated in a (customized) DispVM can be difficult for several reasons, but it is necessary; see footnote. <ref> These references may have less relevance following the release of Qubes R4 and Qubes-Whonix 14, and equally applies to future releases:
 * https://forums.whonix.org/t/using-whonix-workstation-as-a-disposablevm-dispvm/2461/21
 * https://forums.whonix.org/t/qubes-dispvm-technical-discussion/3232/11</ref>
 
@@ -124,9 +124,9 @@ Note that keeping Tor Browser updated in a (customized) DisposableVM can be diff
 }}
 
 
-Some Whonix users have the mistaken belief that disposableVMs for both the Whonix-Gateway and Whonix-Workstation in Qubes R4 is the ultimate configuration: increasing their security, without any corresponding privacy downside. This reasoning is incorrect for the following reasons: <ref>[[Qubes/DisposableVM#Warning:_DisposableVMs_are_not_Amnesic|DisposableVMs are not Amnesic]].</ref> <ref>https://github.com/QubesOS/qubes-issues/issues/904</ref> <ref>[[Tor#Entry_Guards|Tor Entry Guards]].</ref>
-* DisposableVMs are not amnesic. In practice this means traces of their activity can be left on storage or in memory, making them vulnerable to forensic operations. <ref>This is another reminder of why full disk encryption should always be used on the host.</ref>
-* Using a disposableVM for the Whonix-Gateway results in non-persistent entry guards to the Tor network; behavior unlike the default configurations for Whonix, Tor, and the Tor Browser Bundle. Mathematically speaking, end-to-end correlation attacks are ''more'' likely to succeed when a user chooses many random entry and exit points to the Tor network, rather than semi-permanent entry guards which are only rotated every few months. <ref>https://trac.torproject.org/projects/tor/ticket/8240</ref> <ref>The reason is there are both malicious and benign guards in the Tor network. The more often the user "rolls the dice" (changes guards), the greater the chance of striking out.</ref>
+Some Whonix users have the mistaken belief that DispVMs for both the Whonix Gateway and Workstation in Qubes R4 is the ultimate configuration: increasing their security, without any corresponding privacy downside. This reasoning is incorrect for the following reasons: <ref>[[Qubes/DisposableVM#Warning:_DisposableVMs_are_not_Amnesic|DisposableVMs are not Amnesic]].</ref> <ref>https://github.com/QubesOS/qubes-issues/issues/904</ref> <ref>[[Tor#Entry_Guards|Tor Entry Guards]].</ref>
+* DispVMs are not amnesic. In practice this means traces of their activity can be left on storage or in memory, making them vulnerable to forensic operations. <ref>This is another reminder of why full disk encryption should always be used on the host.</ref>
+* Using a DispVM for the Whonix-Gateway results in non-persistent entry guards to the Tor network; behavior unlike the default configurations for Whonix, Tor, and the Tor Browser Bundle. Mathematically speaking, end-to-end correlation attacks are ''more'' likely to succeed when a user chooses many random entry and exit points to the Tor network, rather than semi-permanent entry guards which are only rotated every few months. <ref>https://trac.torproject.org/projects/tor/ticket/8240</ref> <ref>The reason is there are both malicious and benign guards in the Tor network. The more often the user "rolls the dice" (changes guards), the greater the chance of striking out.</ref>
 
 The solution to the first problem is only allowing [https://github.com/QubesOS/qubes-issues/issues/904 in-RAM execution of DisposableVMs], but this is not planned for implementation in the short-term. There is no perfect solution to the second problem. That said, there is an actual unstated security-privacy trade-off by running this configuration. Theoretically, an ephemeral Whonix-Gateway ProxyVM is only able to be infected for a single session (via the ''/home'', ''/usr/local'' and ''/rw'' directories), since it is discarded upon shutdown. This provides a counterbalance to the increased threat of malicious guards, as [https://tails.boum.org/blueprint/persistent_Tor_state/ Whonix becomes more "Tails-like"].
 
@@ -147,7 +147,7 @@ The solution to the first problem is only allowing [https://github.com/QubesOS/q
 sudo qubesctl state.sls qvm.whonix-ws-dvm
 }}
 
-Qubes-Whonix DisposableVMs are now ready for use.
+Qubes-Whonix DispVMs are now ready for use.
 
 == Creating a Named Whonix DispVM Based on Whonix-Workstation ==
 
@@ -184,7 +184,7 @@ Note the DVM Template cannot be deleted while it is the default DispVM of anothe
 
 == Customizing DVM Templates ==
 
-Extra caution must be exercised when customizing (DVM Template). <ref>Qubes documentation: [https://www.qubes-os.org/doc/dispvm-customization DisposableVM Customization]</ref> From a privacy perspective, one would ideally want to have a DVM Template that is indistinguishable from any other Whonix-Workstation. If changes are made to the DVM Template, these may link all of the DisposableVMs via a uniquely generated fingerprint should they be compromised independently. Risky changes include, but are not limited to: the installation of obscure programs, uncommon configuration settings, or the placement of unique data files. Always remember that the DisposableVM will likely be exposed to the greatest Internet threats.
+Extra caution must be exercised when customizing (DVM Template). <ref>Qubes documentation: [https://www.qubes-os.org/doc/dispvm-customization DisposableVM Customization]</ref> From a privacy perspective, one would ideally want to have a DVM Template that is indistinguishable from any other Whonix-Workstation. If changes are made to the DVM Template, these may link all of the DispVMs via a uniquely generated fingerprint should they be compromised independently. Risky changes include, but are not limited to: the installation of obscure programs, uncommon configuration settings, or the placement of unique data files. Always remember that the DispVM will likely be exposed to the greatest Internet threats.
 
 TODO: Don't the timestamps of files installed by `apt-get update` already constitute a unique fingerprint?
 
@@ -286,18 +286,18 @@ sudo poweroff
 <code>dom0</code> -> <code>Qubes VM Manager</code> -> <code>right-click on '{{whonix-ws-dvm}}'</code> -> <code>click 'Shutdown VM'</code>
 
 = Usage =
-DisposableVMs are well-suited for risky and largely independent activities, like web browsing or opening untrusted files. In contrast, AppVMs might be better suited for activities necessitating file persistence, like email clients with local email storage.
+DispVMs are well-suited for risky and largely independent activities, like web browsing or opening untrusted files. In contrast, AppVMs might be better suited for activities necessitating file persistence, like email clients with local email storage.
 
 With either kind of VM, Qubes' VM integration tools, like secure file copy <ref>Qubes documentation: [https://www.qubes-os.org/doc/copying-files/ Copying and Moving Files Between Domains]</ref> and secure clipboard, <ref>Qubes documentation: [https://www.qubes-os.org/doc/copy-paste Copying and Pasting Text Between Domains]</ref> mean that clean, trusted files and text can be easily and safely transferred to trusted VMs should it be necessary.
 
 == User Tips ==
-* Remember that a DisposableVM automatically shuts down when '''first''' user-launched process is terminated. If a new DisposableVM is created by launching Tor Browser and you start typing in an editor, all your work will be lost when you close Tor Browser. To avoid this, you can launch a terminal in the DisposableVM and then launch additional applications from the terminal. Then the DisposableVM is only destroyed after exiting the terminal.
-* In Qubes, it is inadvisable to store valuable information in an untrusted VM. This view is supported by the fact that Tor Browser doesn't remember bookmarks or credentials. A best practice for storing sensitive information is to use the offline vault VM to run applications like password managers. @rustybird has announced a new "split-tor-browser" <ref>[https://github.com/rustybird/qubes-split-browser Github: Split Browser]</ref> package that can retrieve urls and credentials from a trusted VM for use in a DisposableVM's web browser. This package has not yet been tested or endorsed by Whonix, but it looks promising.
-* Sometimes a non-networked DisposableVM is useful for opening untrusted files that might otherwise try to use the network maliciously. Like all Qubes VMs, the NetVM for a DisposableVM can be changed dynamically while the VM is running. Simply set the NetVM to "none" using the Qubes VM Manager or the command line interface. <ref>On the command line (dom0), run.{{CodeSelect|code=qvm-prefs disp<1 {{!}} 2 {{!}} ...> netvm none}}</ref> '''Warning:''' Use utmost caution if deciding to re-establish network connectivity. There is currently no mechanism in place to prevent connections to a clearnet NetVM.
+* Remember that a DispVM automatically shuts down when '''first''' user-launched process is terminated. If a new DispVM is created by launching Tor Browser and you start typing in an editor, all your work will be lost when you close Tor Browser. To avoid this, you can launch a terminal in the DispVM and then launch additional applications from the terminal. Then the DispVM is only destroyed after exiting the terminal.
+* In Qubes, it is inadvisable to store valuable information in an untrusted VM. This view is supported by the fact that Tor Browser doesn't remember bookmarks or credentials. A best practice for storing sensitive information is to use the offline vault VM to run applications like password managers. @rustybird has announced a new "split-tor-browser" <ref>[https://github.com/rustybird/qubes-split-browser Github: Split Browser]</ref> package that can retrieve urls and credentials from a trusted VM for use in a DispVM's web browser. This package has not yet been tested or endorsed by Whonix, but it looks promising.
+* Sometimes a non-networked DispVM is useful for opening untrusted files that might otherwise try to use the network maliciously. Like all Qubes VMs, the NetVM for a DispVM can be changed dynamically while the VM is running. Simply set the NetVM to "none" using the Qubes VM Manager or the command line interface. <ref>On the command line (dom0), run.{{CodeSelect|code=qvm-prefs disp<1 {{!}} 2 {{!}} ...> netvm none}}</ref> '''Warning:''' Use utmost caution if deciding to re-establish network connectivity. There is currently no mechanism in place to prevent connections to a clearnet NetVM.
 
 TODO: fix links and generally check
 
-* DisposableVMs can be created directly by launching programs from the application menu using shortcuts ([[#Adding_shortcuts_to_application_menus.5B28.5D |see below for instructions]]). DisposableVMs can also be spawned by using context-menus or the command line interface in other AppVMs. See [https://www.qubes-os.org/doc/dispvm/ Qubes DisposableVM documentation] for different methods. As a reminder, be sure to heed the [[#Warning:_Use_caution_when_spawning_DisposableVMs_from_other_VMs_.5B3.5D | relevant warning]] in the Warnings section.
+* DispVMs can be created directly by launching programs from the application menu using shortcuts ([[#Adding_shortcuts_to_application_menus.5B28.5D |see below for instructions]]). DispVMs can also be spawned by using context-menus or the command line interface in other AppVMs. See [https://www.qubes-os.org/doc/dispvm/ Qubes DisposableVM documentation] for different methods. As a reminder, be sure to heed the [[#Warning:_Use_caution_when_spawning_DisposableVMs_from_other_VMs_.5B3.5D | relevant warning]] in the Warnings section.
 
 == Adding a Desktop Shortcut ==
 
