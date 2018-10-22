@@ -124,11 +124,21 @@ A [http://cseweb.ucsd.edu/users/lerner/papers/ccs10-jsc.pdf 2010 University of C
 
 == Tracking Methods ==
 
+=== Network Leaks ===
+
+Mozilla notes browsing history can leak to the network via: <ref>https://blog.mozilla.org/security/2018/10/18/encrypted-sni-comes-to-firefox-nightly/</ref>
+* <b>DNS name resolution:</b> Hostnames like ''www.whonix.org'' are mapped to their respective IP address (such as 192.168.1.1) via domain name resolution, so the relevant application can connect. <ref>https://www.bleepingcomputer.com/tutorials/what-is-domain-name-resolution/</ref> Unless DNS traffic is encrypted it is vulnerable to sniffing. Firefox and other browser vendors are exploring the use of DNS over HTTPS in future releases to address this threat.
+* <b>Server IP address:</b> The server's IP address can currently leak and no interim solution has yet been proposed. However, many websites can share the same IP address, slightly lessening the privacy harm.
+* <b>TLS certificate message:</b> The new TLS 1.3 standard addresses this threat by encrypting the server certificate. Unfortunately in late-2018, only around 6 per cent of all TLS sessions were using TLS 1.3 <ref>https://blog.mozilla.org/security/2018/10/15/removing-old-versions-of-tls/</ref> <ref>At the same time, TLS 1.2 compromised around 93 per cent, while TLS 1.0 and 1.1 comprised around 2 per cent combined.</ref>
+* <b>TLS Server Name Indication (SNI):</b> This mechanism allows clients to tell a server the name of the server it is contacting, ensuring the correct certificate is selected. This helps to facilitate secure connections to servers that host multiple virtual servers on the same (single) network address. <ref>https://tools.ietf.org/rfcmarkup?doc=6066#section-3</ref> Encrypting SNI means network attackers are further stymied in trying to discover a user's browsing history. <ref>This feature must be supported by the website in question and will initially only be supported by large [https://en.wikipedia.org/wiki/Content_delivery_network Content Distribution Networks].</ref>
+
+=== Websites ===
+
 Websites can tell which sites are saved in a user's browser history using specialized commands and design elements. Three example are outlined below.
 
-* '''CSS Stylesheets:''' Commonly the visited website will embed special formatting commands (CSS Stylesheets) that contain external links "of interest" on the pages that are visited. If one of the external websites have been visited before, the browser will react by executing a command defined in the format, for example by downloading a small picture from the website. In this way the website can learn and/or make educated guesses about the contents of a user's browser history.
+* '''CSS stylesheets:''' Commonly the visited website will embed special formatting commands (CSS Stylesheets) that contain external links "of interest" on the pages that are visited. If one of the external websites have been visited before, the browser will react by executing a command defined in the format, for example by downloading a small picture from the website. In this way the website can learn and/or make educated guesses about the contents of a user's browser history.
 * '''ETags:''' The contents of the browser cache can reveal previously visited websites. Along with the website URL and numerous page elements, the browser caches also store an ETag sent by the server. If the website is visited again, the ETag is first sent to ask for changes. ETags can contain unique user IDs, which have been used by companies like [http://www.kissmetrics.com/ KISSmetrics] to identify persons visiting some of the top 100 websites.
-* '''Website Page Load Time:''' The time required for a website page to load changes when it is partially stored in the browser cache. By subtle placement of the images on the website, the server can analyze the cache elements one by one. <ref>Cache elements include graphic files (logos, icons, banners, buttons etc.), script files, photographs and HTML pages.</ref>
+* '''Website page load time:''' The time required for a website page to load changes when it is partially stored in the browser cache. By subtle placement of the images on the website, the server can analyze the cache elements one by one. <ref>Cache elements include graphic files (logos, icons, banners, buttons etc.), script files, photographs and HTML pages.</ref>
 
 == Deanonymization Risk ==
 
