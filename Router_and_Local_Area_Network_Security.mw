@@ -186,6 +186,85 @@ Strong consideration should be given to flashing the wired/wireless router with 
 
 The strengths of this approach are openness, regularly updated firmware images, a great number of functionalities (fully-featured), less bloat and more control over router behavior. The downside is that open-source firmware is  not free of bugs; careful research is required before attempting this procedure. Check the online guides for instructions on how to proceed and whether the home router is compatible with the available firmware.
 
+= Network Security =
+
+The router, router settings and firmware considerations above are insufficient to protect users who are actively targeted by advanced adversaries. Only a small minority of Whonix users need to apply the configurations found in this section.
+
+== Introduction ==
+
+Unfortunately, installing open source firmware on the single (untrusted) modem-router provided by the ISP is impossible for many users due to technical limitations, lock-down of the device, or incompatibility with open source firmware. Nevertheless, for utmost caution assume that any router provided by the ISP provider is unsafe out of the box. <ref>That is, potentially "back-doored".</ref> Similarly, distrust ''any'' router which comes pre-installed with proprietary firmware (which is nearly always the case). 
+
+IC disclosures in the past decade suggest advanced implants  are targeting all common router makes and models, with this practise widespread. In some cases, large corporate providers are suspected of installing malicious, proprietary firmware with known vulnerabilities. In effect, Man-in-the-middle attacks have progressed to "Man-in-the-modem" attacks -- a logical approach, since this network end-point is notoriously weak and often overlooked by amateurs. <ref>This active surveillance technique is also far easier, reliable and likely to reap a near 100% collection rate from the target.</ref> 
+
+It is expected that advanced implants and attacks (like MINERALIZE and RADON) enable adversaries to directly access the LAN while being inside the firewall. In the worst-case scenario, the following attacks are feasible: <ref name=router_hack>https://wikispooks.com/w/images/9/96/Full-Disclosure.pdf</ref>
+
+* Fingerprinting of all hardware for specific protocols, software versions and MAC address.
+* Man-in-the-middle attacks on HTTPS, SSH, UDP or GRE, PPTP, IPSec etc.
+* Compromise of SSL certificates in real time.
+* Theft of private keys.
+* Uploading / downloading of content via the public ISP network.
+* Marking of Tor packets leaving the computer and before they enter the Tor network to improve traffic analysis. <ref>Or even potentially redirecting Tor traffic to dedicated Tor network hosted by the attacker.</ref>
+* Launching attacks to hack, disable or destroy the host OS.
+* Other malicious activity like key loggers, screen loggers and so on.
+
+See additional footnote. <ref><blockquote>
+It is imperative to protect the fact that GCHQ, NSA and their Sigint partners have capabilities against specific network security technologies as well as the number and scope of successes. These capabilities are among the Sigint community’s most fragile, and the inadvertent disclosure of the simple “fact of” could alert the adversary and result in 
+immediate loss of the capability.
+
+Consequently, any admission of “fact of” a capability to defeat encryption used in specific network communication technologies or disclosure of details relating to that capability must be protected... The various types of security covered by BULLRUN include, but are not limited to, TLS/SSL, https (e.g. webmail), SSH, encrypted chat, VPNs and encrypted VOIP.</blockquote></ref>
+
+== Advanced Network Configuration ==
+
+For the above-mentioned reasons, a small minority of Whonix users who <u>expect to be subject to targeted attacks</u> should: <ref name=router_hack />
+
+# Distrust all ISP-supplied equipment - place it in a militarized zone.
+# Not rely on built-in features of ISP equipment like firewalls and VPNs.
+# Distrust closed source firmware and devices which do not allow flashing of open source firmware.
+# Always use a second router and Linux firewall which is under your control - the router must be flashed with open source firmware.
+# Control all NAT on the second Linux firewall.
+# <u>Experts only:</u>
+** Ensure that <u>all</u> packets are encrypted when leaving the second firewall (see Outbound Defense further below).
+** Configure a VPN where Squid proxy and DNS are run, with all inbound access denied except from the VPN. Logging must also be disabled.
+
+=== Inbound Defense ===
+
+'''Figure:''' ''Inbound Defense Configuration'' <ref name=router_hack />
+
+[[File:Inbound_defense.png]]
+
+Key steps: <ref name=router_hack />
+
+* Note the second Linux firewall is placed in front of the ISP router - placing it in a militarized zone.
+* A single cable connects the LAN of the ISP router to the Internet LAN port of the Linux firewall.
+* Block all inbound access, including multicast packets from the ISP router.
+* Run DHCP and NAT on the Linux firewall.
+
+This configuration allows the second firewall to issue PPPOE requests via its Internet port and create a local <code>ppp0</code> device, which is its new Internet connection. All packets leaving the firewall will now be PPPOE encapsulated (encrypted).
+
+=== Outbound Defense ===
+
+'''Figure:''' ''Outbound Defense Configuration'' <ref name=router_hack />
+
+[[File:Outbound_defense.png]]
+
+Key steps: <ref>Which provide necessary protection for Tor clients.</ref> <ref name=router_hack />
+
+* Control, own or rent a server or VM elsewhere on the Internet which is far away from the ISP - preferably in another country.
+* Run OpenVPN between the Linux Firewall (blue) and the VPS server (green cloud).
+* Run Squid Proxy and DNS on the VPS server and block all inbound access, except from the VPN.
+
+=== Further Reading ===
+
+The following sources provide evidence for various advanced backdoors and network attacks outlined in this section:
+
+* [https://cryptome.org/2013/12/nsa-ant-firewalls.pdf Firewalls]
+* [https://cryptome.org/2013/12/nsa-ant-router.pdf Routers]
+* [https://cryptome.org/2013/12/nsa-qfire.pdf QFIRE Attack Networks]
+* [https://cryptome.org/2013/09/nsa-bullrun-2-16-guardian-13-0905.pdf BULLRUN-NSA]
+* [https://cryptome.org/2013/09/nsa-decrypt-guardian-13-0905.pdf EDHEHILL]
+* [https://cryptome.org/2013/09/nsa-bullrun-brief-nyt-13-0905.pdf BULLRUN-GCHQ]
+* [https://cryptome.org/2013/12/full-disclosure-comments.htm Public comments]
+
 = References =
 {{reflist|close=1}}
 
