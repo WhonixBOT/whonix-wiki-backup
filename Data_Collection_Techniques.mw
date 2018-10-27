@@ -246,6 +246,31 @@ As well as gathering the IP address and/or the HTTP referrer field of the comput
 
 Most modern browsers integrate an optional function to block cookies, but the option has to be first set by the user.  [[Tor Browser]], which comes bundled with Whonix, has activated cookie blocking by default. Firefox has also adopted Tor Browser's [https://www.bleepingcomputer.com/news/software/another-tor-browser-feature-makes-it-into-firefox-first-party-isolation/ first party isolation] feature since version 55, meaning cookies are separated on a per-domain basis. Advertisement trackers are unable to see all the cookies stored on a user's computer (only the cookie for the currently viewed domain), meaning they cannot aggregate persistent cookie data for profiling. In the future, it is expected that more functions will become available to administrate preferences and acquired cookie collections.
 
+https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+-+The+Problem
+
+https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+-+The+Solutions
+
+= DNS Name Resolution =
+
+Browsing history can easily leak to the network via the [https://en.wikipedia.org/wiki/Domain_Name_System Domain Name System]. During the DNS name resolution process, hostnames like ''www.whonix.org'' are mapped to their respective IP address (like <code>192.168.1.1</code>) so the relevant application can connect. <ref>https://www.bleepingcomputer.com/tutorials/what-is-domain-name-resolution/</ref> Unless DNS traffic is encrypted it is vulnerable to sniffing by network observers. <ref>[https://blog.mozilla.org/security/2018/10/18/encrypted-sni-comes-to-firefox-nightly/ Firefox and other browser vendors] are exploring the use of DNS over HTTPS in future releases to address this threat.</ref>
+
+== Privacy Concerns ==
+
+Any device searching for a DNS record must communicate with a DNS server to do so. DNS queries are sent in <u>clear text</u> via the UDP or TCP protocol, meaning passive network observers can see all lookups that are performed. For instance, it is documented the IC rely on [https://gnunet.org/sites/default/files/mcb-en.pdf advanced tools] to undertake passive surveillance, as well as hijacking DNS when required.
+
+This means people with access to the DNS server or advanced network observers can easily link the device's IP address to exact websites, email, chat and other visited domains and when/how often these records are accessed. <ref>Although DNS records do expire, so adversaries must regularly query this information before the information is lost.</ref> <ref name=DNS_hazard>https://en.wikipedia.org/wiki/Domain_Name_System#Privacy/tracking_issues</ref> Some ISPs even log DNS queries and share this information to third parties in an opaque fashion. Considering user IDs and even MAC addresses are embedded by some ISPs within DNS queries, this allows for intimate fingerprinting. <ref>https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+-+The+Problem</ref> <ref>Some CDNs embed client subnets in queries from resolvers which allows for geo-location of users.</ref>
+
+DNS look-ups are capable of leaking if a user/application is improperly configured. Attacks in the wild have relied upon DNS to bypass firewalls and exfiltrate data, since the attack vector is less commonly known. 
+
+== Solutions ==
+
+The two primary defenses against the DNS threat are: <ref name=DNS_hazard />
+
+* '''Proxies:''' Tor and VPNs can re-route or anonymize DNS queries, which masks the source IP address. Tor is far stronger by design, since this trust is distributed among multiple relays; this is unlike the complete trust placed in a single VPN provider. <ref>Meaning if they are malicious, the user is completely compromised. Only Tor combined with the VPN service will prevent this threat.</ref>
+* '''Intermediate DNS servers:''' Some rely on servers that are ''supposedly'' configured with minimal logging, and which are an alternative to untrusted, primary DNS servers. This method is not recommended, since the trust is simply shifted to other, potentially malicious parties. <ref>For instance, Cloudflare provides this service as of 2018, yet in recent times (2016) the company was blocking [https://blog.torproject.org/trouble-cloudflare 80 per cent of all Tor exit relays].</ref>
+
+A longer term solution for all (non-Tor) traffic might be changing DNS to issue queries over TLS, since it is an encrypted protocol. This would prevent passive surveillance and allow validation of the server which has been chosen as a DNS service; some [https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+Test+Servers experimental DNS servers] are already in operation. Unfortunately this solution is not likely to be widely adopted anytime soon. Other potential solutions include: DNS over DTLS, DNSCrypt, DNS over HTTPS (proxied), DNS over QUIC, and DNSCurve. <ref>https://dnsprivacy.org/wiki/display/DP/DNS+Privacy+-+The+Solutions</ref>
+
 = HTML5 Canvas Image Data =
 
 Websites routinely request browser configuration settings in order to help select the best page format for the visitor. One of those variables is HTML5 canvas image data, which is related to graphical rendering. Canvas is a drawable region in HTML code with height and width attributes, and Javascript code can access this area though a large set of drawing functions related to animation, games, images and so on.<ref>https://en.wikipedia.org/wiki/Canvas_element</ref> 
