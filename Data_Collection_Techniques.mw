@@ -26,6 +26,34 @@ Limiting browsing to trusted websites does not mitigate the risk from applets. I
 
 With Whonix, an adversary will not benefit from learning the IP address via this method: it is either a local IP address shared among all Whonix users or the IP address of a Tor exit relay, both of which do not reduce the user's anonymity set. Further, the [[#MAC Address|MAC address]] is a virtual one which is also shared among all Whonix users, and is therefore worthless to attackers. Although active content will not reveal the real [[Data_Collection_Techniques#IP_Address|IP address]], it is deactivated in Tor Browser by default. See [[Browser Plugins]] for a detailed discussion of browser plugins in Whonix and the potential effects on anonymity, security, and privacy.
 
+= Border Gateway Protocol =
+
+The Border Gateway Protocol (BGP) refers to the routing protocol for the Internet: <ref>https://www.thousandeyes.com/learning/glossary/bgp-border-gateway-protocol</ref>
+
+<blockquote>The BGP protocol specifies a TCP-based communications method for establishing routed peerings between [https://www.thousandeyes.com/learning/glossary/as-autonomous-system Autonomous System (AS)] border routers (ASBRs), that facilitate the exchange of information about routable IP prefixes. BGP peerings exist between all active Internet Autonomous Systems.
+
+BGP is a path vector protocol, and BGP-enabled ASBRs send path vector messages to each other with lists of Internet-routable IP prefixes along with a Autonomous System (AS) paththe list of ASNs that must be traversed to reach that prefix.
+
+BGP currently manages nearly 800K Internet-routable prefixes across the Internet.</blockquote>
+
+Unfortunately the BGP protocol is prone to leaks and vulnerable to traffic shaping.
+
+== BGP Route Hijacking == 
+
+In this attack, groups of IP addresses are taken over via corruption of Internet routing tables maintained by the BGP: <ref>https://www.thousandeyes.com/learning/glossary/bgp-route-hijacking</ref>
+* Adversaries re-route traffic for interception or modification purposes by maliciously manipulating BGP IP prefixes -- with a specific IPV4 of IPV5 address block and a path of AS numbers, the specific ASNs the traffic must pass through (to reach the announced address block) are controlled.
+* Edge routers are then configured to announce prefixes that have not been assigned to them, leading to Internel-level BGP hijacking. If a shorter or more specific path is offered (or claimed), then the traffic is relayed to the hijacker.  <ref>Unused prefixes are most often relied upon to avoid identification by the real owner. False prefix announcements can also affect the Routing Information Base of peers, leading to further propogation and impacts on other ASes and the Internet more broadly.</ref>
+
+== BGP Route Leaks ==
+
+The IETF has defined this phenomenon: <ref name=BGP_leak>https://www.thousandeyes.com/learning/glossary/bgp-route-leak</ref>
+
+<blockquote>The Internet Engineering Task Force (IETF) in RFC 7908 provides a working definition of a BGP Route Leak as "the propagation of routing announcement(s) beyond their intended scope. That is, an announcement from an Autonomous System (AS) of a learned BGP route to another AS is in violation of the intended policies of the receiver, the sender, and/or one of the ASes along the preceding AS path."</blockquote>
+
+Leaks pose security and privacy threats, since traffic can be redirected through unintended paths which may enable eavesdropping or traffic analysis. Leaks can be either accidental or malicious, but they usually arise from 'honest' mis-configurations. Visibility is necessary so it is possible for network operators to identify ISPs that are propagating bad routes (which are advertised during a route leak). This necessitates proper network monitoring tools so good actors can visualize and immediately modify any BGP-initiated route changes. <ref name=BGP_leak />
+
+For a recent, real-life BGP re-routing attack on a multi-national bank, see: [https://blog.thousandeyes.com/using-bgp-reroute-traffic-ddos/ Using BGP to Reroute Traffic during a DDoS].
+
 = Browser Fingerprinting =
 
 Research from a pool of 500,000 Internet users has shown that the vast majority (84%) have unique browser configurations and version information which makes them trackable across the Internet. When Java or Flash is installed, this figures rises to 94%. <ref>https://www.eff.org/deeplinks/2010/05/every-browser-unique-results-fom-panopticlick</ref> Considering this research relied only on a relatively small number of variables, <ref>Supercookie test, hash of canvas fingerprint, screen size and color depth, browser plugin details, time zone, DNT header enabled, HTTP_Accept headers, has of WebGL fingerprint, language, system fonts, platform, user agent, touch support, cookies enabled.</ref> companies with advanced fingerprinting capabilities may be approaching 100%, particularly in combination with cookies.
