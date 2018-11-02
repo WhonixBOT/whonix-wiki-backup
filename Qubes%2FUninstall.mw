@@ -4,74 +4,51 @@
 |image=https://www.whonix.org/w/images/5/55/Qubes-logo-icon.png
 }}
 
-=== Uninstall Whonix TemplateVMs ===
-Warning: This guide will completely uninstall your underlying Whonix TemplateVMs. For example, if you want to stop using Whonix or start over with a complete re-installation of Whonix on your Qubes system.
-
-If you are just wanting to remove and recreate your Whonix-Gateway ProxyVMs and/or Whonix-Workstation AppVMs with your existing Whonix TemplateVMs, then this would not be the guide for doing that.
-
-'''1. Unset or Remove Whonix TemplateVM from All VMs'''
-
-In order to uninstall a Whonix TemplateVM, you first must ensure that no VMs have this TemplateVM set as its underlying template, or else the uninstall will not work. You can accomplish this by either unsetting the TemplateVM from VMs or simply by removing the VMs altogether. You only have to do this for VMs that use the TemplateVM that you will uninstall.
-
-'''Option 1a.''' <u>Unsetting TemplateVM from VMs</u>
-
-Create a <code>dummy template</code> as per https://www.qubes-os.org/doc/reinstall-template/. <ref>
-[https://github.com/QubesOS/qubes-issues/issues/4437 https://github.com/QubesOS/qubes-issues/issues/4437]
-</ref>
-
-This option allows you to keep any VMs and their user storage contents. Note that the root storage will still be lost when uninstalling the TemplateVM, so you may want to backup anything important first.
-
-<pre>
-dom0 -> Qubes VM Manager -> right click Whonix VM -> Shutdown VM
-</pre>
-
-In Dom0 &raquo; Qubes VM Manager:
-
-<pre>
-dom0 -> Qubes VM Manager -> right click Whonix VM -> VM Settings -> Basic tab -> Template -> Choose the dummy template
-</pre>
-
-'''Option 1b.''' <u>Removing VMs with TemplateVM</u>
-
-This option will delete your user storage contents, so you may want to backup anything important first.
-
-<pre>
-dom0 -> Qubes VM Manager -> right click Whonix VM -> Remove AppVM
-</pre>
-
-'''2. Uninstall Whonix TemplateVM'''
-
-Note that if you have customized your TemplateVM, these will be lost when uninstalling the TemplateVM, so you may want to backup anything important first.
-
-'''Option 2a.''' <u>Uninstall Whonix-Gateway TemplateVM</u>
-
-Open a dom0 terminal.
-
-<pre>
-Qubes App Launcher (blue/grey "Q") -> System Tools -> Konsole
-</pre>
-
-Uninstall the qubes-template-whonix-gw template package.
-
-{{CodeSelect|code=
-sudo dnf remove qubes-template-whonix-gw*
+= Introduction =
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = These instructions completely remove the Qubes-Whonix TemplateVMs. 
 }}
 
-Review the confirmation question by <code>dnf</code> in the terminal emulator before pressing <code>y</code> followed by <code><ENTER></code> to apply.
 
-'''Option 2b.''' <u>Uninstall Whonix-Workstation TemplateVM</u>
+This procedure is useful before a complete re-installation of Qubes-Whonix. <ref>Or if deciding not to use Whonix at all.</ref> Note that removal or recreation of Whonix ProxyVMs (<code>sys-whonix</code>) and AppVMs (<code>anon-whonix</code>) is a separate issue. 
 
-Open a dom0 terminal.
+== Unset or Remove Whonix TemplateVM Dependencies ==
 
-Uninstall the qubes-template-{{whonix-ws}} template package.
+If the Whonix TemplateVM is set as the underlying template for any VMs, it cannot be uninstalled. Either:
+* Delete the VMs that depend on the Whonix template(s): <code>Qube Manager</code> -> <code>right-click Whonix TemplateVM</code> -> <code><u>D</u>elete qube</code> ; or
+* Unset the TemplateVM dependency using Qube Manager: 
+** Create a <code>dummy template</code> as per the [https://www.qubes-os.org/doc/reinstall-template/ Qubes instructions]. <ref>https://github.com/QubesOS/qubes-issues/issues/4437</ref>
+** Shut down the Whonix TemplateVM: <code>Qube Manager</code> -> <code>right-click Whonix TemplateVM</code> -> <code><u>S</u>hutdown qube</code>
+** Set the dummy template: <code>right-click VM</code> -> <code>Qube s<u>e</u>ttings</code> -> <code>Template: <dummy template></code>
 
+The advantage of the second option is being able to keep any VMs, along with the user storage contents. Note that the root storage will still be lost when uninstalling the TemplateVM, so it is safest to backup anything important first.
+
+== Uninstall Whonix TemplateVMs ==
+
+If the TemplateVM was customized, any changes will obviously be lost when uninstalling it; so consider backups of anything important first.
+
+=== Whonix-Gateway ===
+
+# Open a dom0 terminal: <code>Qubes App Launcher (blue/grey "Q")</code> -> <code>System Tools</code> -> <code>Xfce Terminal</code>
+# Uninstall the qubes-template-{{whonix-gw}} template package: 
+{{CodeSelect|code=
+sudo dnf remove qubes-template-{{whonix-gw}}*
+}}
+
+Review the <code>dnf</code> confirmation output before proceeding.
+
+=== Whonix-Workstation ===
+
+# Open a dom0 terminal: <code>Qubes App Launcher (blue/grey "Q")</code> -> <code>System Tools</code> -> <code>Xfce Terminal</code>
+# Uninstall the qubes-template-{{whonix-ws}} template package:
 {{CodeSelect|code=
 sudo dnf remove qubes-template-{{whonix-ws}}*
 }}
 
-Review the confirmation question by <code>dnf</code> in the terminal emulator before pressing <code>y</code> followed by <code><ENTER></code> to apply.
+Review the <code>dnf</code> confirmation output before proceeding.
 
-'''3. Remove the Whonix Workstation DisposableVM Template'''
+== Remove the Whonix-Workstation DisposableVM Template ==
 
 The <code>{{whonix-ws}}-dvm</code> domain must be manually removed.
 
@@ -84,6 +61,9 @@ qvm-prefs {{whonix-ws}}-dvm default_dispvm ""
 {{CodeSelect|code=
 qvm-remove {{whonix-ws}}-dvm
 }}
+
+= Footnotes =
+{{reflist|close=1}}
 
 {{Footer}}
 
