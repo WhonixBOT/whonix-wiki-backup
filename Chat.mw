@@ -36,32 +36,57 @@ This Chat page is a fork of the Tails Pidgin page, from this exact source <http:
 |image=https://www.whonix.org/w/images/9/92/Balloons-874841640.jpg
 }}
 = General Safety Advice =
-Recommended knowledge: [[DoNot#Do_not_mix_Modes_of_Anonymity.21|Modes of Anonymity]].
-
-'''Note: Most existing instant messenger protocols are unsafe from a privacy point of view. This is not a Whonix specific problem. It is a general problem with instant messengers.'''
-
-[[Warning#Tor_exit_nodes_can_eavesdrop_on_communications|Tor Exit Node eavesdropping]] can happen if no encryption to the server is enabled. Some protocols have encryption disabled by default, some do not support encryption at all. See also [https://tails.boum.org/todo/Pidgin_Protocol_Review/ Overview about Pidgin protocols and their encryption features]<ref>http://archive.is/8w0Zf</ref>. If encryption to the server is enabled, the Tor Exit Node can no longer eavesdrop. This fixes one problem, however it also leaves another problem unresolved.
-
-Even with encryption to the server enabled, the server could still gather interesting information.
-For example:
-* Account names
-* Buddy list (list of contacts)
-* Log login dates and times
-* Timestamp of messages
-* Who communicates with whom
-** If the recipient knows the sender and the recipient uses a non-anonymous account or the recipient ever logged in without Tor, this can be used as a hint for determining who the sender is.
-* Content of messages - Can be prevented using end-to-end encryption. This is covered in [[Chat#OTR_encryption|OTR encryption]] below.
-
-Jabber/XMPP is a server-federation-based protocol designed with openness in mind. Its security depends on you making good use of OTR as you can never be sure if servers are properly encrypted between each other. Privacy with Jabber is limited, as it is visible to various kinds of attackers who your account is talking to. Tor only helps to pseudonymize your account and hide your current location, but your social graph may still expose your identity. For a good operational security guide on chatting anonymously see [https://theintercept.com/2015/07/14/communicating-secret-watched/ The Intercept's] [https://archive.is/n116i article].
-
-Systems which do not require a server by design, i.e. serverless instant messengers are likely better from a privacy point of view. Such systems are [[#RetroShare]] and [[#Tox]].
-
-For IRC inside Whonix-Workstation, the [https://en.wikipedia.org/wiki/Ident Ident Protocol] is automatically blocked because Whonix-Workstation is firewalled.
-The [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO/IrcSilc TorifyHOWTO/IrcSilc] contains general IRC safety techniques and other tips.
-
-[https://forums.whonix.org/t/why-is-icq-considered-unsafe-through-tor/1096 Why prefer open protocols such as Jabber/XMPP over proprietary ones such as ICQ?]
-
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = '''Tip:''' Most existing instant messenger protocols are unsafe from a privacy point of view. This is not a Whonix-specific problem, but a general problem with instant messengers.
+}}
 {{PQCrypto}}
+
+
+It is recommended to review the [[DoNot#Mix_Anonymity_Modes|Do not Mix Anonymity Modes]] section in conjunction with this entry.
+
+== Encryption ==
+
+[[Warning#Tor_Exit_Relays_can_Eavesdrop_on_Communications|Tor exit relays can eavesdrop]] on communications if encryption to the server is disabled. Depending on the protocol, encryption might be disabled by default or not even supported. Tails has noted that without encryption, the exit relay can see the contact list, all messages, file transfers, and audio/video. <ref>See: https://tails.boum.org/todo/Pidgin_Protocol_Review/ for an overview of Pidgin protocols and associated encryption features.</ref> While encryption to the server prevents exit relay eavesdropping, it still leaves one problem unresolved: server logging. 
+
+== Server Logging ==
+
+Encrypted server connections do not prevent the server gathering interesting information about users, such as common contacts and the regularity of communications. An example list includes: 
+
+* Account names.
+* Buddy list (list of contacts).
+* The exact date and time of logins.
+* Message timestamps.
+* Communication patterns like common contacts.
+** If the recipient knows the sender and has ever used a non-anonymous account or logged in without Tor, this information can be used to try and determine the sender's identity.
+
+The content of messages will only be protected by using end-to-end encryption, for example [https://en.wikipedia.org/wiki/Off-the-Record_Messaging Off-the-Record (OTR) encryption]. To completely remove the threat of server logging, prefer decentralized (server-less) instant messengers like [[#Tox|Tox]] and [[#RetroShare|Retroshare]].
+
+== Jabber / XMPP ==
+
+[https://xmpp.org/ Jabber/XMPP] is a free server-federation-based protocol designed with openness in mind: "''... All of the existing XMPP servers, clients, and programming libraries support the key features of an IM system, such as one-to-one and multi-party messaging, presence subscriptions and notifications, and contact lists.''" 
+
+The system is decentralized because there is no central authoritative server; anyone can run a server. Some users are confused on this point because there are a number of large and popular public XMPP server (like jabber.org), to which many have subscribed. <ref>Other popular public servers are listed [https://xmpp.org/getting-started/ here].</ref> Each network user has a unique XMPP address called a JID (Jabber ID). The JID is similar to an email address insofar as it has a username and domain name like username@example.com <ref name=Xmpp>https://en.wikipedia.org/wiki/Xmpp</ref> 
+
+Safely using the protocol requires proper use of OTR, because it is unwise to trust server connections are properly encrypted between each other. Jabber privacy is also limited, as various adversaries are capable of observing which accounts are communicating. Jabber and Tor combined only guarantee pseudonymous communications, as while the user's current location is hidden, the social graph can still expose their true identity. For tips on operational security when chatting anonymously, see this [https://archive.is/n116i article] by [https://theintercept.com/2015/07/14/communicating-secret-watched/ The Intercept]. Also see: [https://forums.whonix.org/t/why-is-icq-considered-unsafe-through-tor/1096 Why prefer open protocols such as Jabber/XMPP over proprietary ones such as ICQ?]
+
+== IRC ==
+
+When using IRC inside Whonix-Workstation, the [https://en.wikipedia.org/wiki/Ident_protocol Ident Protocol] is automatically blocked because Whonix-Workstation is firewalled. Therefore the associated daemon will not identify the username which is linked with a particular TCP connection, as is normally the case.
+
+The Tor Project [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO/IRC Internet Relay Chat] page contains a number of important recommendations and tips for safe IRC use:
+
+* Use onion services when available.
+** Check self-signed certificates have the correct SSL/TLS certificate.
+* Cycle Tor circuits to evade censorship bans.
+* Chain VPNs and Tor for registration.
+* Use OTR for end-to-end encryption.
+* Distrust users and servers in general.
+* Avoid personally identifiable information in chats.
+* Check the user fingerprint before using IRC.
+* Harden the IRC client.
+* And more.
 
 = Gajim =
 {{Update}}
