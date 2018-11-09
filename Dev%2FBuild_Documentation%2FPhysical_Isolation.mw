@@ -125,26 +125,62 @@ When making changes here, please consider also making changes there.
 * Build dependencies and configurations get automatically applied, so you don't have to worry about that. <ref>By {{Code2|[https://github.com/Whonix/Whonix/blob/master/build-steps.d/1100_prepare-build-machine build-steps.d/1100_prepare-build-machine]}}.))</ref>
 * It is recommended to set your terminal (for example Konsole) to unlimited scrollback, so you can watch the full build log.
 
-= How To Install Whonix-Gateway on the Raspberry Pi 3B (RPI3) =
+= How To Install Whonix-Gateway on the Raspberry Pi 3 B (RPI3) =
+
+Get the source (see below).
 
 From inside the Whonix source folder run:
 
+{{CodeSelect|code=
 sudo ./whonix_build --target raw --flavor whonix-gateway-rpi --build --arch arm64 --kernel linux-image-arm64 --headers linux-headers-arm64
+}}
 
 After a succesful build burn the whonix_gw_rpi.img to a micro SD card using gnome-disk-utility.
-Within gnome-disk-utility select the SD card. At the top panel select options (next to the poweroff button). Click restore disk image and choose the respective file. Click start restoring and wait until it is finished. 
-Put the SD card into the RPI3, attach an HDMI monitor, an USB-ethernet adapter as well as keyboard and boot it. 
-After login run 
+# Within gnome-disk-utility select the SD card. 
+# At the top panel select options (next to the poweroff button). 
+# Click restore disk image and choose the respective file. 
+# Click start restoring and wait until it is finished. 
+# Put the SD card into the RPI3, attach an HDMI monitor, an USB-ethernet adapter as well as a keyboard and boot it. 
 
+After login run:
+
+{{CodeSelect|code=
 sudo nano /etc/network/interfaces.d/30_non-qubes-whonix
+}}
 
-and change the address and the gateway of eth0 corresponding to your local network / upstream router. As an example  our ISP router uses 192.168.0.1/24 for the internal network. The settings of eth0 would look like the following:
+and change the address and the gateway of eth0 corresponding to your local network / upstream router. 
+As an example  our ISP router uses 192.168.0.1/24 for the internal network. The settings of eth0 would look like the following:
 
+{{CodeSelect|code=
 auto eth0
 iface eth0 inet static
+    address 192.168.0.11
+    netmask 255.255.255.0
+    gateway 192.168.0.1
+}}
 
 
-By default eth0 is the native ethernet connection of the RPI3. Hence, connect a network cable from there to your router. eth1 is the USB-ethernet adapter which should also be connected via cable to the computer running the workstation
+By default eth0 is the native ethernet connection of the RPI3. Hence, connect a network cable from there to your router. eth1 is the USB-ethernet adapter which should also be connected via cable to the computer running the workstation.
+Since the RPI3 is lacking a real time clock you need to set the date manually to the current UTC time. Example:
+
+{{CodeSelect|code=
+sudo date -s "09 NOV 2018 17:00:00"
+}}
+
+Run:
+
+{{CodeSelect|code=
+sudo service networking restart
+}}
+
+and
+
+{{CodeSelect|code=
+sudo service tor restart
+}}
+
+to connect to the Tor network.
+Depending on your hypervisor you need to change network settings on the Workstation in order to connect it to the gateway (see below).
 
 = How To Install Whonix-Gateway on Hardware (RECOMMENDED) =
 == Get Debian ==
@@ -793,6 +829,15 @@ If you use bridged networking things will (or should, we haven't tested anything
 Since in the bridged network case, Whonix-Workstation can see the MAC address of whatever network adapter it is connected to, you should change the MAC address of the Workstation host and of the Whonix-Gateway.
 
 See [[Pre_Install_Advice#MAC_Address|Whonix in public networks]].
+
+==== Macvtap on KVM ====
+
+Change the network source of the ethernet nic to "macvtap" and the source mode to "passthrough"
+Be aware, you can't use networking on the host anymore.
+
+==== Attach an USB-ethernet adapter to the VM ====
+
+Remove the network adapter from the VM and instead attach an USB-ethernet adapter to the host and redirect it to the VM.
 
 = Install Whonix-Workstation on hardware (NOT RECOMMENDED) =
 
