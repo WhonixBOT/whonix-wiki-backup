@@ -14,7 +14,7 @@ title=Whonix Live Mode
 |support=[[Support]]
 }}
 
-=== Introduction ===
+= Introduction =
 
 Starting with Whonix 14, users can optionally run Whonix as a live system. Booting into live mode will make all writes  go to RAM instead of the hard disk. Everything that is created / changed / downloaded in the VM during that session will not persist after shutdown. This also holds true for malicious changes made by malware, so long as it did not break out of the virtual machine.
 
@@ -23,7 +23,7 @@ There are two live mode options available, [https://github.com/Whonix/grub-live 
 * <code>grub-live</code> will create a new boot menu entry which the user has to select manually but it is the more failsafe and hence the recommended option.
 * With <code>ro-mode-init</code> the boot menu will stay the same and the system will automatically boot into live mode when it detects a read-only disk otherwise it boots normally into persistent mode.
 
-=== Warning ===
+= Warning =
 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
@@ -44,14 +44,15 @@ To make memory forensics harder, the machine should either be removed from any p
 | text       = Since live mode makes each write go to RAM, the user might want to increase the memory assigned to the VM to improve performance; for example, if large files are regularly downloaded.
 }}
 
-=== Live-mode on Qubes ===
+= Live-mode Configuration =
+
+== Qubes ==
 
 <code>grub-live</code> is currently [[unsupported]] on [[Qubes]], but may become available in the future. Refer to the following [https://forums.whonix.org/t/whonix-live-mode/3894/31 forum discussion] for further information.
 
 In Qubes R4, [[Qubes/DisposableVM|Qubes DisposableVMs]] are a suitable alternative, as well as the [https://www.qubes-os.org/doc/live-usb/ Qubes Live USB].
 
-=== Recommended live-mode configuration for KVM ===
-
+== Recommended KVM Configuration ==
 
 Create a snapshot of your VM.
 
@@ -84,8 +85,7 @@ Following reboot, a second boot entry called "Whonix Live-mode" will be visible.
 To increase security, the VM disks can be set to read-only. Otherwise, malware running as root in the VM could theoretically mount the image read-write and gain persistence in this way.
 To do so, power off the machine and set the hard disk to read-only in the virt-manager GUI before booting into live mode. To boot into normal mode again, simply revert this change and choose the normal boot option in the GRUB menu.
 
-=== Recommended live-mode configuration for VirtualBox ===
-
+== Recommended VirtualBox Configuration ==
 
 Create a snapshot of your VM.
 
@@ -130,10 +130,12 @@ VBoxManage setextradata vmname "VBoxInternal/Devices/lsilogicsas/0/LUN#0/Attache
 
 and choose the normal boot option in the GRUB menu.
 
-=== ro-mode-init method (Alternative) ===
-As an alternative, it is also possible to automatically detect if the disk is set to read-only and enable live mode automatically using the ro-mode-init package.
-Follow the procedures above depending on your hypervisor (VirtualBox or KVM) but instead of grub-live install
-the <code>ro-mode-init</code> package.
+== Alternative Methods ==
+
+=== ro-mode-init ===
+As an alternative in Virtualbox or KVM, it is also possible to automatically detect if the disk is set to read-only and enable live mode automatically using the ro-mode-init package.
+
+Follow the procedures above depending on your hypervisor, but instead of grub-live install the <code>ro-mode-init</code> package.
 
 {{CodeSelect|code=
 sudo apt-get install ro-mode-init
@@ -141,7 +143,7 @@ sudo apt-get install ro-mode-init
 
 For this option the VM disk needs to be set to read-only, otherwise it will always boot into persistent mode.
 
-=== Immutable Disk Method on VirtualBox (Alternative) ===
+=== Immutable Disk Method on VirtualBox ===
 For VirtualBox there is also an alternate way to set the disks to read-only.
 This option is the official way for setting VM's to read-only in VirtualBox. However, it is a bit more complex to setup. This option will also only work with the <code>grub-live</code> package!
 
@@ -155,7 +157,6 @@ To make a disk on [[VirtualBox]] immutable / read-only, follow these steps:
 # In the VirtualBox main window, navigate to the settings of the VM. 
 # Under storage, select the top controller and add the existing hard disk there.
 
-
 The user can now boot the VM and select Live-mode.
 
 To revert these changes:
@@ -167,7 +168,7 @@ To revert these changes:
 # In the VirtualBox main window, navigate to the settings of the VM. 
 # Under storage, select the top controller and add the existing hard disk there.
 
-=== Debugging/Errors ===
+= Debugging/Errors =
 
 An inconsistent filesystem will likely result in errors during live-boot. For instance, inconsistencies can arise when the VM is killed instead of performing a normal shutdown in persistent mode. Therefore, to make sure it is consistent, run <code>fsck</code> in persistent mode. Debian automatically does this during boot. VMs running in live mode can be killed without problems.
 
