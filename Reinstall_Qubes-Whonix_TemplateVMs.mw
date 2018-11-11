@@ -4,3 +4,88 @@
 |description=How to Reinstall Qubes-Whonix TemplateVMs.
 |image=https://www.whonix.org/w/images/5/55/Qubes-logo-icon.png
 }}
+
+Introduction
+
+It may become necessary to reinstall a Whonix TemplateVM from the Qubes repository. The following represents the more common issues that could necessitate reinstallation. 
+
+Reinstallation may be needed if the template is: 
+
+Broken - While TemplateVMs can become broken and/or unbootable for a number of reasons. Both removing meta-packages that Whonix "depends" on to function properly and mixing packages from a later release have been know to cause this issue. 
+
+Misconfigured - Not all TemplateVM modifications are easily reversible. In some cases it may be necessary to reinstall the TemplateVM.
+
+Compromised - Users may suspect their TemplateVM has been compromised. For more on this, See: Am I Compromised?
+ 
+If the Whonix TemplateVM is broken, misconfigured or compromised users should discontinue using VMs based on affected TemplateVM. 
+
+This is because TemplateBasedVMs that are based on the affected TemplateVM will inherit the same issues. There could be serious consequences if the VMs are continued to be used. For example, the Whonix security model depends, in part, on sys-whonix forcing all traffic through Tor or blocking it. If sys-whonix was based on a TemplateVM with a misconfigured or broken firewall, the Whonix security model could be broken.
+
+Automated Reinstallation
+
+Reinstalling Whonix TemplateVMs is a simple process when the automated method is used. The only action required is to run a single command. 
+
+Note: The affected TemplateVMs root file system will be lost when reinstalling the new template. It is recommended users create a backup of any important files. 
+
+Reinstall the Whonix TemplateVM.
+
+Execute the following command. Replace qubes-template-package with either: qubes-template-whonix-ws-14 or qubes-template-whonix-gw-14 respectively
+
+sudo qubes-dom0-update --enablerepo=qubes-templates-community --action=reinstall <qubes-template-package>
+
+For example, to reinstall whonix-ws-14 TemplateVM. 
+
+sudo qubes-dom0-update --enablerepo=qubes-templates-community --action=reinstall qubes-template-whonix-ws-14 
+
+Note: Any VMs based on the reinstalled TemplateVM will require a restart to update their file system.
+
+Manual Reinstallation 
+
+Whonix TemplateVMs can be manually reinstalled using the following multi-step process. 
+
+Users can skip to Step 2 (remove VMs) if they do not wish to keep the target TemplateVM and/or VMs based on the target because they are broken, misconfigured or otherwise compromised. 
+
+In the instructions that follow the term "target TemplateVM" refers to the TemplateVM that will be reinstalled.
+
+1. Clone the target TemplateVM: Qube Manager -> TemplateVM to be cloned -> Clone qube -> Enter name for qube clone
+
+2. Temporarily change all VMs based on the target TemplateVM to the cloned TemplateVM: Qube Manager -> VM-name -> Qubes settings -> Template:  
+
+Alternately, if the VMs are no longer needed they can be removed: Qube Manager -> VM-name -> Delete qube -> Confirm qube removal
+
+3. Remove the target TemplateVM.
+ 
+Run the following command replacing qubes-template-package with either: qubes-template-whonix-ws-14 or qubes-template-whonix-gw-14 respectively.
+
+sudo dnf remove <qubes-template-package>
+
+For example, the following command removes whonix-gw-14.
+
+sudo dnf remove qubes-template-whonix-gw-14
+
+4. Reinstall the Whonix TemplateVM.
+
+sudo qubes-dom0-update --enablerepo=qube-templates-community --action=reinstall <qubes-template-package>
+
+For example, the following command will reinstall whonix-ws-14 TemplateVM.
+
+sudo qubes-dom0-update --enablerepo=qube-templates-community --action=reinstall qubes-template-whonix-ws-14
+
+5. If the VMs were temporarily changed to the cloned TemplateVM in Step 2, the reinstallation process is complete when the VMs are changed to the newly reinstalled TemplateVM. If the VMs were instead deleted, skip to Step 6 to create new Whonix VMs.
+
+Change all VMs based on the cloned TemplateVM to the newly reinstalled TemplateVM: Qube Manager -> VM-name -> Qube settings -> Template:
+
+6. Create new VMs based on the reinstalled TemplateVM: Qube manager -> Qube -> Create new qube
+
+(Optional) Users may wish to clone the newly reinstalled template and use the clone as the default template for AppVMs. The reinstalled template can be maintained in a "known-good" state and only used for creating additional Whonix template clones: 
+
+Clone TemplateVM: Qube Manager -> TemplateVM to be cloned -> Clone qube -> Enter name for qube clone
+Change VMs to the newly cloned Template: Qube Manager -> VM-name -> Qubes settings -> Template:
+
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
