@@ -47,30 +47,46 @@ You can either:
 }}
 
 == UpdateVM Setting ==
-
-If the dom0 UpdateVM is based on a template that is broken or no longer trusted,<ref>Template is broken, misconfigured or compromised</ref> an alternate UpdateVM can be used temporarily. In other words, more specifically, if the user no longer trusts its Whonix-Gateway TemplateVM (<code>{{whonix-gw}}</code>) and/or its Whonix-Gateway ProxyVM (<code>sys-whonix</code>), then configure Qubes dom0 to use a different UpdateVM by applying the following steps.
-
-For example to set the UpdateVM to <code>sys-firewall</code>.
-
-<code>Qubes Manager</code> -> <code>System</code> -> <code>Global Settings</code> -> <code>Dom0 UpdateVM:</code> <code>sys-firewall</code> -> <code>OK</code> <ref>
-Set UpdateVM.
-
-{{CodeSelect|code=
-qubes-prefs updatevm sys-firewall
-}}
+Since only Fedora based UpdateVMs support <code>--action=upgrade</code> option for restalling the TemplateVM, it is recommended to create a dedicated Qubes dom0 UpdateVM based on Qubes Fedora template. Forcing dom0 updates over Tor is still possible by setting <code>sys-whonix</code> as NetVM for the UpdateVM. <ref>
+* <code>sys-net</code> -> <code>sys-firewall</code> -> <code>sys-whonix</code> -> <code>UpdateVM</code>
+* <code>UpdateVM</code> -> <code>sys-whonix</code> -> <code>sys-firewall</code> -> <code>sys-net</code>
 </ref>
 
-When reinstalling the TemplateVM using the <code>--action=upgrade</code> option, only Fedora based UpdateVMs are supported. However, forcing dom0 updates over Tor can still be configured by setting <code>sys-whonix</code> as NetVM for the UpdateVM.
+'''1.''' Create a new VM named <code>dom0-updatevm</code>.
 
-VM Networking: <code>sys-whonix</code> set as UpdateVM NetVM . 
+{{Box|text=
+* <code>Qubes VM Manager</code> -> <code>VM</code> -> <code>Create AppVM</code>
+** Name and label: Name the AppVM. Don't include any personal information (if the AppVM is compromised, the attacker could run <code>qubesdb-read /name</code> to reveal the VM name). Name the AppVM something generic, for example: <code>dom0-updatevm</code>.
+** Color: Choose a color label for the UpdateVM.
+** Use this template: Choose the Fedora TemplateVM. For example: <code>fedora-28</code>.
+** Standalone: Leave the Standalone field unchecked.
+** Type: Choose the type <code>AppVM</code>.
+** Allow networking: Choose the desired NetVM from the list. For example: <code>sys-whonix</code>.
+** Press: <code>OK</code>.
+}}
 
-<code>sys-net</code> -> <code>sys-firewall</code> -> <code>sys-whonix</code> -> <code>UpdateVM</code> 
+* '''Option A''' If the user wants non-torified, clearnet Qubes dom0 updates, set the NetVM of <code>dom0-updatevm</code> for example to <code>sys-firewall</code>.
+{{Box|text=
+<code>Qube Manager</code> -> <code>dom0-updatevm</code> -> <code>Qube s<u>e</u>ttings</code> -> <code>Networking: sys-firewall</code> -> <code>OK</code> <ref>
+{{CodeSelect|code=
+qvm-prefs updatevm-name netvm sys-whonix
+}}
+</ref>
+}}
+* '''Option B''' If the user wants torified Qubes dom0 updates, set the NetVM of <code>dom0-updatevm</code> to Whonix-Gateway.
+{{Box|text=
+<code>Qube Manager</code> -> <code>dom0-updatevm</code> -> <code>Qube s<u>e</u>ttings</code> -> <code>Networking: sys-whonix</code> -> <code>OK</code> <ref>
+{{CodeSelect|code=
+qvm-prefs updatevm-name netvm sys-whonix
+}}
+</ref>
+}}
 
-To set <code>sys-whonix</code> as NetVM for UpdateVM.
+<ref>
+If the dom0 UpdateVM is based on a template that is broken or no longer trusted, ref Template is broken, misconfigured or compromised ref an alternate UpdateVM can be used temporarily. In other words, more specifically, if the user no longer trusts its Whonix-Gateway TemplateVM (<code>{{whonix-gw}}</code>) and/or its Whonix-Gateway ProxyVM (<code>sys-whonix</code>), then configure Qubes dom0 to use a different UpdateVM by applying the following steps.
 
-<code>Qube Manager</code> -> <code>UpdateVM-name</code> -> <code>Qube s<u>e</u>ttings</code> -> <code>Networking: sys-whonix</code> -> <code>OK</code><ref>
-Set <code>sys-whonix</code> as netvm for UpdateVM
-<pre>qvm-prefs updatevm-name netvm sys-whonix</pre></ref>
+TODO
+</ref>
 
 == Update dom0 ==
 {{Qubes_upgrade_dom0}}
