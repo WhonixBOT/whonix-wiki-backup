@@ -55,44 +55,49 @@ A separate VPN-Gateway between Whonix-Gateway and Whonix-Workstation, i.e. Whoni
 [[Qubes-Whonix]] only! [[Non-Qubes-Whonix]] is [[unsupported]]!
 
 User -> Tor -> VPN -> Internet
+{{Box|text=
+'''1.''' Clone a TemplateVM for example, debian-9 and name the new template clone debian-9-vpn.<ref>At the time of writing Debian 9 stretch was the stable release version.</ref>
 
-1. Clone a TemplateVM for example, debian-9 and name the new clone debian-9-vpn.
+<code>Qube Manager</code> -> <code>debian-9</code> -> <code><u>C</u>lone qube</code> -> <i><code>Enter name for Qube clone:</i> debian-9-vpn</code> -> <code>Press: OK</code>
 
-Qube Manager -> debian-9 -> Clone qube -> Enter name for Qube clone : debian-9-vpn
+'''2.''' Create a new ProxyVM based on the newly cloned template. Name the VM VPN-Gateway and set the Whonix-Gateway TemplateBasedProxyVM (commonly called <code>sys-whonix</code>) as NetVM. Make sure to check [✔] the box for provides_network.
 
-2. Create a new ProxyVM based on the newly cloned template. Name this VM VPN-Gateway and set the Whonix-Gateway TemplateBasedProxyVM (commonly called sys-whonix) as NetVM. Make sure to check [✔] the box for provides_network. 
+{{Box|text=
+<code>Qube Manager</code> -> <code><u>Q</u>ube</code> -> <code>Create <u>n</u>ew qube</code>
 
-Qube Manager -> Qube -> Create new qube.
+* Name and label: <code>VPN-Gateway</code> (Set any color)
+* Type: <code>AppVM</code>
+* Template: <code>debian-9-vpn</code>
+* Networking: <code>sys-whonix</code>
+* Advanced:   [<code>✔</code>] Provides network 
+* Press: <code>OK</code>
+}}
+'''3.''' Set up the VPN-Gateway as per [https://qubes-os.org Qubes VPN Documentation]. The instructions to configure the [https://qubes-os.org//doc/vpn/#set-up-a-proxyvm-as-a-vpn-gateway-using-iptables-and-cli-scripts VPN gateway using iptables and CLI scripts] is preferred to prevent clearnet leaks when the VPN breaks down. 
 
-* Name and label: VPN-Gateway (Set any color)
-* Type: AppVM
-* Template: debian-9-vpn
-* Networking: sys-whonix
-* Advanced:   [✔] Provides network 
-* Press: OK.
+{{Box|text=
+For example, when a failed closed configuration is used and the VPN connection breaks down all traffic originating from the Whonix-Workstation AppVM (commonly called <code>anon-whonix</code>) would <u>only</u> be forced through Tor, which would prevent clearnet leaks.
 
-3. Set up the VPN-Gateway as per Qubes VPN Documentation. The instructions to configure the VPN gateway using iptables and CLI scripts is preferred to prevent clearnet leaks when the VPN breaks down. 
+'''User -> Tor -> Internet''' 
 
-For example, when a failed closed configuration is used and the VPN connection breaks down, all traffic originating from the Whonix-Workstation AppVM (commonly called anon-whonix) would only be routed through Tor, which would prevent clearnet leaks.
+If a failed closed configuration is not used, network traffic (such as DNS queries) could leak through the VPN tunnel to the Internet when the tunnel connection breaks down.
 
-User -> Tor -> Internet 
+'''User -> Tor -> VPN'''(<u>clearnet leaks!</u>) '''-> Internet'''
 
-If a failed closed configuration was not used, network traffic (such as DNS queries) could leak through the VPN tunnel to the Internet when the tunnel connection breaks down.
+<u>Note:</u> UDP-style VPN connections are incompatible with Tor which requires that the VPN to be configured to use TCP.<ref>https://whonix.org/wiki/Tor#UDP</ref> To do that, add <code>proto tcp</code> to the VPN configuration file /rw/config/vpn/openvpn-client.ovpn. Most, but not all VPN providers support this configuration. 
+}}
+'''4'''. Check, that your VPN-Gateway is fully functional. Test connectivity from inside the VPN-Gateway as per: [https://qubes-os.org/doc/vpn/ Qubes VPN Documentation]
 
-User -> Tor -> VPN(clearnet leaks!) -> Internet
-
-Note: UDP-style VPN connections are incompatible with Tor which requires that the VPN to be configured to use TCP. To do that, add proto tcp to the VPN configuration file /rw/config/vpn/openvpn-client.ovpn. Most, but not all VPN providers support this configuration. 
-
-4. Check, that your VPN-Gateway is fully functional. Test connectivity from inside the VPN-Gateway as per: Qubes VPN Documentation
-
-5. (Recommended) In Whonix-Workstation (commonly called anon-whonix) apply instructions from the above chapter: Prevent_Bypassing_the_Tunnel-Link. 
+'''5'''. (Recommended) In Whonix-Workstation (commonly called <code>anon-whonix</code>) apply instructions from the above chapter: [[#Prevent_Bypassing_the_Tunnel-Link]]. 
+}}
 
 When using a separate VPN Gateway no DNS configuration is required. System DNS should work out of the box.<ref> Because a properly configured Qubes VPN-Gateway will be able to resolve DNS.</ref>
 
 If using [[#Tor_Browser]] the following warning will be shown:
 
+<pre>
 Something Went Wrong!
 Tor is not working in this browser.
+</pre>
 
 This is because Tor Browser can no longer access Tor's ControPort ([[Dev/CPFP|control-port-filter-proxy-python]]) on Whonix-Gateway.
 
