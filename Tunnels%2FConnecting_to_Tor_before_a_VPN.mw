@@ -51,48 +51,64 @@ Two methods.
 
 == Separate VPN-Gateway ==
 A separate VPN-Gateway between Whonix-Gateway and Whonix-Workstation, i.e. Whonix-Workstation -> VPN-Gateway -> Whonix-Gateway.
-
+ 
 [[Qubes-Whonix]] only! [[Non-Qubes-Whonix]] is [[unsupported]]!
 
-'''User -> Tor -> VPN -> Internet'''
+User -> Tor -> VPN -> Internet
 
-These "Separate VPN-Gateway" instructions are new. You might be one of the first users. You might run into minor issues. Please test and [https://forums.whonix.org/t/setup-a-vpn-in-proxyvm-over-sys-whonix report] how it went.
+1. Clone a TemplateVM for example, debian-9 and name the new clone debian-9-vpn.
 
-Create a new ProxyVM called for example VPN-Gateway.
+Qube Manager -> debian-9 -> Clone qube -> Enter name for Qube clone : debian-9-vpn
 
-Set the NetVM of the VPN-Gateway to Whonix-Gateway (commonly called {{Code2|sys-whonix}}).
+2. Create a new ProxyVM based on the newly cloned template. Name this VM VPN-Gateway and set the Whonix-Gateway TemplateBasedProxyVM (commonly called sys-whonix) as NetVM. Make sure to check [✔] the box for provides_network. 
 
-{{VPN UDP Tor|/rw/config/vpn/openvpn-client.ovpn}}
+Qube Manager -> Qube -> Create new qube.
 
-Setup the VPN-Gateway as per [https://www.qubes-os.org/doc/vpn/ Qubes VPN documentation] for ProxyVMs. It is also highly recommended to setup the iptables firewall rules as described in Qubes VPN documentation to prevent clearnet traffic when the VPN breaks down. (In that cases, Whonix-Workstation (commonly called {{Code2|anon-whonix}} traffic would only go user -> Tor -> Internet as opposed to user -> Tor -> VPN -> Internet, which is what you want if you are reading this documentation chapter.
+* Name and label: VPN-Gateway (Set any color)
+* Type: AppVM
+* Template: debian-9-vpn
+* Networking: sys-whonix
+* Advanced:   [✔] Provides network 
+* Press: OK.
 
-Check, that your VPN-Gateway is fully functional. Test connectivity from inside the VPN-Gateway.
+3. Set up the VPN-Gateway as per Qubes VPN Documentation. The instructions to configure the VPN gateway using iptables and CLI scripts is preferred to prevent clearnet leaks when the VPN breaks down. 
 
-In Whonix-Workstation (commonly called {{Code2|anon-whonix}}) you might want to apply instructions from above chapter [[#Prevent Bypassing the Tunnel-Link]].
+For example, when a failed closed configuration is used and the VPN connection breaks down, all traffic originating from the Whonix-Workstation AppVM (commonly called anon-whonix) would only be routed through Tor, which would prevent clearnet leaks.
 
-No DNS configuration required. System DNS should work out of the box. <ref>
-Because a properly configured Qubes VPN-Gateway will be able to resolve DNS.
-</ref>
+User -> Tor -> Internet 
 
-If you would use [[Tor Browser]], it would show the following warning:
-Something Went Wrong!<br />
-Tor is not working in this browser.<br />
+If a failed closed configuration was not used, network traffic (such as DNS queries) could leak through the VPN tunnel to the Internet when the tunnel connection breaks down.
+
+User -> Tor -> VPN(clearnet leaks!) -> Internet
+
+Note: UDP-style VPN connections are incompatible with Tor which requires that the VPN to be configured to use TCP. To do that, add proto tcp to the VPN configuration file /rw/config/vpn/openvpn-client.ovpn. Most, but not all VPN providers support this configuration. 
+
+4. Check, that your VPN-Gateway is fully functional. Test connectivity from inside the VPN-Gateway as per: Qubes VPN Documentation
+
+5. (Recommended) In Whonix-Workstation (commonly called anon-whonix) apply instructions from the above chapter: Prevent_Bypassing_the_Tunnel-Link. 
+
+When using a separate VPN Gateway no DNS configuration is required. System DNS should work out of the box.<ref> Because a properly configured Qubes VPN-Gateway will be able to resolve DNS.</ref>
+
+If using [[#Tor_Browser]] the following warning will be shown:
+
+Something Went Wrong!
+Tor is not working in this browser.
+
 This is because Tor Browser can no longer access Tor's ControPort ([[Dev/CPFP|control-port-filter-proxy-python]]) on Whonix-Gateway.
 
-For troubleshooting, see footnote. <ref>
+For troubleshooting, see footnote.
+<ref>
 * Check, that your VPN-Gateway is fully functional. Test connectivity from inside the VPN-Gateway.
 * Add a non-Whonix VM behind your VPN-Gateway. For example, add a debian based AppVM behind your VPN-Gateway. Figure out if the VPN-Gateway works at all before involving Whonix.
 </ref>
 
-Done. It is recommended to run the related [[#Leak Tests]].
+Done! It is recommended to run the related [[Tunnels/Connecting_to_Tor_before_a_VPN#Leak_Tests| #Leak Tests]].
 
-Whonix user forum discussion:<br />
+Whonix user forum discussion:</br>
 https://forums.whonix.org/t/setup-a-vpn-in-proxyvm-over-sys-whonix
-
 <ref>
 * Qubes users mailing list discussion: https://groups.google.com/d/msgid/qubes-users/5759D76E.8000401%40riseup.net
-* Qubes development ticket: https://github.com/QubesOS/qubes-issues/issues/2060
-</ref>
+* Qubes development ticket: https://github.com/QubesOS/qubes-issues/issues/2060</ref>
 
 -----
 
