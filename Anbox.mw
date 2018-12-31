@@ -1,0 +1,165 @@
+{{Header}}
+
+== Status ==
+Works on Debian stretch on real hardware.
+
+Does not work inside Whonix VirtualBox most likely due to anbox issues inside VirtualBox.
+
+Small chance it will work better once Whonix is based on Debian buster.
+
+== Install Anbox ==
+{{Box|text=
+[[Update]] the package lists.
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+Install adb fastboot.
+
+{{CodeSelect|code=
+sudo apt-get install adb fastboot
+}}
+}}
+
+Install anbox and newer kernel. <ref>
+It is required to install a newer linux kernel because it contains kernel modules required by anbox. No longer required on Debian buster and above.
+</ref>
+
+{{Box|text=
+{{Install Backport|
+package=linux-image-amd64 linux-headers-amd64 anbox
+}}
+}}
+
+{{Box|text=
+Change directory to the <code>/var/lib/anbox</code> folder.
+
+{{CodeSelect|code=
+cd /var/lib/anbox
+}}
+
+Download anbox andorid image.
+
+{{CodeSelect|code=
+sudo curl --tlsv1.2 --remote-name https://build.anbox.io/android-images/2018/07/19/android_amd64.img
+}}
+
+Download anbox andorid image sha256sum file.
+
+{{CodeSelect|code=
+sudo curl --tlsv1.2 --remote-name https://build.anbox.io/android-images/2018/07/19/android_amd64.img.sha256sum
+}}
+
+Verify.
+
+{{CodeSelect|code=
+sha256sum --check android_amd64.img.sha256sum
+}}
+
+Should show:
+
+<pre>
+android_amd64.img: OK
+</pre>
+
+Rename <code>android_amd64.img</code> to <code>android.img</code>. <ref>
+anbox-container-manager.service expects this file name.
+</ref>
+
+{{CodeSelect|code=
+sudo mv android_amd64.img android.img
+}}
+}}
+
+Reboot required. <ref>
+So new kernel gets load. No longer required on Debian buster.
+</ref>
+
+{{CodeSelect|code=
+sudo reboot
+}}
+
+<ref>
+{{Box|text=
+Start anbox systemd service.
+
+{{CodeSelect|code=
+sudo systemctl start anbox-container-manager.service
+}}
+
+Check if anbox systemd service is functional.
+
+{{CodeSelect|code=
+sudo systemctl status anbox-container-manager.service
+}}
+
+Should show something similar to the following.
+
+<pre>
+● anbox-container-manager.service - Anbox Container Manager
+   Loaded: loaded (/lib/systemd/system/anbox-container-manager.service; enabled; vendor preset: enabled)
+   Active: active (running) since Mon 2018-12-31 06:23:49 EST; 874ms ago
+     Docs: man:anbox(1)
+  Process: 1996 ExecStartPre=/usr/share/anbox/anbox-bridge.sh start (code=exited, status=0/SUCCESS)
+  Process: 1991 ExecStartPre=/sbin/modprobe binder_linux (code=exited, status=0/SUCCESS)
+  Process: 1986 ExecStartPre=/sbin/modprobe ashmem_linux (code=exited, status=0/SUCCESS)
+ Main PID: 2074 (anbox)
+    Tasks: 9 (limit: 4915)
+   Memory: 5.1M
+      CPU: 51ms
+   CGroup: /system.slice/anbox-container-manager.service
+           └─2074 /usr/bin/anbox container-manager --daemon --privileged --data-path=/var/lib/anbox
+
+Dec 31 06:23:48 debian systemd[1]: Starting Anbox Container Manager...
+Dec 31 06:23:49 debian systemd[1]: Started Anbox Container Manager.
+</pre>
+}}
+</ref>
+
+== Start Anbox ==
+=== From Start Menu ===
+<code>Start menu</code> -> <code>Accessories</code> -> <code>Anbox</code>
+
+=== From Command Line ===
+<ref>
+/usr/share/applications/anbox.desktop
+</ref>
+
+{{CodeSelect|code=
+anbox launch --package=org.anbox.appmgr --component=org.anbox.appmgr.AppViewActivity
+}}
+
+== Anbox Issues ==
+
+https://github.com/anbox/anbox/issues/72
+
+<pre>
+user@host:~$ anbox check-features
+Your computer does meet all requirements to run Anbox
+user@host:~$ sudo anbox check-features
+Your computer does meet all requirements to run Anbox
+</pre>
+
+<pre>
+env ANBOX_LOG_LEVEL=debug anbox session-manager
+libEGL warning: DRI2: failed to authenticate
+[ 2018-12-31 12:16:33] [Renderer.cpp:168@initialize] Using a surfaceless EGL context
+[ 2018-12-31 12:16:33] [Renderer.cpp:193@initialize] Failed: Missing egl_image related extension(s)
+[ 2018-12-31 12:16:33] [service.cpp:41@Service] Successfully acquired DBus service name
+Stack trace (most recent call last) in thread 3080:
+#7    Object "[0xffffffffffffffff]", at 0xffffffffffffffff, in 
+#6    Object "/lib/x86_64-linux-gnu/libc.so.6", at 0x7f324fdb8ace, in clone
+#5    Object "/lib/x86_64-linux-gnu/libpthread.so.0", at 0x7f3251e76493, in 
+#4    Object "anbox", at 0x56263e972600, in emugl::Thread::thread_main(void*)
+#3    Object "anbox", at 0x56263e89832c, in RenderThread::main()
+#2    Object "anbox", at 0x56263e96d7a3, in renderControl_decoder_context_t::decode(void*, unsigned long, IOStream*)
+#1    Object "anbox", at 0x56263e8f558e, in 
+#0    Object "anbox", at 0x56263e8f8555, in RendererConfigList::getPackInfo(int*, int*) const
+Segmentation fault (Address not mapped to object [(nil)])
+Segmentation fault
+</pre>
+
+{{Footer}}
+
+[[Category: Design]]
