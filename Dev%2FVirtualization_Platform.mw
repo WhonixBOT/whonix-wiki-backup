@@ -77,6 +77,18 @@ See [[KVM#Why_Use_KVM_Over_VirtualBox.3F|Why Use KVM Over VirtualBox?]]
 
 == Misc ==
 == Install Anbox ==
+[[Update]] the package lists.
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+Install adb fastboot.
+
+{{CodeSelect|code=
+sudo apt-get install adb fastboot
+}}
+
 Install anbox and newer kernel. <ref>
 It is required to install a newer linux kernel because it contains kernel modules required by anbox. No longer required on Debian buster and above.
 </ref>
@@ -97,13 +109,13 @@ cd /var/lib/anbox
 Download anbox andorid image.
 
 {{CodeSelect|code=
-sudo scurl-download https://build.anbox.io/android-images/2018/07/19/android_amd64.img
+sudo curl --tlsv1.2 --remote-name https://build.anbox.io/android-images/2018/07/19/android_amd64.img
 }}
 
 Download anbox andorid image sha256sum file.
 
 {{CodeSelect|code=
-sudo scurl-download https://build.anbox.io/android-images/2018/07/19/android_amd64.img.sha256sum
+sudo curl --tlsv1.2 --remote-name https://build.anbox.io/android-images/2018/07/19/android_amd64.img.sha256sum
 }}
 
 Verify.
@@ -125,10 +137,6 @@ anbox-container-manager.service expects this file name.
 {{CodeSelect|code=
 sudo mv android_amd64.img android.img
 }}
-}}
-
-{{CodeSelect|code=
-sudo apt-get install adb fastboot
 }}
 
 Reboot required. <ref>
@@ -188,6 +196,34 @@ Dec 31 06:23:49 debian systemd[1]: Started Anbox Container Manager.
 {{CodeSelect|code=
 anbox launch --package=org.anbox.appmgr --component=org.anbox.appmgr.AppViewActivity
 }}
+
+== Anbox Issues ==
+
+<pre>
+user@host:~$ anbox check-features
+Your computer does meet all requirements to run Anbox
+user@host:~$ sudo anbox check-features
+Your computer does meet all requirements to run Anbox
+</pre>
+
+<pre>
+env ANBOX_LOG_LEVEL=debug anbox session-manager
+libEGL warning: DRI2: failed to authenticate
+[ 2018-12-31 12:16:33] [Renderer.cpp:168@initialize] Using a surfaceless EGL context
+[ 2018-12-31 12:16:33] [Renderer.cpp:193@initialize] Failed: Missing egl_image related extension(s)
+[ 2018-12-31 12:16:33] [service.cpp:41@Service] Successfully acquired DBus service name
+Stack trace (most recent call last) in thread 3080:
+#7    Object "[0xffffffffffffffff]", at 0xffffffffffffffff, in 
+#6    Object "/lib/x86_64-linux-gnu/libc.so.6", at 0x7f324fdb8ace, in clone
+#5    Object "/lib/x86_64-linux-gnu/libpthread.so.0", at 0x7f3251e76493, in 
+#4    Object "anbox", at 0x56263e972600, in emugl::Thread::thread_main(void*)
+#3    Object "anbox", at 0x56263e89832c, in RenderThread::main()
+#2    Object "anbox", at 0x56263e96d7a3, in renderControl_decoder_context_t::decode(void*, unsigned long, IOStream*)
+#1    Object "anbox", at 0x56263e8f558e, in 
+#0    Object "anbox", at 0x56263e8f8555, in RendererConfigList::getPackInfo(int*, int*) const
+Segmentation fault (Address not mapped to object [(nil)])
+Segmentation fault
+</pre>
 
 {{Footer}}
 
