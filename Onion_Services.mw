@@ -6,6 +6,13 @@
 
 = Tor Onion Services - EASY =
 == Introduction ==
+{{mbox
+| type      = critical
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       =
+You are better off not using Apache! Alternatives include micro-httpd for minimal hosting requirements and Nginx for more advanced needs.
+}}
+
 Be sure to read and understand [https://www.torproject.org/docs/hidden-services.html.en Tor: Onion Service Protocol] (general information) and [https://www.torproject.org/docs/tor-onion-service Configuring Onion Services for Tor] (standard setup, no isolated proxy) first. Note that onion services are always only reachable using Tor or tunnel services, such as tor2web, ([https://trac.torproject.org/projects/tor/wiki/doc/tor2web be careful]). Also review Riseup's [https://riseup.net/en/security/network-security/tor/onionservices-best-practices Tor Hidden (Onion) Services Best Practices guide].
 
 You do not need SSL <ref>https://en.wikipedia.org/wiki/Secure_Sockets_Layer</ref>, because connections to Tor onion services are end-to-end encrypted by default. <ref>To be exact, only tor-to-tor, see [[Onion_Services#Notes_about_End-to-end_security_of_Onion_Services|Notes about End-to-end security of Onion Services]].</ref><ref>http://www.quora.com/Is-there-an-SSL-equivalent-for-Tor-Hidden-Services</ref> This is handy, as you do not have to bother with self signed certificates or certificate authorities.
@@ -24,6 +31,8 @@ While using Whonix we're quite confident that there are no IP/DNS leaks, but har
 Beware of application level leaks. See [[Protocol-Leak-Protection and Fingerprinting-Protection]] for definition. Some of these instructions are paraphrased from Sarah Jamie Lewis' write-up after running OnionScan<ref>https://mascherari.press/why-onionscan-should-worry-you/</ref> on the Onion web. All credit goes to her.<ref>https://mascherari.press/thwarting-identity-correlation-attacks/</ref> OnionScan<ref>https://github.com/s-rah/onionscan</ref> is an open source pen-testing suite that exposes misconfiguration errors that expose Hidden Servers. '''Do''' run it before your service goes live. 
 
 * Avoid Apache. It has much more functionality, leak potential and attack surface than smaller and lighter alternatives. Nginx is a recommended alternative, its good practice to setup access to your site through reverse proxies to mitigate layer 7 DoS attacks and information leaks about your setup.
+
+* If your needs are limited to hosting static pages then look no further than micro-httpd available from Debian repos. It is a bare-bones daemon made up of 150 lines of code.<ref>https://wiki.debian.org/WebServers</ref>
 
 * Disable banners for SSH, FTP, SMTP and HTTP servers which leak info about the a daemon's name and version. If your SSH instance is for private use, use it with an Authenticated Onion Service to protect your server from brute-force and remote exploitation.
 
@@ -67,13 +76,6 @@ It can be done with a firewall rule or netcat:
 sudo ncat -l 10.152.152.10 80 -c 'ncat 127.0.0.1 80'
 }}
 </ref>
-
-{{mbox
-| type      = critical
-| image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       =
-You are better off not using Apache! We do not have a suggestion for a privacy friendly web server yet. That is still TODO. See ticket, [https://phabricator.whonix.org/T523 document identity correlation attacks and defenses / Removing Apache Recommendation]. Help welcome!
-}}
 
 == Hidden Webserver ==
 ==== Whonix-Gateway ====
