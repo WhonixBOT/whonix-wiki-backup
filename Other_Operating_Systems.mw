@@ -171,6 +171,178 @@ nameserver 10.152.152.10
 
 For Debian based Linux, such as Ubuntu, see [[Operating_System_Software_and_Updates|Updates]].
 
+=== Configure Tor Browser Settings ===
+
+
+<div class="toccolours mw-collapsible mw-collapsed">
+<u>To Prevent [[DoNot#Allow_Tor_over_Tor_Scenarios|Tor over Tor]] when using Tor Browser,</u> click on Expand on the right.
+<div class="mw-collapsible-content">
+
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = '''Warning:''' These instructions are new and only for willing testers. Some connectivity issues may be experienced. Please [[contribute]] by testing and these instructions.
+}}
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = '''Warning:''' These instructions prevent [[DoNot#Allow_Tor_over_Tor_Scenarios|Tor over Tor]] for [[Tor Browser]] and system-tor. However, it is possible these instructions could fail to prevent Tor over Tor in future Tor Browser version without the users knowledge. Therefore, users should use caution and thoroughly test to ensure complete Tor over Tor prevention. See [https://forums.whonix.org/t/use-a-onion-address-from-a-whonix-workstation/6520/20?u=patrick this forum thread for more].
+}}
+
+
+These instructions have been tested with Tor Browser v8.0.4. Connectivity might break in later Tor Browser versions, particularly if developers modify how Tor Browser networking is configured. <ref>
+Once Tor Browser moves to SocksSocket, these instructions will certainly no longer work. References:
+
+* https://trac.torproject.org/projects/tor/ticket/14270
+* https://phabricator.whonix.org/T192
+</ref>
+
+'''1.''' [[Manually_Downloading_Tor_Browser|Manually Download and Install Tor Browser]].
+
+'''2.''' Set multiple environment variables.
+
+{{Qubes persistence note}}
+<br />
+{{Open with root rights|filename=
+/etc/environment
+}}
+
+Add.
+
+<pre>
+## Deactivate tor-launcher,
+## a Vidalia replacement as browser extension,
+## to prevent running Tor over Tor.
+## https://trac.torproject.org/projects/tor/ticket/6009
+## https://gitweb.torproject.org/tor-launcher.git
+TOR_SKIP_LAUNCH=1
+
+## Environment variable to disable the "TorButton" ->
+## "Open Network Settings..." menu item. It is not useful and confusing to have
+## on a workstation, because this is forbidden for security reasons. Tor must be
+## configured on the gateway.
+TOR_NO_DISPLAY_NETWORK_SETTINGS=1
+
+## environment variable to skip TorButton control port verification
+## https://trac.torproject.org/projects/tor/ticket/13079
+TOR_SKIP_CONTROLPORTTEST=1
+</pre>
+
+Save and reboot.
+
+From this point, only the browser component of Tor Browser will be started.
+
+'''3.''' Verify environment variables.
+
+{{CodeSelect|code=
+env | grep -i tor
+}}
+
+The output should show.
+
+<pre>
+TOR_NO_DISPLAY_NETWORK_SETTINGS=1
+TOR_SKIP_CONTROLPORTTEST=1
+TOR_SKIP_LAUNCH=1
+</pre>
+
+'''4.''' Configure network settings. <ref>
+Learn more about the network settings.
+
+{{Tor Browser Manual Proxy Configuration}}
+
+<pre>
+## The following TOR_SOCKS_HOST and TOR_SOCKS_PORT variables
+## do not work flawlessly, due to an upstream bug in Tor Button:
+##    "TOR_SOCKS_HOST, TOR_SOCKS_PORT regression"
+##    https://trac.torproject.org/projects/tor/ticket/8336
+TOR_SOCKS_HOST="10.152.152.10"
+TOR_SOCKS_PORT="9150"
+</pre>
+</ref>
+
+Now the file {{Code2|~/.tb/tor-browser/Browser/TorBrowser/Data/Browser/profile.default/user.js}} must be created. This presupposes Tor Browser has been installed as per step 1 and that a folder {{Code2|~/.tb/tor-browser}} exists. If Tor Browser was installed to another folder, the the path must be adjusted.
+
+{{Open File|filename=
+~/.tb/tor-browser/Browser/TorBrowser/Data/Browser/profile.default/user.js
+}}
+
+Add.
+
+<pre>
+user_pref("extensions.torbutton.use_privoxy", false);
+user_pref("extensions.torbutton.settings_method", "custom");
+user_pref("extensions.torbutton.socks_host", "10.152.152.10");
+user_pref("extensions.torbutton.socks_port", 9100);
+user_pref("network.proxy.socks", "10.152.152.10");
+user_pref("network.proxy.socks_port", 9100);
+user_pref("extensions.torbutton.custom.socks_host", "10.152.152.10");
+user_pref("extensions.torbutton.custom.socks_port", 9100);
+user_pref("extensions.torlauncher.control_host", "10.152.152.10");
+user_pref("extensions.torlauncher.control_port", 9052);
+</pre>
+
+Save.
+
+'''5.''' Disable system-tor.
+
+Tor is now disabled in Tor Browser. However, system-tor must also be disabled to prevent Tor over Tor. 
+
+In the terminal, run.
+
+{{CodeSelect|code=
+sudo systemctl mask tor
+}}
+
+The process is now complete.
+
+=== Testing ===
+
+{{mbox
+| image   = [[File:Ambox_notice.png|40px]]
+| text    = Note for Qubes users: Tor Browser should only be run the AppVM.
+}}
+
+
+User must verify that Tor in Tor Browser and system-tor are disabled. 
+
+'''1.''' To start Tor Browser two options exist.
+
+a) In the desktop file manager, move to the ~/.tb/tor-browser/Browser folder:  <code><i>Double-click: </i>start-tor-browser.desktop</code>
+
+<u>Or</u>
+
+b) In the terminal, move to the Tor Browser folder.
+
+{{CodeSelect|code=
+cd ~/.tb/tor-browser/Browser
+}}
+
+Next, start Tor Browser.
+
+{{CodeSelect|code=
+./start-tor-browser
+}}
+
+'''2.''' Once Tor Browser is started, verify system-tor is disabled.
+
+{{CodeSelect|code=
+sudo systemctl status tor@default
+}}
+
+The output should be similar the following showing tor@default service is inactive-(dead).
+<pre>
+tor@default.service - Anonymizing overlay network for TCP
+   Loaded: loaded (/lib/systemd/system/tor@default.service; static; vendor prese
+  Drop-In: /lib/systemd/system/tor@default.service.d
+           └─30_qubes.conf
+   Active: inactive (dead)
+</pre>
+
+Done!
+</div>
+</div>
+
 ----
 = Whonix-Android-Workstation =
 == With Static IP ==
