@@ -17,6 +17,186 @@
 <ref>
 As concluded in ticket [https://phabricator.whonix.org/T469 research non-persistent Tor directory guards], these are covered by the following instructions.
 </ref>
+
+
+
+= Increasing Protection from Malicious Entry Guards - One Guard per App =
+
+In a discussion with Tor researcher, Tariq Elahi, about measuring exposure to malicious guards in multi-Workstation scenarios, it was discovered that a 1 guard/client per internet connected program (not identity!) is the safest configuration. It would reduce observation of your activities even more than the default scenario of using one Tor Entry Guard for all apps. To multiplex the app where you have separate identities, but want to make sure no contamination between them happens, you would maintain different Workstation snapshots from a clean base. 
+
+The simplest way to apply such a configuration is to take a snapshot of Whonix-Gateway before first-run. Assuming you want to spin up an e-mail client in the Workstation you would go ahead and initialize the Gateway for this AppVM then save the resulting snapshot for the Gateway. Always using it with ALL email related snapshots for the Workstation. Before using IRC you would revert to the pristine Gateway snapshot before first-run and repeat the process by saving another Gateway snapshot. 
+
+This can be done by cloning VMs too if you need to run multiple activities concurrently.
+<ref><pre>
+HulaHoop
+Subject: Re: Fwd: Re: Tor revised guard behavior & chances of malicious guard
+To: Tariq Elahi, adrelanos@riseup.net
+
+
+Tariq Elahi:
+>
+> The short story is that things get worse very quickly, but there is hope.
+> The analysis below assumes only the adversary that runs guards and not
+> the local adversary like the host OS or the Whonix processes themselves.
+> In my analysis I assume a hypothetical adversarial guard bandwidth of
+> 10% of the entire network. This is an arbitrary number since we don't
+> know the real number, but it serves to show the trends as we increase
+> the guards per client and number of clients per user. I do the kind of
+> analysis we do in the Conflux[1] paper which is very relevant here,
+> especially Table 3 and its discussion in section 5.2. I update the
+> numbers and extend that analysis for the scenarios you have described.
+>
+> 1. 1 guard/client, 1 client/user.
+> The adversary (i,e, the compromised guard) will have the ability to
+> observe 10% of the clients and hence 10% users. This is the situation
+> today.
+>
+> 2. 2 guards/client, 1 client/user.
+> This is worse than 1 above. There is now a 18% probability that only one
+> of the guards is compromised per client and a 1% chance that two guards
+> are compromised per client. The probability of at least one bad guard is
+> hence 19%. There really is not a real distinction between one or two bad
+> guards from the user perspective since in both situations the client
+> will go through a malicious guard in a short period of time, since the
+> guard is picked uniformly at random from the guard set.
+>
+> 3. 1 guard/client, 2 clients/user.
+> The observable clients again increase to 19% from the base 10% in 1
+> above. This means that if the user split her app (or group of apps)
+> across the clients then there is a 19% chance that at least one of the
+> app (groups) is compromised. However, for each client there is still
+> only a 10% chance that a malicious guard is present. Is this
+> configuration better than scenario 2 above? Perhaps, but let's look at
+> the following scenario first.
+>
+> 4. 2 guards/client, 2 clients/user.
+> The observable clients increases to 54%. This means that there is a 54%
+> chance that at least one bad guard is present. This is worse than all
+> the other scenarios above. However, if we fix apps (or groups of apps)
+> to particular clients then we can compare to scenario 2 where the app
+> group/client is analogous and the same analysis holds. Then, for each
+> client there is again a 19% chance that there is a malicious guard
+> present. If we compare to 3 above we can see that if we only use 1
+> guard/client then we can drop the exposure back down to 10% for that
+> client and hence app group.
+>
+> Taking the above into account we can get good results by keeping the
+> guard set size to 1 and users spin up one client for each app. Then we
+> can achieve at most 10% of apps compromised at *any given time* but not
+> simultaneously. We can call this scenario (which is an extension of
+> scenario 3) the 1 guard/app scenario (1G/A). See the appendix for more
+> tweaks to decrease guard exposure.
+>
+> If we want to consider 1G/A, then the next question for your user base
+> is that is it better to either 1) have some portion of your apps
+> compromised at *all* times (scenario 1G/A) or 2) have *all* your apps
+> compromised some portion of the time (scenario 1). Tor tends to bend
+> towards option 2, but then they have not considered the option of
+> multi-client usage since it doesn't improve the situation in a
+> non-compartmentalized setting, unlike the Whonix situation. I believe
+> that option 2 is flawed because you never know if you are in fact
+> currently compromised or not. It might be better to go ahead with
+> assuming that you are compromised and mitigating that compromise to some
+> portion of your network activity than all or nothing, which is what
+> option 1 provides.
+>
+> I hope that answers your questions. Please do not hesitate to get in
+> touch again if you would like to discuss further. I think this is a very
+> interesting problem area and would be happy to contribute to improving
+> the situation.
+>
+> Best regards,
+> Tariq Elahi
+>
+>  [1] http://cacr.uwaterloo.ca/techreports/2013/cacr2013-16.pdf
+>
+> Appendix
+> We can do better if we allow a user's clients to look at each other's
+> lists to exclude guards that are already picked. The benefit would be
+> that once the bad bandwith has been assigned it can no longer affect
+> subsequent guard selections. However, clients looking at each other's
+> memory space will compromise your vision of process containment. A zero
+> knowledge/oblivious method for comparing guard lists might work to avoid
+> this problem, and indeed the adversarial response will be weak since the
+> best they can do is spread their bad bandwidth over many relays and at
+> best return to the original exposure rate (e.g. 10%) but now with added
+> costs of running many more relays.
+>
+
+
+Thanks for getting back to us. With your permission I'd like to quote
+your reply on our wiki.
+
+IIRC Tor is currently using a 2 guard per client config but will be
+moving to 1 because of research showing it's safer. Should we force the
+use of one guard even if it's not the standard configuration of most Tor
+users at the moment?
+
+With 1G/A being the best option it would translate to cloning the Tor VM
+(for as many separate Apps desired) before first run - to ensure they
+don't share the same guard correct?
+
+
+***
+
+I'm trying to think how the different Tor instances can look at each
+other's guard lists across different VMs. Probably through using
+inter-VM communication or something similar.
+
+Spawning multiple Tor instances on the same Gateway VM would be easier
+but getting each instance to use only it's own internal network that
+connects to its unique App VM is not as straight forward as the separate
+VM approach.</pre></ref>
+
+
+There is a chance that Entry Guards could be re-picked for a separate App group, which would increase observation by an adversary. In absence of a technological solution to automatically prevent such scenarios, it is encouraged to manually check the Tor node list on the Gateway using <code>Onion Circuits</code> for duplicated Entry Guards that are shared by other snapshots. Erase and re-take a different snapshot if that is the case.
+<ref><pre>Tariq Elahi
+Subject: Re: Fwd: Re: Tor revised guard behavior & chances of malicious guard
+To: HulaHoop, adrelanos@riseup.net
+
+
+Hi,
+
+I have replied inline below.
+
+
+On 27/09/18 17:22, HulaHoop wrote:
+> [snip]
+>
+> Thanks for getting back to us. With your permission I'd like to quote
+> your reply on our wiki.
+Sure, but I would to take a look at what the context and quote is if that is alright, please.
+>
+> IIRC Tor is currently using a 2 guard per client config but will be
+> moving to 1 because of research showing it's safer. Should we force the
+> use of one guard even if it's not the standard configuration of most Tor
+> users at the moment?
+I thought Tor was using one guard and thinking of moving to two. Is it the other way around?
+Forcing some users to do something different from other users partitions the user base and this is considered not a good thing to do in general.
+>
+> With 1G/A being the best option it would translate to cloning the Tor VM
+> (for as many separate Apps desired) before first run - to ensure they
+> don't share the same guard correct?
+They could share the same guard if it gets picked randomly. The likelihood of this happening at random depends on the bandwidth of the guard so it might not be as rare. The trick is making sure you don't pick an already used guard without needing to divulge information about all other apps' guards.
+>
+>
+> ***
+>
+> I'm trying to think how the different Tor instances can look at each
+> other's guard lists across different VMs. Probably through using
+> inter-VM communication or something similar.
+>
+> Spawning multiple Tor instances on the same Gateway VM would be easier
+> but getting each instance to use only it's own internal network that
+> connects to its unique App VM is not as straight forward as the separate
+> VM approach.
+>
+Indeed, communication between the VMs is needed. Perhaps a mediation agent that could help facilitate the list matching process?
+
+I am quite interested in this now. Perhaps we should talk more about this over chat if that will help.
+
+Tariq</pre></ref>
+
 = Manual Rotation of Tor Guards =
 
 == Anonymity and Performance-related Issues ==
