@@ -22,11 +22,11 @@ As concluded in ticket [https://phabricator.whonix.org/T469 research non-persist
 
 = Increasing Protection from Malicious Entry Guards - One Guard per App =
 
-In a discussion with Tor researcher, Tariq Elahi, about measuring exposure to malicious guards in multi-Workstation scenarios, it was discovered that a 1 guard/client per internet connected program (not identity!) is the safest configuration. It would reduce observation of your activities even more than the default scenario of using one Tor Entry Guard for all apps. To multiplex the app where you have separate identities, but want to make sure no contamination between them happens, you would maintain different Workstation snapshots from a clean base. 
+In a discussion with Tor researcher, Tariq Elahi, about measuring exposure to malicious guards in multi-Workstation scenarios, it was discovered that a 1 guard/client per internet connected program (not identity!) is the safest configuration. It would reduce observation of your activities even more than the default scenario of using one Tor Entry Guard for all apps. 
 
-The simplest way to apply such a configuration is to take a snapshot of Whonix-Gateway before first-run. Assuming you want to spin up an e-mail client in the Workstation you would go ahead and initialize the Gateway for this AppVM then save the resulting snapshot for the Gateway. Always using it with ALL email related snapshots for the Workstation. Before using IRC you would revert to the pristine Gateway snapshot before first-run and repeat the process by saving another Gateway snapshot. 
+To apply such a configuration, Whonix-Gateway is imported into the hypervisor but has never been started. A snapshot taken called 'Original'. Start Gateway let it boot and Tor connect then shutdown and take snapshot 'E-Mail'.  This you will use with all Workstation snapshots called 'E-Mail' - whether it's E-mail snapshot: John Doe, Jane Doe and so on (these are generated separately from a clean baseline too). Now say you want to switch to IRC, now you revert to Gateway snapshot 'Original' repeat the same steps, letting it boot and Tor connect then shutdown and take snapshot 'IRC'
 
-This can be done by cloning VMs too if you need to run multiple activities concurrently.
+This can be done by cloning VMs too if you need to run multiple apps at the same time.
 <ref><pre>
 HulaHoop
 Subject: Re: Fwd: Re: Tor revised guard behavior & chances of malicious guard
@@ -148,7 +148,7 @@ but getting each instance to use only it's own internal network that
 connects to its unique App VM is not as straight forward as the separate
 VM approach.</pre></ref>
 
-There is a chance that Entry Guards could be re-picked for a separate App group, which would increase observation by an adversary. In absence of a technological solution to automatically prevent such scenarios, it is encouraged to manually check the Tor node list on the Gateway using <code>Onion Circuits</code> for duplicated Entry Guards that are shared by other snapshots. Erase and re-take a different snapshot if that is the case.
+There is a chance that Entry Guards could be re-picked for a separate app group, which would increase observation by an adversary. In absence of a technological solution to automatically prevent such scenarios, it is encouraged to manually check the Tor node list on the Gateway using <code>Onion Circuits</code> for duplicated Entry Guards that are shared by other snapshots. Erase and re-take a different snapshot if that is the case.
 <ref><pre>Tariq Elahi
 Subject: Re: Fwd: Re: Tor revised guard behavior & chances of malicious guard
 To: HulaHoop, adrelanos@riseup.net
@@ -200,7 +200,7 @@ Tariq</pre></ref>
 
 * Do NOT start the app on the Workstation before taking the Gateway snapshot. This is to prevent it from generating data on the Gateway (for example: Onion service descriptors) that can be linked across sessions or detected in the event of the Workstation being infected. <ref>https://lists.torproject.org/pipermail/tor-dev/2016-November/011636.html</ref>
 
-* If you use multiple instances of the same app concurrently, make sure it gets its own Gateway VM (cloned from its respective snapshot) and its own isolated network. They should never share the same Gateway because a malicious Workstation can sniff data on the isolated network belonging to the other and also manipulate the shared Tor client into divulging information belonging to the other app VM.
+* If you use multiple instances of the same app concurrently (E-mail accounts John Doe and Jane Doe from the above example), make sure each gets its own Gateway VM (cloned from the 'E-mail' snapshot for example) and its own isolated network. They should never share the same Gateway because a malicious Workstation can sniff data on the shared isolated network and also manipulate the common Tor client into divulging information belonging to the other app.
 
 = Manual Rotation of Tor Guards =
 
