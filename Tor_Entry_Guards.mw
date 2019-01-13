@@ -148,7 +148,6 @@ but getting each instance to use only it's own internal network that
 connects to its unique App VM is not as straight forward as the separate
 VM approach.</pre></ref>
 
-
 There is a chance that Entry Guards could be re-picked for a separate App group, which would increase observation by an adversary. In absence of a technological solution to automatically prevent such scenarios, it is encouraged to manually check the Tor node list on the Gateway using <code>Onion Circuits</code> for duplicated Entry Guards that are shared by other snapshots. Erase and re-take a different snapshot if that is the case.
 <ref><pre>Tariq Elahi
 Subject: Re: Fwd: Re: Tor revised guard behavior & chances of malicious guard
@@ -196,6 +195,12 @@ Indeed, communication between the VMs is needed. Perhaps a mediation agent that 
 I am quite interested in this now. Perhaps we should talk more about this over chat if that will help.
 
 Tariq</pre></ref>
+
+'''Important caveats:'''
+
+* Do NOT start the app on the Workstation before taking the Gateway snapshot. This is to prevent it from generating data on the Gateway (for example: Onion service descriptors) that can be linked across sessions or detected in the event of the Workstation being infected. <ref>https://lists.torproject.org/pipermail/tor-dev/2016-November/011636.html</ref>
+
+* If you use multiple instances of the same app concurrently, make sure it gets its own Gateway VM (cloned from its respective snapshot) and its own isolated network. They should never share the same Gateway because a malicious Workstation can sniff data on the isolated network belonging to the other and also manipulate the shared Tor client into divulging information belonging to the other app VM.
 
 = Manual Rotation of Tor Guards =
 
