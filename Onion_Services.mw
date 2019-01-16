@@ -19,10 +19,6 @@ Below on this page is an ''example'' for a Hidden Webserver. On the [[VoIP]] pag
 
 Even if someone hacks your hidden server software (<code>micro-httpd</code>, <code>nginx</code>, <code>apache</code>, etc.), the attacker can not steal your onion service key or bypass Tor, see [[Comparison with Others#Attacks|Attack on Whonix]]. The key is stored on the Whonix-Gateway. Once you cleaned your Whonix-Workstation, no one can impersonate your onion service anymore.
 
-While using Whonix we're quite confident that there are no IP/DNS leaks, but hardening the server software is still left to the user. In the [[Security Guide]] and in the [[Advanced Security Guide]] you'll find pointers for hardening.
-
-Beware of application level leaks. See [[Protocol-Leak-Protection and Fingerprinting-Protection]] for definition. Some of these instructions are paraphrased from Sarah Jamie Lewis' write-up after running OnionScan<ref>https://mascherari.press/why-onionscan-should-worry-you/</ref> on the Onion web. All credit goes to her.<ref>https://mascherari.press/thwarting-identity-correlation-attacks/</ref> OnionScan<ref>https://github.com/s-rah/onionscan</ref> is an open source pen-testing suite that exposes misconfiguration errors that expose Hidden Servers. '''Do''' run it before your service goes live. 
-
 == Server Software Recommendations ==
 === Web Servers ===
 * Avoid the <code>Apache</code> web server. It has much more functionality, leak potential and attack surface than smaller and lighter alternatives.
@@ -65,20 +61,26 @@ sudo ncat -l 10.152.152.10 80 -c 'ncat 127.0.0.1 80'
 * The <code>Nginx</code> web server is a recommended alternative.
 
 === Security Recommendations ===
-* IP hiding instructions for your specific server software should be applied.
+* '''Credits''': Some of these instructions are paraphrased from Sarah Jamie Lewis' write-up after running OnionScan<ref>https://mascherari.press/why-onionscan-should-worry-you/</ref> on the Onion web. All credit goes to her.<ref>https://mascherari.press/thwarting-identity-correlation-attacks/</ref> OnionScan<ref>https://github.com/s-rah/onionscan</ref> is an open source pen-testing suite that exposes misconfiguration errors that expose Hidden Servers. '''Do''' run it before your service goes live. 
+
+* '''Application Level Leaks''': Beware of application level leaks. See [[Protocol-Leak-Protection and Fingerprinting-Protection]] for definition.
+
+* '''Hide IP''': IP hiding instructions for your specific server software should be applied.
 ** This is because a combination of a webserver that forwards IP addresses to web apps such as for example mediawiki would be a discouraged case, since mediawiki by default puts IPs of anonymous editors in the public accessible editor logs. The IP would be 10.152.152.10. That could not be used to identify you, because that is not your real external IP address, but it would identify the server as an onion service behind a Whonix-Gateway.<ref>
 Since it is easy to know that the internal LAN IP 10.152.152.10 is usually used by Whonix-Gateway.
 </ref>
 
-* Hardening instructions - if any are available - are recommended to apply.
+* '''Server Software Hardening''': If any instructions for hardening the server instructions are available it is recommended to apply them. While using Whonix we're quite confident that there are no IP/DNS leaks, but hardening the server software is still recommended but the responsibility of the user.
 
-* Its good practice to setup access to your site through reverse proxies to mitigate layer 7 DoS attacks and information leaks about your setup.
+* '''General Hardening''': In the [[Security Guide]] and in the [[Advanced Security Guide]] you'll find pointers for hardening.
 
-* Disable banners for SSH, FTP, SMTP and HTTP servers which leak info about the a daemon's name and version. If your SSH instance is for private use, use it with an Authenticated Onion Service to protect your server from brute-force and remote exploitation.
+* '''Mitigate DoS attacks''': Its good practice to setup access to your site through reverse proxies to mitigate layer 7 DoS attacks and information leaks about your setup.
 
-* As a rule, each service you host should get its own dedicated onion address to prevent correlation between multiple instances running in the same VM.
+* '''Disable Banner'''s: For SSH, FTP, SMTP and HTTP servers which leak info about the a daemon's name and version. If your SSH instance is for private use, use it with an Authenticated Onion Service to protect your server from brute-force and remote exploitation.
 
-* ALPaCA is an advanced website fingerprinting client/server mitigation in development that applies server-side padding to requests sent out to Tor Browser. Once ts ready, service operators can run it to protect against this class of correlation attacks.<ref>https://github.com/camelids/</ref><ref>[https://petsymposium.org/2017/papers/issue2/paper54-2017-2-source.pdf Website Fingerprinting Defenses at the
+* '''Dedicated Onion Address''': Each service you host should get its own dedicated onion address to prevent correlation between multiple instances running in the same VM.
+
+* '''ALPaCA''': An advanced website fingerprinting client/server mitigation named ALPaCA in development that applies server-side padding to requests sent out to Tor Browser. Once ts ready, service operators can run it to protect against this class of correlation attacks.<ref>https://github.com/camelids/</ref><ref>[https://petsymposium.org/2017/papers/issue2/paper54-2017-2-source.pdf Website Fingerprinting Defenses at the
 Application Layer]</ref><ref>https://www.esat.kuleuven.be/cosic/?p=6743</ref>
 
 == Hidden Webserver ==
