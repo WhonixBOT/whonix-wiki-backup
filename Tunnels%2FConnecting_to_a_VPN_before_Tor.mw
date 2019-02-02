@@ -26,44 +26,65 @@ What's the difference of installing a VPN on the host versus installing on Whoni
 
 {{VPN_on_the_host_vs_on_Whonix-Gateway}}
 
------
+VPN Client Choice 
+Use OpenVPN.
+Using bitmask with Qubes is not yet documented.
+Other VPN clients are unsupported. We are not aware of any sane VPN client choices besides OpenVPN.
 
+-----
 ==  Separate VPN-Gateway ==
 [[Qubes-Whonix]] only! [[Non-Qubes-Whonix]] is [[unsupported]]!
 
-A separate VPN-Gateway between Whonix-Gateway and sys-firewall, i.e. Whonix-Workstation -> Whonix-Gateway -> VPN-Gateway -> sys-firewall -> sys-net.
+A separate VPN-Gateway between Whonix-Gateway and sys-firewall, i.e. Whonix-Workstation -> Whonix-Gateway -> sys-vpn -> sys-firewall -> sys-net.
 
-'''User -> VPN -> Tor -> Internet '''
+User -> VPN -> Tor -> Internet 
 
-These "Separate VPN-Gateway" instructions are new. You might be one of the first users. You might run into minor issues. Please test and [https://forums.whonix.org report] how it went.
-
-Create a new ProxyVM called for example {{Code2|sys-vpn}}.
-
-Set the NetVM of Whonix-Gateway (commonly called {{Code2|sys-whonix}}) to {{Code2|sys-vpn}}.
-
-Both, the VPN software either using TCP and UDP should work.
-
-https://github.com/QubesOS/qubes-issues/issues/2021
-
-VPN Client Choice:
-
-* Use OpenVPN.
-* [https://github.com/QubesOS/qubes-issues/issues/2021 Using bitmask with Qubes is not yet documented.]
-* Other VPN clients are [[unsupported]]. We are not aware of any sane VPN client choices besides OpenVPN.
+These "Separate VPN-Gateway" instructions are new. You might be one of the first users. You might run into minor issues. Please test and report how it went.
 
 
-Setup the VPN-Gateway as per [https://www.qubes-os.org/doc/vpn/ Qubes VPN documentation] for ProxyVMs. It is also highly recommended to setup the iptables firewall rules as described in Qubes VPN documentation to prevent clearnet traffic when the VPN breaks down. (In that cases, Whonix-Gateway (commonly called {{Code2|sys-whonix}} traffic would only go user -> Tor -> Internet as opposed to user -> VPN -> Tor -> Internet, which is what you want if you are reading this documentation chapter.
+1. Clone a TemplateVM for example, debian-9 and name the new template clone debian-9-vpn. 
+
+Qube Manager -> debian-9 -> Clone qube -> Enter name for Qube clone: debian-9-vpn -> Press: OK
+
+2. Create a new ProxyVM based on the newly cloned template. Name the VM sys-vpn and set sys-firewall as NetVM. Make sure to check the box for provides_network.
+
+
+Qube Manager -> Qube -> Create new qube
+
+Name and label: sys-vpn (Set any color)
+
+Type: AppVM
+
+Template: debian-9-vpn
+
+Networking: sys-firewall
+
+Advanced:   [✔] Provides network 
+
+Press: OK
+
+
+3. Setup the VPN-Gateway as per Qubes VPN documentation.  The instructions to configure the VPN gateway using iptables and CLI scripts is preferred to prevent clearnet leaks when the VPN breaks down. 
+
+
+When a failed closed configuration is used and the VPN connection breaks down, all traffic originating from Whonix-Gateway (commonly called sys-whonix) would only be forced through Tor. This is what you want if you are reading this documentation chapter.
+
+User -> Tor -> Internet
+
+If a failed closed configuration is not used, network traffic (such as DNS queries) could leak through the VPN tunnel to the Internet when the tunnel connection breaks down.
+
+User -> VPN(clearnet leaks!) -> Tor -> Internet
+
+4. Check, that your sys-vpn is fully functional. Test connectivity from inside the sys-vpn as per:
+Qubes VPN Documentation
+
+Note: Both TCP and UDP VPN connections should work. System DNS should work out of the box so no DNS configuration is required for Whonix-Gateway.
+Done!
+
+For troubleshooting, see footnote. 
 
 Check, that your VPN-Gateway is fully functional. Test connectivity from inside the VPN-Gateway.
-
-No DNS configuration for Whonix-Gateway required. <ref>
-Because Whonix-Gateway does not require any clearnet DNS anyhow.
-</ref>
-
-For troubleshooting, see footnote. <ref>
-* Check, that your VPN-Gateway is fully functional. Test connectivity from inside the VPN-Gateway.
-* Add a non-Whonix VM behind your VPN-Gateway. For example, add a debian based AppVM behind your VPN-Gateway. Figure out if the VPN-Gateway works at all before involving Whonix.
-</ref>
+Add a non-Whonix VM behind your VPN-Gateway. For example, add a debian based AppVM behind your VPN-Gateway. Figure out if the VPN-Gateway works at all before involving Whonix.
 
 -----
 
