@@ -26,10 +26,10 @@ What's the difference of installing a VPN on the host versus installing on Whoni
 
 {{VPN_on_the_host_vs_on_Whonix-Gateway}}
 
-VPN Client Choice 
-Use OpenVPN.
-Using bitmask with Qubes is not yet documented.
-Other VPN clients are unsupported. We are not aware of any sane VPN client choices besides OpenVPN.
+== VPN Client Choice == 
+* Use OpenVPN.
+* Using bitmask with Qubes is not yet documented.<ref>https://github.com/leapcode/bitmask_client/issues/1009</ref>
+* Other VPN clients are unsupported. We are not aware of any sane VPN client choices besides OpenVPN.
 
 -----
 ==  Separate VPN-Gateway ==
@@ -37,54 +37,52 @@ Other VPN clients are unsupported. We are not aware of any sane VPN client choic
 
 A separate VPN-Gateway between Whonix-Gateway and sys-firewall, i.e. Whonix-Workstation -> Whonix-Gateway -> sys-vpn -> sys-firewall -> sys-net.
 
-User -> VPN -> Tor -> Internet 
+'''User -> VPN -> Tor -> Internet '''
 
-These "Separate VPN-Gateway" instructions are new. You might be one of the first users. You might run into minor issues. Please test and report how it went.
+These "Separate VPN-Gateway" instructions are new. You might be one of the first users. You might run into minor issues. Please test and [https://forums.whonix.org report] how it went.
 
+{{Box|text=
+'''1.''' Clone a TemplateVM for example, debian-9 and name the new template clone debian-9-vpn.<ref>At the time of writing Debian 9 stretch was the stable release version.</ref>
 
-1. Clone a TemplateVM for example, debian-9 and name the new template clone debian-9-vpn. 
+<code>Qube Manager</code> -> <code>debian-9</code> -> <code><u>C</u>lone qube</code> -> <i><code>Enter name for Qube clone:</i> debian-9-vpn</code> -> <code>Press: OK</code>
 
-Qube Manager -> debian-9 -> Clone qube -> Enter name for Qube clone: debian-9-vpn -> Press: OK
+'''2.''' Create a new ProxyVM based on the newly cloned template. Name the VM <code>sys-vpn</code> and set <code>sys-firewall</code> as NetVM. Make sure to check [✔] the box for provides_network.
 
-2. Create a new ProxyVM based on the newly cloned template. Name the VM sys-vpn and set sys-firewall as NetVM. Make sure to check the box for provides_network.
+{{Box|text=
+<code>Qube Manager</code> -> <code><u>Q</u>ube</code> -> <code>Create <u>n</u>ew qube</code>
 
+* Name and label: <code>sys-vpn</code> (Set any color)
+* Type: <code>AppVM</code>
+* Template: <code>debian-9-vpn</code>
+* Networking: <code>sys-firewall</code>
+* Advanced:   [<code>✔</code>] Provides network 
+* Press: <code>OK</code>
+}}
 
-Qube Manager -> Qube -> Create new qube
+'''3.''' Setup the VPN-Gateway as per [https://www.qubes-os.org/doc/vpn/ Qubes VPN documentation].  The instructions to configure the [https://qubes-os.org/doc/vpn/#set-up-a-proxyvm-as-a-vpn-gateway-using-iptables-and-cli-scripts VPN gateway using iptables and CLI scripts] is preferred to prevent clearnet leaks when the VPN breaks down. 
 
-Name and label: sys-vpn (Set any color)
+{{Box|text=
+When a failed closed configuration is used and the VPN connection breaks down, all traffic originating from Whonix-Gateway (commonly called <code>sys-whonix</code>) would <u>only</u> be forced through Tor. This is what you want if you are reading this documentation chapter.
 
-Type: AppVM
-
-Template: debian-9-vpn
-
-Networking: sys-firewall
-
-Advanced:   [✔] Provides network 
-
-Press: OK
-
-
-3. Setup the VPN-Gateway as per Qubes VPN documentation.  The instructions to configure the VPN gateway using iptables and CLI scripts is preferred to prevent clearnet leaks when the VPN breaks down. 
-
-
-When a failed closed configuration is used and the VPN connection breaks down, all traffic originating from Whonix-Gateway (commonly called sys-whonix) would only be forced through Tor. This is what you want if you are reading this documentation chapter.
-
-User -> Tor -> Internet
+'''User -> Tor -> Internet'''
 
 If a failed closed configuration is not used, network traffic (such as DNS queries) could leak through the VPN tunnel to the Internet when the tunnel connection breaks down.
 
-User -> VPN(clearnet leaks!) -> Tor -> Internet
+'''User -> VPN'''(<u>clearnet leaks!</u>) '''-> Tor -> Internet'''
+}}
 
-4. Check, that your sys-vpn is fully functional. Test connectivity from inside the sys-vpn as per:
-Qubes VPN Documentation
+'''4.''' Check, that your <code>sys-vpn</code> is fully functional. Test connectivity from inside the <code>sys-vpn</code> as per:
+[https://qubes-os.org/doc/vpn/ Qubes VPN Documentation]
+}}
 
-Note: Both TCP and UDP VPN connections should work. System DNS should work out of the box so no DNS configuration is required for Whonix-Gateway.
+<u>Note:</u> Both TCP and UDP VPN connections should work. System DNS should work out of the box so no DNS configuration is required for Whonix-Gateway.<ref>Because Whonix-Gateway does not require any clearnet DNS anyhow.</ref>
+
 Done!
 
-For troubleshooting, see footnote. 
-
-Check, that your VPN-Gateway is fully functional. Test connectivity from inside the VPN-Gateway.
-Add a non-Whonix VM behind your VPN-Gateway. For example, add a debian based AppVM behind your VPN-Gateway. Figure out if the VPN-Gateway works at all before involving Whonix.
+For troubleshooting, see footnote. <ref>
+* Check, that your VPN-Gateway is fully functional. Test connectivity from inside the VPN-Gateway.
+* Add a non-Whonix VM behind your VPN-Gateway. For example, add a debian based AppVM behind your VPN-Gateway. Figure out if the VPN-Gateway works at all before involving Whonix.
+</ref>
 
 -----
 
