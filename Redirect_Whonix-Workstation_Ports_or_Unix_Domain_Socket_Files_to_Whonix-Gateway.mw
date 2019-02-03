@@ -1,0 +1,44 @@
+= Introduction =
+Socket proxying could be useful for any future applications that expect Tor or the ControlPort to listen on any specific port or unix domain socket file that is not (yet) added to <code>anon-ws-disable-stacked-tor</code> config by default, or for any other port or unix domain socket file redirections from the workstation to the Gateway.
+
+= Instructions =
+Create and extend config file <code>/etc/anon-ws-disable-stacked-tor.d/50_user.conf</code>. <ref>https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/etc/anon-ws-disable-stacked-tor.d/30_anon-dist.conf</ref>
+
+Create folder <code>/usr/local/etc/anon-ws-disable-stacked-tor.d/</code>.
+
+{{CodeSelect|code=
+sudo mkdir -p /usr/local/etc/anon-ws-disable-stacked-tor.d
+}}
+
+{{Open with root rights|filename=
+/usr/local/etc/anon-ws-disable-stacked-tor.d/50_user.conf
+}}
+
+Then either add a port redirection.
+
+For example to redirect Whonix-Workstation port 9100 to Whonix-Gateway port 9050. Note: adjust the port numbers for your needs.
+
+{{CodeSelect|code=
+file_port_tuples+=" port#9100:9050 "
+}}
+
+Or create a unix domain socket file and have it forwarded to Whonix-Gateway port 9050.
+
+{{CodeSelect|code=
+file_port_tuples+=" /var/run/anon-ws-disable-stacked-tor/unix-domain-socket-file.sock#9050 "
+}}
+
+Save.
+
+Run the <code>systemd-socket-proxyd</code> <code>systemd-unit-files-generator</code>.
+
+{{CodeSelect|code=
+sudo /usr/share/anon-ws-disable-stacked-tor/systemd-unit-files-generator
+}}
+
+The process of creating a redirection is now complete.
+
+= Footnotes =
+{{reflist|close=1}}
+[[Category:Documentation]]
+{{Footer}}
