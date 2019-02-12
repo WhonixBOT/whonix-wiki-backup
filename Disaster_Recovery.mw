@@ -76,16 +76,27 @@ More complex ideas for recovering from AppVM compromise on Qubes can be found [h
 
 '''Threat model: You know or highly suspect that the Gateway is compromised, but there was no VM breakout.'''
 
-A compromised Gateway has no access to the host resources. Both the Gateway and the Workstation should be considered compromised along with any data that it contains or is in shared folders it can access.
+A compromised Gateway has no access to the host resources. 
 
-The recovery process is similar to the section on Workstations above. The main reasons for such a security failure can be caused by:
+A compromised Gateway doesn’t automatically lead to a compromised Workstation.
+
+Let’s say a remote code execution vulnerability was found in Tor. That would compromise Tor but a compromised Tor only leads to the following breaches for the workstation:
+
+*reading (non-https) clearnet traffic originating from the workstation (unless the workstation is using a user -> Tor -> VPN -> destination tunnel configuration)
+*reading onion traffic originating from the workstation
+*loss of anonymity
+
+The Gateway is no more privileged position to exploit the Workstation than a Tor exit. Well, it doesn’t have to find a specific target, but it still needs to compromise the Workstation through another vulnerability.
+
+A compromised Gateway shouldn’t lead to a compromised (as in unwanted code, malware running) Workstation. So the Workstation shared folder should be safe along with any data locally stored and never transmitted unencrypted over the internet. So any OpenPGP encrypted messages from the Workstation sent through a compromised Gateway should still be confidential.
+
+The recovery process is similar to the section on Workstations above, except the steps that involve key revocation. The main reasons for such a security failure can be caused by:
 
 *Installing third party software on the Gateway.
 *Browsing the clearnet from software installed on the Gateway on purpose.
 *Installing vulnerable services on the Gateway like DHCP that a malicious Workstation can have access to and compromise.
 *Using a vulnerable version of apt to perform software updates (this happens occasionally and we notify users).
 *A remote code execution vulnerability in Tor itself or pluggable transports (extremely improbable according to their track record).
-
 
 = Footnotes =
 {{reflist|close=1}}
