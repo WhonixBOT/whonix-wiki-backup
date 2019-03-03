@@ -4,78 +4,74 @@
 |image=https://www.whonix.org/w/images/3/34/Operatingsystemupdated234234.jpg
 }}
 
-= apt security update - DSA 4371-1 =
+= APT Security Update - DSA 4371-1 =
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text    = '''Special instructions required to update because of apt security update [https://lists.debian.org/debian-security-announce/2019/msg00010.html DSA 4371-1]!'''
+| text    = Special instructions are required to update due to '''APT security update [https://lists.debian.org/debian-security-announce/2019/msg00010.html DSA 4371-1]'''
 }}
-
-
 {{mbox
 | image   = [[File:Ambox_notice.png|40px|alt=Whonix default password info box]]
-| text    = Not required for Whonix 14.0.1.3.8 (currently testers-only version) or above.
+| text    = This procedure is <u>not</u> required for Whonix 14.0.1.3.8 (current testers-only version) or above.
 }}
 
 
-Using [[Onionizing Repositories|onion sources]] may or may <u>not</u> protect from this vulnerability. <ref>
-[https://lists.debian.org/debian-security-announce/2019/msg00010.html Debian's security announcement] does not mention [https://onion.torproject.org Debian onion sources]. Redirects might also be used by onion mirrors. Debian has to the knowledge of Whonix not released information where Debian onion sources are hosted. Onion sources are also just a mirror. And mirrors may also be in a position to attempt a [[Warning#Man-in-the-middle_Attacks|man-in-the-middle attack]].
-</ref> The special instructions below should be safe. These instructions will only work with Whonix and would require minor modifications for Debian. <ref>
-Because Whonix uses <code>/etc/apt/sources.list.d/debian.list</code> while Debian and Qubes Debian templates are using <code>/etc/apt/debian.list</code>.
+Using [[Onionizing Repositories|onion sources]] <u>might</u> provide protection against this vulnerability. <ref>
+[https://lists.debian.org/debian-security-announce/2019/msg00010.html Debian's security announcement] does not mention [https://onion.torproject.org Debian onion sources]: <br /> <blockquote>The code handling HTTP redirects in the HTTP transport method doesn't properly sanitize fields transmitted over the wire. This vulnerability could be used by an attacker located as a man-in-the-middle between APT and a mirror to inject malicous content in the HTTP connection. This content could then be recognized as a valid package by APT and used later for code execution with root privileges on the target machine.</blockquote> Redirects might also be used by onion mirrors. The Whonix project is unaware of any Debian announcement regarding where their onion sources are hosted. Since onion sources are also just a mirror, and mirrors may also be in a position to attempt a [[Warning#Man-in-the-middle_Attacks|man-in-the-middle attack]], these instructions are recommended in all cases.</ref> The special instructions below should be safe for Whonix users; minor modifications are necessary for Debian platforms. <ref>This is because Whonix uses <code>/etc/apt/sources.list.d/debian.list</code>, while Debian and Qubes' Debian templates depend upon <code>/etc/apt/debian.list</code>.
 </ref>
 
-'''1)''' Move <code>/etc/apt/sources.list.d/debian.list</code> to a temporary location.
+'''1.''' Move <code>/etc/apt/sources.list.d/debian.list</code> to a temporary location.
 
 {{CodeSelect|code=
 sudo mv /etc/apt/sources.list.d/debian.list /etc/apt/debian.list
 }}
 
-'''2)''' Create the apt sources list that works without redirections.
+'''2.''' Create an apt sources list that works without redirections.
 
 {{CodeSelect|code=
 echo "deb http://cdn-fastly.deb.debian.org/debian-security stable/updates main" {{!}} sudo tee /etc/apt/sources.list.d/debian.list
 }}
 
-'''3)''' Securely update the package lists using <code>-o Acquire::http::AllowRedirect=false</code> workaround.
+'''3.''' Securely update the package lists using the <code>-o Acquire::http::AllowRedirect=false</code> workaround.
 
 {{CodeSelect|code=
 sudo apt-get -o Acquire::http::AllowRedirect=false update
 }}
 
-'''4)''' Securely upgrade apt-get using <code>-o Acquire::http::AllowRedirect=false</code> workaround.
+'''4.''' Securely upgrade apt-get using the <code>-o Acquire::http::AllowRedirect=false</code> workaround.
 
 {{CodeSelect|code=
 sudo apt-get -o Acquire::http::AllowRedirect=false upgrade
 }}
 
-'''5)''' Verify installed <code>apt</code> version has been upgraded.
+'''5.''' Verify the installed <code>apt</code> version has been upgraded.
 
 {{CodeSelect|code=
 dpkg -l {{!}} grep "commandline package manager"
 }}
 
-Should show.
+This command should show.
 
 <pre>
 ii  apt                                            1.4.9                                      amd64        commandline package manager
 </pre>
 
-Above shows <code>apt</code> version <code>1.4.9</code> which includes the security fix.
+The output above shows <code>apt</code> version <code>1.4.9</code>, which includes the security fix.
 
-'''6)''' Delete temporary <code>/etc/apt/sources.list.d/debian.list</code>.
+'''6.''' Delete the temporary <code>/etc/apt/sources.list.d/debian.list</code>.
 
 {{CodeSelect|code=
 sudo rm /etc/apt/sources.list.d/debian.list
 }}
 
-'''7)''' Restore original <code>/etc/apt/sources.list.d/debian.list</code>.
+'''7.''' Restore the original <code>/etc/apt/sources.list.d/debian.list</code>.
 
 {{CodeSelect|code=
 sudo mv /etc/apt/debian.list /etc/apt/sources.list.d/debian.list
 }}
 
-'''8)''' Continue with [[Operating_System_Software_and_Updates#Standard_Upgrade_Steps|Standard Upgrade Steps]].
+'''8.''' Perform the [[Operating_System_Software_and_Updates#Standard_Upgrade_Steps|Standard Upgrade Steps]].
 
-'''9)''' The process is now complete.
+The procedure is now complete.
 
 Forum discussion:<br />
 https://forums.whonix.org/t/special-instructions-required-to-securely-update-because-of-apt-security-update-dsa-4371-1/6721
