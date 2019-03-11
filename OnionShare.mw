@@ -16,7 +16,9 @@ OnionShare is an open source program that allows a file of any size to be shared
 
 <blockquote>It works by starting a web server, making it accessible as a Tor Onion Service, and generating an unguessable URL to access and download the files. It does not require setting up a separate server or using a third party file-sharing service. You host the files on your own computer and use a Tor Onion Service to make it temporarily accessible over the internet. The receiving user just needs to open the URL in Tor Browser to download the file.</blockquote>
 
-At the time of writing, the OnionShare package is not packaged in Debian stretch. <ref>https://tracker.debian.org/pkg/onionshare</ref> For these reasons, the following instructions use the most recent version available from GitHub. Advanced users may prefer to use APT pinning to install the version from Debian buster instead.
+As of OnionShare 2, it is also possible to run the program in Receive mode, which allows you to receive files via OnionShare, uploaded by users using Tor Browser - a sort of 'SecureDrop Lite', or personal dropbox.
+
+At the time of writing, the OnionShare package is not packaged in Debian stretch. <ref>https://tracker.debian.org/pkg/onionshare</ref> For these reasons, the following instructions use the most recent version available from GitHub. Advanced users may prefer to use APT pinning to install the version from Debian buster instead. However, installing from a tagged release in Git ensures you have access to the latest features.
 
 == Install OnionShare ==
 
@@ -58,7 +60,7 @@ cd onionshare
 
 '''4.''' Retrieve the OnionShare PGP signing key.
 
-This step retrieves the OnionShare developer's PGP key using its long key ID. <ref>OnionShare is developed by Micah Lee and mig5. The key ID has been taken directly from www.micahflee.com</ref>
+This step retrieves the OnionShare developer's PGP key using its long key ID. <ref>The OnionShare core developer is Micah Lee. The key ID has been taken directly from www.micahflee.com</ref>
 
 {{CodeSelect|code=
 gpg --keyserver pool.sks-keyservers.net --recv-keys 0x927F419D7EC82C2F149C1BD1403C2657CD994F73
@@ -66,7 +68,7 @@ gpg --keyserver pool.sks-keyservers.net --recv-keys 0x927F419D7EC82C2F149C1BD140
 
 '''5.''' Examine and verify the git tags and commit.
 
-These steps list the available git tags, and verifies the latest version and its commit (v1.3.1 at the time of writing).
+These steps list the available git tags, and verifies the latest version and its commit (v2.0 at the time of writing).
 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
@@ -79,11 +81,11 @@ git tag
 }}
 
 {{CodeSelect|code=
-git verify-tag v1.3.1
+git verify-tag v2.0
 }}
 
 {{CodeSelect|code=
-git verify-commit v1.3.1^{commit}
+git verify-commit v2.0^{commit}
 }}
 
 Qubes-Whonix users should shut down <code>anon-onionshare</code> prior to the next step.
@@ -92,10 +94,10 @@ Qubes-Whonix users should shut down <code>anon-onionshare</code> prior to the ne
 
 Several dependencies must be installed in Whonix-Workstation (<code>{{whonix-ws}}</code> TemplateVM) for OnionShare to work correctly. Locate the {{Code2|BUILD.md}} file in the OnionShare repository and run the necessary apt-get commands in the "Debian-like distros" section.
 
-For example, for OnionShare 1.3.1 run in a terminal (Konsole).
+For example, for OnionShare 2 run in a terminal (Konsole).
 
 {{CodeSelect|code=
-sudo apt install -y build-essential fakeroot python3-all python3-stdeb dh-python python3-flask python3-stem python3-pyqt5 python-nautilus python3-pytest obfs4proxy
+sudo apt install -y python3-flask python3-stem python3-pyqt5 python3-crypto python3-socks python-nautilus tor obfs4proxy python3-pytest build-essential fakeroot python3-all python3-stdeb dh-python
 }}
 
 Qubes-Whonix users should shutdown the <code>{{whonix-ws}}</code> TemplateVM after dependencies have installed, and restart the <code>anon-onionshare</code> AppVM.
@@ -152,8 +154,9 @@ To test OnionShare is running correctly:
 
 * Click the “Test Settings” button. If all steps were completed correctly, Tor will successfully connect.
 * The GUI should say it supports both ephemeral onion services and stealth onion services.
-* Check “Create stealth onion services” to make OnionShare operations more secure.
+* You can check “Create stealth onion services” (Client Auth) to make OnionShare operations more secure - however, this currently only works with legacy 'v2' (shorter) style onions. Support for Client Auth with v3/prop224/next-gen onions will be possible in a future release. 
 ** Note: Using Stealth mode makes it harder for the end user to connect to the share, because they must first edit their torrc file. Please see the [https://github.com/micahflee/onionshare/wiki/Stealth-Onion-Services official documentation] for further information.
+* By default, if the version of Tor in use is 0.3.5.7 or higher (as it is in Whonix 14), OnionShare will use next-gen or 'v3' (sometimes referred to as prop224) onion addresses by default. These are recognizable by their longer address. You can enable Legacy Mode in the settings if for some reason you want to use the shorter (but less secure) v2 onion addresses.
 
 === How to Use OnionShare ===
 
@@ -165,6 +168,8 @@ Send this URL to the person you're sending the files to. If the files you're sen
 <br />
 The person who is receiving the files doesn't need OnionShare. All they need is to open the URL you send them in Tor Browser to be able to download the file.
 </blockquote>
+
+As of OnionShare 2, a new feature exists called 'Receive Mode'. With this mode, you can start an onion service and allow other users to upload files to ''you'' via Tor Browser (rather than Share Mode, in which you share files from your OnionShare to those users). You can read more about Receive Mode [https://github.com/micahflee/onionshare/wiki/Receive-Mode in the OnionShare wiki].
 
 A complete user guide, along with advanced topics, hardening options <ref>Such as setting a Shutdown Timer to self-destruct shares if they are not downloaded within an acceptable time window. These topics are beyond the scope of this documentation.</ref> and development documentation is available on the [https://github.com/micahflee/onionshare/wiki official website]. Do not change settings without fully understanding their function, otherwise onion addresses might be re-used, shares might be left open even after multiple downloads are performed, and so on.
 
