@@ -29,59 +29,62 @@ This page aims to track and document advanced attacks <ref>https://phabricator.w
 | Behavioral tracking (also called biometric tracking) relies on spying on how users interact with their devices, <ref>https://www.whonix.org/blog/biometric-fingerprinting</ref> rather than looking at the unique identifiers of the device, protocol or application levels.
 |}
 
-=Attacks=
+= Attack Methodology =
+
+'''Table:''' ''Advanced Deanonymization Methods''
+
 {| class="wikitable" style="text-align: center; background-color: #fff"
 |- style="background-color: #f9f9f9"
 | style="height: 35px;width: 170px"|
-| '''CPU-induced network latency'''<ref>https://phabricator.whonix.org/T530</ref>
-| '''TCP ISNs and temperature induced clock skews'''<ref>https://phabricator.whonix.org/T543</ref>
-| '''DRAMA Cross-CPU attacks'''<ref>https://phabricator.whonix.org/T541</ref>
-| '''Cross-VM CPU cache attacks'''<ref>https://phabricator.whonix.org/T539</ref><ref>[https://cmaurice.fr/pdf/ndss17_maurice.pdf Hello from the Other Side: SSH over Robust Cache Covert Channels in the Cloud] newer covert channel attack that needs same conditions of shared CPU cache</ref>
-| '''Keyboard/Mouse input fingerprinting'''<ref>https://phabricator.whonix.org/T542</ref>
+| '''CPU-induced Network Latency''' <ref>https://phabricator.whonix.org/T530</ref>
+| '''TCP ISNs and Temperature-induced Clock Skews''' <ref>https://phabricator.whonix.org/T543</ref>
+| '''DRAMA Cross-CPU Attacks''' <ref>https://phabricator.whonix.org/T541</ref>
+| '''Cross-VM CPU Cache Attacks''' <ref>https://phabricator.whonix.org/T539</ref> <ref>[https://cmaurice.fr/pdf/ndss17_maurice.pdf Hello from the Other Side: SSH over Robust Cache Covert Channels in the Cloud]: newer covert channel attack that requires the same condition of a shared CPU cache.</ref>
+| '''Keyboard/Mouse Input Fingerprinting''' <ref>https://phabricator.whonix.org/T542</ref>
 |-
-| style="height: 27px;background-color: #f9f9f9"| Attack Type
+| style="height: 27px;background-color: #f9f9f9"| '''Attack Class'''
 | Covert Channel (network)
 | Covert Channel (network)
 | Covert (local) and Side Channel
 | Covert (local) and Side Channel 
 | Behavioral Tracking
 |-
-| style="height: 27px;background-color: #f9f9f9"| requires local compromise
+| style="height: 27px;background-color: #f9f9f9"| '''Local Compromise Required'''
 | No
 | No
 | Yes
 | Yes
 | No
 |-
-| style="height: 27px;background-color: #f9f9f9"| Attack Summary
-| CPU load induces notice-able latency in network packets.
-| CPU load skews clock crystal frequency. Changes detectable in TCP ISN field.
-| Timing shared memory bank accesses allows data leaks also snooping on keystrokes.
-| Shared CPU cache access latency leaks timing data of crypto processes.
-| Timing of/between keystrokes and mouse movement speed/angles create individually unique patterns.
+| style="height: 27px;background-color: #f9f9f9"| '''Attack Summary'''
+| CPU load induces a noticeable latency in network packets.
+| CPU load skews the clock crystal frequency; these changes are detectable in the TCP ISN field.
+| Timing of access to the shared memory bank permits data leaks, as well as snooping on keystrokes.
+| Measurement of the shared CPU cache access latency; this leaks timing data concerning cryptographic processes.
+| Timing of/between keystrokes and mouse movement speed/angles creates a unique individual pattern.
 |-
-| style="height: 27px;background-color: #f9f9f9"| Mitigation
+| style="height: 27px;background-color: #f9f9f9"| '''Mitigation'''
 | Queue and release packets randomly with Netfilter.
 | Rewrite TCP ISNs to conceal timer skews.
-| Block clflush and tsc instructions. Remove all timers. Avoid multi-threading VMs. Alternatively use non-interleaved NUMA with pinned vCPUs.
-| Pin vCPUs to separate pCPUs. Block tsc instructions. Remove all timers.
-| Abstract keyboard/mouse input into a network layer and inject random delays.<ref>Removing fine-grained timers helps here too.</ref>
+| Block clflush and tsc instructions, as well as removing all timers. Further, avoid the multi-threading of VMs, or alternatively use non-interleaved NUMA with pinned vCPUs.
+| Pin vCPUs to separate pCPUs, block tsc instructions, and remove all timers.
+| Abstract keyboard/mouse input into a network layer and the injection of random delays. <ref>Removing fine-grained timers also helps in this situation.</ref>
 |-
-| style="height: 27px;background-color: #f9f9f9"| Fix Stage - Whonix [[KVM]]
+| style="height: 27px;background-color: #f9f9f9"| '''Whonix [[KVM]] Mitigation''' 
 | style="background-color: {{Green}}"| Near Production
 | style="background-color: {{BlueBackground}} Planning
 | style="background-color: {{Green}}"| Production
 | style="background-color: {{Green}}"| Production
 | style="background-color: {{BlueBackground}} Planning
 |-
-| style="height: 27px;background-color: #f9f9f9"| Fix Stage - Whonix [[VirtualBox]]
+| style="height: 27px;background-color: #f9f9f9"| '''Whonix [[VirtualBox]] Mitigation''' 
 | style="background-color: {{Green}}"| Near Production
 | style="background-color: {{BlueBackground}} Planning
 | style="background-color: {{Red}}"| -
 | style="background-color: {{Red}}"| -
 | style="background-color: {{BlueBackground}} Planning
 |-
-| style="height: 27px;background-color: #f9f9f9"| Fix Stage - [[Qubes-Whonix]]
+| style="height: 27px;background-color: #f9f9f9"| '''[[Qubes-Whonix]] Mitigation''' 
 | style="background-color: {{Green}}"| Near Production
 | style="background-color: {{BlueBackground}} Planning
 | style="background-color: {{Red}}"| -
@@ -89,9 +92,9 @@ This page aims to track and document advanced attacks <ref>https://phabricator.w
 | style="background-color: {{BlueBackground}} Planning
 |}
 
-[[Time_Attacks|Time related attacks]] are a large class of their own, documented separately with some overlap here.
+[[Time_Attacks|Time-related attacks]] are in a class of their own. Although documented separately, time attacks have some overlap with factors outlined here.
 
-There are other advanced attacks not included in the table above but have had easy fixes such as avoiding some [[KVM#Unsafe_Features|features]] of the hypervisor.
+There are numerous other advanced attacks which have not been included in the above table. The reason is they have easy fixes, such as avoiding some [[KVM#Unsafe_Features|unsafe hypervisor features]].
 
 = Development =
 * [[Dev/Advanced Deanonymization Attacks]]
