@@ -164,7 +164,7 @@ Note that generic attacks also exist for more than one Tor entity; typically bot
 
 === Overview ===
 
-The following table summarizes known Tor attacks and the specific target categories. <ref>Some have already been addressed by The Tor Project.</ref> The various attacks can be used by malicious actors to either retrieve information or to perpetrate harmful activities.
+The following table summarizes known Tor attacks and the specific target categories. The various attacks can be used by malicious actors to either retrieve information or to perpetrate harmful activities. Those attacks which have been recently addressed by The Tor Project or do not affect Whonix are marked accordingly. 
 
 '''Table:''' ''Tor Entity Attack Vectors'' <ref name=Tor_attacks />
 
@@ -176,7 +176,7 @@ The following table summarizes known Tor attacks and the specific target categor
 |-
 ! scope="row"| Plug-in based Attacks
 | Client
-| Plug-ins (external software) in the user's browser like Flash, Java and ActiveX Controls are exploited. Since these plug-ins run with user permissions on the operating system, they can bypass Tor Browser's proxy configuration settings and connect directly to the Internet. <ref>Browser attacks come in two forms: malicious server system embeds on public-facing servers (like Adobe Flash contents on the page); or using a malicious exit node to intercept clear HTTP connections and inject harmful plug-in contents.</ref> <ref>Explaining why browser plug-ins should generally be avoided or disabled in Tor Browser.</ref>
+| Plug-ins (external software) in the user's browser like Flash, Java and ActiveX Controls are exploited. Since these plug-ins run with user permissions on the operating system, they can bypass Tor Browser's proxy configuration settings and connect directly to the Internet. <ref>Browser attacks come in two forms: malicious server system embeds on public-facing servers (like Adobe Flash contents on the page); or using a malicious exit node to intercept clear HTTP connections and inject harmful plug-in contents.</ref> <ref>Explaining why browser plug-ins are disabled by default in Tor Browser.</ref>
 |-
 ! scope="row"| Torben Attacks <ref>[https://www.sec.cs.tu-bs.de/pubs/2015-asiaccs.pdf Torben: A Practical Side-Channel Attack for Deanonymizing Tor Communication]</ref> <ref>The research suggests these markers can be detected with an accuracy of over 91%, with no false positives.</ref>
 | Client
@@ -184,9 +184,9 @@ The following table summarizes known Tor attacks and the specific target categor
 |-
 ! scope="row"| P2P Information Leakage
 | Client
-| Connections to peer-to-peer systems are exploited to retrieve the IP address of the client. For example, adversaries can retrieve the IP address of clients connecting over Tor with the BitTorrent protocol when they communicate with the torrent tracker. <ref>Torrent trackers retrieve information about peers who can share the requested resource, that is, IP address and listening port.</ref> While tracker lists can be retrieved anonymously over Tor, the actual P2P connection is not -- meaning a MitM attack on this connection can redirect to a list that includes the IP address of a malicious torrent peer. This means the IP address of the client that originated the tracker request (over Tor) can be retrieved.
+| '''Note:''' this vector does not affect Whonix; see [[File_Sharing#Please_limit.21|here]]. Connections to peer-to-peer systems are exploited to retrieve the IP address of the client. For example, adversaries can retrieve the IP address of clients connecting over Tor with the BitTorrent protocol when they communicate with the torrent tracker. <ref>Torrent trackers retrieve information about peers who can share the requested resource, that is, IP address and listening port.</ref> While tracker lists can be retrieved anonymously over Tor, the actual P2P connection is not -- meaning a MitM attack on this connection can redirect to a list that includes the IP address of a malicious torrent peer. This means the IP address of the client that originated the tracker request (over Tor) can be retrieved.
 |-
-! scope="row"| Induced Tor Guard Selection
+! scope="row"| Induced Tor Guard Selection <ref>[https://www.researchgate.net/publication/288841807_A_Stealthy_Attack_Against_Tor_Guard_Selection A stealthy attack against tor guard selection]</ref>
 | Client
 | Tor clients can be induced to adopt a malicious Tor guard (entry) node via: altering traffic capabilities of the target, blocking connections to legitimate entry nodes at the network level, and so on. This greatly assists end-to-end correlation and other attacks.
 |-
@@ -198,15 +198,15 @@ The following table summarizes known Tor attacks and the specific target categor
 | Client
 | This attack requires both a malicious service host contacted by the Tor client and an adversary-controlled set of exit nodes working in tandem. The malicious service injects a script into the client-requested webpage, leading the browser to open a connection to an Internet service on an unpopular port (through Tor). Since the adversary controls a set of exit nodes supporting this communication, the probability of increasing control over the exit node increases. <ref>[https://www.researchgate.net/publication/261347478_Attacking_Tor_through_Unpopular_Ports Attacking Tor through Unpopular Ports]: <blockquote>The experimental analysis shows that by injecting a relatively small number of compromised relays (30 pairs of relays) allowing a certain unpopular port, more than 50% of constructed circuits are compromised.</blockquote></ref>
 |-
-! scope="row"| Low-resources Routing
+! scope="row"| Low-resources Routing <ref>[https://cs.gmu.edu/~mccoy/papers/wpes25-bauer.pdf Low-Resource Routing Attacks Against Tor]</ref>
 | Client
-| Adversaries commit or compromise high-bandwidth, high-uptime Tor routers. Exploiting the ability to report incorrect bandwidth values, the capacity of the node it lowered to low-bandwidth (but still reported as high-bandwidth), increasing the chances it is chosen for a Tor circuit and thereby aiding traffic correlation attacks. <ref>Note: This attack variant is no longer possible since directory servers now control the declaration of effective bandwidth.</ref>
+| '''Note:''' This attack variant is no longer possible since directory servers now control the declaration of effective bandwidth. Adversaries commit or compromise high-bandwidth, high-uptime Tor routers. Exploiting the ability to report incorrect bandwidth values, the capacity of the node it lowered to low-bandwidth (but still reported as high-bandwidth), increasing the chances it is chosen for a Tor circuit and thereby aiding traffic correlation attacks. 
 |-
-! scope="row"| Cell Counting and Padding
+! scope="row"| Cell Counting and Padding <ref>[https://www.cs.uml.edu/~xinwenfu/paper/HiddenServer.pdf Protocol-level hidden server discovery]</ref>
 | Server
 | In this attack, an onion (hidden) service is forced to connect to a malicious rendezvous point. A specially crafted (specific number) of Tor padding cells and a cookie/token generated by the client adds a signature to the traffic. If an entry node controlled by an adversary monitors and identifies these signatures, it can be deduced the guard node they operate was chosen by the onion service, thereby revealing its IP address.
 |-
-! scope="row"| Tor Cells Manipulation
+! scope="row"| Tor Cells Manipulation <ref>[https://ieeexplore.ieee.org/document/7057949/ Deanonymizing  schemes of hidden services in tor network: A survey]</ref>
 | Server
 | Tor cells/packets are manipulated so it is possible to locate an onion (hidden) service. An adversary-controlled rendezvous point detects the request and applies small changes to the message/cell data before forwarding the message to the onion service. This acts as a timestamp of the modified cell, which is relayed to the central server under the adversary's control. The onion service sends back a destroy message to the client (since the cell is not intact). The combination of command specific on the cell (CELL DESTROY), the cell's timestamp, circuit ID and source IP address, means a central server might discover the IP address of the onion service via time correlation.
 |-
@@ -230,17 +230,13 @@ The following table summarizes known Tor attacks and the specific target categor
 | Network
 | Sniper attacks allow adversaries to perform anonymous DoS attacks that disable arbitrary Tor relays (killing the Tor process on the machine). A Tor node is forced to buffer large amounts of data (with valid protocol messages), until it is overloaded and goes offline. By attacking a large set of nodes and degrading network capability, this increases the chance a client chooses an adversary-controlled node. <ref>The source paper notes: <blockquote>...our experiments show that an adversary may consume a victim relay’s memory by as much as 2187 KiB/s while using at most only 92 KiB/s of upstream bandwidth. We extend our experimental  results to estimate the threat against the live Tor network and find that a strategic adversary could disable  all of the top 20 exit relays in only 29 minutes, thereby reducing Tor’s bandwidth capacity by 35 percent.</blockquote></ref>
 |-
-! scope="row"| Traffic Analysis
+! scope="row"| Traffic Analysis <ref>[https://murdoch.is/papers/oakland05torta.pdf Low-Cost Traffic Analysis of Tor]</ref>
 | Client + Server
 | Adversaries capable of network traffic analysis insert packets server-side (specific, repetitive traffic in the TCP connection), and then try to observe these packets client-side via statistical correlation. Therefore, if a client is connected to a malicious server and the adversary controls a large number of entry (guard) nodes -- one of which is chosen in a given Tor circuit -- Tor client traffic can be identified.
 |-
-! scope="row"| Timing Attacks
+! scope="row"| Timing Attacks <ref>[https://www.mit.edu/~ecprice/papers/tor.pdf Browser-based attacks on Tor]</ref> <ref>[https://www.freehaven.net/anonbib/cache/timing-fc2004.pdf Timing Attacks in Low-Latency Mix Systems]</ref>
 | Client + Server
 | This is a variant of the traffic analysis attack noted above, whereby packets exchanged between the client and the server are observed to try and identify a temporal connection. To be successful, the adversary must control both the entry (guard) and exit node of the target's Tor circuit. To improve the accuracy of the attack, adversaries can temporarily interrupt traffic at predetermined intervals. Note that Tor utilizes packet buffering, delays and shuffling techniques to protect from this attack class.
-|-
-! scope="row"| Shaping Attacks
-| Client + Server
-| This is a variant of the timing attack described above, insofar as the traffic shape is altered to facilitate correlation (rather than measuring temporal changes). Through analysis and comparison of the shape, unexpected variations can be identified in order to compare different traffic flows and perform correlation with greater certainty.
 |}
 
 Some of these attacks are described in further detail below.
