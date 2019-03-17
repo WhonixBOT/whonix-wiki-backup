@@ -9,76 +9,105 @@ title=How-to: Use Electrum in Whonix
 [https://electrum.org/ Electrum] is a popular Bitcoin wallet. The non-official thin client Electrum appears to be well-designed. It does not need to download/verify the blockchain and users store their private keys locally, which eliminates the need to trust third-party severs. <ref>Some Bitcoin wallets other than Electrum are affected by this: if the third-party sever was ever compromised, all of the users' bitcoins could be stolen. There is also the possibility that the third-party could lose a user's private keys or walk away with them.</ref>
 __FORCETOC__
 = Install Electrum =
-Note:  In order to mitigate the risk from a known exploit, Electrum versions older than 3.3 are prevented from connecting to public servers. This was done to prevent users from being exposed to phishing messages. If your currently installed Elecrtum version is older than 3.3 you will need to download the latest Electrum version.
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = 
+Note:  In order to mitigate the risk from a known exploit, Electrum versions older than 3.3 are prevented from connecting to public servers.<ref name=elecrum_fishing_exploit>https://github.com/spesmilo/electrum/issues/5183</ref><ref name=elecrum_fishing_expoit2>https://github.com/spesmilo/electrum/issues/5190</ref>  This was done to prevent users from being exposed to phishing messages.<ref>For more on this See: [https://github.com/spesmilo/electrum/issues/5195 Github Electrum issues].</ref> If your currently installed Elecrtum version is older than 3.3 you will need to download the latest Electrum version.
+}}
+</br>
 
-
-Although it is strongly recommended that users install software from the Debian repositories, the latest version available from Debian is an older electrum-3.2.3-1 version which will not connect to public servers. This means APT, Debian's official package manager can not be used to install a usable version. Currently users must install Electrum from the official electrum website. While the following instruction provide steps to verify the AppImage, users should understand the risks involved with manual software installation and make every effort to follow Best Practices when installing software.
-
-[ref]
+Although it is strongly recommended that users install software from the Debian repositories, the latest version available from Debian is an older [https://packages.debian.org/sid/utils/electrum electrum-3.2.3-1] version which will not connect to public servers. This means <code>APT</code>, Debian's official package manager can not be used to install a usable version. Currently users must install Electrum from the official electrum website. While the following instruction provide steps to verify the AppImage, users should understand the risks involved with manual software installation and make every effort to follow Best Practices when installing software.
+<ref>
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = 
 Installing software best practices: 
 
-Prefer APT - Generally, the safest option is to stick with Debian's official package manager APT.
-Avoid Third Party Package Managers - There are many third party package managers besides APT, however they lack the security safeguards that are standard in Debian. 
-Avoid Manual Software Installation - Generally avoid the manual installation of packages, even trusted ones.
-Always Verify Signatures - For greater system security, it is strongly recommended to avoid installing unsigned software.
-Prefer Packages from Debian Stable Repository - Users who decide to install new software after considering the risks should preference Debian's stable repository, rather than the testing / unstable or third party repositories.
-[/ref]
+* [[Install_Software#Prefer_APT|Prefer APT]] - Generally, the safest option is to stick with Debian's official package manager APT.
+* [[Install_Software#Avoid_Third_Party_Package_Managers| Avoid Third Party Package Managers]] - There are many third party package managers besides APT, however they lack the security safeguards that are standard in Debian. 
+* [[Install_Software#Avoid_Manual_Software_Installation| Avoid Manual Software Installation]] - Generally avoid the manual installation of packages, even trusted ones.
+* [[Install_Software#Always_Verify_Signatures| Always Verify Signatures]] - For greater system security, it is strongly recommended to avoid installing unsigned software.
+* [[Install_Software#Prefer_Packages_from_Debian_Stable_Repository| Prefer Packages from Debian Stable Repository]] - Users who decide to install new software after considering the risks should preference Debian's stable repository, rather than the testing / unstable or third party repositories.
+}}</ref>
 
-Note: Unless directed otherwise, the following instructions are run in Whonix-Workstation anon-whonix (Qubes-Whonix).
+{{Box|text=
+'''Note:''' Unless directed otherwise, the following instructions are run in Whonix-Workstation <code>anon-whonix</code> ([[Qubes-Whonix]]).
 
-1. Import the gpg public key of Electrum developer Thomas Voegtlin.
+'''1.''' Import the gpg public key of Electrum developer Thomas Voegtlin.
 
+{{CodeSelect|code=
 gpg --recv-keys 6694D8DE7BE8EE5631BED9502BD5824B7F9470E6
+}}
 
 When finished, the output should appear similar to the following screenshot. 
 
-electrum_import_gpg_key.png
+''(Image: Import gpg key)''
 
-2. Verify the public key fingerprint.
+[[Image:electrum_import_gpg_key.png]]
 
+'''2.''' Verify the public key fingerprint.
+
+{{CodeSelect|code=
 gpg --fingerprint 6694D8DE7BE8EE5631BED9502BD5824B7F9470E6
+}}
 
 At the time of writing, the output will appear like the following screenshot. 
 
-electrum_verify_gpg_fingerprint.png
+''(Image: Verify Fingerprint)''
 
-3. Download the Electrum AppImage.
+[[Image:electrum_verify_gpg_fingerprint.png]]
 
-Note: At the time of writing, elecrtum-3.3.4 was the latest stable release. Before starting the Electrum download, users should browse to https://electrum.org/#download electrum.org/#download to verify the correct file download. Then download the file with scurl.
+'''3.''' Download the Electrum AppImage.
 
-To find the correct image download: "Right-click" AppImage -> "Select" Copy Link Location -> Append to scurl command.
+<u>Note:</u> At the time of writing, <code>elecrtum-3.3.4</code> was the latest stable release. Before starting the Electrum download, users should browse to [https://electrum.org/#download electrum.org/#download] to verify the correct file download. Then download the file with [[Secure_Downloads#Downloads_with_scurl_-_SSL_Command_Line_Downloader|scurl]].
+<ref>
+To find the correct image download: <i><code>"Right-click"</code></i> <code>AppImage</code> -> <i><code>"Select"</i> Copy Link Location</code> -> <i><code>Append</i> to scurl command</code>.</ref>
 
+{{CodeSelect|code=
 scurl-download https://download.electrum.org/3.3.4/electrum-3.3.4-x86_64.AppImage
+}}
 
-4.Download the corresponding gpg signature which will be used to verify the integrity of the AppImage.
+'''4.''' Download the corresponding gpg signature which will be used to verify the integrity of the AppImage.
 
-Note: If users downloaded a later Electrum version in step 3 the corresponding signature file must also be downloaded.
+<u>Note:</u> If users downloaded a later Electrum version in <i>step 3</i> the corresponding signature file must also be downloaded.
+<ref>
+To find the correct signature file download: <i><code>"Right-click"</i> signature</code> -> <i><code>"Select"</i> Copy Link Location</code> -> <i><code>"Append"</i> to scurl command</code></ref>
 
-To find the correct signature file download: "Right-click" signature -> "Select" Copy Link Location -> "Append" to scurl command.
-
+{{CodeSelect|code=
 scurl-download https://download.electrum.org/3.3.4/electrum-3.3.4-x86_64.AppImage.asc
+}}
+ 
+'''5.''' Verify the integrity of the AppImage image.
 
-5. Verify the integrity of the AppImage image.
+<u>Note:</u> This must be done from the same directory that you downloaded the AppImage and signature.
 
-Note: This must be done from the same directory that you downloaded the AppImage and signature.
-
+{{CodeSelect|code=
 gpg --verify electrum-3.3.4-x86_64.AppImage.asc
+}}
 
 When image has been verified the output should show a "Good signature" similar to the screenshot below. 
 
-electrum_gpg_good_signature.png
+''(Image: Good Signature)''
+
+[[Image:electrum_gpg_good_signature.png]]
 
 The above "gpg: WARNING" can be ignored since it does not alter the validity of the signature related to the downloaded key. Rather, this warning refers to the level of trust placed in the developers signing key and the web of trust. To remove this warning, the developers signing key must be personally signed with your own key.
 
 If the following "gpg: BAD signature" message appears, the Appimage has been corrupted or altered during the download process.
 
-Electrum_bad_gpg_signature.png
+''(Image: Bad Signature)''
 
-In this event, delete both the Appimage and signature and either wait 10-15 minutes for the Tor circuits to change, or open up the Arm Tor Controller in Whonix-Gateway (Qubes-Whonix: sys-whonix) and type "n" to create new Tor circuits. Wait for a random period of time before repeating the steps to download the AppImage and signature.
+[[Image:Electrum_bad_gpg_signature.png]]
 
-6. Change file permissions.
+In this event, delete both the Appimage and signature and either wait 10-15 minutes for the Tor circuits to change, or open up the [[Arm]] Tor Controller in Whonix-Gateway ([[Qubes-Whonix]]: <code>sys-whonix</code>) and type "n" to create new Tor circuits. Wait for a random period of time before repeating the steps to download the Appimage and signature.
 
+'''6.''' Change file permissions.
+
+{{CodeSelect|code=
 chmod +x electrum-3.3.4-x86_64.AppImage
+}}
+}}
 
 == Starting Electrum ==
 
@@ -93,9 +122,17 @@ Please refer to the official Documentation at [http://docs.electrum.org docs.ele
 
 To start Electrum (all platforms):
 
-cd /path/to/AppImage
+cd to the AppImage folder.
 
+{{CodeSelect|code=
+cd /path/to/AppImage
+}}
+
+Start Electrum.
+
+{{CodeSelect|code=
 ./electrum-3.3.4-x86_64.AppImage
+}}
 
 [[Qubes-Whonix]] users are recommended to configure a [https://qubes-os.org//doc/split-bitcoin/ Split Bitcoin Wallet] to better protect their private keys. To protect against identity correlation through Tor circuit sharing, follow the instructions below (see: [[Stream_Isolation|Stream Isolation]] for more information).
 
