@@ -32,11 +32,17 @@ Wiki pages found in the Advanced Security Guide contain material from the Tails 
 -->
 {{DISPLAYTITLE:whonixcheck Hardening}}
 {{#seo:
-|description=Whonixcheck Hardening
+|description=whonixcheck Hardening
 |image=https://www.whonix.org/w/images/e/e2/Whonixcheckhard.jpg
 }}
 
-= Prevent Autostart =
+= Rationale = 
+
+Although whonixcheck already has apparmor and systemd hardening, some marginal security and anonymity benefits are gained by reducing: the number of network connections, the amount of code running, and [[General_Host_Security#Attack_Surface_Reduction|removing unnecessary functionality]]. This is not the default configuration, since that would come at the cost of decreased usability for the entire Whonix population.
+
+= Hardening Steps =
+
+== Prevent Autostart ==
 
 To prevent whonixcheck from automatically starting, run.
 
@@ -46,16 +52,26 @@ sudo systemctl mask whonixcheck
 
 {{Anchor|Prevent Downloading Whonix News}}
 
-= Prevent Downloading Whonix News and Whonix User Census Counting =
+== Prevent Downloading Whonix News and Whonix User Census Counting ==
 
 {{mbox
-| type      = notice
+| type    = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = Complete these steps on ''both'' Whonix-Gateway and Whonix-Workstation.
+| text    = Complete these steps on ''both'' Whonix-Gateway and Whonix-Workstation.
 }}
 
 
-This will prevent downloading of [[Download#Whonix_Version_Check_and_Whonix_News|Whonix News]] and Whonix census (counting of Whonix users). <ref>https://phabricator.whonix.org/T689</ref>
+This will prevent downloading of [[Download#Whonix_Version_Check_and_Whonix_News|Whonix News]] and the anonymous, daily Whonix census. <ref>https://phabricator.whonix.org/T689</ref> <ref>There are strict requirements for the Whonix user count: <blockquote>- no private info transferred at all <br />
+- adds no additional risk other than that of apt-get communicating with Whonix servers which users are doing anyway to their systems updated <br />
+- only on Whonix-Gateway <br />
+- no unique identifiers of any kind <br />
+- all transmissions go through Tor <br />
+- all transmissions are using Whonix's Tor onion v3 service <br />
+- so we will never collect any IP addresses <br />
+- submissions happen at randomized times <br />
+- only one submission within 24 hours <br />
+- can be easily disabled</blockquote>
+</ref>
 
 {{Open with root rights|filename=
 /etc/whonix.d/50_user.conf
@@ -67,7 +83,7 @@ Add the following content.
 whonixcheck_skip_functions+=" download_whonix_news "
 }}
 
-= Prevent Polluting TransPort =
+== Prevent Polluting TransPort ==
 
 {{mbox
 | type      = notice
@@ -90,12 +106,12 @@ WHONIXCHECK_DISABLE_TRANS_PORT_TEST="1"
 
 Save.
 
-= Prevent Running apt-get =
+== Prevent Running apt-get ==
 
 {{mbox
-| type      = notice
+| type    = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = Complete these steps on ''both'' Whonix-Gateway and Whonix-Workstation.
+| text    = Complete these steps on ''both'' Whonix-Gateway and Whonix-Workstation.
 }}
 
 
@@ -111,12 +127,12 @@ Add the following content.
 whonixcheck_skip_functions+=" check_operating_system "
 }}
 
-= Prevent torproject.org Connections =
+== Prevent torproject.org Connections ==
 
 {{mbox
-| type      = notice
+| type    = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = Complete these steps on ''both'' Whonix-Gateway and Whonix-Workstation.
+| text    = Complete these steps on ''both'' Whonix-Gateway and Whonix-Workstation.
 }}
 
 
