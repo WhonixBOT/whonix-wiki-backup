@@ -5,57 +5,105 @@ The Tor Browser design has carefully considered the goals, capabilities and type
 The design specifications address: proxy obedience, state separation, disk avoidance, application data isolation, cross-origin identifier unlinkability, cross-origin fingerprinting unlinkability, long-term unlinkability via the "New Identity" button, and other security measures to address many of the risks outlined below. <ref>https://www.torproject.org/projects/torbrowser/design/#Implementation</ref> <ref>This has also informed the development of the Torbutton extension.</ref>
 
 == Adversary Goals ==
-Goals of the adversary include: <ref name=torbutton_adversary>https://www.torproject.org/docs/torbutton/en/design/index.html.en#adversary</ref> <ref name=torbrowser_adversary>https://www.torproject.org/projects/torbrowser/design/#adversary</ref>
 
-* '''Bypassing proxy settings:''' Directly compromising and bypassing Tor, or having the user connect to specific IP addresses.
-* '''Correlating Tor and non-Tor activity:''' If a proxy bypass is not possible, correlation of Tor and non-Tor activity is sought via cookies, cache identifiers, JavaScript events and Cascading Style Sheets (CSS).
-* '''History disclosure:''' Querying user history for censored search queries or websites.
-* '''Correlating activity across multiple sites:''' Learning if the user who visited site A is the same user who visited site B, in order to serve targeted advertisements.
-* '''Location information:''' Seeking timezone and locality information to determine if the user originates from a specific region they are trying to control, or focusing in on dissidents or whistleblowers.
-* '''Anonymity set reduction (fingerprinting):''' To identify specific individuals, system data like the browser build,  timezone or display resolution is used to track down (or at least track) their activities.
-* '''History records and other on-disk information:''' Seizing the computers of all Tor users in a given area and extracting history records, cache data, hostnames and disk-logged spoofed MAC address history.
+'''Table:''' ''Adversary Goals'' <ref name=torbutton_adversary>https://www.torproject.org/docs/torbutton/en/design/index.html.en#adversary</ref> <ref name=torbrowser_adversary>https://www.torproject.org/projects/torbrowser/design/#adversary</ref>
+
+{| class="wikitable"
+|-
+! scope="col"| '''Adversary Goals'''
+! scope="col"| '''Description'''
+|-
+! scope="row"| Bypassing Proxy Settings
+| Directly compromising and bypassing Tor, or having the user connect to specific IP addresses.
+|-
+! scope="row"| Correlating Tor and Non-Tor activity
+| If a proxy bypass is not possible, correlation of Tor and non-Tor activity is sought via cookies, cache identifiers, JavaScript events and Cascading Style Sheets (CSS).
+|-
+! scope="row"| History Disclosure
+| Querying user history for censored search queries or websites.
+|-
+! scope="row"| Correlating Activity across Multiple Sites
+| Learning if the user who visited site A is the same user who visited site B, in order to serve targeted advertisements.
+|-
+! scope="row"| Location Information
+| Seeking timezone and locality information to determine if the user originates from a specific region they are trying to control, or focusing in on dissidents or whistleblowers.
+|-
+! scope="row"| Anonymity Set Reduction (Fingerprinting)
+| To identify specific individuals, system data like the browser build,  timezone or display resolution is used to track down (or at least track) their activities.
+|-
+! scope="row"| History Records and other On-disk Information
+| Seizing the computers of all Tor users in a given area and extracting history records, cache data, hostnames and disk-logged spoofed MAC address history.
+|}
 
 == Adversary Positioning Capabilities == 
-Adversary positioning capabilities include: <ref name=torbutton_adversary /> <ref name=torbrowser_adversary />
 
-* '''Exit node or upstream router:''' Running exit nodes or controlling routers upstream of exit nodes. <ref>This has already been observed.</ref>
-* '''Adservers and/or malicious websites:''' Running websites or contracting ad space from adservers to inject content. Reducing a Tor user's anonymity is also good for marketing purposes. <ref>Partially explaining the unholy alliance between the corporate sector and government.</ref>
-* '''Local Network / ISP / upstream router:''' Injecting malicious content at the user's upstream router when Tor is disabled in order to correlate Tor and non-Tor activity. Additionally, block Tor or attempt to recognize traffic patterns of specific web pages at the entrance to the Tor network.
-* '''Physical access:''' Constant or intermittent physical access to computer equipment. This may happen to Internet cafe users or those in jurisdictions where equipment is confiscated due to general suspicion or solely for Tor use.
+'''Table:''' ''Positioning Capabilities'' <ref name=torbutton_adversary /> <ref name=torbrowser_adversary />
+
+{| class="wikitable"
+|-
+! scope="col"| '''Location'''
+! scope="col"| '''Description'''
+|-
+! scope="row"| Exit Node or Upstream Router
+| Running exit nodes or controlling routers upstream of exit nodes. <ref>This has already been observed.</ref>
+|-
+! scope="row"| Adservers and/or Malicious Websites
+| Running websites or contracting ad space from adservers to inject content. Reducing a Tor user's anonymity is also good for marketing purposes. <ref>Partially explaining the unholy alliance between the corporate sector and government.</ref>
+|-
+! scope="row"| Local Network / ISP / Upstream Router
+| Injecting malicious content at the user's upstream router when Tor is disabled in order to correlate Tor and non-Tor activity. Additionally, block Tor or attempt to recognize traffic patterns of specific web pages at the entrance to the Tor network.
+|-
+! scope="row"| Physical Access
+| Constant or intermittent physical access to computer equipment. This may happen to Internet cafe users or those in jurisdictions where equipment is confiscated due to general suspicion or solely for Tor use.
+|}
 
 == Adversary Attack Capabilities == 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       = '''Warning:''' Advanced adversaries have numerous surveillance methods and attack vectors to deanonymize and spy on users. <ref name=torbutton_adversary /> <ref name=torbrowser_adversary />
+| text       = '''Warning:''' Advanced adversaries have numerous surveillance methods and attack vectors to deanonymize and spy on users.
 }}
 
-=== Inserting JavaScript ===
-* '''Extracting fingerprinting information:''' Available fonts, DOM objects to ascertain the user agent, WebGL to reveal the video card in use, and high precision timing information to reveal the CPU and interpreter speed.
-* '''Executing history disclosure attacks:''' Query the history of different attributes of visited links for specific queries, sites, or for profiling of users (gender, interests etc.).
-* '''Querying:''' The user's timezone via the date object and reducing the anonymity set by querying the navigator object for operating system, CPU, location and user agent information.
 
-=== Inserting or Exploiting Plugins ===
-* '''Using plugins:''' Perform network activity that is independent of browser (or its own) proxy settings in order to obtain a user's non-Tor IP address.
-* '''Using active plugin exploits:''' Leak the non-Tor IP address.
-* '''Enumerating:''' The list of plugins to fingerprint the user.
-* '''Gathering information:''' Use plugins capable of extracting font lists, interface addresses and other machine information.
-* '''Retrieving:''' Unique plugin identifiers.
+'''Table:''' ''Attack Capabilities'' <ref name=torbutton_adversary /> <ref name=torbrowser_adversary />
 
-=== Inserting CSS ===
-* '''Using CSS pop-ups:''' Correlate Tor and non-Tor activity and reveal a user's non-Tor IP address.
-* '''Using CSS and JavaScript:''' Perform CSS-only history disclosure attacks.
-* '''CSS media queries:''' Gather information about desktop size, widget size, display type, DPI, user agent type and other information.
-
-=== Reading and Inserting Identifiers ===
-* '''Storing identifiers:''' HTTP auth, DOM storage, cached scripts, other elements with embedded identifiers, client certificates and TLS session IDs.
-* '''Performing a man-in-the-middle (MITM) attack:''' Inject elements to both read and inject cookies for arbitrary domains (affecting even SSL/TLS secured websites).
-
-=== Other Attacks ===
-* '''Creating arbitrary cached content:''' Reading the browser cache which stores unique identifiers.
-* '''Observing request behavior:''' Fingerprinting is aided by observing the user agent, Accept-* headers, pipeline usage, and request ordering. Fingerprinting is worsened by custom filters like AdBlock and UBlock Origin.
-* '''Fingerprinting:''' Using the large number of browser attributes to reduce the anonymity set, or even uniquely fingerprinting individual users. <ref>For instance, there is an estimated 29 bit-identifier based on the browser and desktop window resolution information alone.</ref>
-* '''Website traffic fingerprinting:''' Attempting to recognize the encrypted traffic patterns of specific websites, either between the user and the Guard node, or at the Guard node itself. <ref>This attack is somewhat mitigated by the ocean of Tor traffic, which rapidly increases the rate of false positives when larger traffic sets are analyzed.</ref>
-* '''Remotely or locally exploiting the browser and/or OS:''' Exploiting the browser, plugin or OS vulnerabilities to install malware or surveillance software, or physically access the machine to do the same.
+{| class="wikitable"
+|-
+! scope="col"| '''Attack Capabilities'''
+! scope="col"| '''Description'''
+|-
+! scope="row"| Inserting JavaScript
+| 
+* Extracting fingerprinting information: Available fonts, DOM objects to ascertain the user agent, WebGL to reveal the video card in use, and high precision timing information to reveal the CPU and interpreter speed. <br /> 
+* Executing history disclosure attacks: Query the history of different attributes of visited links for specific queries, sites, or for profiling of users (gender, interests etc.). <br />
+* Querying: The user's timezone via the date object and reducing the anonymity set by querying the navigator object for operating system, CPU, location and user agent information.
+|-
+! scope="row"| Inserting or Exploiting Plugins
+| 
+* Using plugins: Perform network activity that is independent of browser (or its own) proxy settings in order to obtain a user's non-Tor IP address. <br />
+* Using active plugin exploits: Leak the non-Tor IP address. <br />
+* Enumerating: The list of plugins to fingerprint the user. <br />
+* Gathering information: Use plugins capable of extracting font lists, interface addresses and other machine information. <br />
+* Retrieving: Unique plugin identifiers.
+|-
+! scope="row"| Inserting CSS
+| 
+* Using CSS pop-ups: Correlate Tor and non-Tor activity and reveal a user's non-Tor IP address.<br />
+* Using CSS and JavaScript: Perform CSS-only history disclosure attacks. <br />
+* CSS media queries: Gather information about desktop size, widget size, display type, DPI, user agent type and other information.
+|-
+! scope="row"| Reading and Inserting Identifiers
+| 
+* Storing identifiers: HTTP auth, DOM storage, cached scripts, other elements with embedded identifiers, client certificates and TLS session IDs. <br />
+* Performing a man-in-the-middle (MITM) attack: Inject elements to both read and inject cookies for arbitrary domains (affecting even SSL/TLS secured websites).
+|-
+! scope="row"| Other Attacks
+| 
+* Creating arbitrary cached content: Reading the browser cache which stores unique identifiers.<br />
+* Observing request behavior: Fingerprinting is aided by observing the user agent, Accept-* headers, pipeline usage, and request ordering. Fingerprinting is worsened by custom filters like AdBlock and UBlock Origin. <br />
+* Fingerprinting: Using the large number of browser attributes to reduce the anonymity set, or even uniquely fingerprinting individual users. <ref>For instance, there is an estimated 29 bit-identifier based on the browser and desktop window resolution information alone.</ref><br />
+* Website traffic fingerprinting: Attempting to recognize the encrypted traffic patterns of specific websites, either between the user and the Guard node, or at the Guard node itself. <ref>This attack is somewhat mitigated by the ocean of Tor traffic, which rapidly increases the rate of false positives when larger traffic sets are analyzed.</ref><br />
+* Remotely or locally exploiting the browser and/or OS: Exploiting the browser, plugin or OS vulnerabilities to install malware or surveillance software, or physically access the machine to do the same.
+|}
 
 = Torbutton Design =
 Torbutton's functions in Tor Browser behavior are gradually being moved into direct Firefox patches, <ref>https://www.torproject.org/projects/torbrowser/design/#components</ref> but it is designed to address: <ref>https://www.torproject.org/docs/torbutton/en/design/index.html.en#requirements</ref> <ref>Some of the design features have been deprecated due to changes in the Tor / Tor Browser design.</ref>
