@@ -1,0 +1,479 @@
+{{Header}}
+{{#seo:
+|description=How to Release Upgrade from Whonix 14 to Whonix 15
+|image=https://www.whonix.org/w/images/d/d3/Upgrade.jpg
+}}
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = 
+Untested! Do not use yet!
+}}
+
+__NOINDEX__
+
+{{Box|text=
+* The instruction on this page are describing how to perform a [[Release Upgrade]] from Whonix 14 to Whonix 15.
+* For standard ("everyday") upgrade instructions see [[Operating System Software and Updates]].
+}}
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = To use Whonix 15, users can either:
+
+* '''A)''' upgrade existing Whonix 14 templates <u>OR</u>,
+* '''B)''' re-install Whonix by [[Download|downloading the new release]], which is much simpler than upgrading.
+}}
+
+= High Level Overview =
+
+== Upgrading Templates ==
+
+# Backup your data - ideally have a copy of the VM so it is possible to try again (if necessary). <br />
+# Consider running the optional [[#Sanity Tests|sanity tests]]. <br />
+# Upgrade Whonix-Workstation (<code>whonix-ws</code>). <br />
+# Power off Whonix-Workstation (<code>whonix-ws</code>). <br />
+# Upgrade Whonix-Gateway (<code>whonix-gw</code>). <br />
+# Restart Whonix-Gateway (<code>whonix-gw</code>). <br />
+# Restart Whonix-Workstation (<code>whonix-ws</code>). <br />
+# [[Qubes-Whonix]]: optionally route all updates via <code>sys-whonix</code>.
+
+== Downloading New Templates ==
+
+# Consider running the optional [[#Sanity Tests|sanity tests]].<br />
+# Download the testers-only Whonix-Workstation (<code>whonix-ws</code>) and Whonix-Gateway (<code>whonix-gw</code>) images.<br />
+# Update the Whonix templates. <br />
+# [[Qubes-Whonix]]: optionally route all updates via <code>sys-whonix</code>.
+
+= Sanity Tests =
+<div class="toccolours mw-collapsible mw-collapsed">
+These are optional, but recommended. To complete sanity tests, please press on expand on the right.
+<div class="mw-collapsible-content">
+{{CodeSelect|code=
+sudo dpkg --audit ; echo $?
+}}
+
+Expected output.
+
+{{CodeSelect|code=
+0
+}}
+
+{{CodeSelect|code=
+sudo dpkg --configure -a ; echo $?
+}}
+
+Expected output.
+
+{{CodeSelect|code=
+0
+}}
+
+[[Security_Guide#Updates|Get package upgrades.]]
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+{{CodeSelect|code=
+sudo apt-get dist-upgrade
+}}
+
+For testing purposes, install python-qt4.
+
+{{CodeSelect|code=
+sudo apt-get install python-qt4 ; echo $?
+}}
+
+{{CodeSelect|code=
+## ... successful installation of python-qt4 ...
+0
+}}
+</div>
+</div>
+
+= Upgrading =
+
+== Introduction ==
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Downloading a new Whonix-Gateway / Whonix-Workstation is easier than applying the following upgrade instructions, but this process should be relatively smooth.
+}}
+
+
+Both [[Non-Qubes-Whonix]] and [[Qubes-Whonix]] are supported.
+
+First consider completing the [[#Sanity Tests|sanity tests]] described above; the system is checked for obvious and grave issues that must be fixed before attempting an upgrade. For example, if the package manager is broken due to the mixing of packages from both Debian stable and Debian testing, then the upgrade may fail part way through, leaving the system in an unstable state that is difficult to resolve.
+
+Consider retaining the full terminal (Konsole) log. Even if the upgrade appears successful, there might be issues following reboot. To properly report a bug in the Whonix forums it is necessary to share the upgrade log so the issue can be investigated.
+
+== Update Package and Sources Lists ==
+
+First, [[Security_Guide#Updates|upgrade]] the system's packages from Debian.
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = <u>If you are using Qubes-Whonix</u>: When upgrading the TemplateVM, <code>/usr/local/etc/torrc.d/50_user.conf</code> in the Whonix-Gateway TemplateBased ProxyVM (commonly called <code>sys-whonix</code>) will not be modified, because [https://www.qubes-os.org/doc/bind-dirs/ bind-dirs] makes it persistent. <ref>Some users have reported that a manual file check for `DisableNetwork 0` is required at this step, otherwise networking is absent.</ref>
+}}
+
+=== All Platforms ===
+
+Update Whonix apt sources list.
+
+{{CodeSelect|code=
+sudo whonix_repository --enable --codename stretch
+}}
+
+Update Debian apt sources list.
+
+{{CodeSelect|code=
+sudo sed -i "s/jessie/stretch/g" /etc/apt/sources.list.d/debian.list
+}}
+
+Delete [[Install_Software#Backports|backports]], [[Install_Software#Install_from_Debian_testing|testing]], [[Install_Software#Install_from_Debian_Unstable|unstable]] repository, as well as  [[Install_Software#Install_from_Debian_testing|default release APT config]] snippet. <ref>
+Only required if you previously enabled but the command is safe to run even if you did not use it earlier.
+</ref>
+
+{{CodeSelect|code=
+sudo rm -f /etc/apt/sources.list.d/backports.list /etc/apt/sources.list.d/testing.list /etc/apt/sources.list.d/unstable.list /etc/apt/apt.conf.d/70defaultrelease
+}}
+
+=== Qubes-Whonix Only ===
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = [https://forums.whonix.org/t/qubes-whonix-support-ending-for-qubes-3-2-upgrade-to-qubes-r4-0-or-above-required/6113 '''Qubes-Whonix support ended for Qubes 3.2 on 2018-11-15 - upgrade to Qubes R4.0 or above required.''']<br />
+<br />
+If you are using Qubes R3.2 or Qubes R3.2.1, upgrades are [[unsupported]].
+}}
+
+
+Update Qubes apt sources list.
+
+{{CodeSelect|code=
+sudo sed -i "s/jessie/stretch/g" /etc/apt/sources.list.d/qubes*.list
+}}
+
+{{Anchor|Enable Debugging and Update Select Packages}}
+
+== Preparation ==
+Become root.
+
+{{CodeSelect|code=
+sudo su
+}}
+
+Enable extensive debugging so the reporting of any eventual bugs is easier.
+
+{{CodeSelect|code=
+export DEBDEBUG=1
+}}
+
+Update Select Packages.
+
+{{Update}}
+
+{{CodeSelect|code=
+apt-get update
+}}
+
+Upgrade torsocks and usability-misc first. <ref>
+This avoids some torsocks warnings due to the torsocks upgrade.
+</ref> <ref>
+Provides apt-get-noninteractive.
+</ref>
+
+{{CodeSelect|code=
+apt-get install torsocks usability-misc
+}}
+Ignore any errors relating to missing torsocks libraries.
+
+Stop whonixcheck systemd unit. <ref>
+https://forums.whonix.org/t/upgrade-from-13-to-14-breaking-whonix-every-time
+</ref>
+
+{{CodeSelect|code=
+systemctl stop whonixcheck
+}}
+
+== Upgrade ==
+
+=== Distribution Upgrade and Package Purge ===
+
+Run.
+
+{{CodeSelect|code=
+apt-get-noninteractive dist-upgrade
+}}
+Ignore errors relating to exim* amd mailx - these packages will be removed in the next step.
+
+Purge packages which are not required or deprecated in Whonix and have been replaced by new functionality. <ref>
+sysfsutils - https://github.com/Whonix/Whonix/commit/d7cb15aa96bd571368b54f8a980922d9e1982250
+</ref> anon-shared-kde-accessibility and kaccessible can be excluded from the following command if accessibility tools are in use.
+
+{{CodeSelect|code=
+apt-get purge anon-shared-kde-accessibility kaccessible iceweasel firefox-esr exim* unattended-upgrades cups control-port-filter-python packagekit at wpasupplicant apparmor-profile-sdwdate apparmor-profile-whonixcheck kde-apper-no-autoupdate emacs
+}}
+
+=== Restart Necessary Services ===
+
+Restart whonix-legacy service. <ref>
+A manual restart is required because apt-get-noninteractive is being used. This step is not crucial since it would also run after reboot.
+</ref>
+
+{{CodeSelect|code=
+service whonix-legacy restart
+}}
+
+=== Install Whonix-Gateway and Whonix-Workstation ===
+
+[[Update]] the package lists again. <ref>
+This is required because the Whonix repository URI has been upgraded to a new location by the whonix-legacy package.
+</ref>
+
+{{CodeSelect|code=
+apt-get update
+}}
+
+<div class="toccolours mw-collapsible mw-collapsed">
+<u>[[Non-Qubes-Whonix]] users</u> please click on expand on the right.
+<div class="mw-collapsible-content">
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Non-Qubes-Whonix only! Only complete this step in Whonix-Gateway!
+}}
+
+
+{{CodeSelect|code=
+apt-get install non-qubes-whonix-gateway
+}}
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Non-Qubes-Whonix only! Only complete this step in Whonix-Workstation!
+}}
+
+
+{{CodeSelect|code=
+apt-get install non-qubes-whonix-workstation
+}}
+</div>
+</div>
+
+<div class="toccolours mw-collapsible mw-collapsed">
+<u>[[Qubes-Whonix]] users</u> please click on expand on the right.
+<div class="mw-collapsible-content">
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Qubes-Whonix only! Only complete this step in Whonix-Gateway (<code>whonix-gw</code>)!
+}}
+
+
+{{CodeSelect|code=
+apt-get install qubes-whonix-gateway
+}}
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Qubes-Whonix only! Only complete this step in Whonix-Workstation (<code>whonix-ws</code>)!
+}}
+
+
+{{CodeSelect|code=
+apt-get install qubes-whonix-workstation
+}}
+
+=== Miscellaneous Configuration Steps ===
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = Qubes-Whonix Whonix-Workstation (<code>whonix-ws</code>) only! Qubes R4 only!
+}}
+
+
+{{CodeSelect|code=
+apt-get install pulseaudio-qubes
+}}
+</div>
+</div>
+
+<!--
+If snapshots or backups of the VM were not made, then at least /boot should be backed up.
+
+{{CodeSelect|code=
+cp -a /boot /boot.back
+}}
+
+Remove the old versions of initrd and create new ones with dracut.
+
+{{CodeSelect|code=
+rm /boot/initr*
+dracut --regenerate-all
+}}
+
+Update GRUB.
+
+{{CodeSelect|code=
+update-grub
+}}
+-->
+
+=== Remove Unneeded Packages and Reinstall Firewall ===
+
+==== Qubes-Whonix Only ====
+
+Remove power-savings-disable-in-vms.
+
+{{CodeSelect|code=
+sudo apt-get purge power-savings-disable-in-vms
+}}
+
+==== All Platforms ====
+
+Delete <code>/etc/X11/Xsession.d/50kde-apper-no-autoupdate</code>
+
+{{CodeSelect|code=
+sudo rm -f /etc/X11/Xsession.d/50kde-apper-no-autoupdate
+}}
+
+Remove packages which are no longer required.
+
+{{CodeSelect|code=
+apt-get autoremove
+}}
+
+Reinstall whonix-firewall. <ref>
+This is because of the whonix-gw-firewall / whonix-ws-firewall to whonix-firewall package migration.
+</ref>
+
+{{CodeSelect|code=
+apt-get install --reinstall whonix-firewall
+}}
+
+Systemctl unmask whonix-firewall.
+
+{{CodeSelect|code=
+systemctl unmask whonix-firewall
+}}
+
+Systemctl enable whonix-firewall.
+
+{{CodeSelect|code=
+systemctl enable whonix-firewall
+}}
+
+=== VirtualBox Only ===
+
+The next step is required for [[VirtualBox]] users only! <ref>
+This is not always required and depends on the host VirtualBox version; no harm is caused if it is not needed.
+</ref>
+
+{{CodeSelect|code=
+sudo apt-get install --reinstall virtualbox-guest-*
+}}
+
+=== Konsole Log ===
+
+Remember to store the terminal (Konsole) log: <code>File</code> -> <code>Save Output As</code>
+
+Open a new terminal (Konsole) tab. <ref>
+Or type <code>exit</code> to sign out as root to get back to user <code>user</code>.
+</ref>
+
+=== Whonix APT-Repository ===
+
+Run [[Whonix-APT-Repository|Whonix APT Repository Tool]].
+
+{{CodeSelect|code=
+kdesudo whonix-repository-wizard
+}}
+
+A poweroff is required.
+
+{{CodeSelect|code=
+sudo poweroff
+}}
+
+All necessary steps are now complete for [[Non-Qubes-Whonix]] users. [[Qubes-Whonix]] users should complete the additional steps below.
+
+=== Qubes-Whonix Only ===
+To launch a dom0 terminal, click the Qubes App Launcher (blue/grey "Q") and then open the Terminal Emulator (Xfce Terminal).
+
+[[File:qubes-whonix1.png]]
+
+Update Qubes dom0.
+
+{{CodeSelect|code=
+sudo qubes-dom0-update
+}}
+
+Only complete the next step if all TemplateVM upgrades should be routed through <code>sys-whonix</code>. <ref>
+https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/updates-via-whonix.sls
+</ref>
+
+In dom0, run. <ref>
+This applies all salt settings.
+</ref>
+
+{{CodeSelect|code=
+sudo qubesctl state.sls qvm.anon-whonix
+}}
+
+Optional. If you like to upgrade Qubes TemplateVMs via sys-whonix. In dom0, run.
+
+{{CodeSelect|code=
+sudo qubesctl state.sls qvm.updates-via-whonix
+}}
+
+The upgrade procedure is now complete. 
+
+''Optional:'' To configure a new <code>sys-whonix-14</code> ProxyVM for all TemplateVM updates in Qubes R4, follow the steps below.
+
+==== Update Settings in Qubes R4 ====
+
+'''1.''' [[Template:Qubes_Create_Gateway_ProxyVMs|Create a new Proxy-VM]] using the <code>whonix-gw-14</code> template. Label the new VM <code>sys-whonix-14</code>.
+
+'''2.''' Edit the ''/etc/qubes-rpc/policy/qubes.UpdatesProxy'' file to set <code>sys-whonix-14</code> as the target VM for the recently upgraded Whonix-Workstation and Whonix-Gateway. Copy and paste the text below.
+
+{{CodeSelect|code=
+whonix-ws $default allow,target=sys-whonix
+whonix-ws $anyvm deny
+whonix-gw $default allow,target=sys-whonix
+whonix-gw $anyvm deny
+
+{{whonix-ws}} $default allow,target=sys-whonix-14
+{{whonix-ws}} $anyvm deny
+{{whonix-gw}} $default allow,target=sys-whonix-14
+{{whonix-gw}} $anyvm deny
+
+## Note that policy parsing stops at the first match,
+## so adding anything below "$anyvm $anyvm action" line will have no effect
+
+## Please use a single # to start your custom comments
+
+# Default rule for all TemplateVMs - direct the connection to sys-net
+$type:TemplateVM $default allow,target=sys-net
+
+$anyvm $anyvm deny
+}}
+
+Save and exit.
+
+'''3.''' After upgrading to Qubes-Whonix 14 in Qubes R4, the network setting for any Whonix TemplateVM should be set to <code>none</code> because a qrexec-based updates proxy is in use. <ref>Qubes-Whonix 13 supports this feature as well after running apt-get dist-upgrade.</ref>
+
+----
+
+= Footnotes =
+{{reflist|close=1}}
+
+[[Category:Documentation]]
+
+{{Footer}}
