@@ -1,0 +1,165 @@
+{{Header}}
+{{#seo:
+|description=Instructions to build Whonix Virtual Machine Images from Source Code.
+}}
+{{forkme}}
+
+== Introduction ==
+This page documents how to build Whonix [[VirtualBox]] {{Code2|.ova}} and [[KVM]] {{Code2|.qcow2}} images. For [[Qubes-Whonix]], see [[Dev/Qubes#Build_Qubes-Whonix_Templates]].
+
+== Host Preparation ==
+<!--
+EDITORS NOTE: The following host preparation text is duplicated on 3 pages.
+(1) [[Physical Isolation]]
+(2) [[Dev/Build Documentation]] for VM images
+(3) Whonix debian packages.
+When making changes here, please consider also making changes there.
+(Not using a template, because it would probably require a version specific template.)
+-->
+* You need to build on '''Debian buster''', such as Whonix-Workstation 15 or a Debian buster VM.
+* You cannot build on Whonix-Gateway (due to networking issues).
+* It is recommended to set your terminal (for example Konsole) to unlimited scrollback, so you can watch the full build log.
+* You need ~ 30 GB free disk space.
+* Do not build as root.
+* <u>'''Short'''</u>: '''Don't add private files to Whonix's source code folder! [...]'''
+<div class="toccolours mw-collapsible mw-collapsed">
+<div class="mw-collapsible-content">
+''Long'': [...] Unless you know what you are doing. Technically, it would work. This is recommended against. Those files would get managed by the respective package. When you later update Whonix debian packages, your files would get deleted by the package manager. Also adding private files to Whonix's source code folder, later contributing to Whonix's development and accidentally pushing the wrong git branch would be a disaster. Better add your private files to Whonix after building Whonix. Or add a custom build step adding your files, which then get copied from a folder outside of Whonix's source folder. See "Source Code Changes" in "Optional Build Configuration" below.
+</div>
+</div>
+<br />
+* <u>'''Short'''</u>: '''Make sure there aren't any VMs in VirtualBox (inside your build machine) already called Whonix-Gateway or Whonix-Workstation!''' 
+<div class="toccolours mw-collapsible mw-collapsed">
+<div class="mw-collapsible-content">
+''Long'': Because the build script would fail, because it tries to create VMs either named Whonix-Gateway or Whonix-Workstation. Running the clean script between builds will prevent this error.
+</div>
+</div>
+<br />
+* <u>'''Short'''</u>: '''Do not try to build Whonix-Gateway and Whonix-Workstation at the same time!'''
+<div class="toccolours mw-collapsible mw-collapsed">
+<div class="mw-collapsible-content">
+''Long'': Building Whonix-Gateway and Whonix-Workstation at the same time is not supported due to limitations in the build script. In other words, do not try to run for example {{Code|sudo ~/Whonix/whonix_build --flavor whonix-gateway -- --build --target virtualbox}} and {{Code|sudo ~/Whonix/whonix_build --flavor whonix-workstation -- --build --target virtualbox}} at the same time. The build would probably fail.
+</div>
+</div>
+<br />
+
+* <u>'''Short'''</u>: '''Don't use images created inside Continuous Integration (CI) environments for anything besides testing!'''
+<div class="toccolours mw-collapsible mw-collapsed">
+<div class="mw-collapsible-content">
+Usually you are not using [https://en.wikipedia.org/wiki/Continuous_integration CI] environments without knowing.
+
+You can find out if you are running inside a CI environment by running.
+
+{{CodeSelect|code=
+echo "$CI"
+}}
+
+If it shows nothing, i.e.
+
+<pre>
+
+</pre>
+
+Everything is fine.
+
+Otherwise, if it were to show.
+
+<pre>
+true
+</pre>
+Then don't use these images for anything besides testing.
+
+Reason:
+https://github.com/Whonix/Whonix/blob/master/build-steps.d/1100_prepare-build-machine#L577
+</div>
+</div>
+<br />
+
+* Install build dependencies and get the source code.
+
+Update the package lists.
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+Install build dependencies.
+
+{{CodeSelect|code=
+sudo apt-get install git time curl apt-cacher-ng lsb-release fakeroot
+}}
+
+Get Whonix source code. '''{{free}}'''
+
+{{CodeSelect|code=
+cd; git clone --jobs=4 --recursive https://github.com/Whonix/Whonix
+}}
+
+* [[Dev/Get_Whonix_Source_Code|Learn how to verify the code here]].
+* [[Template:Build_Configuration|Optional Build Configuration]]
+
+= VM Creation =
+<!--
+EDITORS NOTE:
+I am not sure it is a great idea to first tell builders how to build Whonix and later how to clean up to prepare for another build. Running the cleanup steps before the creation steps may be unnecessary when running these steps for the first time, but doesn't hurt either. An important thing this does archive is creating fewer support requests and bug reports from people running these steps for the second time without remembering they have to clean up first. If you want to discuss this, please open a new discussion in the development forums.
+-->
+
+The following build targets are available:
+
+{{CodeSelect|code=
+--target virtualbox
+}}
+
+{{CodeSelect|code=
+--target qcow2
+}}
+
+{{CodeSelect|code=
+--target raw
+}}
+
+{{CodeSelect|code=
+--target root
+}}
+
+* {{Code2|--target virtualbox}} creates {{Code2|.ova}} images [[VirtualBox]] 
+* {{Code2|--target qcow2}} creates {{Code2|.qcow2}} images for [[KVM]] and [[QEMU]]
+* {{Code2|--target raw}} creates {{Code2|.raw}} images
+* {{Code2|--target root}} is for [[Dev/Build_Documentation/Physical_Isolation|Physical Isolation Build Documentation]]
+* {{Code2|--target virtualbox}}, {{Code2|--target qcow2}}, and {{Code2|--target raw}} can be combined to build multiple images at once.
+<br>
+'''Note: These instructions use VirtualBox as an example, assume you have the Whonix source code in your home folder (at <code>~/</code>.)'''
+
+Delete any existing Whonix-Gateway virtual machine with the following command. '''Warning''': This will delete any virtual machine named Whonix-Gateway from VirtualBox installed on your build machine!
+
+{{CodeSelect|code=
+sudo ~/Whonix/whonix_build --flavor whonix-gateway --target virtualbox --clean
+}}
+
+Delete any existing Whonix-Workstation virtual machine with the following command. '''Warning''': This will delete any virtual machine named Whonix-Workstation from VirtualBox installed on your build machine!
+
+{{CodeSelect|code=
+sudo ~/Whonix/whonix_build --flavor whonix-workstation --target virtualbox --clean
+}}
+
+Build a Whonix-Gateway virtual machine image.
+
+{{CodeSelect|code=
+sudo ~/Whonix/whonix_build --flavor whonix-gateway --target virtualbox --build
+}}
+
+Build a Whonix-Workstation virtual machine image.
+
+{{CodeSelect|code=
+sudo ~/Whonix/whonix_build --flavor whonix-workstation --target virtualbox --build
+}}
+
+The resulting {{Code2|.ova}}, {{Code2|.qcow2}} and/or {{Code2|.raw}} images can be found in {{Code|~/whonix_binary}} folder.
+
+While building, you might see a few [[Dev/Expected Build Warnings|Expected Build Warnings]].
+
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Development]]
