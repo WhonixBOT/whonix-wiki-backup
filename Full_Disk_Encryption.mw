@@ -1,0 +1,142 @@
+= Full Disk Encryption on the Host =
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = As outlined on the [[Warning#Whonix_is_not_Amnesic|Warning page]], Whonix has not been designed as an amnesic operating system. Traces of the installation and user activities will be written to disk. <ref>Until [https://github.com/QubesOS/qubes-issues/issues/904 in-RAM execution of disposableVMs] is implemented in Qubes-Whonix, this threat is not easily mitigated.</ref>
+}}
+
+== Protection Against Powerful Adversaries ==
+
+To protect against theft or robbery of personal information or data, users should apply FDE (Full Disk Encryption) on the host, and power off their computer when exposed to higher-risk situations like traveling. Laptop users should temporarily remove the laptop battery after powering off. This ensures that the RAM chips are completely powered down and that any encryption key/s in memory are erased. Hibernation is also a safe alternative, as the swap partition is encrypted in the default FDE configuration for various platforms (like Debian), provided the user did not change anything. 
+
+Users should follow the standard advice for picking [[Passwords#Generating_Unbreakable_Passwords|strong and unique passphrases]], so they cannot be feasibly brute-forced. Computers should never be left unattended in untrusted venues.
+
+=== Debian Hosts === 
+
+Configuring FDE during system install is straightforward. The default cipher is AES-256 in XTS mode. 
+
+=== Removable Media ===
+
+==== New Removable Media ====
+
+Gnome Disks Utility creates LUKS partitions with AES-128 by default which is insufficient in event of quantum computers materializing. This has been successfully reported and fixed upstream as of February 2019, <ref>https://github.com/storaged-project/libblockdev/issues/416</ref> <ref>https://github.com/vpodzime/libblockdev/commit/9dc4e2463860810cac5a1dbfb7064c47200260f6</ref> but until it lands in Debian, an appropriately secure container must be manually created. Afterwards, unlock the device and format the internal filesystem as EXT4 in Gnome Disks. 
+
+First enumerate the device. They will usually be called 'sdb1', as sdaX is reserved for the system on default installs. To avoid confusion, only connect one removable device at a time:
+{{CodeSelect|code=
+# ls /dev/
+}}
+
+Create a LUKS container and change the device name as needed, then follow the prompts:
+{{CodeSelect|code=
+# cryptsetup -v --cipher aes-xts-plain64 --key-size 512 --use-random luksFormat <device>
+}}
+
+==== Legacy Device Encryption Upgrade ====
+
+It is safer to re-encrypt the device with a stronger key rather than performing a quick format that will otherwise leave the old/weaker header intact. 
+
+First enumerate the device. They will usually be called 'sdb1', as sdaX is reserved for the system on default installs. To avoid confusion, only connect one removable device at a time:
+{{CodeSelect|code=
+# ls /dev/
+}}
+
+To view the LUKS header data in order to make necessary adjustments, run:
+{{CodeSelect|code=
+# cryptsetup luksDump --debug <device>
+}}
+
+LUKS header data legend: 
+
+* 'MK' means 'Master Key'. <ref>https://security.stackexchange.com/questions/109981/how-can-i-extract-the-encrypted-master-key-from-luks-header</ref>
+* AES in XTS mode uses a key size double its bit size (512 in this case) since in XTS the key is split in 2, resulting in AES with 256-bit keys. <ref>https://unix.stackexchange.com/questions/254017/how-to-interpret-cryptsetup-benchmark-results</ref>
+* 'Payload offset' is 4096 for 256-bit keys and 2048 for 128-bit keys. <ref>https://wiki.archlinux.org/index.php/dm-crypt/Device_encryption#Re-encrypting_an_existing_LUKS_partition</ref>
+
+Re-encrypt the device with stronger keys. <ref>https://jlk.fjfi.cvut.cz/arch/manpages/man/cryptsetup-reencrypt.8</ref> Fortunately, header resizing is usually unnecessary (otherwise it will abort the process):
+{{CodeSelect|code=
+# cryptsetup-reencrypt <device> -c aes-xts-plain64 -s 512 --use-directio
+}}
+
+Abruptly disconnecting power can cause data loss. To safely pause the process (in case of system sleep/shutdown), cryptsetup can be suspended (e.g. by <code>Ctrl+c</code>) and it will automatically restart from where it left off if temporary header files are present in the home directory. <ref>https://asalor.blogspot.com/2012/08/re-encryption-of-luks-device-cryptsetup.html</ref>
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = It is safest to assume that a machine has been compromised after any unauthorized physical access.
+}}
+
+
+If unauthorized access is strongly suspected or confirmed, the hardware should not be trusted or used after it is back in the user's possession. This scenario is only relevant to a smaller subset of users who are already targeted for physical surveillance. A sufficiently skilled adversary can infect it with spyware or sabotage it in a number of ways that are virtually undetectable. For example, malicious firmware could be installed to record all activities, or the machine rendered inoperable by bricking the hardware. In that eventuality, none of the measures outlined will help.
+
+=== Additional Measures ===
+
+==== LUKS Suspend Scripts ====
+
+On Linux hosts, there is one interesting solution for the risks posed by a computer in a suspended state; luks-suspend scripts. <ref>https://github.com/vianney/arch-luks-suspend/issues/7</ref> This approach has some limitations because it is not yet packaged for Debian, and it has only been tested in the Ubuntu and Arch distributions. As of 2018, luks-suspend and keyslot nuking (mentioned below) is being merged upstream. <ref>https://blog.freesources.org/posts/2018/06/debian_cryptsetup_sprint_report/</ref>
+
+==== Magic Key Feature ====
+
+In an emergency, [[Non-Qubes-Whonix]] users can power-off the computer immediately with the Magic SysRq key feature. This is invoked by pressing the key combination: <code>Alt</code> + <code>PrintScreen</code> + <code>o</code> (lower-case letter). On bare-metal linux systems, the FDE passphrase is prompted after rebooting.<ref>https://en.wikipedia.org/wiki/Magic_SysRq_key</ref> <ref>http://www.thegeekstuff.com/2008/12/safe-reboot-of-linux-using-magic-sysrq-key/</ref> <ref>https://phabricator.whonix.org/T553</ref>  The magic key feature does not work on Qubes hosts because the Xen hypervisor does not recognize these commands. <ref>https://forums.whonix.org/t/fde-emergency-feature-testing-requested</ref>
+
+==== USBKill ====
+
+[https://en.wikipedia.org/wiki/USBKill USBKill] is an anti-forensics script written in the aftermath of the SilkRoad trial. Its purpose is to trigger protection events that prevent adversaries from siphoning files, installing malware, or running a mouse jiggler. The script creates a white-list of allowable USB devices. If anything else is plugged into the machine, the RAM is erased and the computer is immediately shutdown. 
+
+USBKill can also be configured to exclude all devices from being attached. In another high-security configuration, a white-listed flash drive serves as a key, and must be in the USB port at all times. If the flash drive is forcibly removed, the program will initiate the desired routines. <ref>For example, this can be done quickly if the flash drive is attached to the user's wrist via a lanyard.</ref> <ref>
+* https://github.com/hephaest0s/usbkill 
+* https://en.wikipedia.org/wiki/USBKill 
+* https://7io.net/2015/07/02/python-usbkill-anti-forensic-usb-killswitch/#more-201 
+* https://phabricator.whonix.org/T552</ref>
+
+== Protection Against Lesser Adversaries ==
+
+The reader is reminded that advanced attackers have virtually limitless possibilities to infect a computer under their physical control, such as flashing low-level firmware or adding physical implants.
+
+It may be possible to get plausible deniability on Linux hosts using methods other than thosed listed below, but the topic is a rabbit hole (see footnotes in this section). <ref>https://evilzone.org/operating-system/plausible-deniability-in-qubes-os/msg86174</ref> Plausible deniability and FDE are also useless if the user is subject to physical abuse by a captor.
+
+=== Advice for Solid-state Drives and USB Storage ===
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text       = In the case of flash-based storage like solid-state drives (SSDs) and USBs, the only way to protect data is to never store it unencrypted in the first place!
+}}
+
+
+Unlike hard-disk drives (HDDs), overwriting data on SSDs is no longer effective in wiping the disk. <ref>http://www.infosecisland.com/blogview/12153-Data-Remains-on-USB-and-SSDs-After-Secure-Erase.html</ref> <ref>http://www.theregister.co.uk/2011/02/21/flash_drive_erasing_peril/</ref> For instance, it is insecure to rely upon a fast erase mechanism by overwriting the header and key-slot area. <ref>[https://gitlab.com/cryptsetup/cryptsetup/wikis/FrequentlyAskedQuestions cryptsetup FAQ - Section: 5.19 What about SSDs, Flash and Hybrid Drives?]</ref>
+
+The most dire potential consequence is that old passwords are not erased, and for a significant period. Consider the following concrete example: a user changes their computer password because they noticed it was exposed to shoulder-surfing or CCTV. On a SSD, the old password is still retrievable and can be used to decrypt the master key and all data. The reason is that secure overwriting is only guaranteed with magnetic disks.
+
+Wear-leveling mechanisms like TRIM also leak information about the filesystem that can aid forensics. <ref>http://asalor.blogspot.com/2011/08/trim-dm-crypt-problems.html</ref> <ref>https://wiki.archlinux.org/index.php/Dm-crypt/Specialties#Discard.2FTRIM_support_for_solid_state_drives_.28SSD.29</ref> <ref>https://wiki.archlinux.org/index.php/Solid_State_Drives#dm-crypt</ref> <ref>http://www.saout.de/pipermail/dm-crypt/2011-September/002019.html</ref> <ref>http://www.saout.de/pipermail/dm-crypt/2012-April/002420.html</ref> It is strongly recommended to keep TRIM ''disabled'' (the default) during Linux LUKS-encrypted installations.
+
+=== Gnome Disks Utility ===
+
+Gnome Disks utility provides a convenient way to manipulate LUKS container passphrases (including the host's) and the overlying filesystems. However, it should not be relied upon for encryption because it uses AES-128 as a hardcoded default <ref>As tested by Whonix developer HulaHoop.</ref> <ref>
+* Debian bug report: [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=910249 Bumping up encryption to AES-256 by default]
+* Gnome disks utility upstream bug report: [https://gitlab.gnome.org/GNOME/gnome-disk-utility/issues/103 Bumping up encryption to AES-256 by default]
+</ref> (as of Debian Stretch), which does not provide adequate [[PQCrypto|post-quantum security]]. For encrypting removable media refer to this [[#Protection_Against_Powerful_Adversaries|guide]].
+
+To install it, run:
+
+{{CodeSelect|code=
+sudo apt-get install gnome-disk-utility
+}}
+
+=== Nuke Patch for cryptsetup ===
+
+The Kali penetration testing distro team has written a [https://www.kali.org/tutorials/emergency-self-destruction-luks-kali/ nuke patch for cryptsetup], which adds the option to nuke all keyslots after a certain passphrase is entered.  <ref>https://github.com/offensive-security/cryptsetup-nuke-keys
+</ref> 
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = In most emergency situations, the user will not have enough time to reboot the computer and enter the dead-man switch passphrase.
+}} 
+
+
+Supplying the dead-man switch as the "real passphrase" to the interceptors of the machine is unlikely to be an effective strategy. It is standard forensics procedure to create multiple images of the drive beforehand.
+
+=== Separate /boot Partition ===
+
+When FDE is used on the host, it is inadvisable to keep any unencrypted files on that same physical media. High-risk users are recommended to move the /boot partition to a separate USB media. The bootloader (Grub) should then also be installed on the separate USB. To read more on this subject, see [https://twopointfouristan.wordpress.com/2011/04/17/pwning-past-whole-disk-encryption/ Pwning Past Whole Disk Encryption].
+
+=== TRESOR Kernel Patch ===
+
+Another useful protection is the [https://en.wikipedia.org/wiki/TRESOR TRESOR] [https://www1.cs.fau.de/tresor kernel patch], which keeps the disk encryption key outside of RAM by storing it inside the CPU. TRESOR does have several limitations. It is only available for the x86 architecture, and it complicates software debugging by disabling DR registers for security reasons. <ref>https://security.stackexchange.com/a/119835</ref> Moreover, a specialized attacker who can reverse engineer hardware designs is also capable of extracting secrets held in processor caches or specialized chips like TPMs.
