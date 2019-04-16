@@ -24,28 +24,30 @@ It is recommended to install the available [https://en.wikipedia.org/wiki/AppArm
 <div class="toccolours mw-collapsible mw-collapsed">
 If you are interested, click on Expand on the right.
 <div class="mw-collapsible-content">
-The following steps should be completed in dom0 for <u>both</u> <code>{{whonix-gw}}</code> and <code>{{whonix-ws}}</code> TemplateVMs. After these settings have been applied to the Whonix templates, the <code>sys-whonix</code> (ProxyVM) and <code>anon-whonix</code> (AppVM) will inherit the AppArmor kernel settings. 
+Complete the following steps in dom0 for <u>both</u> <code>{{whonix-gw}}</code> and <code>{{whonix-ws}}</code> TemplateVMs. After these settings are applied in the Whonix templates, the <code>sys-whonix</code> (ProxyVM) and <code>anon-whonix</code> (AppVM) will inherit the AppArmor kernel settings. 
 
-It is unnecessary to recreate the <code>sys-whonix</code> and <code>anon-whonix</code> TemplateBasedVMs to benefit from the new kernel parameters.<ref>[https://github.com/QubesOS/qubes-issues/issues/1091 Since Qubes R3.0, TemplateBasedVMs inherit the kernelopts setting of their TemplateVM].</ref> It is also important for users to verify AppArmor is active in the <code>sys-whonix</code> and <code>anon-whonix</code> VMs after making these changes.
+It is unnecessary to recreate the <code>sys-whonix</code> and <code>anon-whonix</code> TemplateBasedVMs to benefit from the new kernel parameters. <ref>[https://github.com/QubesOS/qubes-issues/issues/1091 Since Qubes R3.0, TemplateBasedVMs inherit the kernelopts setting of their TemplateVM].</ref> It is also important to verify AppArmor is active in both <code>sys-whonix</code> and <code>anon-whonix</code> after making these changes.
 
 === Whonix-Gateway ===
 
-Open a dom0 terminal.
+'''1.''' Open a dom0 terminal.
 
 <code>Qubes App Launcher (blue/grey "Q")</code> -> <code>System Tools</code> -> <code>Xfce Terminal
 </code>
 
-List the current kernel parameters.
+'''2.''' List the current kernel parameters.
 
 {{CodeSelect|code=
 qvm-prefs -g {{whonix-gw}} kernelopts
 }}
 
-Qubes R3.2 and later releases will show.<br />
+Qubes R4.0 and later releases will show.<br />
 
 {{Code2|nopat}}
 
-Keep the existing kernel parameters and add 'apparmor=1 security=apparmor'. For example.
+'''3.''' Keep the existing kernel parameters and add 'apparmor=1 security=apparmor'.
+
+For example.
 
 {{CodeSelect|code=
 qvm-prefs -s {{whonix-gw}} kernelopts "nopat apparmor=1 security=apparmor"
@@ -54,7 +56,7 @@ qvm-prefs -s {{whonix-gw}} kernelopts "nopat apparmor=1 security=apparmor"
 qvm-prefs -s sys-whonix kernelopts "nopat apparmor=1 security=apparmor"
 }}
 
-List the current kernel parameters again (hit the up arrow key twice; it is unnecessary to type the command again).
+'''4.''' List the kernel parameters again. <ref>Hit the up arrow key twice; it is unnecessary to type the command again.</ref>
 
 {{CodeSelect|code=
 qvm-prefs -g {{whonix-gw}} kernelopts
@@ -64,7 +66,7 @@ The output should show AppArmor is part of the new kernel parameters. For exampl
 
 ''nopat apparmor=1 security=apparmor''
 
-Start the <code>sys-whonix</code> ProxyVM and confirm AppArmor is now active.
+'''5.''' Start <code>sys-whonix</code> ProxyVM and confirm AppArmor is active.
 
 {{CodeSelect|code=
 sudo aa-status --enabled ; echo $?
@@ -76,22 +78,24 @@ The output should show.<br />
 
 === Whonix-Workstation ===
 
-Open a dom0 terminal.
+'''1.''' Open a dom0 terminal.
 
 <code>Qubes App Launcher (blue/grey "Q")</code> -> <code>System Tools</code> -> <code>Xfce Terminal
 </code>
 
-List the current kernel parameters.
+'''2.''' List the current kernel parameters.
 
 {{CodeSelect|code=
 qvm-prefs -g {{whonix-ws}} kernelopts
 }}
 
-Qubes R3.2 and later releases will show.<br />
+Qubes R4.0 and later releases will show.<br />
 
 {{Code2|nopat}}
 
-Keep the existing kernel parameters and add 'apparmor=1 security=apparmor'. For example.
+'''3.''' Keep the existing kernel parameters and add 'apparmor=1 security=apparmor'. 
+
+For example.
 
 {{CodeSelect|code=
 qvm-prefs -s {{whonix-ws}} kernelopts "nopat apparmor=1 security=apparmor"
@@ -100,7 +104,7 @@ qvm-prefs -s {{whonix-ws}} kernelopts "nopat apparmor=1 security=apparmor"
 qvm-prefs -s anon-whonix kernelopts "nopat apparmor=1 security=apparmor"
 }}
 
-List the current kernel parameters again (hit the up arrow key twice; it is unnecessary to type the command again).
+'''4.''' List the current kernel parameters again. <ref>Hit the up arrow key twice; it is unnecessary to type the command again.</ref>
 
 {{CodeSelect|code=
 qvm-prefs -g {{whonix-ws}} kernelopts
@@ -110,7 +114,7 @@ The output should show AppArmor is part of the new kernel parameters. For exampl
 
 ''nopat apparmor=1 security=apparmor''
 
-Start the <code>anon-whonix</code> AppVM and confirm AppArmor is now active.
+'''5.''' Start <code>anon-whonix</code> AppVM and confirm AppArmor is active.
 
 {{CodeSelect|code=
 sudo aa-status --enabled ; echo $?
@@ -131,7 +135,7 @@ The profiles packages are available from [[Whonix-APT-Repository|Whonix's APT re
 }}
 
 
-Enable the Whonix {{Code2|testers}} repository in both Whonix-Workstation and Whonix-Gateway.
+Temporarily enable the Whonix {{Code2|testers}} repository in both Whonix-Workstation (<code>{{whonix-ws}}</code>) and Whonix-Gateway (<code>{{whonix-gw}}</code>).
 
 {{CodeSelect|code=
 sudo whonix_repository --enable --repository testers
