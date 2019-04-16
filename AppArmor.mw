@@ -222,13 +222,13 @@ This command expects the profile file to exist, so if it has been manually delet
 
 = Common Operations =
 
-== Maintain a Functional Tor Browser ==
+== Maintain Tor Browser Functionality ==
 
-Tor Browser upgrades frequently break the Whonix AppArmor profile used to contain it. Even when AppArmor-related fixes are confirmed in Phabricator, most often the packages are not made available to Whonix stable or even the developer version. This means manual profile fixes are required until [[About#Whonix_Version|the next Whonix version is released]].
+Tor Browser upgrades frequently break the Whonix AppArmor profile used to contain it. Even when AppArmor-related fixes are confirmed in Phabricator, most often the packages are not made available to Whonix stable or even the developer version. This means manual profile fixes are often required until the [[About#Whonix_Version|next Whonix version is released]].
 
-At the time of writing, Tor Browser is non-functional with the available profile in the repositories. Advanced users can follow these steps to rectify the problem.
-
-'''1.''' Open a terminal in Whonix-Workstation TemplateVM.
+If Tor Browser is non-functional with the available AppArmor profile, follow these steps to rectify the problem.
+{{Box|text=
+'''1.''' Open a terminal in Whonix-Workstation (<code>{{whonix-ws}}</code>).
 
 <code>{{whonix-ws}}</code> -> <code>Konsole</code>
 
@@ -252,12 +252,12 @@ The latest git commits can be found [https://github.com/Whonix/apparmor-profile-
 
 Select <code>Code</code> -> <code>etc/apparmor.d</code> -> <code>home.tor-browser.firefox</code>
 
-Select the <code>Raw</code> button on the right-hand side. <ref>Otherwise essential profile formatting might break, or unwanted content (such as line numbers) might be copied inadvertently, causing the profile to become non-functional.</ref>
+Select the <code>Raw</code> button on the right-hand side. <ref>Otherwise essential profile formatting might break or unwanted content (such as line numbers) might be copied inadvertently, leading to a non-functional profile.</ref>
 
 {{mbox
-| type      = notice
+| type    = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = Users should check the profile text does not contain any unexpected content. For greater security, utilize a different viewer and/or retrieve the profile using git and perform git commit gpg verification.
+| text    = It is recommended to check the profile does not contain any unexpected content. For greater security, utilize a different viewer and/or retrieve the profile using git and perform git commit gpg verification.
 }}
 
 
@@ -265,29 +265,32 @@ Cut and paste the profile text into the old Tor Browser profile which is open in
 
 '''5.''' Enforce the new Tor Browser profile.
 
-Note: In the command below, change the name of the file to match whatever version is installed on the system. 
+In the command below, change the name of the file to match whatever version is installed on the system. 
 
-In the Whonix-Workstation TemplateVM, run.
+In Whonix-Workstation (<code>{{whonix-ws}}</code>), run.
 
 {{CodeSelect|code=
 sudo aa-enforce /etc/apparmor.d/home.*.tor-browser_*.Browser.firefox
 }}
 
-'''6.''' Shutdown Whonix-Workstation TemplateVM and any running instances of Whonix-Workstation AppVM.
+'''6.''' Shutdown Whonix-Workstation (<code>{{whonix-ws}}</code>).
 
-'''7.''' Restart the Whonix-Workstation AppVM.
+'''7.''' Restart Whonix-Workstation (<code>anon-whonix</code>).
 
 Launch Tor Browser. If everything has been applied correctly, Tor Browser will have full functionality. If the following AppArmor warning appears, it can be safely ignored.
 
 <pre>Profile: /home/**/tor-browser*/Browser/firefox Operation: open Name: /dev/ Denied: r Logfile: /var/log/kern.log For more information, please see: https://wiki.ubuntu.com/DebuggingApparmor</pre>
 
-To manually check AppArmor is correctly running and enforced, in a terminal run.
+'''8.''' Manually check AppArmor is correctly running and enforced.
+
+In a terminal, run.
 
 {{CodeSelect|code=
 sudo aa-status
 }}
 
 The output should show the Tor Browser profile is loaded and in enforce mode.
+}}
 
 == Correcting Other Whonix AppArmor Profiles ==
 
