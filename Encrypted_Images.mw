@@ -28,7 +28,7 @@ The greatest security benefit comes from applying full disk encryption [[Full Di
 
 == Full Disk Encryption within the Virtual Machine ==
 
-When using FDE within the VM, never save (suspend/pause) the VM machine state, but instead shut it down completely. If this advice is ignored, the saved machine state could be stored outside of the encrypted image. This includes a RAM dump, which contains the encryption key required to decrypt the image. Upon resuming the VM, that stored file is not necessarily securely deleted, since it is virtualizer-specific. <ref>In the case of [[VirtualBox]], the file could end up in the folder {{Code2|~/.virtualbox}}. A definitive answer requires further research.</ref>
+When using FDE within the VM, never save (suspend/pause) the VM machine state, but instead shut it down completely. If this advice is ignored, the saved machine state could be stored outside of the encrypted image. This includes a RAM dump, which contains the encryption key required to decrypt the image. Upon resuming the VM, that stored file is not necessarily securely deleted, since it is virtualizer-specific.
 
 While the VM is running, users should not use the host system's sleep, suspend, or hibernate functions. Similar to the first scenario, these actions leave a RAM dump on disk, but this time it belongs to the host. This also contains sensitive data, such as encryption keys.
 
@@ -50,6 +50,7 @@ https://security.stackexchange.com/a/42186 <blockquote>Linux zeroes out (i.e. fi
 * '''Swap:''' An encrypted swap provides no protection so  long as the host is powered up, because the key is still in RAM.
 ** <u>Disabling Swap:</u> This action requires a special, secure wiping of the existing swap. It is safer to have never used swap before.
 * Virtualizer specific:
+** '''VirtualBox:''' In the case of [[VirtualBox]], the file could end up in the folder {{Code2|~/.virtualbox}}. A definitive answer requires further research.
 ** '''KVM:''' It is not ''expected'' that KVM guests could access data from other process' memory pages via [https://www.techopedia.com/definition/30466/memory-ballooning memory ballooning], since KVM guests are Linux processes and subject to Linux memory allocation rules. <ref>https://www.techopedia.com/definition/30466/memory-ballooning <blockquote>Memory ballooning is a memory management feature used in most virtualization platforms which allows a host system to artificially enlarge its pool of memory by taking advantage or reclaiming unused memory previously allocated to various virtual machines.</blockquote></ref>
 ** '''Xen:''' Memory ballooning in Xen creates privacy concerns because when it is enabled the memory contents of other VMs are exposed. <ref>https://docs.openstack.org/security-guide/tenant-data/data-privacy-concerns.html <blockquote>Xen explicitly assigns dedicated memory regions to instances and scrubs data upon the destruction of instances (or domains in Xen parlance). KVM depends more greatly on Linux page management; A complex set of rules related to KVM paging is defined in the KVM documentation. It is important to note that use of the Xen memory balloon feature is likely to result in information disclosure. We strongly recommended to avoid use of this feature.</blockquote></ref>
 
