@@ -38,9 +38,67 @@ When multiple Whonix-Gateways are run in parallel, the risks explained in the [[
 
 == KVM ==
 
-See [[KVM#Multiple_Whonix-Gateways|Multiple Whonix-Gateways]].
+In this scenario Workstations will not be able to communicate. This is recommended to keep different Tor activity profiles completely separate from each other. To run multiple Whonix-Gateways you need to clone existing machines. These steps assume an existing Whonix install.
+
+1. Create clones of the Gateway and Workstation VMs rolled back to clean snapshots:
+
+In Virtual Machine Manager:
+
+<pre>
+Highlight VM -> Open -> Virtual Machine -> Clone... -> Clone
+</pre>
+
+2. Export Whonix's internal network settings:
+
+<pre>
+sudo virsh net-dumpxml internal > internal2.xml
+</pre>
+
+3. Edit the network configuration to make it unique. Change the '''name''' and '''bridge name'''. Delete the '''mac address''' and '''uuid''' parameters. Alternatively, replace the configuration with the example below (This assumes the only custom networks are Whonix ones):
+
+<pre style="white-space: pre-wrap;">
+<network>
+  <name>internal2</name>
+  <bridge name='virbr3' stp='on' delay='0'/>
+</network>
+</pre>
+
+Save and exit:
+
+<pre>
+CTRL-X
+y
+CTRL-M
+</pre>
+
+Note that virbr1 is assigned to the '''external''' network (NAT NIC), and virbr2 to the '''internal''' network (Whonix NIC), therefore, the network name was changed to '''internal2''' and the bridge name to '''virbr3'''.
+
+4. Import and start the new network:
+
+<pre>
+virsh -c qemu:///system net-define internal2.xml
+</pre>
+
+<pre>
+virsh -c qemu:///system net-autostart internal2
+</pre>
+
+<pre>
+virsh -c qemu:///system net-start internal2
+</pre>
+
+5. Attach the Gateway and Workstation VM NICs to the new network. Make sure one Gateway NIC is attached to the external network. It is important you pay attention and match internal network interfaces to the new ones and not switch to a NIC that connects outside. To edit the VM virtual NIC settings:
+
+<pre>
+Highlight VM -> Open -> Settings -> NIC virtual hardware -> Set Network Source to: Virtual network 'internal2' : Isolated network, internal and host routing only
+</pre>
+
+Note that the network is exclusively internal and does not communicate with the host in any way.
+
+6. Its recommended that you also [[KVM#Editing_an_imported_Machine.27s_XML_Configuration|edit]] the cloned workstation's configuration and change the pinned CPU's number to a different number (3 or 4) than used by the gateway and primary workstation. Only works if you have a quadcore system.
 
 == VirtualBox ==
+
 In this case, it is necessary to change the Whonix-Gateway network ''interface2'' and Whonix-Workstation network ''interface1'' from internal network <code>Whonix</code> to something else.
 
 = Qubes-Whonix =
