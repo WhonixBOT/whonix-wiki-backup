@@ -25,6 +25,37 @@ While it would be good to be cautions, i.e. learning about the entropy quality i
 * [https://www.virtualbox.org/ticket/11296 entropy quality]
 * [https://www.virtualbox.org/ticket/11297 poor entropy performance]
 
+== /dev/random vs. /dev/urandom ==
+
+This debate comes from a misconception by the Linux manual writer.<ref>https://pthree.org/2014/07/21/the-linux-random-number-generator/</ref> The fact is both APIs use the same CSPRNG. The issue happens when the randomness pool has not been properly initialized and entropy is requested early at boot. Otherwise the blocking behavior of <code>/dev/random</code> during normal system running is an annoying bug than a useful safety feature. A well seeded pool should be able to provide sufficient/endless randomness from a single seed.
+
+
+Here is what reknown cryptographer Dr. Daniel J. Bernstein has to say on the matter:<ref>http://www.mail-archive.com/cryptography@randombit.net/msg04763.html</ref>
+
+<pre>
+Cryptographers are certainly not responsible for this superstitious
+nonsense. Think about this for a moment: whoever wrote the /dev/random
+manual page seems to simultaneously believe that
+
+(1) we can't figure out how to deterministically expand one 256-bit
+/dev/random output into an endless stream of unpredictable keys
+(this is what we need from urandom), but
+
+(2) we _can_ figure out how to use a single key to safely encrypt
+many messages (this is what we need from SSL, PGP, etc.).
+
+For a cryptographer this doesn't even pass the laugh test.
+
+I'm not saying that /dev/urandom has a perfect API. It's disappointingly
+common for vendors to deploy devices where the randomness pool has never
+been initialized; BSD /dev/urandom catches this configuration bug by
+blocking, but Linux /dev/urandom (unlike Linux /dev/random) spews
+predictable data, causing (e.g.) the widespread RSA security failures
+documented on http://factorable.net. But fixing this configuration bug
+has nothing to do with the /dev/random superstitions.
+</pre>
+
+
 == Software Packages ==
 === Introduction ===
 It has to be researched if they do work well inside Virtual Machines (VirtualBox). Simply installing all of them may not be wise.
