@@ -66,47 +66,40 @@ Finally, persons wanting to print anonymously must also consider non-technical i
 
 {{mbox
 | image   = [[File:Ambox_notice.png|40px|alt=Qubes info box]]
-| text       =
-These instructions are for [[Qubes-Whonix]] only!
+| text    = [[Qubes-Whonix]] only.
 }}
 
 == Warnings ==
 
-Use of network printers is strongly discouraged within Whonix. This is because most (if not all) network printing relies upon insecure, unencrypted protocols. This means the documents being printed will likely be visible to attackers who are able to sniff the local network, or who control the (normally untrusted) Qubes NetVM. This is a limitation of modern printers and printing protocols and not something that can be solved by Qubes or any other OS. <ref name=network-printer>https://www.qubes-os.org/doc/network-printer/#security-considerations-for-network-printers-and-drivers</ref>
+Pairing Whonix with network printers is strongly discouraged. This is because most (if not all) network printing relies upon insecure, unencrypted protocols. This means the documents being printed will likely be visible to attackers who are able to sniff the local network, or who control the (normally untrusted) Qubes NetVM. This is a limitation of modern printers and printing protocols and not something that can be solved by Qubes or any other OS. <ref name=network-printer>https://www.qubes-os.org/doc/network-printer/#security-considerations-for-network-printers-and-drivers</ref>
 
-Particular care must be taken in Qubes to mitigate the risk of exposing dom0 to malware -- [[Qubes-Whonix]] users should utilize a dedicated [https://www.qubes-os.org/doc/usb/ USB qube] when using a USB printer. Further, printer driver plugins should never be installed in a trusted TemplateVM! The reason is many driver plugins are [https://en.wikipedia.org/wiki/Proprietary_software proprietary] and most often downloaded from the vendor’s website in the form of ready-to-install packages. However, they are usually unsigned and only made available for download over HTTP connections. If such third-party driver plugins are installed in a trusted TemplateVM, the template may be  compromised as well as every AppVM based upon it. <ref name=network-printer /> 
+Particular care must be taken in Qubes to mitigate the risk of exposing dom0 to malware -- [[Qubes-Whonix]] users should utilize a dedicated [https://www.qubes-os.org/doc/usb-devices/ USB qube] when using a USB printer. Further, printer driver plugins should never be installed in a trusted TemplateVM! The reason is many driver plugins are [https://en.wikipedia.org/wiki/Proprietary_software proprietary] and most often downloaded from the vendor’s website in the form of ready-to-install packages. However, they are usually unsigned and only made available for download over HTTP connections. If these third-party driver plugins are installed in a trusted TemplateVM, the template may be compromised as well as every AppVM based upon it. <ref name=network-printer /> 
 
 Bearing in mind the risky nature of printing, the threats posed by printer driver plugins can be mitigated via several methods outlined below.
 
 == Install Printer Drivers in a TemplateBasedVM ==
 
-There is no reason to avoid installing software in TemplateBasedVMs. Therefore, users can opt to install the printer drivers in an AppVM which is based on the <code>{{whonix-ws}}</code> template. 
+There is no reason to avoid installing software in TemplateBasedVMs. Therefore, it is possible to install the printer drivers in an AppVM which is based on the <code>{{whonix-ws}}</code> template. 
 
-'''1.''' Create an AppVM based on <code>{{whonix-ws}}</code>. The untrusted AppVM should be named so it is not confused with a more trusted VM - for instance, <code>anon-printer</code>. 
-
-'''2.''' Install the printer drivers in the <code>anon-printer</code> VM. This will likely involve using Tor Browser or konsole to download the drivers (see [[Install Software|Install Software]] and [[Secure Downloads|Secure Downloads]]).
-
-'''3.''' Once the drivers are installed, use the <code>anon-printer</code> VM for printing purposes only. Do not use this VM for any other sensitive activity!
-
-'''4.'''  ''Optional:'' Minimize the risk of user mistakes persisting to the next printing session.
-Once printing is complete, shutdown the <code>anon-printer</code> VM and [https://www.qubes-os.org/doc/tools/3.2/dom0/qvm-remove/ remove] it from the system. If/when further printing is required, repeat steps 1-3 to recreate another <code>anon-printer</code> VM.
+# Create an AppVM based on <code>{{whonix-ws}}</code>. The untrusted AppVM should be named so it is not confused with a more trusted VM - for instance, <code>anon-printer</code>. 
+# Install the printer drivers in the <code>anon-printer</code> AppVM. Use Tor Browser or konsole to download the necessary drivers; see [[Install Software|Install Software]] and [[Secure Downloads|Secure Downloads]] for more advice.
+# Print the relevant documents. Once the drivers are installed, use the <code>anon-printer</code> AppVM for printing purposes only. Do not use it for any other sensitive activity!
+# Optional: Minimize the risk of user mistakes persisting to the next printing session. Once printing is complete, shutdown the <code>anon-printer</code> VM and [https://dev.qubes-os.org/projects/core-admin-client/en/latest/manpages/qvm-remove.html remove] it from the system. When further printing is required, repeat steps 1-3 to recreate another <code>anon-printer</code> AppVM.
 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       = '''Warning:''' Some users may be tempted to use the AppVM's root filesystem as a [https://www.qubes-os.org/doc/software-update-vm/#note-on-treating-appvms-root-filesystem-non-persistence-as-a-security-feature non-persistent security feature]. However, malware may persist if the AppVM is infected since all data in the normal user filesystem, <code>/home</code> , <code>/rw</code> and <code>/usr/local</code> survives reboot. It is feasible that advanced malware (or malware specifically targeted at Qubes-based AppVMs) could install its hooks inside the user home directory files only. <ref>https://www.qubes-os.org/doc/software-update-vm/#note-on-treating-appvms-root-filesystem-non-persistence-as-a-security-feature</ref>
+| text    = '''Warning:''' Some users may be tempted to use the AppVM's root filesystem as a [https://www.qubes-os.org/doc/software-update-vm/#note-on-treating-appvms-root-filesystem-non-persistence-as-a-security-feature non-persistent security feature]. However, malware can persist if the AppVM is infected --  all data in the normal user filesystem, <code>/home</code>, <code>/rw</code> and <code>/usr/local</code> survives reboot. It is feasible that advanced malware (or malware specifically targeted at Qubes-based AppVMs) could install its hooks inside the user home directory files only. <ref>https://www.qubes-os.org/doc/software-update-vm/#note-on-treating-appvms-root-filesystem-non-persistence-as-a-security-feature</ref>
 }}
 
-== Install Printer Drivers in a TemplateBasedVM and Use bind-dirs Selective Persistence ==
+== Install Printer Drivers in a TemplateBasedVM with Selective Persistence ==
 
 Using selective [https://www.qubes-os.org/doc/bind-dirs/ bind-dirs] persistence is currently undocumented. Further research is required to ascertain which files require persistence across VM reboots. This task would also be difficult.
 
 == Install Printer Drivers in a StandaloneVM ==
 
-'''1.''' Create a [https://www.qubes-os.org/doc/software-update-vm/#standalone-vms Standalone] Whonix-Workstation VM. The untrusted AppVM should be named so it is not confused with a more trusted VM - for instance, <code>anon-printer</code>.
-
-'''2.''' Install the printer drivers as per normal procedures. This will likely involve using Tor Browser or konsole to download the drivers.
-
-'''3.''' Once the drivers are installed, use the Standalone <code>anon-printer</code> VM for printing purposes only. Do not use this VM for any other sensitive activity! <ref>This is because printer driver plugins can pose a serious risk to security and anonymity.</ref>
+# Create a [https://www.qubes-os.org/doc/software-update-vm/#standalone-vms Standalone] Whonix-Workstation VM. The untrusted Standalone VM should be named so it is not confused with a more trusted VM - for instance <code>anon-printer</code>.
+# Install the printer drivers as per normal procedures. Use Tor Browser or konsole to download the drivers.
+# Once the drivers are installed, use the Standalone <code>anon-printer</code> VM for printing. Do not use this VM for any other sensitive activity because printer driver plugins can pose a serious risk to security and anonymity.
 
 = Footnotes =
 {{reflist|close=1}}
