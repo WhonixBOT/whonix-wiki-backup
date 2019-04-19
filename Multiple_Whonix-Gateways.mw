@@ -38,23 +38,24 @@ When multiple Whonix-Gateways are run in parallel, the risks explained in the [[
 
 == KVM ==
 
-In this scenario Workstations will not be able to communicate. This is recommended to keep different Tor activity profiles completely separate from each other. To run multiple Whonix-Gateways you need to clone existing machines. These steps assume an existing Whonix install.
+In this configuration, Whonix-Workstations will not be able to communicate with one another. This is recommended to keep different Tor activity profiles completely separate. To run multiple Whonix-Gateways it is necessary to clone existing VMs; the steps below assume an existing Whonix install.
 
-1. Create clones of the Gateway and Workstation VMs rolled back to clean snapshots:
+'''1.''' Create clones of the Gateway and Workstation VMs rolled back to clean snapshots.
 
-In Virtual Machine Manager:
+In Virtual Machine Manager: <code>Highlight VM</code> -> <code>Open</code> -> <code>Virtual Machine</code> -> <code>Clone...</code> -> <code>Clone</code>
 
-<pre>
-Highlight VM -> Open -> Virtual Machine -> Clone... -> Clone
-</pre>
-
-2. Export Whonix's internal network settings:
+'''2.''' Export Whonix's internal network settings.
 
 <pre>
 sudo virsh net-dumpxml internal > internal2.xml
 </pre>
 
-3. Edit the network configuration to make it unique. Change the '''name''' and '''bridge name'''. Delete the '''mac address''' and '''uuid''' parameters. Alternatively, replace the configuration with the example below (This assumes the only custom networks are Whonix ones):
+'''3.''' Edit the network configuration to make it unique.
+
+* Change the '''name''' and '''bridge name'''.
+* Delete the '''mac address''' and '''uuid''' parameters. 
+
+Alternatively, replace the configuration with the example below (this assumes the only custom networks are Whonix-related).
 
 <pre style="white-space: pre-wrap;">
 <network>
@@ -63,7 +64,7 @@ sudo virsh net-dumpxml internal > internal2.xml
 </network>
 </pre>
 
-Save and exit:
+Save and exit.
 
 <pre>
 CTRL-X
@@ -71,9 +72,14 @@ y
 CTRL-M
 </pre>
 
-Note that virbr1 is assigned to the '''external''' network (NAT NIC), and virbr2 to the '''internal''' network (Whonix NIC), therefore, the network name was changed to '''internal2''' and the bridge name to '''virbr3'''.
+Note:
 
-4. Import and start the new network:
+* <code>virbr1</code> is assigned to the <u>external</u> network (NAT NIC); and 
+* <code>virbr2</code> is assigned to the <u>internal</u> network (Whonix NIC).
+
+Therefore, the network name was changed to <code>internal2</code> and the bridge name to <code>virbr3</code>.
+
+'''4.''' Import and start the new network.
 
 <pre>
 virsh -c qemu:///system net-define internal2.xml
@@ -87,15 +93,18 @@ virsh -c qemu:///system net-autostart internal2
 virsh -c qemu:///system net-start internal2
 </pre>
 
-5. Attach the Gateway and Workstation VM NICs to the new network. Make sure one Gateway NIC is attached to the external network. It is important you pay attention and match internal network interfaces to the new ones and not switch to a NIC that connects outside. To edit the VM virtual NIC settings:
+'''5.''' Attach the Gateway and Workstation VM NICs to the new network. 
 
-<pre>
-Highlight VM -> Open -> Settings -> NIC virtual hardware -> Set Network Source to: Virtual network 'internal2' : Isolated network, internal and host routing only
-</pre>
+Ensure that one Gateway NIC is attached to the external network. It is important to carefully match internal network interfaces to the new ones and not accidentally switch to a NIC that connects outside. 
+
+To edit the VM virtual NIC settings: <br />
+<code>Highlight VM</code> -> <code>Open</code> -> <code>Settings</code> -> <code>NIC virtual hardware</code> -> Set Network Source to: <code>Virtual network 'internal2' : Isolated network, internal and host routing only</code>
 
 Note that the network is exclusively internal and does not communicate with the host in any way.
 
-6. Its recommended that you also [[KVM#Editing_an_imported_Machine.27s_XML_Configuration|edit]] the cloned workstation's configuration and change the pinned CPU's number to a different number (3 or 4) than used by the gateway and primary workstation. Only works if you have a quadcore system.
+'''6.''' Change the number of pinned CPUs.
+
+It is recommended to [[KVM#Editing_an_imported_Machine.27s_XML_Configuration|edit]] the cloned workstation's configuration and change the number of pinned CPUs to a different value (3 or 4) compared to the existing gateway and primary workstation. This only works if users have a quadcore system.
 
 == VirtualBox ==
 
