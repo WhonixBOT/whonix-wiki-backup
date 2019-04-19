@@ -1,1 +1,129 @@
-.
+{{Header}}
+{{#seo:
+|description=Compartmentalization. Managing multiple Qubes-Whonix TemplateVMs.
+}}
+{{Maintainer|
+|status=stable
+|about=About this {{Code2|{{PAGENAME}}}} Page
+|difficulty=easy
+|maintainer=[https://forums.whonix.org/users/0brand 0brand]
+|support=[[Support]]
+}}
+
+= Introduction =
+
+Multiple [[Qubes-Whonix]] TemplateVMs provides much greater flexibility over a single template when choosing software packages. The additional cloned templates can be customized with software to meet specific requirements; something impossible to achieve with a single TemplateVM. <ref>Optionally, the default template can be cloned and used as the default template for AppVMs. Having a “known-good” backup template available at all times is best practice.</ref>
+
+= Rationale =
+
+* '''Packages from a later release:''' Installing packages from a later release could end up breaking the system. For example, mixing packages from [https://wiki.debian.org/DebianStable Debian Stable] with those of a later release like [https://wiki.debian.org/DebianTesting Debian Testing] can lead to an unstable system because of associated software dependencies required for full functionality. <ref>Using packages from different repositories can lead to [[Install Software#Dependency_Hell|Dependency Hell]].</ref> <ref>This problem can be avoided by cloning additional Whonix templates and preferring packages from a single repository in each TemplateVM.</ref> Prior to installing Debian packages from a later release, first read [[Install Software#Install_from_Debian_testing|Install from Debian testing]].
+* '''Custom software:''' Additional cloned templates makes it easy to install custom software used for a specific application. For example, users could [[Tunnel UDP over Tor]] by configuring <code>{{whonix-ws}}</code> to route all applications through a VPN tunnel. However, this method also increases the risk of identity correlation. To mitigate this risk, the AppVM based on this template should only be used for the particular application that must be routed through the <i>tunnel-link</i>.  Before installing custom software it is recommended to first read [[Install Software#General_Advice|Install Software General Advice]].
+* '''Untrusted packages:''' It is unwise to install untrusted packages in a template used for sensitive activities. With multiple cloned TemplateVMs, a single template can be designated as a less trusted domain for that purpose. <ref>It is strongly encouraged to only install signed packages from a trusted source.</ref> Read [https://qubes-os.org/doc/software-update-vm/#notes-on-trusting-your-templatevms Notes on trusting your TemplateVM(s)] prior to installing untrusted packages.     
+
+= Cloning TemplateVMs =
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = '''Note:''' Each TemplatesVM's root filesystem runs independently from all other TemplateVMs. <ref>This applies to all TemplateVMs, even if they were cloned.</ref> Therefore, each individual TemplateVM must be updated separately.
+}}
+
+
+Cloning templates in [[Qubes-Whonix]] is easily accomplished via Qube Manager. Be careful with naming conventions for both TemplateVMs and AppVMs (based on those templates) so they are not confused with each other. This will minimize the chance of basing an AppVM on the wrong template. 
+
+When creating AppVMs based on cloned TemplateVMs, a purpose-based naming convention is sensible so there is no ambiguity regarding the intended function of an AppVM. For example, if an AppVM is created to tunnel UDP over Tor, appending <code>tunnel-udp</code> (the purpose) to the end of <code>anon-whonix</code> would lead to the name <code>anon-whonix-tunnel-udp</code>. 
+
+To clone Qubes-Whonix TemplateVMs, follow the instructions below.
+
+{{Box|text=
+Cloning Qubes VMs is a simple process in Qube Manager:
+
+<code>Qube Manager</code> -> <code>VM to be Cloned</code> -> <code>Clone qube</code> -> <code>Enter name for Qube clone</code> <br />
+
+'''Figure:''' ''Cloning Whonix qubes''<br />
+[[Image:Screenshot-clone-vm-qubes.png]]
+
+When prompted, give the newly cloned VM a name that is not easily confused with other VMs. This minimizes the chances of basing an AppVM on the wrong template; there could be serious security concerns if a "trusted" AppVM was based on the wrong TemplateVM with untrusted packages.
+
+'''Figure:''' ''Clone Re-naming''<br />
+[[Image:Screenshot_Qubes-clone-vm_add-name.png]]
+</div>
+</div>
+}}
+
+{{Box|text=
+<u>NetVM</u>
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = <u>Reminder</u>: In Qubes R4 and above the NetVM setting of TemplateVMs should be set to <code>None</code>. <ref>
+Since TemplateVMs in Qubes R4 and above are supposed to be upgraded through qrexec based Qubes updates proxy.
+
+* https://www.qubes-os.org/doc/software-update-vm/#technical-details-r40
+* [https://github.com/QubesOS/qubes-issues/issues/1854 implement qrexec based updates proxy]
+</ref>
+}}
+}}
+
+{{Box|text=
+<u>UpdatesProxy</u>
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px|alt=Whonix first time users warning]]
+| text    = A cloned Whonix TemplateVM will by default be upgraded through <code>sys-whonix</code>. <ref>
+Because [https://github.com/QubesOS/qubes-core-admin/blob/master/qubes-rpc-policy/qubes.UpdatesProxy.policy <code>/etc/qubes-rpc/policy/qubes.UpdatesProxy</code>] contains:
+{{CodeSelect|code=
+$tag:whonix-updatevm $default allow,target=sys-whonix
+}}
+Quote:
+<blockquote>
+Note that policy parsing stops at the first match, [...]
+</blockquote>
+</ref> This is a known Qubes usability issue. <ref>
+* [https://github.com/QubesOS/qubes-issues/issues/3412 add UpdateVM setting to qubes-vm-settings]
+* https://forums.whonix.org/t/cloned-whonix-templatevm-connects-upgrades-through-sys-whonix-even-if-netvm-is-set-to-a-different-whonix-gateway-proxyvm/5840
+</ref>
+}}
+
+
+If you like to change the UpdatesProxy setting for any TemplateVM, apply the following steps.
+
+{{Box|text=
+In dom0. Open <code>/etc/qubes-rpc/policy/qubes.UpdatesProxy</code> with root rights.
+
+{{CodeSelect|code=
+sudo nano /etc/qubes-rpc/policy/qubes.UpdatesProxy
+}}
+
+TODO: the following steps require testing.
+
+Add at the very top of that file.
+
+Syntax:
+
+<pre>
+name-of-template-vm $default allow,target=name-of-proxy-vm
+</pre>
+
+For example:
+
+{{CodeSelect|code=
+whonix-ws-14-clone-1 $default allow,target=sys-whonix-cloned
+}}
+
+Save.
+
+<pre>
+<Ctrl-X> --> press Y --> <Enter>
+</pre>
+
+The procedure is now complete.
+}}
+}}
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
