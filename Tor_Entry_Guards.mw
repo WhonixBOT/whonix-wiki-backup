@@ -335,17 +335,11 @@ The safest decision is to persist with poor performance and wait for normal guar
 
 = Mitigate the Threat of Guard Fingerprinting =
 
+<u>Note:</u> Weigh the fingerprinting risks outlined earlier before proceeding. In most cases the decision to not rotate guards (even temporarily) is the correct one.
+
 If guard fingerprinting across different locations is a legitimate concern, there are several ways to mitigate the threat. Viable options include: bridges, temporarily rotating guards or cloning Whonix-Gateway (<code>sys-whonix</code>) with new guards.
 
-{{mbox
-| type      = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       ='''Note:''' Weigh the fingerprinting risks outlined earlier before proceeding. In most cases the decision to not rotate guards (even temporarily) is the correct one.
-}}
-
 == Clone Whonix-Gateway (sys-whonix) with New Entry Guards ==
-
-It is possible to clone the current Whonix-Gateway (<code>sys-whonix</code>) and regenerate the Tor state file. Once the VM is cloned, it is important that the original is not unintentionally used for any anonymous activities. To negate this threat, disable networking in the original Whonix-Gateway until returning home. 
 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
@@ -353,18 +347,19 @@ It is possible to clone the current Whonix-Gateway (<code>sys-whonix</code>) and
 }}
 
 
+It is possible to clone the current Whonix-Gateway (<code>sys-whonix</code>) and regenerate the Tor state file. Once the VM is cloned, it is important that the original is not unintentionally used for any anonymous activities. To negate this threat, disable networking in the original Whonix-Gateway until returning home. 
+
 Create a Whonix-Gateway (<code>sys-whonix</code>) clone and name it Whonix-Gateway-temp (<code>sys-whonix-temp</code>): 
 
-** Virtualbox: follow [https://dirkstrauss.com/clone-virtualbox-vm/ these instructions] to create a VM snapshot.
-** Qubes-Whonix: In Qube Manager, <code>Right-click on sys-whonix</code> -> <code>Clone qube</code>
-* [[#Fresh_Tor_Entry_Guards_by_Regenerating_the_Tor_State_File|Regenerate the Tor State File]].
+# <u>Virtualbox:</u> follow [https://dirkstrauss.com/clone-virtualbox-vm/ these instructions] to create a VM snapshot. <br /> <u>Qubes-Whonix:</u> In Qube Manager, <code>Right-click on sys-whonix</code> -> <code>Clone qube</code>
+# [[#Fresh_Tor_Entry_Guards_by_Regenerating_the_Tor_State_File|Regenerate the Tor State File]].
 
 == Regenerate the Tor State After Saving the Tor State Folder ==
 
 {{mbox
-| type      = notice
+| type    = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = Non-Qubes-Whonix only!
+| text    = Non-Qubes-Whonix only.
 }}
 
 
@@ -416,7 +411,7 @@ sudo systemctl restart tor@default
 
 == Alternating Bridges ==
 
-If [[bridges|Bridges]] are already configured, alternate bridges are recommended for different locations. If bridges are not being used, consider using entry guards in your primary location and relying on alternate bridges in different locations.
+If [[Bridges|Bridges]] are already configured, alternate bridges are recommended for different locations. If bridges are not being used, consider using entry guards in your primary location and relying on alternate bridges in different locations.
 
 Complete the following steps in Whonix-Gateway (<code>sys-whonix</code>).
 
@@ -433,18 +428,17 @@ Complete the following steps in Whonix-Gateway (<code>sys-whonix</code>).
 == Copy Tor Configuration files and Settings to Another sys-whonix Instance ==
 
 {{mbox
-| type      = notice
+| type    = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = [[Qubes-Whonix]] only!
+| text    = [[Qubes-Whonix]] only.
 }}
-
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       ='''Warning:''' Carefully follow these instructions to avoid unforeseen consequences. <ref>If an alternative command is used to remove the Tor state folder, this can result in broken file persistence across reboots. This relates to the [[Qubes-Whonix]] design, which uses <code>bind-dirs</code> file persistence for the Tor folder and other select directories. At the very least, users would need to mount and then unmount the Tor folder in the same way as <code>bind-dirs</code> does. This is likely a complicated and time-consuming task.</ref> 
+| text    ='''Warning:''' Carefully follow these instructions to avoid unforeseen consequences. <ref>If an alternative command is used to remove the Tor state folder, this can result in broken file persistence across reboots. This relates to the [[Qubes-Whonix]] design, which uses <code>bind-dirs</code> file persistence for the Tor folder and other select directories. At the very least, users would need to mount and then unmount the Tor folder in the same way as <code>bind-dirs</code> does. This is likely a complicated and time-consuming task.</ref> 
 }}
 
 
-There may be certain circumstances when [[Qubes-Whonix]] users may wish to copy the Tor state and custom configuration options from an existing <code>sys-whonix</code> ProxyVM to another <code>sys-whonix</code> instance. For example, this is useful for testing later Whonix releases without aiding deanonymization attempts by advanced adversaries <ref>As the same Tor entry guard is used.</ref> or when creating an identical backup that does not share any other persistent data, except for Tor state and custom torrc options.
+In some circumstances [[Qubes-Whonix]] users might want to copy the Tor state and custom configuration options from an existing <code>sys-whonix</code> ProxyVM to another <code>sys-whonix</code> instance. For example, this is useful for testing later Whonix releases without aiding deanonymization attempts by advanced adversaries <ref>As the same Tor entry guard is used.</ref> or when creating an identical backup that does not share any other persistent data, except for Tor state and custom torrc options.
 
 === Copy Tor State Files to Another sys-whonix Instance ===
 
@@ -460,7 +454,7 @@ sudo systemctl stop tor@default
 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       ='''Warning:'''  Care should be exercised when removing files so extra spaces are not added to the file path! For example, if a space is accidentally placed before the asterisk in the command to remove the Tor state file, the <code>/</code> (root directory) and all system data would be lost.
+| text       ='''Warning:'''  When removing files take care that extra spaces are not added to the file path! For example, if a space is accidentally placed before the asterisk in the command to remove the Tor state file, the <code>/</code> (root directory) and all system data would be lost.
 }}
 
 
@@ -519,7 +513,7 @@ sudo chown -R debian-tor:debian-tor /var/lib/tor
 sudo systemctl start tor@default
 }}
 
-'''9.''' In <code>sys-whonix-new</code>, run [[whonixcheck]] to verify Tor is functioning properly. <ref>If Tor fails to start, verify the Tor folder has the proper file permissions with the following command <code>sudo ls -l /var/lib/tor</code></ref>
+'''9.''' In <code>sys-whonix-new</code>, run [[whonixcheck]] to verify Tor is functioning properly. <ref>If Tor fails to start, verify the Tor folder has the proper file permissions with the following command: <code>sudo ls -l /var/lib/tor</code></ref>
 
 {{CodeSelect|code=
 whonixcheck
@@ -529,9 +523,7 @@ whonixcheck
 
 These instructions copy custom Tor configuration options (torrc) from <code>sys-whonix-old</code> to <code>sys-whonix-new</code>.
 
-'''1.'''  In <code>sys-whonix-old</code>, copy the <i>torrc</i> options across to <code>sys-whonix-new</code>.
-<ref>
-'''Note:'''  From Whonix 14 onward, all unique Tor configurations (torrc) options must be stored in <code>/usr/local/etc/torrc.d/50_user.conf</code> and nowhere else.</ref>
+'''1.'''  In <code>sys-whonix-old</code>, copy the <i>torrc</i> options across to <code>sys-whonix-new</code>. <ref>Note: From Whonix 14 onward, all unique Tor configurations (torrc) options must be stored in <code>/usr/local/etc/torrc.d/50_user.conf</code> and nowhere else.</ref>
 
 {{CodeSelect|code=
 qvm-copy /usr/local/etc/torrc.d/50_user.conf sys-whonix-new
@@ -565,7 +557,7 @@ sudo chown -R root:root /etc/tor
 sudo systemctl restart tor@default
 }}
 
-'''6.''' In <code>sys-whonix-new</code>, run [[whonixcheck]] to verify Tor is functioning properly. <ref>If Tor is not running after restart, it is possible to verify the newly migrated torrc options are valid with the following command <code>anon-verify</code> - the output should be similar to the following.
+'''6.''' In <code>sys-whonix-new</code>, run [[whonixcheck]] to verify Tor is functioning properly. <ref>If Tor is not running after restart, it is possible to verify the newly migrated torrc options are valid with the following command: <code>anon-verify</code>. The output should be similar to the following.
 <br><i>
 /===================================================================\
 |                      Report Summary                               |
