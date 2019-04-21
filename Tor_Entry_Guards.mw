@@ -44,25 +44,22 @@ Content on this site is Copyright The Tor Project, Inc.. Reproduction of content
 </div>
 </div>
 
-Many well known enhanced anonymity designs such as Tor, Whonix and the Tor Browser Bundle (TBB) use persistent Tor guards. This decision is attributable to community-based research which demonstrates that persistent Tor entry guards benefit security and lower the probability of an adversary profiling a user.<ref>The risk of guard fingerprinting is less severe now that upstream (The Tor Project) has changed its guard parameters to decrease the de-anonymization risk.</ref> 
+= Guard Fingerprinting =
+
+Many well-known, enhanced anonymity designs like Tor, Whonix and the Tor Browser Bundle (TBB) use persistent Tor guards. This decision is attributable to community-based research which demonstrates that persistent Tor entry guards benefit security and lower the probability of an adversary profiling a user. <ref>The risk of guard fingerprinting is less severe now that upstream (The Tor Project) has changed its guard parameters to decrease the de-anonymization risk.</ref> 
+
+In general, users should not interfere with Tor guard persistence or the natural rotation of entry guards every few months. At the time of writing, the Tor client selects one guard node, but previously used a three-guard design. Guards have a primary lifetime of 120 days. <ref>Prop 291 indicates a 3.5 month guard rotation.</ref> <ref>The Tor Project is currently considering shifting to two guards per client for better anonymity, instead of having one primary guard in use.</ref> <ref>https://github.com/torproject/torspec/blob/master/proposals/291-two-guard-nodes.txt</ref> 
+
+== Mitigating Fingerprinting Risk ==
 
 {{mbox
 | type      = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       ='''Note:''' Guard fingerprinting techniques are similar to methods that track users via MAC addresses. If this is a realistic threat, then MAC address randomization is also recommended.
+| text       ='''Note:''' Guard fingerprinting techniques are similar to MAC address tracking methods. If this is a realistic threat, then MAC address randomization is also recommended.
 }}
 
 
-In general, users should not interfere with Tor guard persistence or the natural rotation of entry guards every few months. At the time of writing, the Tor client selects one guard node, but previously used a three-guard design. Guards have a primary lifetime of 120 days.<ref>Prop 291 indicates a 3.5 month guard rotation.</ref> <ref>The Tor Project is currently considering shifting to two guards per client for better anonymity, instead of having one primary guard in use.</ref> <ref>https://github.com/torproject/torspec/blob/master/proposals/291-two-guard-nodes.txt</ref> 
-
-{{mbox
-| image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       = '''Warning:''' In some situations it is safer to not use the usual guard relay!
-}}
-
-== Guard Fingerprinting ==
-
-While natural guard rotation is recommended, there are some corner cases in which an adversary could fingerprint the entry guards <ref>The [https://trac.torproject.org/projects/tor/ticket/9273#comment:3 entropy associated with one, two or three guards] is 9, 17 and 25 bits, respectively.</ref> and de-anonymize a user. For instance:
+While natural guard rotation is recommended, in some situations it is safer to <u>not</u> use the usual guard relay! There are some corner cases in which an adversary could fingerprint the entry guard(s) <ref>The [https://trac.torproject.org/projects/tor/ticket/9273#comment:3 entropy associated with one, two or three guards] is 9, 17 and 25 bits, respectively.</ref> and de-anonymize a user. For instance:
 
 * The same entry guards are used across various physical locations and access points.
 * The same entry guards are used after permanently moving to a different physical location.
@@ -76,7 +73,7 @@ Soon afterwards, the same user attends a prominent event or protest in a nearby 
 
 To understand the potential threat, consider the following:
 
-* There are only around 2,500 Tor guards in 2018. <ref>https://metrics.torproject.org/relayflags.html</ref>
+* There are only around 3,000 Tor guards in 2019. <ref>https://metrics.torproject.org/relayflags.html</ref>
 * By design, Tor is picking one primary guard and using it for a few months. Since the Tor user base is relatively small, it is possible that a guard might only be used by one person in an entire region.
 * As the IP address of Tor entry guards is static and Tor network traffic is easily distinguishable, this information becomes public knowledge.
 * It is feasible that if a user-guard relationship is unique in a city location, and that user moves, it is likely (but not certain) that there was a location change.
@@ -87,19 +84,17 @@ The relative uncommonness of Tor usage simply exacerbates the potential for de-a
 </div>
 </div>
 
-There are several ways to mitigate the risk of guard fingerprinting across different physical locations. In most cases, the original entry guards can also be re-established after returning home:
+There are several ways to mitigate the risk of guard fingerprinting across different physical locations. In most cases, the original entry guards can also be re-established after returning home: <ref>
+As concluded in ticket [https://phabricator.whonix.org/T469 research non-persistent Tor directory guards], these are covered by the following instructions.</ref>
 
-* [[Tor_Entry_Guards#Clone_Whonix-Gateway_.28sys-whonix.29_with_New_Entry_Guards|Clone Whonix-Gateway (sys-whonix) with New Entry Guards]].
-* [[Tor_Entry_Guards#Regenerate_the_Tor_State_After_Saving_the_Tor_State_Folder|Regenerate the Tor State File after Saving the Current Tor State]].
-* Configure Tor to use [[Tor_Entry_Guards#Alternating_Bridges|Alternating Bridges]].
-* If moving to a new location permanently, create [[Tor_Entry_Guards#Fresh_Tor_Entry_Guards_by_Regenerating_the_Tor_State_File|Fresh Tor Entry Guards by Regenerating the Tor State File]].
+# [[Tor_Entry_Guards#Clone_Whonix-Gateway_.28sys-whonix.29_with_New_Entry_Guards|Clone Whonix-Gateway (sys-whonix) with New Entry Guards]].
+# [[Tor_Entry_Guards#Regenerate_the_Tor_State_After_Saving_the_Tor_State_Folder|Regenerate the Tor State File after Saving the Current Tor State]].
+# Configure Tor to use [[Tor_Entry_Guards#Alternating_Bridges|Alternating Bridges]].
+
+If moving to a new location permanently, create [[Tor_Entry_Guards#Fresh_Tor_Entry_Guards_by_Regenerating_the_Tor_State_File|Fresh Tor Entry Guards by Regenerating the Tor State File]].
 
 Forum discussion:<br />
 https://forums.whonix.org/t/persistent-tor-entry-guard-relays-can-make-you-trackable-across-different-physical-locations/2090
-
-<ref>
-As concluded in ticket [https://phabricator.whonix.org/T469 research non-persistent Tor directory guards], these are covered by the following instructions.
-</ref>
 
 = Increasing Protection from Malicious Entry Guards: One Guard per Application =
 
