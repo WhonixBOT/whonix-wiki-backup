@@ -30,7 +30,7 @@ There are two live mode options available, [https://github.com/Whonix/grub-live 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text    = 
-Live mode is not amnesic; in particular, memory forensics has not been taken into account! The primary objective is preventing malware from gaining persistence and having an unchanged system after each reboot.<br />
+Live mode is not amnesic by itself; in particular, memory forensics has not been taken into account! The primary objective is preventing malware from gaining persistence and having an unchanged system after each reboot.<br />
 <br />
 Whonix-Workstation and Whonix-Gateway: It is also recommended to regularly boot into persistent mode for installation of [[Update|updates]].
 
@@ -49,6 +49,87 @@ To make memory forensics harder, the machine should either be removed from any p
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
 | text    = Since live mode makes each write go to RAM, the user might want to increase the memory assigned to the VM to improve performance; for example, if large files are regularly downloaded.
 }}
+
+
+
+=== Anti-Forensics Precautions ===
+
+Whonix 15 includes grub-live by default. When using this feature in Whonix VMs, some precautions need to be taken even on trusted systems like GNU/Linux hosts to prevent leaving traces. This section is a non-exhaustive list of measures.
+
+
+* Dealing with swap:
+
+Tails documentation comments that host swapping may be the biggest threat to anti-forensics on Linux when running in a VM <ref>https://tails.boum.org/doc/advanced_topics/virtualization/index.en.html#security</ref>
+
+Linux does use swapping despite having apparent "free" memory. The kernel tends to swap out long-inactive and memory-consuming processes. This frees up RAM for caches, thus improves responsiveness.
+
+
+<u>Disabling swap for entire system</u>
+
+Turning off for the whole system may cause a system instability/crashes if the RAM hard limit is hit. However the ample RAM in new systems makes it unlikely  and it is worth the tradeoff.<ref>https://superuser.com/questions/243357/how-to-prevent-a-specific-program-from-swapping</ref>
+
+
+To disable swap in a persistent way:
+
+{{CodeSelect|code=
+sudo nano /etc/rc.local
+}}
+
+Add this line above the '''exit 0'''
+{{CodeSelect|code=
+sudo swapoff -a
+}}
+
+Save and reboot.
+
+Note that the swap file will be briefly present during boot before it is deleted, but it will be gone well before you can start VMs.
+
+
+<u>Disabling swapping selectively for KVM VMs</u>
+
+An alternative KVM only solution is to set guest memory pages to being locked<ref>https://serverfault.com/questions/561446/how-can-i-keep-important-vms-in-memory-without-disabling-swap</ref><ref>https://libvirt.org/formatdomain.html#elementsMemoryBacking</ref>
+
+<pre>
+<memoryBacking><locked/></memoryBacking>
+</pre>
+
+This option is not without disadvantages however and can be abused by malicious guests DoSing the host through RAM exhaustion.<ref>When set and supported by the hypervisor, memory pages belonging to the domain will be locked in host's memory and the host will not be allowed to swap them out, which might be required for some workloads such as real-time. For QEMU/KVM guests, the memory used by the QEMU process itself will be locked too: unlike guest memory, this is an amount libvirt has no way of figuring out in advance, so it has to remove the limit on locked memory altogether. Thus, enabling this option opens up to a potential security risk: the host will be unable to reclaim the locked memory back from the guest when it's running out of memory, which means a malicious guest allocating large amounts of locked memory could cause a denial-of-service attack on the host. Because of this, using this option is discouraged unless your workload demands it; even then, it's highly recommended to set a `hard_limit` (see [memory tuning](https://libvirt.org/formatdomain.html#elementsMemoryTuning)) on memory allocation suitable for the specific environment at the same time to mitigate the risks described above.</ref>
+
+N.B. Setting <code>vm.swappiness = 0</code> does not completely prevent swapping.<ref>https://superuser.com/questions/760102/why-do-i-get-swapping-even-if-i-set-vm-swappiness-to-0</ref>
+
+
+* Enable grub-live on Whonix Gateway too:
+
+It is recommended users run the live package on Whonix Gateway too after initial Tor start when a guard has been set. This should eliminate any Tor related cached data like DNS requests that could leave traces about web activity. However be warned that it may make your Tor behavior distinguishable from regular Tor users when it comes to redownloading consensus files more frequently or when switching to a new guard after some months have passed. <ref>http://forums.dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion/t/whonix-live-mode-amnesia-amnesic-non-persistent-anti-forensics/3894/127?u=hulahoop</ref>
+
+
+* Disabling program crash dumps
+
+Besides swap there is the problem of disabling process memory dumping to disk.
+
+A user has to go out of their way to enable kernel memory dumps which isn't done by default, with kdump-tools on Debian.<ref>https://www.bentasker.co.uk/documentation/linux/312-installing-and-configuring-kdump-on-debian-jessie</ref>
+
+However systemd seems to do this for all userspace processes and needs this to be explicitly disabled in its own config files because it ignores sysctl options.<ref>https://wiki.archlinux.org/index.php/Core_dump</ref>
+
+systemd's default behavior is to generate core dumps for all processes in <code>/var/lib/systemd/coredump</code>. This behavior can be overridden by creating a configuration snippet in the <code>/etc/systemd/coredump.conf.d/</code> directory with the following content:
+
+
+{{CodeSelect|code=
+sudo nano /etc/systemd/coredump.conf.d/custom.conf
+}}
+
+<pre>
+[Coredump]
+Storage=none
+</pre>
+
+
+Then reload systemd's configuration:
+{{CodeSelect|code=
+sudo systemctl daemon-reload
+}}
+
+This method alone is usually sufficient to disable userspace core dumps, so long as no other programs enable automatic core dumps on the system, but the coredump is still generated in memory and systemd-coredump runs.
 
 = Live-mode Configuration =
 
