@@ -30,7 +30,7 @@ There are two live mode options available, [https://github.com/Whonix/grub-live 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text    = 
-Live mode is not amnesic by itself; in particular, memory forensics has not been taken into account! The primary objective is preventing malware from gaining persistence and having an unchanged system after each reboot.<br />
+Live mode is not amnesic by itself and needs extra steps to be taken on the host to be effective. Also, memory forensics has not been taken into account! The primary objective is preventing malware from gaining persistence and having an unchanged system after each reboot.<br />
 <br />
 Whonix-Workstation and Whonix-Gateway: It is also recommended to regularly boot into persistent mode for installation of [[Update|updates]].
 
@@ -54,7 +54,7 @@ To make memory forensics harder, the machine should either be removed from any p
 
 === Anti-Forensics Precautions ===
 
-Whonix 15 includes grub-live by default. When using this feature in Whonix VMs, some precautions need to be taken even on trusted systems like GNU/Linux hosts to prevent leaving traces. This section is a non-exhaustive list of measures.
+Whonix 15 includes grub-live by default. When using this feature in Whonix VMs, some precautions need to be taken even on trusted systems like GNU/Linux hosts to prevent leaving traces. At the moment, the only advantage of doing this over running [[Grub-live|grub-live]] on the host, is to achieve selective amnesia for some VMs while others remain persistent. As grub-live development continues to advance allowing for selective exemption of host directories, this may not be necessary in the future. This section is a work in progress and not exhaustive.
 
 
 * Dealing with swap:
@@ -69,15 +69,14 @@ Linux does use swapping despite having apparent "free" memory. The kernel tends 
 Turning off for the whole system may cause a system instability/crashes if the RAM hard limit is hit. However the ample RAM in new systems makes it unlikely  and it is worth the tradeoff.<ref>https://superuser.com/questions/243357/how-to-prevent-a-specific-program-from-swapping</ref>
 
 
-To disable swap in a persistent way:
-
-{{CodeSelect|code=
-sudo nano /etc/rc.local
-}}
-
-Add this line above the '''exit 0'''
+This command will disable swap and delete the file during the life of this session:
 {{CodeSelect|code=
 sudo swapoff -a
+}}
+
+To disable swap in a persistent way edit the <code>fstab</code> file and comment out the line with the swap partition with a <code>#</code>:
+{{CodeSelect|code=
+sudo nano /etc/fstab
 }}
 
 Save and reboot.
@@ -103,7 +102,7 @@ N.B. Setting <code>vm.swappiness = 0</code> does not completely prevent swapping
 It is recommended users run the live package on Whonix Gateway too after initial Tor start when a guard has been set. This should eliminate any Tor related cached data like DNS requests that could leave traces about web activity. However be warned that it may make your Tor behavior distinguishable from regular Tor users when it comes to redownloading consensus files more frequently or when switching to a new guard after some months have passed. <ref>http://forums.dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion/t/whonix-live-mode-amnesia-amnesic-non-persistent-anti-forensics/3894/127?u=hulahoop</ref>
 
 
-* Disabling program crash dumps
+* Disabling program crash dumps:
 
 Besides swap there is the problem of disabling process memory dumping to disk.
 
