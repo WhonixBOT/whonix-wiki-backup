@@ -94,15 +94,23 @@ TODO: existing swap partition should get securely wiped since sensitive informat
 === KVM ===
 <u>Disabling swapping selectively for KVM VMs</u>
 
-An alternative KVM only solution is to set guest memory pages to being locked<ref>https://serverfault.com/questions/561446/how-can-i-keep-important-vms-in-memory-without-disabling-swap</ref><ref>https://libvirt.org/formatdomain.html#elementsMemoryBacking</ref>
+An alternative KVM only solution is to set guest memory pages to being locked <ref>
+https://serverfault.com/questions/561446/how-can-i-keep-important-vms-in-memory-without-disabling-swap
+</ref> <ref>
+https://libvirt.org/formatdomain.html#elementsMemoryBacking<
+</ref>
 
 <pre>
 <memoryBacking><locked/></memoryBacking>
 </pre>
 
-This option is not without disadvantages however and can be abused by malicious guests DoSing the host through RAM exhaustion.<ref>When set and supported by the hypervisor, memory pages belonging to the domain will be locked in host's memory and the host will not be allowed to swap them out, which might be required for some workloads such as real-time. For QEMU/KVM guests, the memory used by the QEMU process itself will be locked too: unlike guest memory, this is an amount libvirt has no way of figuring out in advance, so it has to remove the limit on locked memory altogether. Thus, enabling this option opens up to a potential security risk: the host will be unable to reclaim the locked memory back from the guest when it's running out of memory, which means a malicious guest allocating large amounts of locked memory could cause a denial-of-service attack on the host. Because of this, using this option is discouraged unless your workload demands it; even then, it's highly recommended to set a `hard_limit` (see [memory tuning](https://libvirt.org/formatdomain.html#elementsMemoryTuning)) on memory allocation suitable for the specific environment at the same time to mitigate the risks described above.</ref>
+This option is not without disadvantages however and can be abused by malicious guests DoSing the host through RAM exhaustion. <ref>
+When set and supported by the hypervisor, memory pages belonging to the domain will be locked in host's memory and the host will not be allowed to swap them out, which might be required for some workloads such as real-time. For QEMU/KVM guests, the memory used by the QEMU process itself will be locked too: unlike guest memory, this is an amount libvirt has no way of figuring out in advance, so it has to remove the limit on locked memory altogether. Thus, enabling this option opens up to a potential security risk: the host will be unable to reclaim the locked memory back from the guest when it's running out of memory, which means a malicious guest allocating large amounts of locked memory could cause a denial-of-service attack on the host. Because of this, using this option is discouraged unless your workload demands it; even then, it's highly recommended to set a `hard_limit` (see [memory tuning](https://libvirt.org/formatdomain.html#elementsMemoryTuning)) on memory allocation suitable for the specific environment at the same time to mitigate the risks described above.
+</ref>
 
-N.B. Setting <code>vm.swappiness = 0</code> does not completely prevent swapping.<ref>https://superuser.com/questions/760102/why-do-i-get-swapping-even-if-i-set-vm-swappiness-to-0</ref>
+N.B. Setting <code>vm.swappiness = 0</code> does not completely prevent swapping. <ref>
+https://superuser.com/questions/760102/why-do-i-get-swapping-even-if-i-set-vm-swappiness-to-0
+</ref>
 
 == grub-live on Whonix-Gateway ==
 It is recommended users run the live package on Whonix-Gateway too after initial Tor start when a guard has been set. This should eliminate any Tor related cached data like DNS requests that could leave traces about web activity. However be warned that it may make your Tor behavior distinguishable from regular Tor users when it comes to redownloading consensus files more frequently or when switching to a new guard after some months have passed. <ref>
