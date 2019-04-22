@@ -1,36 +1,42 @@
 {{Header}}
 {{#seo:
-|description=Workaround for Tunnelling UDP over Tor. Connection Schema: user -> Tor -> destination
+|description=Workaround for Tunneling UDP over Tor. Connection Scheme: User -> Tor -> Destination
 |image=https://www.whonix.org/w/images/c/cf/Book-2869640.jpg
 }}
 
 = Introduction =
 
-{{Tor_UDP}} (This page below.)
+{{mbox
+| image   = [[File:Ambox_notice.png|40px]]
+| text       =
+The Tor software does not yet support UDP, <ref>https://trac.torproject.org/projects/tor/ticket/7830</ref> although Tor provides a DnsPort.
 
-= VPN method (WORKING) =
-See related VPN documentation: [[Tunnels/Connecting to Tor before a VPN| How to connect to Tor before a VPN (User -> Tor -> VPN -> Internet)]].
-
-This tutorial uses OpenVPN. <font size="-3">Other VPN implementations, such as PPTP, might be useful as well, but we haven't researched that yet. Maybe there are other VPN implementations, which also support UDP, and which are free and allow UDP. We haven't researched that yet.</font>
-
-Before setting up the VPN, you should make yourself familiar with curl and rdate. The rdate command line switch -p results in just showing the date and time, without setting it. -u uses UDP instead of TCP (default).
-
-Test if your Whonix setup is working in general. <ref>While enforcing SSL.</ref>
-
-{{CodeSelect|code=
-{{Curl_Plain}} {{Curl Secure}} https://check.torproject.org
+If UDP is urgently required in Whonix, a limited workaround is provided - see the [[#VPN_method|VPN method]] below.
 }}
 
-<ref>Alternatively, not enforcing SSL, because some VPN services seem to block SSL.
+= VPN Method =
+
+This tutorial uses OpenVPN and works well inside Whonix. Additional VPN implementations like PPTP might be useful -- as well as other VPN protocols which are free and support UDP -- but further research is required.
+
+Before setting up the VPN:
+
+* Refer to related VPN documentation: [[Tunnels/Connecting to Tor before a VPN|How to connect to Tor before a VPN (User -> Tor -> VPN -> Internet)]].
+* Familiarize yourself with curl and rdate. The rdate command line switch <code>-p</code> results in just showing the date and time, without setting it. <code>-u</code> uses UDP instead of TCP (the default).
+{{Box|text=
+'''1.''' Test the Whonix setup is generally working. <ref>While enforcing SSL.</ref> <ref>Alternatively the test can be run without enforcing SSL because some VPN services appear to block it.
 
 {{CodeSelect|code=
 {{Curl_Plain}} http://check.torproject.org
 }}
 </ref>
 
-Which should show "Congratulations. Your browser is configured to use Tor.".
+{{CodeSelect|code=
+{{Curl_Plain}} {{Curl Secure}} https://check.torproject.org
+}}
 
-Install rdate for UDP and TCP testing.
+This should output "Congratulations. Your browser is configured to use Tor."
+
+'''2.''' Install rdate for UDP and TCP testing.
 
 {{CodeSelect|code=
 sudo apt-get update
@@ -39,7 +45,7 @@ sudo apt-get update
 sudo apt-get install rdate
 }}
 
-Commands for TCP testing are.
+'''3.''' Run commands for TCP testing.
 
 {{CodeSelect|code=
 rdate -p time.u.washington.edu
@@ -51,7 +57,7 @@ rdate -p time.nist.gov
 rdate -p ptbtime1.ptb.de
 }}
 
-Commands for UDP testing are.
+'''4.''' Run commands for UDP testing.
 
 {{CodeSelect|code=
 rdate -u -p time.u.washington.edu
@@ -63,19 +69,24 @@ rdate -u -p time.nist.gov
 rdate -u -p ptbtime1.ptb.de
 }}
 
-Your tests should reveal, that without a VPN, you can run TCP over Tor, but not UDP.
+The tests should reveal that without a VPN, TCP works over Tor, but not UDP.
 
-Obviously a VPN provider is required. One that does not block UDP. Instructions setting one up can be found on the [[TestVPN]] page, the riseup and the usaip example is known to work for this purpose.
+'''5.''' Configure a VPN tunnel link in Whonix.
 
-Test rdate again, first in TCP mode, then in UDP mode. Both should work.
+Obviously a VPN provider that does not block UDP is required. Follow the setup instructions on the [[TestVPN|VPN Tunnel Setup Examples]] page; the [[TestVPN#Riseup.net|riseup]] and [[TestVPN#usaip.eu|usaip]] examples are functional for this purpose.
 
-= SSH method (NOT DOCUMENTED) =
+Afterwards test rdate again, first in TCP mode and then in UDP mode -- both should work correctly.
+}}
 
-In theory we can also use SSH servers to tunnel UDP over Tor. Unfortunately we can't provide instructions here. Free SSH services are rarely available, that makes developing such a solution impossible. The existing free SSH services are blocking certain ports, which does not make this easier as well. Even though SSH can provide a socks5 proxy, it is not capable of providing [http://zarb.org/~gc/html/udp-in-ssh-tunneling.html support for tunneling UDP itself]. Extra software installed on the client, and even worse on the server is required (needs root). Most admins will not do this. The link in the instructions are most likely only useful for you, if you have your own server. But even then, you are probably better off, using the VPN method.
+= SSH Method =
 
-= socks5 proxy method (FAILED) =
+This method is currently undocumented. In theory, SSH servers could be utilized to tunnel UDP over Tor. Instructions for this procedure cannot be provided because free SSH services are rarely available, making a solution near impossible. Also, the existing free SSH services block certain ports, which poses another obstacle. 
 
-Moved to [Dev] Archive [https://trac.torproject.org/projects/tor/wiki/doc/TorBOX/Dev/ArchivedDiscussion/OPTIONALFEATURE#TunnelingUDPoverTorOPTIONALFEATUREDONE Tunneling UDP over Tor] ([http://www.webcitation.org/6dbdZTaU6 w]).
+Even though SSH can provide a SOCKS5 proxy, it is not capable of providing [http://zarb.org/~gc/html/udp-in-ssh-tunneling.html tunneling support for UDP itself]. Extra software needs to be installed on both the client and (even worse) the server with root access. Most administrators will not allow this configuration. Provided links will only be useful if you have your own server, but even then, using the VPN method is usually preferable.
+
+= SOCKS5 Proxy Method =
+
+Attempts to tunnel UDP with this configuration have failed. See the [[Dev]] Archive for full details: [https://trac.torproject.org/projects/tor/wiki/doc/TorBOX/Dev/ArchivedDiscussion/OPTIONALFEATURE#TunnelingUDPoverTorOPTIONALFEATUREDONE Tunneling UDP over Tor] ([http://www.webcitation.org/6dbdZTaU6 w]).
 
 = Footnotes / References =
 {{reflist|close=1}}
