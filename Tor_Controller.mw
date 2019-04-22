@@ -4,20 +4,23 @@
 |image=https://www.whonix.org/w/images/5/54/Screenshot_arm_page1_cropped.png
 }}
 {{Title|
-title=Controlling and Monitoring Tor
+title=Control and Monitor Tor
 }}
+__FORCETOC__
 
-{{Sd-start-short}}
-= Tor Controller =
+= Introduction =
+
 [[image:0brand_Arm_Controller-1.png|Arm Tor Controller|thumb]]
 
-Users have two options: [[#Arm|Arm]] or [[#tor-ctrl|tor-ctrl]]. Both programs come {{Code2|pre-installed}} in Whonix, but [[#Arm|Arm]] is {{Code2|recommended}}.
+Two primary Tor Controller options are available: [[#Arm|Arm]] and [[#tor-ctrl|tor-ctrl]]. Both programs come pre-installed in Whonix, but [[#Arm|Arm]] is recommended.
 
 Note: [[#Vidalia|Vidalia]] has been deprecated and is no longer packaged in Debian.
 
 = Arm =
+
 == Arm Usage ==
-Arm is '''recommended'''. It is already pre-installed on Whonix-Gateway. <ref>Since [[#Vidalia]] is [[#Vidalia_recommended_against|recommended against]].</ref>
+
+Arm is recommended. It is already pre-installed on Whonix-Gateway. <ref>Since [[#Vidalia|Vidalia]] is [[#Vidalia_recommended_against|recommended against]].</ref>
 
 {{Start_Arm}}
 
@@ -43,17 +46,17 @@ q
 
 |-
 | {{Code2|arm vs nyx?}}
-| Previously called arm. New name will be nyx. <ref>http://tor.stackexchange.com/tags/nyx/info</ref>
+| The software was previously called arm, but the new name will be nyx. <ref>http://tor.stackexchange.com/tags/nyx/info</ref>
 
 |-
 | <u>{{Code2|Should any of the following Arm messages concern me?}}</u>
-| No, and below is explained why not. See also [[FAQ#Should_I_be_concerned_about..._.3F|FAQ entry, Should I be concerned about... ?]].
+| No; see below for reasons why. See also: [[FAQ#Am_I_Compromised.3F|"Am I Compromised?" FAQ entry]].
 
 |-
 | <u>{{Code2|Am I compromised? Does Arm report leaks?}}</u>
-| Arm is conceptually not a tool to find out about serious issues such as compromise or leaks. <ref>
+| Arm is conceptually not a tool to discover serious issues such as a possible compromise or leaks. <ref>
 
-Arm works on a different level. It is a Tor Controller. It talks to Tor using Tor's ControlPort. It is an interface to show what Tor thinks. Neither Tor nor Arm implement anything such as virus detection, compromise detection, leak detection etc. Messages by Arm are interesting and useful but usually no reason for grave concern.
+Arm works on a different level -- it is a Tor Controller. Arm talks to Tor using Tor's ControlPort and is an interface to show what Tor thinks. Neither Tor nor Arm implement anything like virus detection, compromise detection, leak detection and so on. Arm messages are generally interesting and useful, but there is rarely  any cause for concern.
 
 For leak testing, see [[Dev/Leak_Tests|leak tests]].
 </ref>
@@ -64,33 +67,33 @@ For leak testing, see [[Dev/Leak_Tests|leak tests]].
 
 |-
 | DisableDebuggerAttachment even when running as root.
-| This is a [https://trac.torproject.org/projects/tor/ticket/7709 bug] in arm.
+| This [https://trac.torproject.org/projects/tor/ticket/7709 bug] in arm has now been resolved.
 
 |-
 | {{Code2|man page (GENERAL OPTIONS and COMMAND-LINE OPTIONS)}}
-| This is a [https://trac.torproject.org/projects/tor/ticket/9679 bug] in arm.
+| This [https://trac.torproject.org/projects/tor/ticket/9679 bug] in arm has now been resolved.
 
 |-
 | {{Code2|[WARN] Socks version 71 not recognized. (Tor is not an http proxy.)}}
 | 
-This is caused by [[whonixcheck]] (by function {{Code2|check_tor_socks_port_reachability}}). It checks if a Tor SocksPort is reachable by trying to fetch it using curl. <ref>
+This is caused by the [[whonixcheck]] function {{Code2|check_tor_socks_port_reachability}}. It checks if a Tor SocksPort is reachable by trying to fetch it using curl. <ref>
 {{CodeSelect|code=
 {{Curl_Plain}} 10.152.152.10:9100
 }}
-</ref> It will not report anything if it worked, but would complain if it failed.
+</ref> It will not report anything if it works, but will complain if it fails.
 
 
 |-
 | {{Code2|[WARN] Socks version 71 not recognized. (This port is not an HTTP proxy; did you want to use HTTPTunnelPort?)}}
-| Similar to above.
+| This occurs for similar reasons to the entry above.
 
 |-
 | {{Code2|[WARN] Rejecting request for anonymous connection to private address [scrubbed] on a TransPort or NATDPort.  Possible loop in your NAT rules?}}
-| This happens for example if you run "curl 192.168.0.15", because when you type "curl", by default in Whonix, you are not directly using curl, but a uwt wrapped (stream isolated) [https://www.whonix.org/wiki/Stream_Isolation Stream Isolation] curl. It would not try to directly connect to 192.168.0.15, but to connect to 192.168.0.15 through Tor and this is what Tor is mentioning. It only means, that you attempted something, that will not work that way. Deactivate the curl stream isolation wrapper or use the non-wrapped version (see [https://www.whonix.org/wiki/Stream_Isolation Stream Isolation]).
+| This happens for example if you run "curl 192.168.0.15". The reason is when you type "curl" in Whonix, by default you are not directly using curl, but a uwt-wrapped ([[Stream_Isolation|stream-isolated]]) curl instead. It does not try to directly connect to 192.168.0.15, but rather to connect to 192.168.0.15 through Tor, leading to this Tor message. It really means an operation was attempted that will not work in that way. In this instance, deactivate the curl stream isolation wrapper or use the non-wrapped version - see [https://www.whonix.org/wiki/Stream_Isolation Stream Isolation].
 
 |-
-| {{Code2|[NOTICE] You configured a non-loopback address '10.152.152.10:9179' for SocksPort. This allows everybody on your local network to use your machine as a proxy. Make sure this is what you wanted. [1 duplicate hidden]}} (Or other port number or DnsPort or TransPort.)
-| Tor really listens on that IP/port. It is Whonix-Gateway's network interface, that is only available to Whonix-Workstations, because it is an internal network with Whonix-Workstation and because Whonix-Gateway is firewalled (see ''{{WhonixFirewall}}'' or in Whonix source code).
+| {{Code2|[NOTICE] You configured a non-loopback address '10.152.152.10:9179' for SocksPort. This allows everybody on your local network to use your machine as a proxy. Make sure this is what you wanted. [1 duplicate hidden]}} (Or another port number or DnsPort or TransPort.)
+| Tor really listens on that IP/port. It is Whonix-Gateway's network interface and is only available to Whonix-Workstations. This restriction is enforced by an internal network with Whonix-Workstation(s) and because Whonix-Gateway is firewalled; see ''{{WhonixFirewall}}'' or the Whonix source code for more information.
 
 |-
 | {{Code2|[NOTICE] New control connection opened. [2 duplicates hidden]}} (Or more duplicates.)
@@ -98,32 +101,23 @@ This is caused by [[whonixcheck]] (by function {{Code2|check_tor_socks_port_reac
 
 |-
 | {{Code2|[NOTICE][ARM_WARN] The torrc differ from what tor's using. You can issue a sighup to reload the torrc values by pressing x. Configuration value is missing from the torrc: RunAsDaemon}}
-| Arm usability bug. <ref>https://trac.torproject.org/projects/tor/ticket/16459</ref>
+| Arm usability bug. <ref>https://trac.torproject.org/projects/tor/ticket/16459</ref> <ref>The issue was closed as 'not a bug' several years ago.</ref>
 
 |-
 | {{Code2|"192.168.0.1 UNKNOWN 1 / Guard" in circuit information}}
 | This indicates that you are connecting to the Tor network with a [[Bridges|Tor Bridge]].
 
-If you are directly connecting to the public Tor network (without using a Tor Bridge), you should see the real IP and Nickname of the Guard instead. <ref>https://forums.whonix.org/t/how-to-check-if-i-configured-bridges-correctly-and-the-bridges-are-working-properly/4371/5</ref>
+If you are directly connecting to the public Tor network without a Tor Bridge, the real IP and Nickname of the Guard should be visible instead. <ref>https://forums.whonix.org/t/how-to-check-if-i-configured-bridges-correctly-and-the-bridges-are-working-properly/4371/5</ref>
 
 |}
 
-{{mbox
-| type    = notice
-| image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text    = This was the [[#Recommended|recommended]] version of this page. For more, see [[#Alternatives|alternatives]].
-}}
-
-== Arm Footnotes ==
-{{reflist|close=1}}
-{{Sd-end-short-start-detailed}}
-__TOC__
-
 = tor-ctrl =
-== On Whonix-Gateway ==
-tor-ctrl <ref>https://github.com/Whonix/tor-ctrl</ref> comes with Whonix by default.
 
-Example usage to get a new circuit, on Whonix-Gateway:
+== On Whonix-Gateway ==
+
+tor-ctrl <ref>https://github.com/Whonix/tor-ctrl</ref> comes bundled with Whonix by default.
+
+To get a new circuit, run.
 
 {{CodeSelect|code=
 tor-ctrl -a /var/run/tor/control.authcookie -c "signal newnym"
@@ -133,21 +127,23 @@ tor-ctrl -a /var/run/tor/control.authcookie -c "signal newnym"
 tor-ctrl -v -a /var/run/tor/control.authcookie -c "signal newnym"
 }}
 
-See also:
+See also.
 
 {{CodeSelect|code=
 man tor-ctrl
 }}
 
 == On Whonix-Workstation ==
-=== Example: Get a New Identity using Whonix-Workstation Terminal ===
-Do this every time you want a new circuit. Run {{Code2|tor-ctrl}} (installed by default) with {{Code2|signal newnym}}.
+
+=== New Identity using Whonix-Workstation Terminal ===
+
+Repeat this command every time a new circuit is desired. Run {{Code2|tor-ctrl}} (installed by default) with {{Code2|signal newnym}}.
 
 {{CodeSelect|code=
 bash -x tor-ctrl -p notrequired -c "signal newnym"
 }}
 
-If you see at the bottom of the output.
+If the following appears at the bottom of the output.
 
 <pre>
 + sendcmd signal newnym
@@ -177,12 +173,20 @@ Escape character is '\''^]'\''.
 + exit 1
 </pre>
 
-Then it succeeded. ({{Code2|exit 1}} is a bug in {{Code2|tor-ctrl}}, because it doesn't understand the double {{Code2|250 OK}}.)
+Then it succeeded. ({{Code2|exit 1}} is a bug in {{Code2|tor-ctrl}}, because it does not understand the double {{Code2|250 OK}}.)
 
-= tor-prompt =
-On Whonix-Gateway.
+= Alternatives =
 
-'''For advanced users.'''
+== tor-prompt ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = Advanced users only.
+}}
+
+
+On Whonix-Gateway, run.
 
 <pre>
 tor-prompt 
@@ -209,60 +213,60 @@ For more information run '/help'.
 >>> 
 </pre>
 
-= netcat =
-'''For advanced users.'''
+== netcat ==
 
-A handy way to send Tor ControlPort protocol commands to Tor's ControlPort. <ref>Or depending on if you are doing this from Whonix-Workstation only to [[Dev/CPFP|Control Port Filter Proxy]].</ref>
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = Advanced users only.
+}}
 
-Do once. Install netcat.
+
+netcat provides an easy way to send Tor ControlPort protocol commands to Tor's ControlPort. <ref>Or potentially only to [[Dev/CPFP|Control Port Filter Proxy]] if this operation is performed in Whonix-Workstation.</ref>
+
+'''1.''' Install netcat.
 
 {{CodeSelect|code=
 sudo apt-get install netcat-openbsd
 }}
 
-On Whonix-Gateway or Whonix-Workstation. Connect to Tor's ControlPort. <ref>This works also on Whonix-Workstation, because the [https://github.com/Whonix/anon-ws-disable-stacked-tor anon-ws-disable-stacked-tor] package has set up rinetd listening for connections on localhost and forwarding them Tor Whonix-Gateway's, where [[Dev/CPFP|Control Port Filter Proxy]] is listening.</ref>
+On Whonix-Gateway or Whonix-Workstation. 
+
+'''2.''' Connect to Tor's ControlPort. <ref>This works also on Whonix-Workstation, because the [https://github.com/Whonix/anon-ws-disable-stacked-tor anon-ws-disable-stacked-tor] package has set up rinetd listening for connections on localhost and forwards them to Whonix-Gateway's, where the [[Dev/CPFP|Control Port Filter Proxy]] is listening.</ref>
 
 {{CodeSelect|code=
 nc 127.0.0.1 9051
 }}
 
-Example command to change your Tor circuit.
+'''3.''' Example command to change the Tor circuit.
 
 {{CodeSelect|code=
 signal newnym
 }}
 
-Should reply.
+The output should be.
 
 <pre>
 250 OK
 </pre>
 
-= Vidalia =
-'''[[#Vidalia_recommended_against|Recommended against]].'''
+== Vidalia ==
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Vidalia is [[#Vidalia_recommended_against|recommended against]].
+}}
 {{Anchor|Vidalia_recommended_against}}
-Vidalia is recommended against because:
 
-* Vidalia is unmaintained (no one is working on it anymore).
-** Vidalia was removed from Tor Browser Bundle 3.5 by The Tor Project. <ref>https://tor.stackexchange.com/questions/1075/what-happened-to-vidalia</ref> <ref>As noted by Tor developer Roger Dingledine: <br />
+
+Vidalia is recommended against because it is unmaintained (ceased development), and has been removed from all Debian variants (stretch, sid etc.) as well as from Tor Browser Bundle v3.5 by The Tor Project. <ref>https://tor.stackexchange.com/questions/1075/what-happened-to-vidalia</ref> <ref>As noted by Tor developer Roger Dingledine: <br />
 <blockquote>Cammy is right -- we've removed the bridge/relay/exit bundles from the download page too, since Vidalia has been unmaintained for years and pointing people to unmaintained software is dangerous. I'd love to have enough developers to do everything at once, but we don't.</blockquote>
-</ref>
-** Vidalia was removed from all Debian variants (stretch, sid etc.) by Debian developers.
-** Therefore this project has ceased.
-* Vidalia has issues with controlling Tor, i.e. Vidalia can't stop the Tor which comes from the Debian package, which is started as user "debian-tor". It also can not edit {{Code2|/usr/local/etc/torrc.d/50_user.conf}}. Not sure if control commands such as New Identity are correctly processed (easy to find out).
-* Vidalia does not understand obfuscated bridges.
-* Which overall makes a pretty bad and confusing user experience. Therefore recommended against.
-* However, if it is Vidalia's nice network map you're after, that will work.
+</ref> Vidalia had a number of limitations, such as its inability to fully control Tor -- it could not stop the Tor which came from the Debian package, which is started as user "debian-tor". It also could not edit {{Code2|/usr/local/etc/torrc.d/50_user.conf}} <ref>It is unclear whether control commands such as New Identity were correctly processed either.</ref> and did not understand obfuscated bridges.
 
-Better use [[#Arm]].
-
-(If you want to use Vidalia anyhow, see [[Vidalia]].)
+Overall [[Vidalia]] is recommended against since it has been deprecated and provides a pretty bad and confusing user experience -- it is simply better to use [[#Arm|Arm]]. <ref>Unless the reader is interested in Vidalia's nice network map.</ref>
 
 = Footnotes =
 {{reflist|close=1}}
-
-This was the [[#Alternatives|alternative]] version of this page. For the recommend version, see [[#Recommended|recommended]].
-{{Sd-end-detailed}}
 
 = License =
 <font size="-3">
