@@ -109,31 +109,42 @@ It is recommended users run the live package on Whonix Gateway too after initial
 
 Besides swap there is the problem of disabling process memory dumping to disk.
 
+
+<u>Kernel</u>
+
 A user has to go out of their way to enable kernel memory dumps which isn't done by default, with kdump-tools on Debian.<ref>https://www.bentasker.co.uk/documentation/linux/312-installing-and-configuring-kdump-on-debian-jessie</ref>
 
-However systemd seems to do this for all userspace processes and needs this to be explicitly disabled in its own config files because it ignores sysctl options.<ref>https://wiki.archlinux.org/index.php/Core_dump</ref>
 
-systemd's default behavior is to generate core dumps for all processes in <code>/var/lib/systemd/coredump</code>. This behavior can be overridden by creating a configuration snippet in the <code>/etc/systemd/coredump.conf.d/</code> directory with the following content:
+<u>Userspace</u>
+
+The default core dump file size is 0 on Debian Linux:<ref>https://nanxiao.me/en/enable-generating-core-dump-file-on-debian-linux/</ref>
 
 {{CodeSelect|code=
-sudo mkdir /etc/systemd/coredump.conf.d
+ulimit -c
+0
 }}
+
+It is enforced for systemd-coredump too.
+
+Can be verified with lack of core files in <code>/var/spool</code> or <code>/var/lib/systemd/coredump</code> when an intentional crash is induced (<code>/var/crash</code> doesn't exist on Debian but may be available on other Linux distributions).<ref>https://linux-audit.com/understand-and-configure-core-dumps-work-on-linux/#linux-and-core-dumps</ref>
+
+
+<u>Disable setuid processes dumping their memory</u>
+
+Processes with elevated permissions (or the setuid bit), might be still able to perform a core dump, depending on your other settings. As these processes usually have more access, they might contain more sensitive data segments in memory. So time to change this as well. The behavior can be altered with a sysctl key, or directly via the /proc file system. For permanent settings, the sysctl command and configuration is typically used. A setting is called a ‘key’, which has a related value attached to it (also known as a key-value pair).
+
+To disable program with the setuid bit to dump, set the fs.suid_dumpable to zero:
 {{CodeSelect|code=
-sudo nano /etc/systemd/coredump.conf.d/custom.conf
+sudo su
+
+echo "fs.suid_dumpable=0" >> /etc/sysctl.conf
 }}
 
-<pre>
-[Coredump]
-Storage=none
-</pre>
 
-
-Then reload systemd's configuration:
+Reload the sysctl configuration with the -p flag to activate any changes you made.
 {{CodeSelect|code=
-sudo systemctl daemon-reload
+sysctl -p
 }}
-
-This method alone is usually sufficient to disable userspace core dumps, so long as no other programs enable automatic core dumps on the system, but the coredump is still generated in memory and systemd-coredump runs.
 
 = Live-mode Configuration =
 
