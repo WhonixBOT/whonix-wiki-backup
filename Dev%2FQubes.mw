@@ -20,7 +20,7 @@ qubes-mount-dirs.service has Before=local-fs.target, which it ordered before sys
 [https://groups.google.com/d/msg/qubes-users/AqZV65yZLuU/RQlLPOn5yRsJ source]
 
 I don't know how rpm packaging works. However, the TorVM rpm packaging seems simpler to me and introduce less overhead than Debian packaging at first view. Is there something like config-package-dev for Fedora? config-package-dev is a package to overtake ownership of other
-> package's files. Such as, in Debian the Tor package owns /usr/share/tor/tor-service-defaults-torrc.{{project name}}needs to modify that file and keep it updated. config-package-dev can be used to avoid getting the file being overwritten when upstream releases and upgrade. Is there something like this for Fedora or is this even required? That would make a port much simpler, because for many parts, it is just diverted config files.
+> package's files. Such as, in Debian the Tor package owns /usr/share/tor/tor-service-defaults-torrc. {{project name}} needs to modify that file and keep it updated. config-package-dev can be used to avoid getting the file being overwritten when upstream releases and upgrade. Is there something like this for Fedora or is this even required? That would make a port much simpler, because for many parts, it is just diverted config files.
 
 qubes-tor pacakages provides own config file (tor --defaults-torrc option used), so no need to override the one provided by tor package.
 
@@ -109,7 +109,7 @@ AppVMs can't spoof each other in Qubes' network.
 Corollary: stream isolation cannot be circumvented.
 
 = Inter-VM Networking =
-<s>Current Qubes +{{project name}}implementation has both the Whonix-Gateway and Whonix-Workstation connected to the same backend FirewallVM and iptables forwarding is manually established between the{{project name}}IP addresses. This current method is really just an efficient hack for our initial Qubes +{{project name}}implementation. The native/proper way to network VMs in Qubes is via chaining their networking "backend" together, which is part of Xen networking structure. This is how other VMs in Qubes are networked, including TorVM. According to Qubes devs, these Xen backends provide simple point-to-point networking between VMs. So this would be advantageous for further isolation of inter-VM{{project name}}traffic, since, currently, all inter-VM traffic is routed through the internet-facing FirewallVM, which can also be shared by other VMs. This current implementation with a shared FirewallVM could be somewhat of a security concern for inter-VM traffic, and a reason to move to native/proper isolated point-to-point "backend" networking. Also, in the future, it is desirable to leverage full ProxyVM/ServiceVM networking between Whonix-Gateway and Whonix-Workstation, as the TorVM does. ProxyVM utilizes Xen "backend" networking but automates it with transparent Qubes GUI networking, making use of dynamically created virtual networking interfaces.{{project name}}may need to add onto or adjust its internal networking setup to be compatible with such native Qubes networking.</s>
+<s>Current Qubes + {{project name}} implementation has both the Whonix-Gateway and Whonix-Workstation connected to the same backend FirewallVM and iptables forwarding is manually established between the {{project name}} IP addresses. This current method is really just an efficient hack for our initial Qubes + {{project name}} implementation. The native/proper way to network VMs in Qubes is via chaining their networking "backend" together, which is part of Xen networking structure. This is how other VMs in Qubes are networked, including TorVM. According to Qubes devs, these Xen backends provide simple point-to-point networking between VMs. So this would be advantageous for further isolation of inter-VM {{project name}} traffic, since, currently, all inter-VM traffic is routed through the internet-facing FirewallVM, which can also be shared by other VMs. This current implementation with a shared FirewallVM could be somewhat of a security concern for inter-VM traffic, and a reason to move to native/proper isolated point-to-point "backend" networking. Also, in the future, it is desirable to leverage full ProxyVM/ServiceVM networking between Whonix-Gateway and Whonix-Workstation, as the TorVM does. ProxyVM utilizes Xen "backend" networking but automates it with transparent Qubes GUI networking, making use of dynamically created virtual networking interfaces. {{project name}} may need to add onto or adjust its internal networking setup to be compatible with such native Qubes networking.</s>
 
 Older, perhaps outdated discussions related to this topic:
 
@@ -275,7 +275,7 @@ Overrulable. Create a file {{Code|/etc/torbrowser.d/40_qubes}} with content: GAT
 packages/whonix-legacy/debian/whonix-legacy.preinst:         sed -i 's/192.168.0.10/10.152.152.10/g' "/home/user/.torchat/torchat.ini" || true
 packages/whonix-legacy/debian/whonix-legacy.preinst:         sed -i 's/192.168.0.10/10.152.152.10/g' "/home/user/.xchat2/xchat.conf" || true
 </pre>
-No change required here. Only applies to{{project name}}8.3.
+No change required here. Only applies to {{project name}} 8.3.
 
 <pre>
 packages/{{whonix-gw}}-network-conf/etc/network/interfaces.whonix:       address 10.152.152.10
@@ -393,7 +393,7 @@ sudo mv /etc/qubes-rpc/qubes.SetDateTime /etc/qubes-rpc/qubes.SetDateTime.disabl
 == prerequisite knowledge ==
 * TPO stands for The Tor Project
 * The /home folder of a TemplateVM is copied to a TemplateBasedVM at creation time of the TemplateBasedVM. From then, TemplateBasedVM's /home folder is left untouched. (Source: https://groups.google.com/forum/#!topic/qubes-users/WwVJhGA-Xnc)
-* Tor Browser installation path in{{project name}}12 will change to ~/.tb. (https://phabricator.whonix.org/T338)
+* Tor Browser installation path in {{project name}} 12 will change to ~/.tb. (https://phabricator.whonix.org/T338)
 * Since Qubes-Whonix 11, Tor Browser gets installed by default for new images. (Not for in place upgrades.)
 * [[Tor_Browser#Tor_Browser_Updater_.28Whonix.29|Tor Browser Updater (Whonix)]] (((https://github.com/Whonix/tb-updater))) vs
 * [[Tor_Browser#Tor_Browser_Internal_Updater|Tor Browser Internal Updater]]
@@ -553,7 +553,7 @@ Have no effect for Qubes-Whonix VMs. Can be ignored.
 Long <ref>https://groups.google.com/d/msg/qubes-devel/uzgN42uEJpE/hymUCMxoCwAJ</ref>:<br />
 All that settings are in separate file in the VM directory - dom0 /var/lib/qubes/appvms/whonix/firewall.xml. If the VM is running, those settings are converted to iptables syntax and loaded into QubesDB of directly connected ProxyVM. The qubes-firewall service in the ProxyVM watch for such changes and applies the rules.
 
-I.e. in case of Whonix, the connected ProxyVM is sys-whonix. Since in{{project name}}qubes-firewall service is disabled (Whonix 12 <ref>https://github.com/Whonix/qubes-whonix/blob/master/lib/systemd/system/qubes-firewall.service.d/40_qubes-whonix.conf</ref>), these settings do not affect Whonix. ([https://github.com/Whonix/qubes-whonix/blob/master/lib/systemd/system/qubes-whonix-firewall.service qubes-whonix-firewall.service] is what{{project name}}uses.)
+I.e. in case of Whonix, the connected ProxyVM is sys-whonix. Since in {{project name}} qubes-firewall service is disabled (Whonix 12 <ref>https://github.com/Whonix/qubes-whonix/blob/master/lib/systemd/system/qubes-firewall.service.d/40_qubes-whonix.conf</ref>), these settings do not affect Whonix. ([https://github.com/Whonix/qubes-whonix/blob/master/lib/systemd/system/qubes-whonix-firewall.service qubes-whonix-firewall.service] is what {{project name}} uses.)
 
 = Qubes Upstream Bugs =
 Usability:
@@ -615,8 +615,8 @@ See [[Dev/Split_GPG]].
 Goals:<br/>
 
 * any TemplateVM behind sys-whonix should be restricted to torified updates proxy only
-*{{project name}}TemplateVMs behind sys-whonix should be restricted to torified updates proxy only
-*{{project name}}TemplateVMs connected to a ProxyVM other than sys-whonix should refuse to connect and show a warning [done]
+* {{project name}} TemplateVMs behind sys-whonix should be restricted to torified updates proxy only
+* {{project name}} TemplateVMs connected to a ProxyVM other than sys-whonix should refuse to connect and show a warning [done]
 
 Qubes tickets:<br/>
 
@@ -669,8 +669,8 @@ Modified to the following.
 </head>
 </pre>
 
-=={{project name}}TemplateVMs ==
-Inside{{project name}}TemplateVMs, [https://github.com/Whonix/qubes-whonix/blob/master/usr/lib/qubes-whonix/utility_functions.sh the following command is run will be run].
+== {{project name}} TemplateVMs ==
+Inside {{project name}} TemplateVMs, [https://github.com/Whonix/qubes-whonix/blob/master/usr/lib/qubes-whonix/utility_functions.sh the following command is run will be run].
 
 === Qubes R3.2 ===
 <pre>
@@ -737,8 +737,8 @@ UWT_DEV_PASSTHROUGH="1" curl --silent --connect-timeout 10 "http://127.0.0.1:808
 == Related ==
 
 * [https://github.com/QubesOS/qubes-issues/issues/1957 Cache updates #1957, qubes-updates-cache, qubes-updates-proxy]
-* design decision: [https://github.com/QubesOS/qubes-issues/issues/1880 Difficulty to upgrade{{project name}}TemplateVMs over clearnet considered a bug or feature?]
-* bug: [https://forums.whonix.org/t/templates-incorrectly-think-theyre-not-connected-to-a-whonix-gateway Templates incorrectly think they're not connected to a{{project name}}gateway.]
+* design decision: [https://github.com/QubesOS/qubes-issues/issues/1880 Difficulty to upgrade {{project name}} TemplateVMs over clearnet considered a bug or feature?]
+* bug: [https://forums.whonix.org/t/templates-incorrectly-think-theyre-not-connected-to-a-whonix-gateway Templates incorrectly think they're not connected to a {{project name}} gateway.]
 
 = Updates Proxy Debugging =
 
@@ -1021,7 +1021,7 @@ The template package [https://github.com/Whonix/qubes-whonix <code>qubes-whonix<
 
 As per Marek, <code>qvm-features-request whonix-ws=1</code> should [https://github.com/QubesOS/qubes-issues/issues/3765#issuecomment-386805491 not be set by salt].
 
-Missing{{project name}}tags anon-vm / anon-gateway [https://github.com/QubesOS/qubes-core-admin-addon-whonix/pull/6 will be added].
+Missing {{project name}} tags anon-vm / anon-gateway [https://github.com/QubesOS/qubes-core-admin-addon-whonix/pull/6 will be added].
 
 == anon-vm tag ==
 <code>anon-vm</code> gets prepended to [https://github.com/QubesOS/qubes-core-admin/blob/master/qubes-rpc-policy/qubes.GetDate.policy <code>/etc/qubes-rpc/policy/qubes.GetDate</code>] by [https://github.com/QubesOS/qubes-mgmt-salt-dom0-virtual-machines/blob/master/qvm/template-whonix-ws.sls#L43 salt template-whonix-ws.sls]. Or [https://github.com/QubesOS/qubes-core-admin/pull/221 maybe in future simpler by just adding it.]
@@ -1107,7 +1107,7 @@ curl.anondist-orig --proxy https://127.0.0.1:8082 https://check.torproject.org
 * https://github.com/marmarek/openqa-tests-qubesos/blob/master/tests/whonixcheck.pm
 
 = See Also =
-* [[Dev/Test|Dev/Test - How to "UnWhonix" - Instructions on how to remove{{project name}}Tor default networking for Whonix-Gateway. After applying these instructions, Whonix-Gateway will connect to clearnet.]]
+* [[Dev/Test|Dev/Test - How to "UnWhonix" - Instructions on how to remove {{project name}} Tor default networking for Whonix-Gateway. After applying these instructions, Whonix-Gateway will connect to clearnet.]]
 * [https://forums.whonix.org/t/how-to-add-a-proxyvm-between-anon-whonix-and-sys-whonix-whonix-ws-email-sys-fw-whonix-{{whonix-gw}}-sys-firewall-sys-net How to add a ProxyVM between anon-whonix and sys-whonix? (whonix-ws-email -> sys-fw-whonix -> {{whonix-gw}} -> sys-firewall -> sys-net)]
 
 = Footnotes =
