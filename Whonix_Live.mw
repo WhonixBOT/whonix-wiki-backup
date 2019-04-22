@@ -53,28 +53,30 @@ To make memory forensics harder, the machine should either be removed from any p
 
 
 === Anti-Forensics Precautions ===
-
+==== Introduction ====
 Whonix 15 includes grub-live by default. When using this feature in Whonix VMs, some precautions need to be taken even on trusted systems like GNU/Linux hosts to prevent leaving traces (proprietary OSs are a lost cause). At the moment, the only advantage of doing this over running [[Grub-live|grub-live]] on the host, is to achieve selective amnesia for some VMs while others remain persistent. As grub-live development continues to advance allowing for selective exemption of host directories, this may not be necessary in the future. This section is a work in progress and not exhaustive.
 
-
-* Dealing with swap:
-
-Tails documentation comments that host swapping may be the biggest threat to anti-forensics on Linux when running in a VM <ref>https://tails.boum.org/doc/advanced_topics/virtualization/index.en.html#security</ref>
-
-Linux does use swapping despite having apparent "free" memory. The kernel tends to swap out long-inactive and memory-consuming processes. This frees up RAM for caches, thus improves responsiveness.
-
+==== Swap ====
+<ref>
+Tails documentation comments that host swapping may be the biggest threat to anti-forensics on Linux when running in a VM https://tails.boum.org/doc/advanced_topics/virtualization/index.en.html#security
+</ref> <ref>Linux does use swapping despite having apparent "free" memory. The kernel tends to swap out long-inactive and memory-consuming processes. This frees up RAM for caches, thus improves responsiveness.
+</ref>
 
 <u>Disabling swap for entire system</u>
 
 Turning off for the whole system may cause a system instability/crashes if the RAM hard limit is hit. However the ample RAM in new systems makes it unlikely  and it is worth the tradeoff.<ref>https://superuser.com/questions/243357/how-to-prevent-a-specific-program-from-swapping</ref> Disabling swapalso disables hibernation functionality.
 
+===== Host =====
+<u>On the host.</u>
 
 This command will disable swap and delete the file during the life of this session:
+
 {{CodeSelect|code=
 sudo swapoff -a
 }}
 
 To disable swap in a persistent way edit the <code>fstab</code> file and comment out the line with the swap partition with a <code>#</code>:
+
 {{CodeSelect|code=
 sudo nano /etc/fstab
 }}
@@ -82,13 +84,14 @@ sudo nano /etc/fstab
 Save and reboot.
 
 Confirm it is off by checking the <code>free</code> command. The swap line should show zeros:
+
 {{CodeSelect|code=
 free -h
 }}
 
 TODO: existing swap partition should get securely wiped since sensitive information such as encryption keys might have already leaked there
 
-
+===== KVM =====
 <u>Disabling swapping selectively for KVM VMs</u>
 
 An alternative KVM only solution is to set guest memory pages to being locked<ref>https://serverfault.com/questions/561446/how-can-i-keep-important-vms-in-memory-without-disabling-swap</ref><ref>https://libvirt.org/formatdomain.html#elementsMemoryBacking</ref>
@@ -101,21 +104,17 @@ This option is not without disadvantages however and can be abused by malicious 
 
 N.B. Setting <code>vm.swappiness = 0</code> does not completely prevent swapping.<ref>https://superuser.com/questions/760102/why-do-i-get-swapping-even-if-i-set-vm-swappiness-to-0</ref>
 
+==== grub-live on Whonix-Gateway ====
+It is recommended users run the live package on Whonix-Gateway too after initial Tor start when a guard has been set. This should eliminate any Tor related cached data like DNS requests that could leave traces about web activity. However be warned that it may make your Tor behavior distinguishable from regular Tor users when it comes to redownloading consensus files more frequently or when switching to a new guard after some months have passed. <ref>
+http://forums.dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion/t/whonix-live-mode-amnesia-amnesic-non-persistent-anti-forensics/3894/127?u=hulahoop
+</ref>
 
-* Enable grub-live on Whonix Gateway too:
-
-It is recommended users run the live package on Whonix Gateway too after initial Tor start when a guard has been set. This should eliminate any Tor related cached data like DNS requests that could leave traces about web activity. However be warned that it may make your Tor behavior distinguishable from regular Tor users when it comes to redownloading consensus files more frequently or when switching to a new guard after some months have passed. <ref>http://forums.dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion/t/whonix-live-mode-amnesia-amnesic-non-persistent-anti-forensics/3894/127?u=hulahoop</ref>
-
-
-* Disabling program crash dumps:
-
+==== Disabling program crash dumps ====
 Besides swap there is the problem of disabling process memory dumping to disk.
-
 
 <u>Kernel</u>
 
 A user has to go out of their way to enable kernel memory dumps which isn't done by default, with kdump-tools on Debian.<ref>https://www.bentasker.co.uk/documentation/linux/312-installing-and-configuring-kdump-on-debian-jessie</ref>
-
 
 <u>Userspace</u>
 
@@ -130,7 +129,6 @@ It is enforced for systemd-coredump too.
 
 Can be verified with lack of core files in <code>/var/spool</code> or <code>/var/lib/systemd/coredump</code> when an intentional crash is induced (<code>/var/crash</code> doesn't exist on Debian but may be available on other Linux distributions).<ref>https://linux-audit.com/understand-and-configure-core-dumps-work-on-linux/#linux-and-core-dumps</ref>
 
-
 <u>Disable setuid processes dumping their memory</u>
 
 Processes with elevated permissions (or the setuid bit), might be still able to perform a core dump, depending on your other settings. As these processes usually have more access, they might contain more sensitive data segments in memory. So time to change this as well. The behavior can be altered with a sysctl key, or directly via the /proc file system. For permanent settings, the sysctl command and configuration is typically used. A setting is called a ‘key’, which has a related value attached to it (also known as a key-value pair).
@@ -141,7 +139,6 @@ sudo su
 
 echo "fs.suid_dumpable=0" >> /etc/sysctl.conf
 }}
-
 
 Reload the sysctl configuration with the -p flag to activate any changes you made.
 {{CodeSelect|code=
