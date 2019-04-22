@@ -10,17 +10,17 @@ title=onion-grater, a Tor Control Port Filter Proxy - filtering dangerous Tor Co
 https://github.com/Whonix/onion-grater<br />
 https://phabricator.whonix.org/project/view/72/
 
-Tor's control port has in context of Whonix, dangerous features. The answer to the Tor control command {{Code2|GETINFO address}} will be the real external IP of the Tor client. Other dangerous commands include {{Code2|SETCONF}}, {{Code2|LOADCONF}} and {{Code2|GETCONF}}. This can not be limited any other way, since the feature request [https://trac.torproject.org/projects/tor/ticket/8369 Option to limit information Tor's control port discloses] against Tor has not been implemented. By the way, this Tor control port feature makes also a [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO/BridgeFirewall Bridge Firewall] impossible. Therefore before{{project name}}6, Whonix-Workstation had no access to Tor's control port. This was because, Whonix-Workstation is not supposed to have an way of finding out its own external IP address.
+Tor's control port has in context of Whonix, dangerous features. The answer to the Tor control command {{Code2|GETINFO address}} will be the real external IP of the Tor client. Other dangerous commands include {{Code2|SETCONF}}, {{Code2|LOADCONF}} and {{Code2|GETCONF}}. This can not be limited any other way, since the feature request [https://trac.torproject.org/projects/tor/ticket/8369 Option to limit information Tor's control port discloses] against Tor has not been implemented. By the way, this Tor control port feature makes also a [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO/BridgeFirewall Bridge Firewall] impossible. Therefore before {{project name}} 6, Whonix-Workstation had no access to Tor's control port. This was because, Whonix-Workstation is not supposed to have an way of finding out its own external IP address.
 
-Before{{project name}}6, this also broke Tor Button's New Identity feature, which essentially sends {{Code2|SIGNAL NEWNYM}} to Tor's control port. While Tor Button's New Identity is still the only feature that was not available when using Tor Browser in Whonix, Tor Button in future will get more and more dependent on Tor's control port.
+Before {{project name}} 6, this also broke Tor Button's New Identity feature, which essentially sends {{Code2|SIGNAL NEWNYM}} to Tor's control port. While Tor Button's New Identity is still the only feature that was not available when using Tor Browser in Whonix, Tor Button in future will get more and more dependent on Tor's control port.
 
-Tor Browser [https://trac.torproject.org/projects/tor/ticket/6546#comment:33 by default performs its own control port verification]. It checks using Tor's control port(!), that the socks port Tor reports, is the same one as Tor Browser is configured to use. If it fails, and it would fail in{{project name}}0.5.6, Tor Button would look like disabled and show a failure message. (To see how this would look like,  see [https://forums.whonix.org/uploads/default/original/1X/c2c9bb5dc7efee7a933dd00d3bf0c30c29c99daa.png this screenshot].) (To see how this generates user confusion, see [https://forums.whonix.org/t/something-went-wrong/2080 this forum thread].) Since{{project name}}6 this check is disabled using [https://trac.torproject.org/projects/tor/ticket/13079 environment variable to skip TorButton control port verification] (<code>export TOR_SKIP_CONTROLPORTTEST=1</code>) by package [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh anon-ws-disable-stacked-tor]. <ref>
+Tor Browser [https://trac.torproject.org/projects/tor/ticket/6546#comment:33 by default performs its own control port verification]. It checks using Tor's control port(!), that the socks port Tor reports, is the same one as Tor Browser is configured to use. If it fails, and it would fail in {{project name}} 0.5.6, Tor Button would look like disabled and show a failure message. (To see how this would look like,  see [https://forums.whonix.org/uploads/default/original/1X/c2c9bb5dc7efee7a933dd00d3bf0c30c29c99daa.png this screenshot].) (To see how this generates user confusion, see [https://forums.whonix.org/t/something-went-wrong/2080 this forum thread].) Since {{project name}} 6 this check is disabled using [https://trac.torproject.org/projects/tor/ticket/13079 environment variable to skip TorButton control port verification] (<code>export TOR_SKIP_CONTROLPORTTEST=1</code>) by package [https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh anon-ws-disable-stacked-tor]. <ref>
 https://github.com/Whonix/anon-ws-disable-stacked-tor/blob/master/usr/lib/anon-ws-disable-stacked-tor/torbrowser.sh
 </ref>
 
 In future, Tor Button will likely also use something like [https://trac.torproject.org/projects/tor/ticket/3652 {{Code2|GETINFO clockskew}}]. Tor Browser developer [https://trac.torproject.org/projects/tor/ticket/8032 rejected] the idea of not adding the statement {{Code2|require no access to Tor's control port}} to Tor Browser's design.
 
-Therefore all requirements, Whonix-Workstation having no way of finding its own external IP address, joining Tor Browser's fingerprint for{{project name}}users, having no access for Whonix-Workstation to Tor's control port with Tor Buttons new requirement to have access to Tor's control port contradicted itself.
+Therefore all requirements, Whonix-Workstation having no way of finding its own external IP address, joining Tor Browser's fingerprint for {{project name}} users, having no access for Whonix-Workstation to Tor's control port with Tor Buttons new requirement to have access to Tor's control port contradicted itself.
 
 onion-grater has been implemented as a solution. It gives Whonix-Workstation access to a limited selection of Tor's control port commands, using white listing (not blacklisting). For example, it allows {{Code2|SIGNAL NEWNYM}} to make Tor Buttons New Identity feature available for users who use Tor Browser in Whonix-Workstation.
 
@@ -70,7 +70,7 @@ This functionality is implemented by the [https://github.com/Whonix/anon-ws-disa
 <s>Tor Browser (running in Whonix-Workstation) is configured by default (not changed by Whonix) to connect to Tor control port 127.0.0.1:9151.</s> TODO: document unix domain socket files
 
 = Whonix-Gateway =
-onion-grater listens on{{project name}}internal network interface <ref>
+onion-grater listens on {{project name}} internal network interface <ref>
 https://github.com/Whonix/whonix-gw-network-conf/blob/master/lib/systemd/system/onion-grater.service.d/30_cpfpy.conf
 </ref>, port <code>9051</code>, filters (white list) incoming control port messages and forwards them to the real Tor Control Port listening on <code>ControlSocket</code> <code>/run/tor/control</code>. onion-grater itself uses cookies authentication to authenticate Tor's control port. The latter is not important, since Whonix-Gateway's only purpose is running Tor, its not a multi user operating system, and if it were compromised, cookie authentication wouldn't be of help anymore either.
 
@@ -292,7 +292,7 @@ https://trac.torproject.org/projects/tor/ticket/11406
 = feedback mechanism for clock-skew and other bad problems =
 https://trac.torproject.org/projects/tor/ticket/9675
 
-={{project name}}Forum Discussion =
+= {{project name}} Forum Discussion =
 [https://forums.whonix.org/t/new-tor-controlport-commands-wanted-by-tbb-4-5-and-above new Tor ControlPort commands wanted by TBB 4.5 and above]
 
 = Comparison of Control Port Filters  =
@@ -334,7 +334,7 @@ https://trac.torproject.org/projects/tor/ticket/9675
 
 <hr>
 
-== onion-grater by Tails forked by{{project name}}==
+== onion-grater by Tails forked by {{project name}} ==
 [https://github.com/Whonix/onion-grater onion-grater] ([https://github.com/Whonix/onion-grater/tree/master/etc/onion-grater-merger.d config folder]) ([https://github.com/Whonix/onion-grater/tree/master/usr/share/onion-grater-merger/examples additional onion-grater-<b>merger</b> example profiles]) ([https://phabricator.whonix.org/project/view/72/ issue tracker])
 
 * mostly same as [[#onion-grater by Tails]]
@@ -349,8 +349,8 @@ https://trac.torproject.org/projects/tor/ticket/9675
 
 <hr>
 
-== legacy control-port-filter-python by{{project name}}==
-legacy [https://github.com/Whonix/control-port-filter-python control-port-filter-python] ([https://github.com/Whonix/control-port-filter-python/blob/master/usr/sbin/cpfpd main script]) [Whonix 10 to{{project name}}13 ([https://github.com/Whonix/control-port-filter-python/releases/tag/1.7-1 version 1.7-1]] (last git commit [https://github.com/Whonix/control-port-filter-python/commit/99e8395fbafcb7789c7d1b5cbf7410ed65192e9a up to 99e8395fbafcb7789c7d1b5cbf7410ed65192e9a]) ([https://phabricator.whonix.org/tag/control-port-filter-python/ issue tracker]) [deprecated]
+== legacy control-port-filter-python by {{project name}} ==
+legacy [https://github.com/Whonix/control-port-filter-python control-port-filter-python] ([https://github.com/Whonix/control-port-filter-python/blob/master/usr/sbin/cpfpd main script]) [Whonix 10 to {{project name}} 13 ([https://github.com/Whonix/control-port-filter-python/releases/tag/1.7-1 version 1.7-1]] (last git commit [https://github.com/Whonix/control-port-filter-python/commit/99e8395fbafcb7789c7d1b5cbf7410ed65192e9a up to 99e8395fbafcb7789c7d1b5cbf7410ed65192e9a]) ([https://phabricator.whonix.org/tag/control-port-filter-python/ issue tracker]) [deprecated]
 
 * A fork of (very early) [https://git-tails.immerda.ch/tails/plain/config/chroot_local-includes/usr/local/sbin/tor-controlport-filter tor-controlport-filter] by Tails. (See above.)
 * Written in python2.7.
@@ -368,12 +368,12 @@ https://phabricator.whonix.org/T448
 </ref>
 * Complete systemd unit file.
 * Lintian clean {{Code2|/debian}} packaging folder.
-* Will be deprecated when{{project name}}14 get released.
+* Will be deprecated when {{project name}} 14 get released.
 
 <hr>
 
-== legacy2 control-port-filter by{{project name}}==
-legacy^2 control-port-filter [up to{{project name}}9.x] [deprecated]
+== legacy2 control-port-filter by {{project name}} ==
+legacy^2 control-port-filter [up to {{project name}} 9.x] [deprecated]
 
 * Supports parallel connections.
 * Written in bash. ([https://github.com/adrelanos/control-port-filter github]) (archive only)
@@ -386,7 +386,7 @@ legacy^2 control-port-filter [up to{{project name}}9.x] [deprecated]
 * Does not support subscribing Tor ControlPort events ({{Code2|setevent}}).
 * Complete sysvinit script.
 * Lintian clean {{Code2|/debian}} packaging folder.
-* Deprecated since the release of{{project name}}10.
+* Deprecated since the release of {{project name}} 10.
 
 = See Also =
 * [https://gitweb.torproject.org/torspec.git?a=blob_plain;hb=HEAD;f=control-spec.txt Tor Control Protocol]
