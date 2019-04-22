@@ -60,7 +60,7 @@ People have been using:
 
 * Tor Browser and Mozilla Firefox in parallel
 * Tails inside VMs and Firefox on the host
-* Tor Browser inside Whonix-Workstation and Mozilla Firefox on the host
+* Tor Browser inside {{workstation_product_name}} and Mozilla Firefox on the host
 
 == Other Facts ==
 * Almost no one and no operating system is using Secure Network Time Synchronization or External Clocks by default. Most systems synchronize the system clock using unauthenticated NTP. An adversary tampering with NTP replies or malicious NTP server makes things even worse. Even if there was authenticated NTP, there is a requirement for a distributed trust model.
@@ -118,7 +118,7 @@ So we want a completely isolated virtual time.
 * Time Sanity Check before [[sdwdate]] will be executed, this ensures, that the host clock is sane and not slow in 1980. User gets advised to fix its host clock in such cases.
 * After they are connected to the Tor network, they use sdwdate (inspired by [https://tails.boum.org/contribute/design/Time_syncing/ tails_htp]) to set the system clock. <ref>Stream isolation has been added, for {{project name}} sdwdate implementation i.e. people using Tor Browser prevent notifying their exit relay, that they are sdwdate or {{project name}} users.</ref>
 * Time Sanity Check after sdwdate was executed. This should catch eventual bigger bugs and attacks. User gets informed if it fails.
-* Using [https://github.com/Whonix/bootclockrandomization Boot Clock Randomization], i.e. after boot, the clock is set randomly between 5 and 180 seconds into the past or future. This is useful to enforce the design goal, that the host clock and Whonix-Workstation clock should always slightly differ. It is also useful to obfuscate the clock when sdwdate itself is running, because naturally at this time, sdwdate hasn't finished.
+* Using [https://github.com/Whonix/bootclockrandomization Boot Clock Randomization], i.e. after boot, the clock is set randomly between 5 and 180 seconds into the past or future. This is useful to enforce the design goal, that the host clock and {{workstation_product_name}} clock should always slightly differ. It is also useful to obfuscate the clock when sdwdate itself is running, because naturally at this time, sdwdate hasn't finished.
 * sdwdate runs after booting.
 * Whonix-Gateway: Using sdwdate is better against Attack (1) when using a bridge.
 * Every hour, at a random time, sdwdate will set the clock again. This is useful for machines running for long time periods without reboot.
@@ -268,7 +268,7 @@ Pros:
 Cons:
 * Only native SSL CA pinning support. No direct SSL certificate pinning support.
 * Does not distribute trust. <ref>As {{Code2|sdwdate}} does.</ref> <ref>https://github.com/ioerror/tlsdate/issues/112</ref> <ref>https://github.com/ioerror/tlsdate/issues/143#issuecomment-57053323</ref> The single time source can send by error or by malicious intent send wrong time replies.
-* Does not support hooks for user notifications about state of network time synchronization. -> Users shouldn't use the internet in Whonix-Workstation before network time synchronization finished, and timesync is informing users about this. -> Implementing notifications would be difficult or require patching tlsdate.
+* Does not support hooks for user notifications about state of network time synchronization. -> Users shouldn't use the internet in {{workstation_product_name}} before network time synchronization finished, and timesync is informing users about this. -> Implementing notifications would be difficult or require patching tlsdate.
 * Produces clock jumps, which confuses various applications. Does not gradually adjust as {{Code2|sdwdate}} does with [https://github.com/Whonix/Whonix/issues/169 Slow Clock Adjuster]. <ref>[https://github.com/Whonix/sdwdate/blob/master/usr/lib/sclockadj sclockadj]</ref>
 * Cannot connect to (most) Tor onion services, because most of those do not support SSL. <ref>Because in most cases, there is little need to combine Tor onion services with SSL. [[Onion_Services#Notes_about_End-to-end_security_of_Onion_Services|connections to Tor onion services are Tor-to-Tor encrypted by default ("not exactly end-to-end")]].</ref> <ref>https://github.com/ioerror/tlsdate/issues/157</ref>
 * Minor: {{Code2|command line parser doesn't fail closed on extraneous / unknown command line parameters}} <ref>https://github.com/ioerror/tlsdate/issues/158</ref> - not that important in the absence of bugs, butsafer behavior for {{Code2|tlsdate}} would be to fail closed on on extraneous / unknown command line parameters.
@@ -497,7 +497,7 @@ qvm-run --pass-io sys-whonix "date -u" ; date -u
 === Attack ===
 prerequisite knowledge:
 
-* Whonix-Gateway [Proxy]VMs and Whonix-Workstation [App]VM's system time cannot not be obtained by watching traffic at ISP level.
+* Whonix-Gateway [Proxy]VMs and {{workstation_product_name}} [App]VM's system time cannot not be obtained by watching traffic at ISP level.
 * This chapter is not about tracking a single VM across its different Tor exit relays.
 * The context is anonymity. The significance is deanonymization.
 * In anonymity we don't just care about about correlations. Also about estimations. Anonymity set reduction. Partitioning users is already a success. Because it may be combined with other guesses. No direct proof is required. From some countries, there are just a few 100 users or less. If there is already a lead by country, then combined with these time related issues, things begin to really matter.
@@ -510,22 +510,22 @@ date ; qvm-run --pass-io sys-net date
 
 Attack:
 
-* 1) requires a) compromise a Whonix-Workstation VM and b) observing the ISP network the user is using
+* 1) requires a) compromise a {{workstation_product_name}} VM and b) observing the ISP network the user is using
 * 2) read [host | dom0] time using clocksource 'xen' / 'kvmclock' or possibly the wall clock interface
 * 3) [host | dom0] time will be very similar to NetVM's time (the system where external network connections are made)
-* 4) correlate Whonix-Workstation VM with NetVM's time
+* 4) correlate {{workstation_product_name}} VM with NetVM's time
 * 5) anonymity set reduction done
 
 Notes:
 
-No need to compromise multiple VMs. Only one VM, a Whonix-Workstation VM needs to be compromised. NetVM does not have to be compromised, it leaks in most cases - hard to avoid all cases - any passive ISP level adversary watching traffic can read the clients local clock. It is leaked on many levels, see [[#Local Clock Leaks]].
+No need to compromise multiple VMs. Only one VM, a {{workstation_product_name}} VM needs to be compromised. NetVM does not have to be compromised, it leaks in most cases - hard to avoid all cases - any passive ISP level adversary watching traffic can read the clients local clock. It is leaked on many levels, see [[#Local Clock Leaks]].
 
 Threat Model:
 
-* Whonix-Workstation AppVM gets compromised up to local root code execution. Then the attacker uses the local exploit, reads clocksource 'xen' / 'kvmclock'.
+* {{workstation_product_name}} AppVM gets compromised up to local root code execution. Then the attacker uses the local exploit, reads clocksource 'xen' / 'kvmclock'.
 
 === Defense ===
-We need to make sure that all of {{gateway_product_name}}, Whonix-Workstation, and NetVM uses slightly different time. Even if Whonix-Workstation would be compromised, and the attacker gets knowledge of the time of [host | dom0] and sniffs NetVM's time, it would hinder correlation.
+We need to make sure that all of {{gateway_product_name}}, Whonix-Workstation, and NetVM uses slightly different time. Even if {{workstation_product_name}} would be compromised, and the attacker gets knowledge of the time of [host | dom0] and sniffs NetVM's time, it would hinder correlation.
 
 [host | dom0] and non-anonymous VM's clocks should be as synced, correct and secure as those can be.
 
