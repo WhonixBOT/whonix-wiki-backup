@@ -1,0 +1,122 @@
+{{#seo:
+|description=nonfree firmware
+}}
+{{Header}}
+
+* Context: [https://forums.whonix.org/t/whonix-host-operating-system/3931 Whonix Host Operating System Development]
+* Purpose of this thread: keeping the discussion of nonfree vs free out of above thread.
+* Non-Purpose of this: non-free software in Whonix VMs (there is none but if you think there is [https://forums.whonix.org/t/adding-non-free-packages-by-default-is-it-safe/3300) another thread]
+* Related: [https://forums.whonix.org/t/whonix-and-free-system-distribution-guidelines-gnu-fsdg/5877 Whonix and Free System Distribution Guidelines (GNU FSDG)]
+
+----
+
+On the Tails issue tracker there is an interesting discussion about shipping nonfree firmware blobs.
+
+https://redmine.tails.boum.org/code/issues/5393
+
+----
+
+Most convincing arguments start in [https://redmine.tails.boum.org/code/issues/5393#note-11 comment 11]:
+
+It talks about https://packages.debian.org/buster/firmware-linux-nonfree
+
+Bold / italic added.
+
+<blockquote>
+There is no evidence that anything in the Linux kernel is spyware. The firmware blobs are loaded into devices which need them to function. The alternative is for them to be present in the device from the beginning, as I explain later.
+
+<blockquote>
+Here, for example, almost a year ago, all you summarily refused to discuss this issue:<br />
+https://mailman.boum.org/pipermail/tails-support/2016-March/000345.html
+</blockquote>
+</blockquote>
+
+<blockquote>
+In that thread, you linked to a paper on DMA malware. Note that the blobs in question are typically firmware for PCI devices, usually NICs. DMA malware works by abusing the bus master bit and becoming bus master, allowing DMA requests. Most modern UEFI/BIOS come with ACPI tables built in, which contains one table, the DMAR table, which can be used by the IOMMU to restrict the addresses a device with bus master is allowed to access. If you boot with `intel_iommu=on` or `amd_iommu=force` , and your DMAR table is valid, then DMA malware, if it is loaded after the IOMMU enforces its restrictions, is effectively crippled. Tails unfortunately does not enable the IOMMU by default, as it breaks a lot of hardware with broken DMAR tables (BIOS vendors suck, don't they?), but it's trivial to enable it yourself.
+</blockquote>
+
+<blockquote>
+**Being free software, and being endorsed by the Free Software Foundation are different things.** By many definitions, something can still be FOSS even if it distributes blobs which run on NICs for example, as long as those blobs do not run on the CPU alongside the kernel. **In the case that they run as firmware, they are effectively no different than an updatable ROM.** *If you select an FSF-endorsed distro, you are still running the same type of blob.* **The only difference is that it is bunt into your hardware, not in the kernel.** **If there is a backdoor, as you worry about, it will not be neutered just because it is distributed through a ROM rather than loaded by the kernel.** If anything, loading through the kernel is safer, because people are more willing to reverse engineer it or audit it (yes, closed source blobs *can* be reverse engineered and audited), whereas something burnt into a ROM will likely never be touched.
+</blockquote>
+
+<blockquote>
+That is primarily due to philosophical reasons, and possibly misunderstandings. **I can completely understand the philosophical ideology** behind "Fine, let the hardware manufacturers distribute the blobs, but I don't want *my* distro to take part in it at all!", **but you'd be deluding yourself to say that it improves your security.** The only way to improve your security (or at least the openness of the whole software ecosystem) is to get the firmware/ROM source to be open, not simply be content with it being burnt into your hardware.
+</blockquote>
+
+<blockquote>
+But in the end, if you're really worried about covert backdoors on this level, why are you singling out what really amounts to just NIC firmware, most of which boils down to just a few brands? There's so much more which puts people at risk if an adversary with these capabilities is after them. After all, the Linux kernel is huge, takes patches from many people, and is poorly audited. Adding a mistake (bugdoor) would not be hard. I don't mean something obvious like `if (uid = 0)` from the old `wait4()` backdoor attempt either. There's also the fact that, no matter how open your software is, you're running on entirely closed hardware. Who cares about the Intel Manageability Engine or the Embedded Controller Firmware when the entirety of the immensely complex processor is closed.
+</blockquote>
+
+<blockquote>
+Now start porting Tails to seL4 or INTEGRITY-178B, and run it entirely on OpenSPARC, and then you can be happy. :P
+</blockquote>
+
+<blockquote>
+But seriously though, if you're this passionate about this, learn how to use `r2` and get to reverse engineering those blobs.
+</blockquote>
+
+<blockquote>
+**Not distributing firmware in the kernel does *not* affect the risk of "spyware" whatsoever. If there is going to be a backdoor, it can also exist burnt into the ROM.** *Not having firmware blobs in the kernel does not mean they do not still exist. It just means they are distributed in a different way.* Do you think that a Realtek NIC that does not need uploaded firmware, but does use a burnt in ROM, cannot have a backdoor in its built in firmware, but a Broadcom NIC that requires firmware and does not use burnt in ROM can?
+</blockquote>
+
+<blockquote>
+**Furthermore, all the blobs in the kernel are only loaded for the people who are using the specific hardware which requires it.** *If you are not using the tg3 driver, you will not be loading the tg3 firmware.* So if someone uses tg3, they will not be able to use a "libre" Tails. If someone uses r8192, they won't be using firmware blobs for their NIC regardless of whether they use a "libre" Tails or current Tails. **Simply put, people who do not use blob-requiring hardware will not be using blobs, regardless.** **People who do need blobs will either be using *nothing*** , or an NIC that loads blobs. Those people are screwed anyway, whereas people who are using NICs which don't need blobs don't have to worry.
+</blockquote>
+
+----
+
+On https://mailman.boum.org/pipermail/tails-support/2016-March/000347.html Tails developer intrigeri writes:
+
+<blockquote>
+We have actual users. If they can't use Tails on their current, real-world hardware, then likely they'll use something else, that has just the same amount of binary firmware blobs, except it won't have any of Tails properties that some people find worthwhile.
+</blockquote>
+
+----
+
+TODO: table
+
+without firmware-linux-nonfree installed
+with firmware-linux-nonfree installed
+
+nonfree hardware present
+nonfree hardware not-present 
+
+----
+
+The stance against nonfree blobs can be argued from multiple perspectives.
+
+A) The security argument: Which got refuted here.
+
+B) The philosophical stance against ever shipping any kind of shipping of anything nonfree. Argument of being the best possible Freedom Software vendor.
+
+C) Argument of negative adaption: The argument goes that the number of users would decease due to fallout from being tainted with nonfree software due to bad reputation, word of mouth and media reporting.
+
+----
+
+C) Argument of negative adaption:
+
+I rather think bad news = good news. Bad reporting is often better than no reporting in order to generate new users. Perhaps except if the brand already reached its maximum popularity and user base which Whonix is far from.
+
+Historically bad reporting on nonfree practices of Ubuntu (even making Linux Mint sign a license contract with Canonical; amazon search lense; which both was reported by media) didn't harm Ubuntu much. It's still the biggest Linux distribution.
+
+Tails installs firmware-linux-nonfree by default too, and it didn't decease their number of users.
+
+----
+
+Some people will argue to rather sacrifice shipping something broken, insecure, unusable for most users than derivation the slightest from Freedom Software maximalism.
+
+My stance:
+
+* I am not a nonfree software minimalist like RMS.
+* I am not a Freedom Software maximalist like RMS.
+
+Therefore when weighting practicality vs Freedom Software principles, I went with practicality, i.e. firmware-linux-nonfree will be installed by default on Whonix Host.
+
+Whonix build script will support command line parameters to skip skip installation of any nonfree software to ease completely Freedom Software custom builds and forks of Whonix.
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Design]]
