@@ -11,12 +11,9 @@
 |support=[[Support]]
 }}
 
-= Full Disk Encryption on the Host =
+= Introduction =
 
-{{mbox
-| image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text       = As outlined on the [[Warning#Whonix_is_not_Amnesic|Warning page]], {{project name}} has not been designed as an amnesic operating system. Traces of the installation and user activities will be written to disk. <ref>Until [https://github.com/QubesOS/qubes-issues/issues/904 in-RAM execution of disposableVMs] is implemented in [[{{q_project_name_short}}|{{q_project_name}}]], this threat is not easily mitigated.</ref>
-}}
+As outlined on the [[Warning#Whonix_is_not_Amnesic|Warning page]], {{project name}} has not been designed as an amnesic operating system. Traces of the installation and user activities will be written to disk. <ref>Until [https://github.com/QubesOS/qubes-issues/issues/904 in-RAM execution of disposableVMs] is implemented in [[{{q_project_name_short}}|{{q_project_name}}]], this threat is not easily mitigated.</ref>
 
 == Protection Against Powerful Adversaries ==
 
@@ -28,13 +25,13 @@ To protect against theft of personal information or data, users should apply FDE
 
 Users should follow the standard advice for picking [[Passwords#Generating_Unbreakable_Passwords|strong and unique passphrases]], so they cannot be feasibly brute-forced. Computers should never be left unattended in untrusted venues.
 
-=== Debian Hosts === 
+= Debian Hosts = 
 
 Configuring FDE during system install is straightforward. The default cipher is AES-256 in XTS mode. 
 
-=== Removable Media ===
+= Removable Media =
 
-==== New Removable Media ====
+== New Removable Media ==
 
 Gnome Disks Utility creates LUKS partitions with AES-128 by default which is insufficient in event of quantum computers materializing. This has been successfully reported and fixed upstream as of February 2019, <ref>https://github.com/storaged-project/libblockdev/issues/416</ref> <ref>https://github.com/vpodzime/libblockdev/commit/9dc4e2463860810cac5a1dbfb7064c47200260f6</ref> but until it lands in Debian, an appropriately secure container must be manually created. Afterwards, unlock the device and format the internal filesystem as EXT4 in Gnome Disks. 
 
@@ -48,7 +45,7 @@ Create a LUKS container and change the device name as needed, then follow the pr
 # cryptsetup -v --cipher aes-xts-plain64 --key-size 512 --use-random luksFormat <device>
 }}
 
-==== Legacy Device Encryption Upgrade ====
+== Legacy Device Encryption Upgrade ==
 
 It is safer to re-encrypt the device with a stronger key rather than performing a quick format that will otherwise leave the old/weaker header intact. 
 
@@ -84,48 +81,44 @@ Abruptly disconnecting power can cause data loss. To safely pause the process (i
 
 If unauthorized access is strongly suspected or confirmed, the hardware should not be trusted or used after it is back in the user's possession. This scenario is only relevant to a smaller subset of users who are already targeted for physical surveillance. A sufficiently skilled adversary can infect it with spyware or sabotage it in a number of ways that are virtually undetectable. For example, malicious firmware could be installed to record all activities, or the machine rendered inoperable by bricking the hardware. In that eventuality, none of the measures outlined will help.
 
-=== Encrypted Containers ===
+= Encrypted Containers =
 Encrypted containers have the advantages of flexibility and mobility of folders, allowing users to add more files on the fly without needing re-compression and re-encryption as in the case of using GPG.
 
-==== Zulucrypt ====
-Zulucrypt is the Linux answer to encrypted containers, making use of tried and true LUKS crypto back-end. It is compatible with tomb files and also capable of reading and creating Truecrypt/Veracrypt containers. Note that Veracrypt containers only support password lengths of 64  characters, but LUKS has a maximum value of 32767, though a recent bug that was fixed had limited it only to 100.<ref>https://github.com/mhogomchungu/zuluCrypt/issues/113</ref> Until it is possible to directly use 20 word diceware passphrases to lock LUKS containers, it is recommended to use [[Passwords#Guidelines|makepasswd]] to generate 43 character strings which can then be pasted in a text file that is encrypted with GPG which doesn't have low character limits - essentially creating a makeshift key file.
+== Zulucrypt ==
 
+Zulucrypt is the Linux answer to encrypted containers, making use of tried and true LUKS crypto back-end. It is compatible with tomb files and also capable of reading and creating Truecrypt/Veracrypt containers. Note that Veracrypt containers only support password lengths of 64  characters, but LUKS has a maximum value of 32767, though a recent bug that was fixed had limited it only to 100.<ref>https://github.com/mhogomchungu/zuluCrypt/issues/113</ref> Until it is possible to directly use 20 word diceware passphrases to lock LUKS containers, it is recommended to use [[Passwords#Guidelines|makepasswd]] to generate 43 character strings which can then be pasted in a text file that is encrypted with GPG which doesn't have low character limits - essentially creating a makeshift key file.
 
 As of the next point release in {{project name}} 15, Zulucrypt is included by default. On {{project name}} command line version, there is <code>zulucrypt-cli</code> for managing containers from the terminal.
 
-
 Containers grow dynamically as more data is added. Opened containers are  mounted under <code>/run/media/private/user</code>. More than one password may be added for access, making use of LUKS key slots feature behind the scenes.
 
+=== Recommended Security Settings ===
 
-'''Recommended Security Settings:'''
 * <u>Important Note:</u> You will want to use the <code>aes.xts-plain64.512.sha512</code> option instead for 256-bit encryption to have post-quantum resistance. (Recall that encryption key-size is split in two with XTS mode). 
-
 
 To view the container header run:
 {{CodeSelect|code=
 sudo cryptsetup luksDump --debug /home/user/<file_name>
 }}
 
-
 With LUKS, one can also nest containers of different encryption ciphers by placing a Serpent and Twofish container inside each other wrapped in an outer AES one. Make sure the <code>.xts-plain64.512.sha512</code> variants are selected in all cases. Each level inside should be 1 MB less than the outer layer to allow space for each container's respective encryption header. 
-
 
 The plausible deniability feature is available with volume types <code>Normal+Hidden Truecrypt/Veracrypt</code>. Veracrypt volumes support crypto-cascades as a feature so no manual nesting is necessary. However be warned that Truecrypt/Veracrypt volume types only support AES-128.
 
-=== Additional Measures ===
+= Additional Measures =
 
-==== Killer ====
+== Killer ==
 <code>Killer</code><ref>https://github.com/Lvl4Sword/Killer</ref> is a newer project that supports a range of trigger actions to shutdown a system in case of tampering. In the future, custom commands will be supported besides shutdown.<ref>https://github.com/Lvl4Sword/Killer/issues/48</ref> We plan to provide it from our repos for Debian hosts when it is packaged. 
 
-==== LUKS Suspend Scripts ====
+== LUKS Suspend Scripts ==
 
 On Linux hosts, there is one interesting solution for the risks posed by a computer in a suspended state; luks-suspend scripts. <ref>https://github.com/vianney/arch-luks-suspend/issues/7</ref> This approach has some limitations because it is not yet packaged for Debian, and it has only been tested in the Ubuntu and Arch distributions. As of 2018, luks-suspend and keyslot nuking (mentioned below) is being merged upstream. <ref>https://blog.freesources.org/posts/2018/06/debian_cryptsetup_sprint_report/</ref>
 
-==== Magic Key Feature ====
+== Magic Key Feature ==
 
 In an emergency, [[{{non q project name short}}|{{non q project name}}]] users can power-off the computer immediately with the Magic SysRq key feature. This is invoked by pressing the key combination: <code>Alt</code> + <code>PrintScreen</code> + <code>o</code> (lower-case letter). On bare-metal linux systems, the FDE passphrase is prompted after rebooting.<ref>https://en.wikipedia.org/wiki/Magic_SysRq_key</ref> <ref>http://www.thegeekstuff.com/2008/12/safe-reboot-of-linux-using-magic-sysrq-key/</ref> <ref>https://phabricator.whonix.org/T553</ref>  The magic key feature does not work on Qubes hosts because the Xen hypervisor does not recognize these commands. <ref>https://forums.whonix.org/t/fde-emergency-feature-testing-requested</ref>
 
-==== USBKill ====
+== USBKill ==
 
 [https://en.wikipedia.org/wiki/USBKill USBKill] is an anti-forensics script written in the aftermath of the SilkRoad trial. Its purpose is to trigger protection events that prevent adversaries from siphoning files, installing malware, or running a mouse jiggler. The script creates a white-list of allowable USB devices. If anything else is plugged into the machine, the RAM is erased and the computer is immediately shutdown. 
 
@@ -135,8 +128,7 @@ USBKill can also be configured to exclude all devices from being attached. In an
 * https://7io.net/2015/07/02/python-usbkill-anti-forensic-usb-killswitch/#more-201 
 * https://phabricator.whonix.org/T552</ref>
 
-
-=== Advice for Solid-state Drives and USB Storage ===
+= Advice for Solid-state Drives and USB Storage =
 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
@@ -150,7 +142,7 @@ The most dire potential consequence is that old passwords are not erased, and fo
 
 Wear-leveling mechanisms like TRIM also leak information about the filesystem that can aid forensics. <ref>http://asalor.blogspot.com/2011/08/trim-dm-crypt-problems.html</ref> <ref>https://wiki.archlinux.org/index.php/Dm-crypt/Specialties#Discard.2FTRIM_support_for_solid_state_drives_.28SSD.29</ref> <ref>https://wiki.archlinux.org/index.php/Solid_State_Drives#dm-crypt</ref> <ref>http://www.saout.de/pipermail/dm-crypt/2011-September/002019.html</ref> <ref>http://www.saout.de/pipermail/dm-crypt/2012-April/002420.html</ref> It is strongly recommended to keep TRIM ''disabled'' (the default) during Linux LUKS-encrypted installations.
 
-=== Gnome Disks Utility ===
+= Gnome Disks Utility =
 
 Gnome Disks utility provides a convenient way to manipulate LUKS container passphrases (including the host's) and the overlying filesystems. However, it should not be relied upon for encryption because it uses AES-128 as a hardcoded default <ref>As tested by {{project name}} developer HulaHoop.</ref> <ref>
 * Debian bug report: [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=910249 Bumping up encryption to AES-256 by default]
@@ -163,7 +155,7 @@ To install it, run:
 sudo apt-get install gnome-disk-utility
 }}
 
-=== Nuke Patch for cryptsetup ===
+= Nuke Patch for cryptsetup =
 
 The Kali penetration testing distro team has written a [https://www.kali.org/tutorials/emergency-self-destruction-luks-kali/ nuke patch for cryptsetup], which adds the option to nuke all keyslots after a certain passphrase is entered.  <ref>https://github.com/offensive-security/cryptsetup-nuke-keys
 </ref> 
@@ -176,11 +168,11 @@ The Kali penetration testing distro team has written a [https://www.kali.org/tut
 
 Supplying the dead-man switch as the "real passphrase" to the interceptors of the machine is unlikely to be an effective strategy. It is standard forensics procedure to create multiple images of the drive beforehand.
 
-=== Separate /boot Partition ===
+= Separate /boot Partition =
 
 When FDE is used on the host, it is inadvisable to keep any unencrypted files on that same physical media. High-risk users are recommended to move the /boot partition to a separate USB media. The bootloader (Grub) should then also be installed on the separate USB. To read more on this subject, see [https://twopointfouristan.wordpress.com/2011/04/17/pwning-past-whole-disk-encryption/ Pwning Past Whole Disk Encryption].
 
-=== TRESOR Kernel Patch ===
+= TRESOR Kernel Patch =
 
 Another useful protection is the [https://en.wikipedia.org/wiki/TRESOR TRESOR] [https://www1.cs.fau.de/tresor kernel patch], which keeps the disk encryption key outside of RAM by storing it inside the CPU. TRESOR does have several limitations. It is only available for the x86 architecture, and it complicates software debugging by disabling DR registers for security reasons. <ref>https://security.stackexchange.com/a/119835</ref> Moreover, a specialized attacker who can reverse engineer hardware designs is also capable of extracting secrets held in processor caches or specialized chips like TPMs.
 
