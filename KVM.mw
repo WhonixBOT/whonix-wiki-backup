@@ -44,21 +44,15 @@ If you are using Debian {{Code2|stable}} (currently: {{Code2|Stretch}}), click o
 
 Update package lists.
 
-<pre>
+{{CodeSelect|code=
 sudo apt-get update
-</pre>
+}}
 
-Install.
+For '''Debian Stretch+''' you need to install:.
 
-<pre>
-sudo apt-get install qemu-kvm libvirt-bin virt-manager
-</pre>
-
-For '''Debian Stretch+''' you need to install:
-
-<pre>
-qemu-kvm libvirt-daemon-system libvirt-clients virt-manager
-</pre>
+{{CodeSelect|code=
+sudo apt-get install qemu-kvm libvirt-daemon-system libvirt-clients virt-manager
+}}
 
 
 
@@ -68,24 +62,24 @@ Unless manually enabled, Apparmor is not activated in a default Debian install f
 
 Install:
 
-<pre>
+{{CodeSelect|code=
 sudo apt-get install apparmor
-</pre>
+}}
 
 Change the following line in grub settings to activate it on start-up:
 
-<pre>
+{{CodeSelect|code=
 sudo nano /etc/default/grub
-</pre>
+}}
 
 <code>GRUB_CMDLINE_LINUX_DEFAULT="quiet"</code>  -> <code>GRUB_CMDLINE_LINUX_DEFAULT="quiet apparmor=1 security=apparmor"</code>
 
 Update the grub configuration and reboot for it to take effect:
 
-<pre>
+{{CodeSelect|code=
 sudo update-grub
 sudo reboot
-</pre>
+}}
 
 
 </div>
@@ -98,9 +92,9 @@ If you are using Arch Linux, click on expand on the right.
 <div class="mw-collapsible-content">
 Update package lists and install.
 
-<pre>
+{{CodeSelect|code=
 sudo pacman -Sy qemu libvirt virt-manager
-</pre>
+}}
 
 </div>
 </div>
@@ -162,26 +156,26 @@ Then save and start the VMs.
 
 In order to be able to manage virtual machines as regular (non-root) user, you need to add that user to the {{Code|libvirt}} and the {{Code|kvm}} group. Assuming the simple use case, that you wish to use KVM with the user you are currently logged in, and assuming you are using Debian, simply use the following command. (On Ubuntu the group names vary and is called '''libvirtd''' instead).
 
-<pre>
+{{CodeSelect|code=
 sudo addgroup "$(whoami)" libvirt
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 sudo addgroup "$(whoami)" kvm
-</pre>
+}}
 
 <ref>
 By default Debian doesn't use sudo so you can add the groups with usermod. If your user is "foo" you would do:
 
-<pre>
+{{CodeSelect|code=
 usermod -a -G libvirt foo
-</pre>
+}}
 
 And.
 
-<pre>
+{{CodeSelect|code=
 usermod -a -G kvm foo
-</pre>
+}}
 </ref>
 
 === Other distributions ===
@@ -189,11 +183,11 @@ usermod -a -G kvm foo
 If you are using other distributions, have a look at your distribution's manual. (Such as [https://wiki.archlinux.org/index.php/libvirt Arch Linux's libvirt wiki page].)
 
 == Reboot ==
-After installation of kvm, reboot is required! After adding users to groups, reboot is required!
+After installation of KVM, reboot is required! After adding users to groups, reboot is required!
 
-<pre>
+{{CodeSelect|code=
 sudo reboot
-</pre>
+}}
 
 == Network Start ==
 
@@ -201,13 +195,13 @@ sudo reboot
 
 Make sure KVM's / QEMU's default networking is enabled and started.<ref>https://forums.whonix.org/t/kvm-networking-broken/644</ref> <ref>https://wiki.debian.org/KVM#Troubleshooting</ref>
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-autostart default
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-start default
-</pre>
+}}
 
 == Build from Scratch ==
 Advanced users are encouraged to [[Dev/Build_Documentation|build]] {{project name}} images for high security assurance.
@@ -240,9 +234,9 @@ For simplicity, so you can copy and paste the following commands without changes
 
 Download [https://www.whonix.org/hulahoop.asc HulaHoop]'s [[OpenPGP]] key from the keyserver.
 
-<pre>
+{{CodeSelect|code=
 gpg --keyserver keys.gnupg.net --recv 04EF2F666D36C354058B9DD450C78B6F9FF2EC85
-</pre>
+}}
 
 The output should confirm the key was imported.
 
@@ -262,9 +256,12 @@ gpg:              unchanged: 1
 
 You may also verify that the key was signed by Patrick for extra assurance.
 
-<pre>
+{{CodeSelect|code=
 gpg --check-sigs "04EF 2F66 6D36 C354 058B 9DD4 50C7 8B6F 9FF2 EC85"
+}}
+Should show:
 
+<pre>
 pub   rsa4096/0x50C78B6F9FF2EC85 2018-11-26 [SCEA]
       04EF2F666D36C354058B9DD450C78B6F9FF2EC85
 uid                   [ unknown] HulaHoop
@@ -287,9 +284,9 @@ Analyze the other messages as usual. This extra message does not relate to the {
 
 Verify archive:
 
-<pre>
+{{CodeSelect|code=
 Whonix*.libvirt.xz.asc
-</pre>
+}}
 
 You should see output that includes:
 
@@ -300,9 +297,9 @@ gpg: Good signature from "HulaHoop"
 === Decompress ===
 Use {{Code2|tar}} to decompress the archive.
 
-<pre>
+{{CodeSelect|code=
 tar -xvf Whonix*.libvirt.xz
-</pre>
+}}
 
 Do not use {{Code2|unxz}}! Extract the images using {{Code2|tar}}.
 
@@ -328,31 +325,31 @@ The supplied XML files serve as a description for libvirt, that tell it what pro
 
 1. Add and activate the virtual networks (settings files also in the same folder as {{project name}} Gateway). If the definition of the {{project name}} internal network fails because the virtual bridge "virbr2" already exists, edit the internal_network*.xml file and change the name to one that doesn't exist, e.g. "virbr3" (you can list all existing bridge adapters with "sudo brctl show"):
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-define Whonix_external*.xml
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-define Whonix_internal*.xml
-</pre>
+}}
 
 
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-autostart external
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-start external
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-autostart internal
-</pre>
+}}
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-start internal
-</pre>
+}}
 
 
 2. Followed by importing the {{project name}} Gateway and Workstation images:
@@ -402,33 +399,15 @@ After importing {{project_name}}, you are advised to delete the archives ({{Code
 
 To delete them.
 
-<pre>
+{{CodeSelect|code=
 rm Whonix*.libvirt.xz
-</pre>
-
-<pre>
 rm Whonix*.asc
-</pre>
-
-{{CodeSelect|code=
 rm -r {{gateway_product_name_short}}*
-}}
-
-{{CodeSelect|code=
 rm -r {{workstation_product_name_short}}*
-}}
-
-<pre>
 rm -r Whonix_external_network*
-</pre>
-
-<pre>
 rm -r Whonix_internal_network*
-</pre>
-
-<pre>
 rm -r WHONIX*
-</pre>
+}}
 
 == Start ==
 If you know Virtual Machine Manager, there is nothing special about starting {{project name}} VMs compared to starting other VMs. First start {{gateway_product_name}}, then start {{workstation_product_name}}.
@@ -510,15 +489,15 @@ virsh -c qemu:///system undefine {{workstation_product_name_short}}
 
 3. Shut down KVM Network {{Code2|Whonix}}.
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-destroy Whonix
-</pre>
+}}
 
 4. Remove Network {{Code2|Whonix}}.
 
-<pre>
+{{CodeSelect|code=
 virsh -c qemu:///system net-undefine Whonix
-</pre>
+}}
 
 5. Delete the images. (All data will be lost unless you made a backup of your valued data.)
 
@@ -559,36 +538,36 @@ If the VM has snapshots that you want to preserve, you should dump the snapshot 
 
 List snapshot names of the VM:
 
-<pre>
+{{CodeSelect|code=
 virsh snapshot-list --name $dom
-</pre>
+}}
 
 Dump each snapshot you want to back-up:
 
-<pre>
+{{CodeSelect|code=
 virsh snapshot-dumpxml $dom $name > file.xml 
-</pre>
+}}
 
 
 
 Then for restoring snapshots at the destination use:
 
-<pre>
+{{CodeSelect|code=
 virsh snapshot-create --redefine $dom file.xml
-</pre>
+}}
 
 
 If you also care about which snapshot is the current one, then additionally do on the source VM:
 
-<pre>
+{{CodeSelect|code=
 virsh snapshot-current --name $dom
-</pre>
+}}
 
 and on the destination:
 
-<pre>
+{{CodeSelect|code=
 virsh snapshot-current $dom $name
-</pre>
+}}
 
 == Nested KVM Virtualization ==
 It's possible to create nested KVM VMs on KVM hosts.
@@ -613,9 +592,9 @@ You may find it easier to move the sparse image files when they are compressed i
 
 To re-compress files use:
 
-<pre>
+{{CodeSelect|code=
 tar -Sczvf whonix.tar.gz <multiple file names separated by spaces>
-</pre>
+}}
 
 == 3D Graphics Acceleration ==
 
@@ -645,20 +624,20 @@ To move data between the guest and host follow these steps. It is recommended to
 
 On the host run the following command in terminal (Start Menu -> Applications -> System -> Terminal).
 
-<pre>
+{{CodeSelect|code=
 sudo mkdir /home/yourusername/shared
-</pre>
+}}
 
 You must adjust permissions on the host to allow read and write access to the folder with chmod:
 
-<pre>
+{{CodeSelect|code=
 sudo chmod 777 /home/yourusername/shared
-</pre>
+}}
 
 Enable shared folders in VirtManager:
 
-<pre>
-VirtManager -> click once on virtual machine -> Edit -> Virtual Machine Details -> Details -> Add Hardware -> File System
+
+<code>VirtManager</code> -> <code>Select VM</code> -> <code>Edit</code> -> <code>Virtual Machine Details</code> -> <code>Details</code> -> <code>Add Hardware</code> -> <code>File System</code>
 </pre>
 
 Set:
@@ -684,19 +663,19 @@ Tests with Apparmor has shown it to operate transparently with shared folders wi
 
 On the host chmod must be applied to the shared folder's contents to access the files:
 
-<pre>
+{{CodeSelect|code=
 sudo chmod 777 -R  /home/yourusername/shared
-</pre>
+}}
 
 
 If you don’t have SELinux enabled everything should work now. If you do, you will need to add a policy for files under your shared folder on your host. SELinux won’t allow you to share this folder until it’s labeled svirt_image_t. Here is how to add this policy on your host using semanage. Note that you will need to re-apply these steps everytime you transfer something:<ref>http://nts.strzibny.name/how-to-set-up-shared-folders-in-virt-manager/</ref><ref>https://unix.stackexchange.com/questions/60799/selinux-interfering-with-host-guest-file-sharing-using-kvm</ref>
 
-<pre>
+{{CodeSelect|code=
 root@host# semanage fcontext -a -t svirt_image_t “/home/yourusername/shared(/.*)?”
-</pre>
-<pre>
+}}
+{{CodeSelect|code=
 root@host# restorecon -vR /home/yourusername/shared
-</pre>
+}}
 
 
 If you are using commandline instead of virt-manager to edit your vm's device settings, add this next section to the xml. 
@@ -721,9 +700,9 @@ Libvirt supports passing through a computer's integrated webcam or any other USB
 
 Then in the ''Details'' pane change the ''Controller USB'' device model:
 
-<pre>
-Hypervisor Default -> USB 2
-</pre>
+
+<code>Hypervisor Default</code> -> <code>USB 2</code>
+
 
 
 While {{workstation_product_name}} is turned off, add four USB Redirection devices or as many as the number of USB ports the machine has to cover them all:
@@ -760,9 +739,9 @@ This isolation method is not fool-proof as a sophisticated attacker can tweak th
 
 Edit the libvirt glib-2.0 schema:
 
-<pre>
-kdesudo kate /usr/share/glib-2.0/schemas/10_virt-manager.gschema.override
-</pre>
+{{CodeSelect|code=
+sudo nano /usr/share/glib-2.0/schemas/10_virt-manager.gschema.override
+}}
 
 
 Change default contents:
@@ -781,9 +760,9 @@ to
 
 Recompile for them to take effect<ref>https://developer.gnome.org/gio/stable/glib-compile-schemas.html</ref> Close all instances of Libvirt/Virtual Machine Manager and restart them for the new settings to apply:
 
-<pre>
+{{CodeSelect|code=
 sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
-</pre>
+}}
 
 
 Add the USB Redirection devices as specified in previous instructions then boot {{workstation_product_name}} and connect the USB thumbdrive. It should be automatically seen in the guest only.
@@ -804,7 +783,7 @@ virsh -c qemu:///system edit {{gateway_product_name_short}}
 == Disable Microphone Input ==
 [[Microphone]] input to guests, while a nice feature for [[VoIP]], is dangerous to have on by default. It is [[Pre_Install_Advice#Microphone|good practice]] to disable the microphone on your host system through sound settings if you are not actively using it.
 
-Its not currently possible to ship a configuration file with the guest microphone input muted. If you need to have the host microphone turned on while denying access to the guest, mute the "virt-manager: record" device that shows up in the host's audio task-bar menu.
+It is not currently possible to ship a configuration file with the guest microphone input muted. If you need to have the host microphone turned on while denying access to the guest, mute the "virt-manager: record" device that shows up in the host's audio task-bar menu.
 
 == Creating Multiple Internal Networks ==
 Open {{project name}} network XML file and change the name attribute to something different than the internal network you are currently running, for example 'Whonix2' 'Whonix3' and so on. The default name used is 'Whonix'.
@@ -820,16 +799,16 @@ Situation... User is in terminal in a VM... No X is running ("sudo service kdm s
 
 The emulated tablet device handles this by not allowing the mouse to be captured by the guest. Its still possible though:
 
-<pre>press Ctrl_L & Alt_L</pre>
+press <code>Ctrl_L & Alt_L</code>
 
 == Setting up gdb to work with qemu-kvm via libvirt ==
 If you want to be able to debug a Linux kernel that’s running as a KVM guest, you need to specify the ‘-s’ parameter for the command line of qemu-kvm. The problem is, there’s no (easy) way to do this when you’re using libvirt and virt-manager to manager your virtual machines, instead of using KVM directly. What you need to do is change the XML configuration of the virtual machine so that the ‘-s’ parameter is passed on to qemu-kvm
 
-<pre>
-virsh edit guestvm
-</pre>
+{{CodeSelect|code=
+virsh edit $guestvm
+}}
 
-Here, guestvm is the name of the VM that is managed via virt-manager. This will bring up the XML configuration of the VM in your editor. The first line of the XML file should be:
+Here, $guestvm is the name of the VM that is managed via virt-manager. This will bring up the XML configuration of the VM in your editor. The first line of the XML file should be:
 
 <pre>
 <domain type='kvm'>
@@ -890,7 +869,7 @@ KSM is a memory de-deuplication feature that conserves memory by combining ident
 Both USB and PCI device passthrough would allow advanced attackers to flash the firmware of those devcies and infect the host or other VMs.<ref>http://docs.openstack.org/security-guide/compute/hardening-the-virtualization-layers.html#physical-hardware-pci-passthrough</ref>
 
 == XML Settings ==
-TODO: Soon here xml settings will be explained here.
+For more info on settings please refer to the [https://libvirt.org/formatdomain.html Libvirt manual]
 
 = Troubleshooting =
 == Reboot? ==
@@ -924,11 +903,11 @@ Verify that:
 - The 'libvirtd' daemon has been started
 </pre>
 
-Check your KVM installation.
+Check your KVM installation:
 
-<pre>
+{{CodeSelect|code=
 sudo service qemu-system-x86 restart ; echo $? ; sudo service libvirt-bin restart ; echo $? ; sudo service libvirt-guests restart ; echo $?
-</pre>
+}}
 
 Should show.
 
@@ -970,16 +949,16 @@ failed to initialize KVM: Device or resource busy
 Maybe you have other non-KVM VMs, such as VirtualBox VMs already running? This is not possible. Running two hypervisors at the same time is not supported by KVM / VirtualBox.
 
 == Permissions ==
-<pre>
+{{CodeSelect|code=
 ls -la /var/run/libvirt/libvirt-sock
-</pre>
+}}
 
 == Add Version Numbers to Support Request ==
 Having issues, make sure you add what versions of libvirt-bin, qemu-kvm and virt-manager you are using. If you are using Debian, you can use the following command to determine them.
 
-<pre>
+{{CodeSelect|code=
 dpkg-query --show --showformat='${Package} ${Version} \n' libvirt-bin qemu-kvm virt-manager
-</pre>
+}}
 
 == User Help Forum ==
 [https://forums.whonix.org/c/kvm {{project name}} KVM User Help Forum]
