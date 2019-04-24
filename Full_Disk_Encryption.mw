@@ -86,24 +86,29 @@ Encrypted containers have the advantages of flexibility and mobility of folders,
 
 == Zulucrypt ==
 
-Zulucrypt is the Linux answer to encrypted containers, making use of tried and true LUKS crypto back-end. It is compatible with tomb files and also capable of reading and creating Truecrypt/Veracrypt containers. Note that Veracrypt containers only support password lengths of 64  characters, but LUKS has a maximum value of 32767, though a recent bug that was fixed had limited it only to 100.<ref>https://github.com/mhogomchungu/zuluCrypt/issues/113</ref> Until it is possible to directly use 20 word diceware passphrases to lock LUKS containers, it is recommended to use [[Passwords#Guidelines|makepasswd]] to generate 43 character strings which can then be pasted in a text file that is encrypted with GPG which doesn't have low character limits - essentially creating a makeshift key file.
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = As of the next point release in {{project name}} 15, Zulucrypt is included by default. In the {{project name}} command line version, containers can be managed from the terminal with <code>zulucrypt-cli</code>.
+}}
 
-As of the next point release in {{project name}} 15, Zulucrypt is included by default. On {{project name}} command line version, there is <code>zulucrypt-cli</code> for managing containers from the terminal.
 
-Containers grow dynamically as more data is added. Opened containers are  mounted under <code>/run/media/private/user</code>. More than one password may be added for access, making use of LUKS key slots feature behind the scenes.
+Zulucrypt is the Linux answer to encrypted containers, making use of the reliable LUKS disk encryption specification. It is compatible with encrypted [https://www.dyne.org/software/tomb/ tomb files] and also capable of reading and creating Truecrypt / [https://www.veracrypt.fr/en/Home.html VeraCrypt] containers. Note that Veracrypt containers only support a maximum password length of 64 characters, but LUKS has a maximum value of 32,767 (although a recently fixed bug had limited it to only 100 characters). <ref>https://github.com/mhogomchungu/zuluCrypt/issues/113</ref> Until it is possible to use 20-word diceware passphrases to lock LUKS containers, it is recommended to use [[Passwords#Guidelines|makepasswd]] to generate 43 character strings. These can then be pasted into a text file that is encrypted with GPG -- which does not have low character limits -- essentially creating a makeshift key file.
+
+Containers grow dynamically as more data is added. Opened containers are  mounted under <code>/run/media/private/user</code>. More than one password may be added for access, making use of LUKS' key slots feature behind the scenes. <ref>https://crypto.stackexchange.com/questions/24022/luks-multiple-key-slots-whats-the-intuition</ref>
 
 === Recommended Security Settings ===
 
-* <u>Important Note:</u> You will want to use the <code>aes.xts-plain64.512.sha512</code> option instead for 256-bit encryption to have post-quantum resistance. (Recall that encryption key-size is split in two with XTS mode). 
+<u>Important Note:</u> In order to have post-quantum resistance, the <code>aes.xts-plain64.512.sha512</code> option is recommended for 256-bit encryption (the encryption key-size is split in two with XTS mode). 
 
-To view the container header run:
+To view the container header, run.
 {{CodeSelect|code=
 sudo cryptsetup luksDump --debug /home/user/<file_name>
 }}
 
-With LUKS, one can also nest containers of different encryption ciphers by placing a Serpent and Twofish container inside each other wrapped in an outer AES one. Make sure the <code>.xts-plain64.512.sha512</code> variants are selected in all cases. Each level inside should be 1 MB less than the outer layer to allow space for each container's respective encryption header. 
+With LUKS it is possible to nest containers of different encryption ciphers; for example, by placing a Serpent and Twofish container inside each other, wrapped in an outer AES one. Be sure to select the <code>.xts-plain64.512.sha512</code> variants in all cases. Each inner layer should be 1 MB less than the outer layer to allow space for each container's respective encryption header. 
 
-The plausible deniability feature is available with volume types <code>Normal+Hidden Truecrypt/Veracrypt</code>. Veracrypt volumes support crypto-cascades as a feature so no manual nesting is necessary. However be warned that Truecrypt/Veracrypt volume types only support AES-128.
+The plausible deniability feature is available with volume types <code>Normal+Hidden Truecrypt/Veracrypt</code>. Veracrypt volumes support crypto-cascades as a feature, so manual nesting is unnecessary. However, be warned that Truecrypt/Veracrypt volume types only support AES-128.
 
 = Additional Measures =
 
