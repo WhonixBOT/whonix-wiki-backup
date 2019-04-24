@@ -35,12 +35,12 @@ Configuring FDE during system install is straightforward. The default cipher is 
 
 Gnome Disks Utility creates LUKS partitions with AES-128 by default which is insufficient in event of quantum computers materializing. This has been successfully reported and fixed upstream as of February 2019, <ref>https://github.com/storaged-project/libblockdev/issues/416</ref> <ref>https://github.com/vpodzime/libblockdev/commit/9dc4e2463860810cac5a1dbfb7064c47200260f6</ref> but until it lands in Debian, an appropriately secure container must be manually created. Afterwards, unlock the device and format the internal filesystem as EXT4 in Gnome Disks. 
 
-First enumerate the device. They will usually be called 'sdb1', as sdaX is reserved for the system on default installs. To avoid confusion, only connect one removable device at a time:
+First enumerate the device. They will usually be called 'sdb1', as sdaX is reserved for the system on default installs. To avoid confusion, only connect one removable device at a time.
 {{CodeSelect|code=
 # ls /dev/
 }}
 
-Create a LUKS container and change the device name as needed, then follow the prompts:
+Create a LUKS container and change the device name as needed, then follow the prompts.
 {{CodeSelect|code=
 # cryptsetup -v --cipher aes-xts-plain64 --key-size 512 --use-random luksFormat <device>
 }}
@@ -49,12 +49,12 @@ Create a LUKS container and change the device name as needed, then follow the pr
 
 It is safer to re-encrypt the device with a stronger key rather than performing a quick format that will otherwise leave the old/weaker header intact. 
 
-First enumerate the device. They will usually be called 'sdb1', as sdaX is reserved for the system on default installs. To avoid confusion, only connect one removable device at a time:
+First enumerate the device. They will usually be called 'sdb1', as sdaX is reserved for the system on default installs. To avoid confusion, only connect one removable device at a time.
 {{CodeSelect|code=
 # ls /dev/
 }}
 
-To view the LUKS header data in order to make necessary adjustments, run:
+To view the LUKS header data in order to make necessary adjustments, run.
 {{CodeSelect|code=
 # cryptsetup luksDump --debug <device>
 }}
@@ -65,7 +65,7 @@ LUKS header data legend:
 * AES in XTS mode uses a key size double its bit size (512 in this case) since in XTS the key is split in 2, resulting in AES with 256-bit keys. <ref>https://unix.stackexchange.com/questions/254017/how-to-interpret-cryptsetup-benchmark-results</ref>
 * 'Payload offset' is 4096 for 256-bit keys and 2048 for 128-bit keys. <ref>https://wiki.archlinux.org/index.php/dm-crypt/Device_encryption#Re-encrypting_an_existing_LUKS_partition</ref>
 
-Re-encrypt the device with stronger keys. <ref>https://jlk.fjfi.cvut.cz/arch/manpages/man/cryptsetup-reencrypt.8</ref> Fortunately, header resizing is usually unnecessary (otherwise it will abort the process):
+Re-encrypt the device with stronger keys. <ref>https://jlk.fjfi.cvut.cz/arch/manpages/man/cryptsetup-reencrypt.8</ref> Fortunately, header resizing is usually unnecessary (otherwise it will abort the process).
 {{CodeSelect|code=
 # cryptsetup-reencrypt <device> -c aes-xts-plain64 -s 512 --use-directio
 }}
@@ -79,7 +79,7 @@ Abruptly disconnecting power can cause data loss. To safely pause the process (i
 }}
 
 
-If unauthorized access is strongly suspected or confirmed, the hardware should not be trusted or used after it is back in the user's possession. This scenario is only relevant to a smaller subset of users who are already targeted for physical surveillance. A sufficiently skilled adversary can infect it with spyware or sabotage it in a number of ways that are virtually undetectable. For example, malicious firmware could be installed to record all activities, or the machine rendered inoperable by bricking the hardware. In that eventuality, none of the measures outlined will help.
+If unauthorized access is strongly suspected or confirmed, the hardware should not be trusted or used after it is back in your possession. This scenario is only relevant to a smaller subset of users who are already targeted for physical surveillance. A sufficiently skilled adversary can infect it with spyware or sabotage it in a number of ways that are virtually undetectable. For example, malicious firmware could be installed to record all activities, or the machine rendered inoperable by bricking the hardware. In that eventuality, none of the measures outlined will help.
 
 = Encrypted Containers =
 Encrypted containers have the advantages of flexibility and mobility of folders, allowing users to add more files on the fly without needing re-compression and re-encryption as in the case of using GPG.
