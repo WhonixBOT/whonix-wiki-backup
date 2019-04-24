@@ -371,7 +371,7 @@ See the manual for more commands <ref>http://linux.die.net/man/1/qemu-img</ref>
 == Moving {{project name}} Image Files ==
 The XML files are configured to point to the default storage location of: /var/lib/libvirt/images These steps will show how to move the images there in order for the machines to boot.
 
-Note: It is highly recommended you use this default path for storing the images to avoid any conflicts with AppArmor or SELinux, which will prevent the machines from booting.
+Note: Changing the default location may conflict with SELinux, which will prevent the machines from booting.
 
 It is recommended to move the image files instead of copying them:
 
@@ -393,6 +393,15 @@ sudo cp --sparse=always {{gateway_product_name_short}}*.qcow2 /var/lib/libvirt/i
 {{CodeSelect|code=
 sudo cp --sparse=always {{workstation_product_name_short}}*.qcow2 /var/lib/libvirt/images/{{workstation_product_name_short}}.qcow2
 }}
+
+
+It is possible to run image files from encrypted containers. sVirt protections are confirmed to be in effect for image files at alternative locations.
+
+Change the permissions on the container mount point directory so virtual machine manager can access the image. In Zulucrypt containers are mounted under <code>/run/media/private/user</code>:<ref>https://forums.whonix.org/t/cant-use-var-lib-libvirt-images-for-whonix-images-what-to-do-about-apparmor/7192/3</ref>
+{{CodeSelect|code=
+chmod og+xr /run/media/private/user/$container_name
+}}
+
 
 == Cleanup ==
 After importing {{project_name}}, you are advised to delete the archives ({{Code2|.libvirt.xz}} files) and the temporarily extracted folders or to move them into a custom location. This is useful to avoid conflicts and confusion should you later download a new version of Whonix.
