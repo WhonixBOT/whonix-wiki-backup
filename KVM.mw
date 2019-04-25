@@ -6,7 +6,7 @@
 
 = General =
 == What is KVM? ==
-For an openly developed, free and open-source software (FOSS), [https://www.gnu.org/licenses/gpl-3.0.en.html GPL] licensed hypervisor that can run Whonix, <ref>There are also [[Main_Page#Download_Whonix|other platforms]].</ref> it is recommended to use [https://www.linux-kvm.org/page/Main_Page Kernel Virtual Machine (KVM)] that comes with the GNU/Linux OS. KVM combined with the [https://virt-manager.org/ VirtualMachineManager] front-end should provide a familiar, intuitive and easy-to-use GUI.
+For an openly developed, free and open-source software (FOSS), GPL licensed hypervisor that can run Whonix, <ref>There are also [[Main_Page#Download_Whonix|other platforms]].</ref> it is recommended to use [https://www.linux-kvm.org/page/Main_Page Kernel Virtual Machine (KVM)] that comes with the GNU/Linux OS. KVM combined with the [https://virt-manager.org/ VirtualMachineManager] front-end should provide a familiar, intuitive and easy-to-use GUI.
 
 For a detailed view on KVM's security merits read the [https://www.atsec.de/fileadmin/user_upload/whitepaper/kvm_security_comparison.pdf audit report] issued by an independent security auditing firm.
 
@@ -27,8 +27,7 @@ VirtualBox also contains significant functionality that is only available as a p
 
 = KVM Setup Instructions =
 == Before installing == 
-
-Read the entries in the [[Documentation|Computer Security Education]] section and apply pre-installation security advice that applies to your platform.
+{{Computer Security Education}}
 
 == Install KVM ==
 {{Anchor|Debian stable}}
@@ -39,43 +38,45 @@ If you are using Debian {{Code2|stable}} (currently: {{Code2|Stretch}}), click o
 <div class="mw-collapsible-content">
 {{Sudo_Setup}}
 
-Update the package lists.
+Update package lists.
 
 {{CodeSelect|code=
 sudo apt-get update
 }}
 
-For Debian {{Code2|Stretch+}}, install the following packages.
+For '''Debian Stretch+''' you need to install:.
 
 {{CodeSelect|code=
 sudo apt-get install qemu-kvm libvirt-daemon-system libvirt-clients virt-manager
 }}
 
-==== AppArmor ====
 
-For sVirt to take advantage of AppArmor it must be enabled manually (default Debian installs have it disabled).
 
-Install AppArmor.
+'''Apparmor'''
+
+Unless manually enabled, Apparmor is not activated in a default Debian install for sVirt to take advantage of. 
+
+Install:
 
 {{CodeSelect|code=
 sudo apt-get install apparmor
 }}
 
-Change the following line in grub settings so AppArmor is activated upon boot.
+Change the following line in grub settings to activate it on start-up:
 
 {{CodeSelect|code=
 sudo nano /etc/default/grub
 }}
 
-* Change: <code>GRUB_CMDLINE_LINUX_DEFAULT="quiet"</code>
-* To: <code>GRUB_CMDLINE_LINUX_DEFAULT="quiet apparmor=1 security=apparmor"</code>
+<code>GRUB_CMDLINE_LINUX_DEFAULT="quiet"</code>  -> <code>GRUB_CMDLINE_LINUX_DEFAULT="quiet apparmor=1 security=apparmor"</code>
 
-Update the grub configuration and then reboot for it to take effect.
+Update the grub configuration and reboot for it to take effect:
 
 {{CodeSelect|code=
 sudo update-grub
 sudo reboot
 }}
+
 
 </div>
 </div>
@@ -85,7 +86,7 @@ sudo reboot
 If you are using Arch Linux, click on expand on the right.
 
 <div class="mw-collapsible-content">
-Update the package lists and install the following packages.
+Update package lists and install.
 
 {{CodeSelect|code=
 sudo pacman -Sy qemu libvirt virt-manager
@@ -96,12 +97,12 @@ sudo pacman -Sy qemu libvirt virt-manager
 
 === Other Distributions ===
 <div class="toccolours mw-collapsible mw-collapsed">
-If you are using a Linux distribution that is not documented above, click on expand on the right.
+If you are using a Linux distribution, that is not documented above, click on expand on the right.
 
 <div class="mw-collapsible-content">
-It is necessary to install both qemu-kvm and libvirt-bin. virt-manager is also required in order to use a graphical user interface. The required software can probably be installed using your usual distribution's package manager.
+You need to have qemu-kvm and libvirt-bin. If you want to use a graphical user interface, which you most likely want, you also need virt-manager. Likely the required software can be installed using your usual distribution's package manager.
 
-If any of the following errors appear when later using {{Code|virsh define}}.
+If you get one of the following errors while later using {{Code|virsh define}}.
 
 {{CodeSelect|code=
 error: Failed to define domain from {{gateway_product_name_short}}_kvm-8.6.2.8.xml
@@ -119,25 +120,25 @@ Relax-NG validity error : Extra element devices in interleave
 {{gateway_product_name_short}}_kvm-8.6.2.8.xml fails to validate
 }}
 
-Then a more recent version of libvirt and kvm is likely needed.
+Then you most likely need a more recent version of libvirt and kvm.
 
 </div>
 </div>
-This section may be freely edited to share detailed instructions for other distributions!
+Please feel free to share detailed instructions for other distributions!
 
-== Notice: Arch Users ==
+== Notice ==
 
-As of March 2019, it has been reported that the blkio throttling feature appears to be missing/unsupported on the latest Arch version, leading to VM boot failures. <ref>https://forums.whonix.org/t/problem-starting-whonix-14-after-upgrade-unable-to-write-to-sys-fs-cgroup-blkio-m achine-slice-machine-qemu/6999/5</ref> As a workaround, the feature must currently be removed in both {{gateway_product_name_short}} and {{workstation_product_name_short}}.
+'''Arch Users'''
+
+It's been reported that the blkio throttling feature seems to be missing/unsupported on the latest Arch version as of March 2019. This causes VM start up to fail.<ref>https://forums.whonix.org/t/problem-starting-whonix-14-after-upgrade-unable-to-write-to-sys-fs-cgroup-blkio-m achine-slice-machine-qemu/6999/5</ref> To work around this the feature must be removed for now:
 
 {{CodeSelect|code=
 sudo virsh edit {{gateway_product_name_short}}
 }}
 
-{{CodeSelect|code=
-sudo virsh edit {{workstation_product_name_short}}
-}}
+then same for ‘{{workstation_product_name_short}}’
 
-Remove the following setting.
+Strip out this setting:
 
 <pre style="white-space: pre-wrap;">
  <blkiotune>
