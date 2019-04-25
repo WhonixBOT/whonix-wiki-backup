@@ -1,0 +1,54 @@
+{{Header}}
+{{#seo:
+|description=Versioning Format Conventions for software developed under the {{project name}} hat
+}}
+{{forkme}}
+__FORCETOC__
+
+= Versioning Format Conventions =
+== Package Version Numbers ==
+For individual packages ([https://github.com/{{project_name_short}} list]) developed under the {{project name}} umbrella, currently happens as follows. More or less as a custom, as a convention. Not by a finalized master plan.
+
+1) Git commits to specific packages are being made.<br/>
+2) Eventually, more git commit to specific packages are being made.<br/>
+3) When the maintainer of the package feels, that substantial changes have been made, the {{Code2|debian/changelog}} version will be bumped. This is done using {{Code2|make deb-uachl-bumpup}}, which updates {{Code2|changelog.upstream}} and bumps {{Code2|debian/changelog}} version. The commit message mostly is "{{Code2|bumped changelog version}}". Let's call this state by convention the {{Code2|finalized version commit}} to ease discussing this.<br/>
+4) Eventually, if someone requested it or if that version is supposed to become a {{project name}} ({{Code2|developers-only}}, {{Code2|testers-only}} or {{Code2|stable}}) release, git tags will be signed. <ref>
+To ease this, the following commands will be used.
+
+To sign the git tag.
+<pre>
+make git-tag-sign
+</pre>
+
+To verify that the git tag can be verified and that the git hash it points to is itself a signed git commit.
+<pre>
+make git-verify
+</pre>
+This is not a requirement, these commands are just shortcuts.
+</ref><br/>
+5) Development continues. More git commits are being made. At this point, what {{Code2|debian/changelog}} version says will be false, outdated. This is non-ideal, but no one suggested how it could be done any better.<br/>
+6) Back to 1).<br/>
+
+If other substantial changes happen, such as if the generic makefile is being updated, this also deserved bumping the version number.
+
+The format is: <code>[epoch:]upstream_version[-debian_revision]</code> as defined per [https://www.debian.org/doc/debian-policy/ch-controlfields.html#s-f-Version Debian Policy, Version].
+
+Epoch is currently set to {{Code2|3}} for historic reasons.
+
+The very first upstream version is usually {{Code2|0.1}}. Usually incremented by {{Code2|0.1}} (i.e. for example from {{Code2|1.9}} to {{Code2|2.0}} and so forth). Usually means, at the discretion of the package maintainer different upstream versions can be used.
+
+Debian revision is currently always set to {{Code2|1}} and not in use because most changes are not packaging changes, but upstream package changes and because upstream author currently equals packager and because packages are not uploaded to Debian yet where one would just fix the packaging but leave the upstream version as is.
+
+== {{project name}} Version Numbers ==
+The [https://github.com/{{project_name_short}}/{{project_name_short}} {{project name}} main source code / build script] references all the individual packages using git submodules. It points to specific git commits of the individual packages.
+
+For ({{Code2|testers-only}} and {{Code2|stable}}) releases, by convention, all packages must point to {{Code2|finalized version commit}}s. <ref>
+{{Code2|finalized version commit}} as defined above.
+</ref> This is useful so users can refer to package versions as dpkg reports them. (Example: {{Code2|dpkg -l | grep sdwdate}}.) Otherwise it would be version {{Code2|3:0.8-1 + git~5}} or something like that, which would be very unusable. This does not  does not apply for {{Code2|developers-only}} releases, because those are sometimes only used for quick tests to see if the build script still runs through without any issues.
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Development]]
