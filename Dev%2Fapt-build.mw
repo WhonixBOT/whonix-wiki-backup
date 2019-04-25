@@ -1,0 +1,80 @@
+{{#seo:
+|description=apt-build - Installing / Upgrading Debian from Source Code
+}}
+{{Header}}
+{{forkme}}
+__FORCETOC__
+
+= Introduction =
+{{Code2|apt-build}}:<br />
+https://packages.debian.org/search?keywords=apt-build
+
+{{Code2|apt-build}} is an orphaned package:<br />
+https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=365427
+
+Eventual security issue, see discussion:<br />
+https://lists.debian.org/debian-security/2015/03/msg00020.html
+
+= Ticket =
+Mirrored from:<br />
+https://phabricator.whonix.org/T207
+
+Mirrored to:<br />
+https://github.com/{{project_name_short}}/{{project_name_short}}/issues/400
+
+On bountysource:<br />
+https://www.bountysource.com/issues/9115540
+
+= How =
+'''Untested!'''
+
+Become root.
+<pre>
+sudo su
+</pre>
+
+{{Code2|apt-cacher-ng}} *might* speed up compilation. Not exactly compilation, but *might* prevent downloading the same source packages over and over again from the internet.
+<pre>
+apt-get update
+apt-get install apt-cacher-ng
+export http_proxy=http://127.0.0.1:3142
+apt-get update
+</pre>
+
+ccache *might* help speed up compilation. Consider installation of {{Code2|ccache}}.
+
+<pre>
+apt-get install ccache
+</pre>
+
+There is also {{Code2|distcc}}, a distributed compile cache, but setting that up on a cluster looks more complicated. Consider using {{Code2|distcc}}, perhaps later.
+
+Install {{Code2|apt-build}}.
+<pre>
+apt-get install apt-build
+</pre>
+
+Keep the defaults for now.
+
+As per {{Code2|/usr/share/doc/apt-build/README.Debian}}.
+
+<pre>
+echo 'Package: *
+Pin: origin ""
+Pin-Priority: 800' > /etc/apt/preferences.d/aptpinning
+</pre>
+
+As per {{Code2|/usr/share/doc/apt-build/README.Debian}}.
+<pre>
+dpkg --get-selections | \
+	awk '{if ($2=="install") print $1}' > /etc/apt/apt-build.list
+</pre>
+
+System wide rebuild.
+<pre>
+apt-build world
+</pre>
+
+[[Category:Design]]
+
+{{Footer}}
