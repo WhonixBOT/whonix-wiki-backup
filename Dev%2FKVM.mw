@@ -130,85 +130,6 @@ Ongoing. Interesting developments worth watching out for at https://gruss.cc
 None.
 
 = Done =
-== clocksource ==
-<pre>
-cat /sys/devices/system/clocksource/clocksource0/available_clocksource
-</pre>
-
-<pre>
-refined-jiffies jiffies
-</pre>
-
-<pre>
-cat /sys/devices/system/clocksource/clocksource0/current_clocksource
-</pre>
-
-<pre>
-refined-jiffies
-</pre>
-
-https://forums.whonix.org/t/available-clocksource-current-clocksource
-
-== Upcoming XML Changes - Stable Next ==
-When Stretch hits stable disable:
-
-smm which is not even supported by qemu yet.
-
-Check if switch to virtio-input devices means virtio=serial can now be removed.
-
-== Apply Clean-filter traffic? ==
-
-Advantages are its easy to set a new IP for a new WS. Has many rules to prevent MAC, IP, ARP spoofing. Can also protect the GW from DoS by using connection tracking and rate-limiting.
-
-Sounds good but I still think a completely separate internal network is the best option to ensure separartion between multi WSs. The GW should be able to withstand DoS on its own or there will be big problems. I think its safer if libvirt knows nothing about the traffic on the internal network and does not parse anything on there.
-
-To have a multi-WS implementation with different internal networks likely requires a big effort on the {{project name}} development side. Not worth it when setting a new GW is easy and costs little resources - also provides more assurance against theoretical attacks on a shared GW.
-
-== RNG ==
-
-===Rate limit===
-This is necessary to prevent malicious entropy starvation of other VMs and the host.
-
-Test code for /dev/random throughput<ref>https://unix.stackexchange.com/questions/13771/dd-if-dev-random-is-randomly-bottlenecked-with-big-time-lags-but-i-have-no-i</ref>
-
-<pre>dd if=/dev/random bs=1k count=1</pre>
-
-Re-reading the article it seems the choice made is OK. The limit sets the max a guest can use to be 25% of that of the host.
-
-<pre>
-/dev/random provides high quality numbers but stops when entropy is poor: the Linux kernel keeps a entropy pool of 4 KB (see /proc/sys/kernel/random/poolsize); when the pool is empty, the kernel blocks causing a delay until it can provide the requested random numbers.
-</pre>
-
-https://www.certdepot.net/rhel7-get-started-random-number-generator/
-
-<pre>
-Note: Just after <rng model=’virtio’>, you can add a line like <rate bytes=’1024′ period=’1000’/> to prevent a guest from consuming more than 1 KB per second of pseudo random numbers. Otherwise, one single guest could consume all the available pseudo random numbers at the expense of all the others.
-</pre>
-
-Also applied for GW since some crypto requiring operations under the control of WS processes can abuse the entropy available to it if unchecked.
-
-===Haveged===
-
-Cross-posted
-
-    haveged relies on the RDTSC instruction, that apparently is useless in some virtualized environments. Also, the quality of random numbers output by HAVEGE is unclear, and the topic of many discussions.
-
-https://tails.boum.org/contribute/design/random/#rngd
-
-haveged is not useful on KVM 
-
-rdtsc or any tsc counter provides very accurate clock tick information so better to block.
-
-== blkiotune ==
-
-Its possible to limit IO throughput per VM however with disk speeds varying a lot it will be impossible to find an option that makes sense for everybody. Nonetheless still interesting to have. Documented below is a IO test and how to set limits.
-
-https://fedoraproject.org/wiki/QA:Testcase_Virtualization_IO_Throttling
-
-== Secure Clipboard ==
-
-https://bugzilla.redhat.com/show_bug.cgi?id=1320263
-
 
 == Biometric Fingerprinting ==
 
@@ -370,6 +291,86 @@ https://github.com/vmonaco/kloak
 
 mouse movement defense:
 Upcoming
+
+== clocksource ==
+<pre>
+cat /sys/devices/system/clocksource/clocksource0/available_clocksource
+</pre>
+
+<pre>
+refined-jiffies jiffies
+</pre>
+
+<pre>
+cat /sys/devices/system/clocksource/clocksource0/current_clocksource
+</pre>
+
+<pre>
+refined-jiffies
+</pre>
+
+https://forums.whonix.org/t/available-clocksource-current-clocksource
+
+== Upcoming XML Changes - Stable Next ==
+When Stretch hits stable disable:
+
+smm which is not even supported by qemu yet.
+
+Check if switch to virtio-input devices means virtio=serial can now be removed.
+
+== Apply Clean-filter traffic? ==
+
+Advantages are its easy to set a new IP for a new WS. Has many rules to prevent MAC, IP, ARP spoofing. Can also protect the GW from DoS by using connection tracking and rate-limiting.
+
+Sounds good but I still think a completely separate internal network is the best option to ensure separartion between multi WSs. The GW should be able to withstand DoS on its own or there will be big problems. I think its safer if libvirt knows nothing about the traffic on the internal network and does not parse anything on there.
+
+To have a multi-WS implementation with different internal networks likely requires a big effort on the {{project name}} development side. Not worth it when setting a new GW is easy and costs little resources - also provides more assurance against theoretical attacks on a shared GW.
+
+== RNG ==
+
+===Rate limit===
+This is necessary to prevent malicious entropy starvation of other VMs and the host.
+
+Test code for /dev/random throughput<ref>https://unix.stackexchange.com/questions/13771/dd-if-dev-random-is-randomly-bottlenecked-with-big-time-lags-but-i-have-no-i</ref>
+
+<pre>dd if=/dev/random bs=1k count=1</pre>
+
+Re-reading the article it seems the choice made is OK. The limit sets the max a guest can use to be 25% of that of the host.
+
+<pre>
+/dev/random provides high quality numbers but stops when entropy is poor: the Linux kernel keeps a entropy pool of 4 KB (see /proc/sys/kernel/random/poolsize); when the pool is empty, the kernel blocks causing a delay until it can provide the requested random numbers.
+</pre>
+
+https://www.certdepot.net/rhel7-get-started-random-number-generator/
+
+<pre>
+Note: Just after <rng model=’virtio’>, you can add a line like <rate bytes=’1024′ period=’1000’/> to prevent a guest from consuming more than 1 KB per second of pseudo random numbers. Otherwise, one single guest could consume all the available pseudo random numbers at the expense of all the others.
+</pre>
+
+Also applied for GW since some crypto requiring operations under the control of WS processes can abuse the entropy available to it if unchecked.
+
+===Haveged===
+
+Cross-posted
+
+    haveged relies on the RDTSC instruction, that apparently is useless in some virtualized environments. Also, the quality of random numbers output by HAVEGE is unclear, and the topic of many discussions.
+
+https://tails.boum.org/contribute/design/random/#rngd
+
+haveged is not useful on KVM 
+
+rdtsc or any tsc counter provides very accurate clock tick information so better to block.
+
+== blkiotune ==
+
+Its possible to limit IO throughput per VM however with disk speeds varying a lot it will be impossible to find an option that makes sense for everybody. Nonetheless still interesting to have. Documented below is a IO test and how to set limits.
+
+https://fedoraproject.org/wiki/QA:Testcase_Virtualization_IO_Throttling
+
+== Secure Clipboard ==
+
+https://bugzilla.redhat.com/show_bug.cgi?id=1320263
+
 
 == CPU Masking ==
 
