@@ -1,0 +1,81 @@
+{{Header}}
+{{#seo:
+|description=General, non-{{project_name}} related, enhancements that would be useful for Qubes Split GPG.
+}}
+
+General, non-{{project_name}} related, enhancements that would be useful for Qubes Split GPG.
+
+== Questions ==
+
+* Could /usr/bin/qubes-gpg-client-wrapper used from the gpg client VM be used to delete the keys in the gpg server VM?
+
+== Notification Enhancement ==
+The current notification...
+<pre>
+Keyring access from domain:
+work-mail
+</pre>
+is not that secure.
+* Gets unnoticed when being away. (A compromised VM could wait for that.)
+* Mass requests could not be stopped early enough.
+* Popup not using the [https://github.com/QubesOS/qubes-issues/issues/889 Centralized Tray Notification] (not yet implemented) - so popups are easily missed when being away for a short time. 
+* Reading one mail in enigmail results in 3 popups flashing up. Users are accustomed to that popup spam. The malicious request could be sneaked in unnoticed into that.
+
+== show input to be processed by Split GPG Server ==
+
+The Split GPG server VM could show and request each and every gpg command to be executed.
+
+Purpose:
+
+* Preventing gpg from being exploited by maliciously crafted input by having the user manually have a look if the input looks strange.
+
+<pre>
+Going to run the following command:
+
+/usr/bin/qubes-gpg-client-wrapper --charset utf-8 --display-charset utf-8 --no-emit-version --no-comments --display-charset utf-8 --batch --no-tty --status-fd 2 --max-output 487200 --decrypt --use-agent
+
+Content of stdin is:
+
+```
+-----BEGIN PGP MESSAGE-----
+....
+-----END PGP MESSAGE-----
+```
+
+Okay?
+Yes | No [default]
+</pre>
+
+== Show processed output of GPG Server VM before relaying back ==
+The Split GPG server VM could show the output of a request before sending it back to the client VM.
+
+Purpose:
+
+* Have the user check if what has been decrypted looks like expected. I.e. seeing an old mail being decrypted that was not requested could alert the user, that the gpg client VM has likely been compromised.
+* Have the user only sign documents the user really wanted to sign and not maliciously altered copy.
+
+<pre>
+The output of the following command:
+
+ /usr/bin/qubes-gpg-client-wrapper --charset utf-8 --display-charset utf-8 --no-emit-version --no-comments --display-charset utf-8 --batch --no-tty --status-fd 2 --max-output 487200 --decrypt --use-agent
+
+was:
+
+```
+decrypted text goes here
+```
+
+Send back to gpg client VM?
+
+Yes | No [default]
+</pre>
+
+== x ==
+--yes
+--set-notation
+--sign-with
+--output
+reprepro
+
+{{Footer}}
+[[Category:Development]]
