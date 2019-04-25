@@ -1,0 +1,133 @@
+{{Header}}
+
+= Overview =
+The work outlined here is specifically focused on what could be done in a year with funding, though these goals should be considered as a larger roadmap for {{project name}} development in general. This roadmap is focused on three goals: 
+
+# make {{project name}} more sustainable by making it easier for the community to engage and contribute code
+# make {{project name}} more secure
+# make {{project name}} more usable by average users in repressive situations
+
+= Sustainability =
+Given that {{project name}} was created by the community and is supported by the community, it is of the utmost importance that {{project name}} continues to do so.
+
+
+== Contribution Scalability and Security Improvement ==
+{{project_name}} consists of roughly 25.000 lines of code. Mostly all in one git repository. To streamline the development {{project name}} source code, it would be better if {{project name}} was split into multiple packages. That would make it simpler to grasp {{project name}} architecture, make it simpler to contribute to {{project_name}}, simpler to audit the critical parts of {{project name}} and simpler to port {{project name}} to other targets.
+
+== /etc/tor.d/ ==
+'''[ - ]'''
+
+<s>We should pay The Tor Project (if they are willing) or someone else to implement [https://trac.torproject.org/projects/tor/ticket/1922 torrc.d-style configuration directories] (open for 4 years already). This feature is required for more robust and simplified implementation of features such as easier set up for bridges (just dropping a config snippet rather than programmability editing /usr/local/etc/torrc.d/50_user.conf) or features such as "sudo apt-get install wordpress-hidden-service".</s> <ref>This is now implemented in Tor v0.3.1.1-alpha.</ref>
+
+= Security =
+{{project name}} primary goal is security, without it nothing matters.'''
+'''Patrick, can you expand the issues in this section and make them each focused, say 3 main security issues that should be dealt with over the next year'''
+
+== Leak Test Expert Review ==
+'''[ - ]''' <br />
+'''Added April 2014'''
+
+{{project name}} firewall is the heart of {{project name}} security, preventing leaks, routing everything over Tor. We've done [[Dev/Leak Tests]], but an expert in iptables / networking should audit {{project name}} for leaks. This can be done by a one time project contractor position.
+
+== More Secure and Usable Download Mechanism ==
+'''[ - ]'''
+
+To avoid man-in-the-middle capable adversaries exploiting whonix.org visitors or advising them to do malicious things, on whole whonix.org https is enforced. As alternative authentication, {{project name}} website is reachable by an .onion address, because those are encrypted end-to-end by default and an alternative to the CA cartel. Due to the nature of {{project name}} project, {{project name}} downloadable files are big. Neither {{project name}} nor most other Linux distributions are capable to ship their downloadable files over https. Hence, most files are downloaded for most projects are downloaded from unauthenticated http - an invitation for man-in-the-middle attacks.
+
+To circumvent this, many projects such as {{project name}} provide cryptographic checksums (sha) and/or OpenPGP signatures. A past usability experiment on our [[Download]] page helped to increase the number of people who do OpenPGP verification from 1 in ~32 to 1 in ~10 used OpenPGP verification. (The full experiment is documented on the [[Dev/Download_Statistics]] page.) Too few users are doing it, even though the requreed steps are documented and the importance is highlighted. Probably due to time constraints and due to usability issues with the popular free OpenPGP implementation gnupg.
+
+A solution to this dilemma is to build the verification mechanism directly into the browser. [https://en.wikipedia.org/wiki/Metalink Metalink] is the answer. Unfortunately, it has not been build into popular browsers yet. We have a long standing [https://github.com/{{project_name_short}}/{{project_name_short}}/issues/21 github issue] for it. The {{project name}} team currently has no recourses to tackle this issue.
+
+Mozilla has an open [https://bugzilla.mozilla.org/show_bug.cgi?id=331979 feature request] since 2006 and it doesn't look like they will be working on it anytime soon. With funding we could finally tackle this issue and help out lots of other security focused projects as well. Ideas:
+
+* contact Mozilla and ask how much it would cost to buy this feature
+* contact the Mozilla community and ask if someone would up to implement this feature for a price
+* hire a capable programmer and pay her to implement this feature, to go through the proposal and review process as long as required until this feature  gets merged into Firefox
+
+If we had this feature, all downloads from untrusted mirrors would be at least as secure as https, because the verification has is supplied over https, while the bulk download is served over http.
+
+== Check for Revocation Certificates before running apt-get ==
+Copied from https://github.com/{{project_name_short}}/{{project_name_short}}/issues/125
+
+Neither Debian nor {{project name}} has no good mechanism to revoke apt keys in case of compromise, neither a way to inform users in emergency situations:
+https://lists.debian.org/debian-security/2013/10/msg00065.html
+
+An apt key revoker should be written:
+https://lists.debian.org/debian-security/2013/12/msg00031.html
+
+And up-streamed to Debian.
+
+* Keyservers may not be used: https://lists.nongnu.org/archive/html/sks-devel/2013-12/msg00076.html
+* The code for downloading the revocation certificates should be configurable. .d style configuration folder. Where distributions and PPA's can drop configuration snippets. Using arrays.
+* Code should be re-usable for {{project name}} News key revocation as well (using plugin).
+
+== Secure Distributed Network Time Synchronization ==
+Host operating systems such as Debian and Ubuntu have no way for secure and trust distributed network time synchronization, although that is crucial for security. ([https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%23687166 Debian bug confirmation]; [https://bugs.launchpad.net/ubuntu/+source/ntp/+bug/1039420 Ubuntu bug confirmation]). {{project name}} already comes with a secure replacement as described on that [[Dev/TimeSync]] page. That mechanism should be split of {{project name}} source code and be made a separate project available as a package (.deb), that users can download and install. Debian developers should then be encouraged to add that package to their offical repository, so it gets even simpler to install it (such as, as simple as {{Code|sudo apt-get install sdwdate}}). If Debian developers are not interested, {{project name}} developers should attempt to become a Debian maintainer as well and maintain the package themselves in Debian. (From Debian, that package will flow down to other Debian-based distributions such as Ubuntu, Mint, etc.)
+
+== Verifiable APT Repository ==
+For better protection against build machine compromise, {{project name}} has a [[Verifiable Builds]] feature.
+
+Documentation on how to verify {{project name}} APT Repository is currently a bit [[Verifiable_Builds#Verifiable_{{project_name_short}}_Debian_Packages|scare]], should be extended and better scripted.
+
+= Usability =
+Currently, to use {{project name}} a user must get familiar with VirtualBox and Debian (KDE) to be able to use and configure {{project_name}}. In order to allow those with less time/access to expert knowledge of Linux, who may be in areas where time and security are of the essence, usability issues must be a top priority. 
+
+== Interaction Simplification and Standardization ==
+{{project_name}} needs an interaction designer to review and plan and implement an across the board standardization of the look and feel of {{project name}} in the system itself and online.
+
+A general user interface review and revision of all user visible components.  Streamlining installing of {{project name}} and running it. As well, looking at the systems once {{gateway_product_name}} or {{workstation_product_name}} boots, to make it simpler or more consistent of messages and what programs to run when.  As well, this could go into the branding of {{project name}} and consistency in all of the documentation/website/software, so that it is clear that you are either visiting or using a {{project name}} page.
+
+== Other Operating System Support ==
+Not everyone that needs privacy or security can use Unix, not all applications are available on Unix. {{project name}} aims to support a Mac OS X or Windows virtual workstation that uses the {{project name}} Gateway to route all traffic through Tor. We need better instructions on how one can tunnel Mac OS X or Windows through Tor by using {{gateway_product_name}}.
+
+== Simplify Installation of Onion Service ==
+Currently quite a lot is required to set up an onion service ([[Onion Services]]). We should create packages, that ease the process, that automate installation of popular web services such as wordpress.
+
+== {{project name}} Language Support ==
+
+=== Language Selector ===
+As a new part of {{project name}} First Time Setup (which starts after {{project name}} starts for the first time), the user could be asked which language she wants to use.
+
+=== Translation for {{project name}} ===
+https://translatewiki.net has a pool of translation volunteers. Once {{project name}} gets {{Code|gettext}}ified, {{project name}} could apply for translatewiki.net and they could start translating {{project name}} software.
+
+=== Translation for Documentation ===
+We yet have to figure out how to use the translation extension and to prepare whonix.org's documentation for translation. We occasionally have offers to translate whonix.org, for [https://www.whonix.org/pipermail/whonix-devel/2014-March/000143.html example to French]. {{project name}} developer Patrick Schleizer could translate whonix.org to German.
+
+=== Desktop Environment ===
+Port {{project name}} to LXDE or XFCE?
+
+=== Reduce Image Size post-installing a desktop environment? ===
+Do not install a desktop by default and allow the user to choose either KDE, LXDE/XFCE or no desktop environment at first boot?
+
+=== Windows Installer ===
+Simpler than manually downloading VirtualBox and two {{project name}} VMs.
+
+Stub installer (small installer the can be downloaded fast - that downloads the bigger files).
+
+Windows store?
+
+=== Linux Installer ===
+{{CodeSelect|code=
+sudo curl {{Curl_Secure}} --remote-name ... {{!}} sudo apt-key add ...
+}}
+
+{{CodeSelect|code=
+sudo apt-get install whonix
+}}
+
+= Circumvention =
+== Better Circumvention User Interface ==
+TBB uses the tor-launcher add-on, it looks good and makes it simpler to enter bridges. The upcoming version of tor-launcher even support pluggable transports. There is some work done creating a standalone xul application of tor-launcher. Tails devs are planing to use it. {{project name}} should use it as well. Some older screenshots of tor-launcher can be seen here: [[Dev/whonixsetup]]. ([https://github.com/{{project_name_short}}/{{project_name_short}}/issues/167 github ticket])
+
+== Shipping semi-public bridges ==
+Current TBB beta comes with a list of hardcoded briges. Censors can easily obtain and ban them. Still, these hardcoded bridge relays work for a non-negligible share of users (otherwise TBB would not go this path). We could ship this list by default as well.
+
+== Other Circumvention Tools other than Bridges ==
+There are lots of other Censorship Circumvention Tools other than Tor bridges. We should check out all of them and document how to use them with {{project_name}}. The todo list of tools that should be documented can be found here: [[Censorship Circumvention Tools]]. ([https://github.com/{{project_name_short}}/{{project_name_short}}/issues/22 github ticket])
+
+= Links =
+* [[Dev/Sponsor/A2]]
+
+{{Footer}}
+[[Category:Development]]
