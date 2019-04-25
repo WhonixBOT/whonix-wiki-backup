@@ -1,6 +1,6 @@
 {{Header}}
 {{#seo:
-|description=Checking Whonix for backdoors.
+|description=Checking {{project_name}} for backdoors.
 |image=https://www.whonix.org/w/images/1/14/Backdoor-23423523523.jpg
 }}
 = Verifiable Builds =
@@ -9,16 +9,16 @@
 {{Verifiable Ovas Introduction}}
 
 === Short Overview - How it Works ===
-When building Whonix {{Code2|.ova}}'s from source code, for example {{Code2|/home/user/whonix_binary/{{gateway_product_name_short}}-9.ova}} also report {{Code2|/home/user/whonix_binary/{{gateway_product_name_short}}-9.report}} file will be created.
+When building {{project_name}} {{Code2|.ova}}'s from source code, for example {{Code2|/home/user/whonix_binary/{{gateway_product_name_short}}-9.ova}} also report {{Code2|/home/user/whonix_binary/{{gateway_product_name_short}}-9.report}} file will be created.
 
 After building the {{Code2|.ova}}, the last build-step will extract the {{Code2|.ova}}, which will result in getting three files, i.e. {{Code2|{{gateway_product_name_short}}-9.ovf}}, {{Code2|{{gateway_product_name_short}}-9.mf}} and {{Code2|{{gateway_product_name_short}}-9-disk1.vmdk}}. The {{Code2|.vmdk}}<ref>https://en.wikipedia.org/wiki/VMDK</ref> image will then be converted to {{Code2|.vdi}}<ref>https://en.wikipedia.org/wiki/VDI_(file_format)</ref>, then converted to {{Code2|raw}}<ref>https://en.wikipedia.org/wiki/Raw_image_format</ref> ({{Code2|.img}}. (Converting as in creating a copy, not actually converting.) The filesystem layout, the MBR<ref>https://en.wikipedia.org/wiki/Master_boot_record</ref> and the VBR<ref>https://en.wikipedia.org/wiki/Volume_boot_record</ref> are written into separate files. The raw image will then be mounted. A sha512 checksum of every file will be created and stored in the report.
 
-Anyone building {{Code2|Whonix.ova}} images will hopefully end up with the same report. We can then compare the reports using tools such as {{Code2|diff}} and/or {{Code2|meld}}. Those reports should be very similar. We can't end up with the very same reports, because again, there are no deterministically built operating systems yet. However, we can manually review the few remaining differences. That should make it reasonable to believe, that the original {{Code2|Whonix.ova}} images have been built from the source code that has been published for that Whonix version.
+Anyone building {{Code2|Whonix.ova}} images will hopefully end up with the same report. We can then compare the reports using tools such as {{Code2|diff}} and/or {{Code2|meld}}. Those reports should be very similar. We can't end up with the very same reports, because again, there are no deterministically built operating systems yet. However, we can manually review the few remaining differences. That should make it reasonable to believe, that the original {{Code2|Whonix.ova}} images have been built from the source code that has been published for that {{project_name}} version.
 
 Below on this page is a longer How-To.
 
 === Current Limitations ===
-During the build process of {{gateway_product_name}} we are still using torproject.org's Tor repository for Debian testing<ref>http://deb.torproject.org/torproject.org/dists/testing/main/binary-i386/Packages</ref>. Should that version get upgraded, this will create differences. In theory, old files could still be verified against torproject's signing keys, but that would require them to be archived somewhere. [http://tor.stackexchange.com/questions/990/is-there-an-archive-of-deb-torproject-org/1000?noredirect=1#1000 There is currently no such archive. (Peter Palfrader offered to provide the old packages on request).] Whonix is currently only easily verifiable as long as torproject.org's repository does not get upgraded. In future, when Tor 0.2.4 migrates into Debian testing, this limitation may be lifted. We're happy to hear better solutions in meanwhile.
+During the build process of {{gateway_product_name}} we are still using torproject.org's Tor repository for Debian testing<ref>http://deb.torproject.org/torproject.org/dists/testing/main/binary-i386/Packages</ref>. Should that version get upgraded, this will create differences. In theory, old files could still be verified against torproject's signing keys, but that would require them to be archived somewhere. [http://tor.stackexchange.com/questions/990/is-there-an-archive-of-deb-torproject-org/1000?noredirect=1#1000 There is currently no such archive. (Peter Palfrader offered to provide the old packages on request).] {{project_name}} is currently only easily verifiable as long as torproject.org's repository does not get upgraded. In future, when Tor 0.2.4 migrates into Debian testing, this limitation may be lifted. We're happy to hear better solutions in meanwhile.
 
 Our {{Code2|[https://github.com/adrelanos/{{project_name_short}}/blob/master/help-steps/analyze_image help-steps/analyze_image]}} script does not check the contents of the image outside the file system. We're not aware of any method getting a backdoor activated by writing malicious data into those places. We might get rid of this limitation in future, see chapter Possible Future Improvements.
 
@@ -31,7 +31,7 @@ The {{Code2|/help-steps/analyze_image}} script is supposed to execute no code fr
 Unfortunately, we can not directly mount the {{Code2|.ova}}. We have to extract it first. Rather, VirtualBox does not support creating {{Code2|.ova}} containing {{Code2|.img}} (raw images). Img's would be ideal, since low level tools such as {{Code2|dd}} understand them. Even worse, {{Code2|.ova}}'s created by VirtualBox always include {{Code2|.vmdk}}. [https://forums.virtualbox.org/viewtopic.php?f=1&t=58460 export VM using VDI instead of VMDK is not possible]. Rather [https://forums.virtualbox.org/viewtopic.php?f=7&t=58461 Mounting VMDK's on Debian testing/jessie] using Free Software is currently not possible since no software supports that. During the convert process {{Code2|ova -> vmdk -> vdi -> img}}, the MBR, bootloader, VBR and/or other obscure differences could occur. There is no reason to believe that is actually the case, but we're not aware of any research on that topic.
 
 === Your Own Alternatives ===
-The {{Code2|/help-steps/analyze_image}} script is the tool which comes with {{project name}} source code to audit {{Code2|Whonix.ova}}. Nothing prevents you from cooking up your own custom method to verify {{Code2|Whonix.ova}}. On the contrary, we'd be very happy to hear about your methods, source code and results. Since this hasn't ever happened in past, Whonix came up with its own {{Code2|/help-steps/analyze_image}} script.
+The {{Code2|/help-steps/analyze_image}} script is the tool which comes with {{project name}} source code to audit {{Code2|Whonix.ova}}. Nothing prevents you from cooking up your own custom method to verify {{Code2|Whonix.ova}}. On the contrary, we'd be very happy to hear about your methods, source code and results. Since this hasn't ever happened in past, {{project_name}} came up with its own {{Code2|/help-steps/analyze_image}} script.
 
 === Possible Future Improvements ===
 ==== sleuthkit ====
@@ -70,7 +70,7 @@ https://phabricator.whonix.org/tag/verifiable_builds/
 * {{Code|(mount_folder) /boot/initrd.img*}} - Those are extracted to the {{Code|initrd_folder}} and diffed.
 * {{Code|(mount_folder) /etc/shadow}} - Manually look at the diff. Users are advised to change their passwords anyway.
 * {{Code|(mount_folder) /etc/shadow-}} - Same as above.
-* {{Code|(mount_folder) /etc/init.d/.depend.boot}} - {{Code|/sbin/insserv}} (part of sysvinit) does not produce deterministic results. Gets copied to the {{Code|manual_analysis_folder}}. Manually review them. You just have to check, they're not containing anything sketchy. You most likely won't be able to tell, if some services are deliberately not started or in wrong order. This is not an issue, because when Whonix starts for the first time it executes {{Code|whonix_shared/usr/lib/whonix/first_run_initializer}}, which executes {{Code|/sbin/insserv}}, which recreates this file. <ref>We can not delete this file before redistributing {{project_name}}, because then Whonix wouldn't start.</ref>
+* {{Code|(mount_folder) /etc/init.d/.depend.boot}} - {{Code|/sbin/insserv}} (part of sysvinit) does not produce deterministic results. Gets copied to the {{Code|manual_analysis_folder}}. Manually review them. You just have to check, they're not containing anything sketchy. You most likely won't be able to tell, if some services are deliberately not started or in wrong order. This is not an issue, because when {{project_name}} starts for the first time it executes {{Code|whonix_shared/usr/lib/whonix/first_run_initializer}}, which executes {{Code|/sbin/insserv}}, which recreates this file. <ref>We can not delete this file before redistributing {{project_name}}, because then {{project_name}} wouldn't start.</ref>
 * {{Code|(mount_folder) /etc/init.d/.depend.start}} - Same as above.
 * {{Code|(mount_folder) /etc/init.d/.depend.stop}} - Same as above.
 * {{Code|(mount_folder) /usr/share/whonix/build_timestamp}} - Timestamp, naturally differs.
@@ -100,13 +100,13 @@ Your report root folder can most likely be found in {{Code|/home/user/whonix_bin
 === How-To ===
 First of all, you need to create your own Whonix.ova images from source code, refer to [[Dev/Build Documentation|Build Documentation]]. Your report file can most likely be found at {{Code|/home/user/whonix_binary/$VMNAME-$whonix_build_whonix_version_new.report}} and your report_tempfolder at {{Code|/home/user/whonix_binary/$VMNAME-${whonix_build_whonix_version_new}_tempfolder}}. That is your own analyzed {{Code2|.ova}}. To make space for another analysis for other builds (such as those from whonix.org), rename your whonix_binary folder to something else, such as {{Code2|whonix_binary1}}.
 
-If you've built for example Whonix 9, you have to download Whonix 9 as well. Place the {{Code2|.ova}} in {{Code|/home/user/whonix_binary/}}. Keep the original name. Then go to {{project name}} source code folder ({{Code|cd /home/user/{{project_name_short}}}} and analyze that image. Use.
+If you've built for example {{project_name}} 9, you have to download {{project_name}} 9 as well. Place the {{Code2|.ova}} in {{Code|/home/user/whonix_binary/}}. Keep the original name. Then go to {{project name}} source code folder ({{Code|cd /home/user/{{project_name_short}}}} and analyze that image. Use.
 
 <pre>
-## Whonix 9
+## {{project_name}} 9
 sudo ./build-steps.d/2800_create-report --tor-gateway
 
-## Whonix 13/14
+## {{project_name}} 13/14
 sudo ./build-steps.d/2800_create-report --build --flavor whonix-gateway
 </pre>
 
@@ -146,7 +146,7 @@ Finally diff the rest of the files in your {{Code2|manual_analysis_folder}}. Usi
 
 Auditing these files is unfortunately a bit difficult. The best tip to be given is to use your common sense. For example, having two {{Code2|/etc/init.d/.depend.start}} files at same size, but different order is probably not a backdoor. But if there are a lot extra lines looking weird ([http://security.stackexchange.com/a/40108 unrelated example code]), there might be something wrong.
 
-== Verifiable Whonix Debian Packages ==
+== Verifiable {{project_name}} Debian Packages ==
 {{Verifiable Pkgs Introduction}}
 
 Shouldn't they match, you could also compare them using {{Code|debdiff}} or {{Code2|debbindiff}}.
@@ -159,18 +159,18 @@ In case you like to review the implementation, the related scripts can be found 
 * Remove most non-deterministic parts (auto generated files which always look at bit different): https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/whonix_shared/usr/share/whonix/chroot-scripts-post.d/90_cleanup
 * Build step to create the report: https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/build-steps.d/2800_create-report
 * The analyze image script, which creates the report: https://github.com/adrelanos/{{project_name_short}}/blob/master/help-steps/analyze_image
-* The user interface locally re-creating non-deterministic files when Whonix starts for the first time: https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/whonix_shared/usr/lib/whonix/first_run_initializer_gui
-* Re-creating non-deterministic files when Whonix starts for the first time: https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/whonix_shared/usr/lib/whonix/first_run_initializer
+* The user interface locally re-creating non-deterministic files when {{project_name}} starts for the first time: https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/whonix_shared/usr/lib/whonix/first_run_initializer_gui
+* Re-creating non-deterministic files when {{project_name}} starts for the first time: https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/whonix_shared/usr/lib/whonix/first_run_initializer
 
 = Discussion =
 * [http://lists.alioth.debian.org/pipermail/reproducible-builds/Week-of-Mon-20131209/000009.html Announcing {{project name}} First Implementation of Verifiable Builds]
 
 = Links =
 * https://wiki.debian.org/ReproducibleBuilds/Contribute#Working_on_installation_media_or_live_systems
-* [https://phabricator.whonix.org/maniphest/?statuses=open%2Creview&allProjects=PHID-PROJ-6h24kenaoc2givyt6uho#R Whonix Verifiable Builds Issue Tracker]
+* [https://phabricator.whonix.org/maniphest/?statuses=open%2Creview&allProjects=PHID-PROJ-6h24kenaoc2givyt6uho#R {{project_name}} Verifiable Builds Issue Tracker]
 
 = Footnotes / References =
-[http://www.webcitation.org/6SiEWEcgt Whonix 8 snapshot of this page]
+[http://www.webcitation.org/6SiEWEcgt {{project_name}} 8 snapshot of this page]
 
 {{reflist|close=1}}
 
