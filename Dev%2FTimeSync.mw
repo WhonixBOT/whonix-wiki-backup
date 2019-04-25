@@ -24,7 +24,7 @@ Copyright:
 
 On Debian GNU/Linux systems, the complete text of the GNU General Public
 License can be found in the /usr/share/common-licenses' directory.
-The complete text of the GNU General Public License can also be found online on gnu.org <https://www.gnu.org/licenses/gpl.html>, in {{project name}} virtual machine images in /usr/share/common-licenses/GPL-3 file or on Github <https://github.com/Whonix/Whonix/blob/master/GPLv3>.
+The complete text of the GNU General Public License can also be found online on gnu.org <https://www.gnu.org/licenses/gpl.html>, in {{project name}} virtual machine images in /usr/share/common-licenses/GPL-3 file or on Github <https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/GPLv3>.
 -->
 <!--
 This wiki page is a fork of the Tails Tor Bridge Mode page, from this exact source <https://git-tails.immerda.ch/tails/commit/wiki/src/contribute/design/Time_syncing.mdwn?id=b27209b3673a0ea2d31b54b163aefd3025c8b39c>.
@@ -106,7 +106,7 @@ So we want a completely isolated virtual time.
 * {{gateway_product_name}} and {{workstation_product_name}} are commonly used inside virtualizers and therefore have their own virtual hardware system clocks.
 * Virtualizers time synchronization get disabled by Whonix.
 ** Most VirtualBox time synchronization features get disabled by Whonix.
-*** Guest additions time synchronization gets disabled in by [https://github.com/Whonix/vbox-disable-timesync vbox-disable-timesync] at run time. See VirtualBox bug report [https://www.virtualbox.org/ticket/10828 VBoxService --disable-timesync broken]. They say it is actually not a bug. It is a missing feature, that running instances of VBoxService can not be modified in their settings.
+*** Guest additions time synchronization gets disabled in by [https://github.com/{{project_name_short}}/vbox-disable-timesync vbox-disable-timesync] at run time. See VirtualBox bug report [https://www.virtualbox.org/ticket/10828 VBoxService --disable-timesync broken]. They say it is actually not a bug. It is a missing feature, that running instances of VBoxService can not be modified in their settings.
 *** built in time synchronization features get disabled by ''VBoxManage setextradata "$VMNAME" "VBoxInternal/Devices/VMMDev/0/Config/GetHostTimeDisabled" "1"'' at build time.
 ** KVM: TODO document
 ** Qubes: TODO
@@ -118,7 +118,7 @@ So we want a completely isolated virtual time.
 * Time Sanity Check before [[sdwdate]] will be executed, this ensures, that the host clock is sane and not slow in 1980. User gets advised to fix its host clock in such cases.
 * After they are connected to the Tor network, they use sdwdate (inspired by [https://tails.boum.org/contribute/design/Time_syncing/ tails_htp]) to set the system clock. <ref>Stream isolation has been added, for {{project name}} sdwdate implementation i.e. people using Tor Browser prevent notifying their exit relay, that they are sdwdate or {{project name}} users.</ref>
 * Time Sanity Check after sdwdate was executed. This should catch eventual bigger bugs and attacks. User gets informed if it fails.
-* Using [https://github.com/Whonix/bootclockrandomization Boot Clock Randomization], i.e. after boot, the clock is set randomly between 5 and 180 seconds into the past or future. This is useful to enforce the design goal, that the host clock and {{workstation_product_name}} clock should always slightly differ. It is also useful to obfuscate the clock when sdwdate itself is running, because naturally at this time, sdwdate hasn't finished.
+* Using [https://github.com/{{project_name_short}}/bootclockrandomization Boot Clock Randomization], i.e. after boot, the clock is set randomly between 5 and 180 seconds into the past or future. This is useful to enforce the design goal, that the host clock and {{workstation_product_name}} clock should always slightly differ. It is also useful to obfuscate the clock when sdwdate itself is running, because naturally at this time, sdwdate hasn't finished.
 * sdwdate runs after booting.
 * {{gateway_product_name}}: Using sdwdate is better against Attack (1) when using a bridge.
 * Every hour, at a random time, sdwdate will set the clock again. This is useful for machines running for long time periods without reboot.
@@ -187,7 +187,7 @@ The reason for running TimeSync on {{gateway_product_name}}, is that onion servi
 {{Anchor|sclockadj2}}
 = Adjusting time slowly using adjtimex/ntp_adjtime =
 
-Under [https://github.com/Whonix/sdwdate/pull/4 consideration] is changing the time with <tt>sclockadj2</tt>. The initial drive for this was that calling <tt>clock_settime()</tt> in the original <tt>sclockadj</tt> can result in several thousand entries in <tt>systemd</tt>'s journal per invocation (can be seen with <tt>journalctrl -f</tt>) on Debian.
+Under [https://github.com/{{project_name_short}}/sdwdate/pull/4 consideration] is changing the time with <tt>sclockadj2</tt>. The initial drive for this was that calling <tt>clock_settime()</tt> in the original <tt>sclockadj</tt> can result in several thousand entries in <tt>systemd</tt>'s journal per invocation (can be seen with <tt>journalctrl -f</tt>) on Debian.
 
 <tt>sclockadj2</tt> uses <tt>adjtimex</tt> call in libc (als called <tt>ntp_adjtime</tt>) which translates to Linux' kernel system call 124. This is a modal interface that is used by `ntpd` to change the system clock. <tt>adjtimex</tt> supports a mode with "hard" changes to the time, but those generate entries in <tt>systemd</tt> journal, just like with <tt>clock_settime</tt>.
 
@@ -269,7 +269,7 @@ Cons:
 * Only native SSL CA pinning support. No direct SSL certificate pinning support.
 * Does not distribute trust. <ref>As {{Code2|sdwdate}} does.</ref> <ref>https://github.com/ioerror/tlsdate/issues/112</ref> <ref>https://github.com/ioerror/tlsdate/issues/143#issuecomment-57053323</ref> The single time source can send by error or by malicious intent send wrong time replies.
 * Does not support hooks for user notifications about state of network time synchronization. -> Users shouldn't use the internet in {{workstation_product_name}} before network time synchronization finished, and timesync is informing users about this. -> Implementing notifications would be difficult or require patching tlsdate.
-* Produces clock jumps, which confuses various applications. Does not gradually adjust as {{Code2|sdwdate}} does with [https://github.com/Whonix/Whonix/issues/169 Slow Clock Adjuster]. <ref>[https://github.com/Whonix/sdwdate/blob/master/usr/lib/sclockadj sclockadj]</ref>
+* Produces clock jumps, which confuses various applications. Does not gradually adjust as {{Code2|sdwdate}} does with [https://github.com/{{project_name_short}}/{{project_name_short}}/issues/169 Slow Clock Adjuster]. <ref>[https://github.com/{{project_name_short}}/sdwdate/blob/master/usr/lib/sclockadj sclockadj]</ref>
 * Cannot connect to (most) Tor onion services, because most of those do not support SSL. <ref>Because in most cases, there is little need to combine Tor onion services with SSL. [[Onion_Services#Notes_about_End-to-end_security_of_Onion_Services|connections to Tor onion services are Tor-to-Tor encrypted by default ("not exactly end-to-end")]].</ref> <ref>https://github.com/ioerror/tlsdate/issues/157</ref>
 * Minor: {{Code2|command line parser doesn't fail closed on extraneous / unknown command line parameters}} <ref>https://github.com/ioerror/tlsdate/issues/158</ref> - not that important in the absence of bugs, butsafer behavior for {{Code2|tlsdate}} would be to fail closed on on extraneous / unknown command line parameters.
 * Likely denial of service issue: https://github.com/ioerror/tlsdate/issues/149
@@ -306,7 +306,7 @@ TODO: invent sdwdate-server
 * [https://trac.torproject.org/projects/tor/ticket/16659 Linux TCP Initial Sequence Numbers may aid correlation]
 </ref>
 * ICMP timestamps -> blocked by {{project name}} firewall for {{project name}} VMs. Host: [[Computer_Security_Education#Disable_ICMP_Timestamps|Recommendation]] to disable on the host.
-* TCP timestamps -> blocked in {{project name}} VMs by [https://github.com/Whonix/tcp-timestamps-disable tcp-timestamps-disable].; [[Computer_Security_Education#Disable_TCP_Timestamps|Recommendation]] to disable on the host.
+* TCP timestamps -> blocked in {{project name}} VMs by [https://github.com/{{project_name_short}}/tcp-timestamps-disable tcp-timestamps-disable].; [[Computer_Security_Education#Disable_TCP_Timestamps|Recommendation]] to disable on the host.
 * NTP <ref name=ntp-rfc /> <ref name=ntp-se /> -> Not installed by default in Whonix. Host: TODO
 * Automatic updaters and other network using cron jobs that run at non-random, canned <ref>By distribution defaults.</ref> times.
 * Javascript. <ref>Was [https://trac.torproject.org/projects/tor/ticket/3059 fixed] in Tor Browser, but remains open for other applications such as browsers like Mozilla Firefox.</ref> <ref>See http://ip-check.info for demonstration.</ref>
@@ -335,7 +335,7 @@ curl -silent --head torproject.org | grep -i date:
 
 Tails' [https://git-tails.immerda.ch/tails/plain/config/chroot_local-includes/etc/NetworkManager/dispatcher.d/20-time.sh {{Code2|tordate}}] ([https://tails.boum.org/contribute/design/Time_syncing/#index3h1 Guessing time based on Tor consensus]), renamed to {{Code2|[[anondate]]}} for trademark reasons and refactored to work outside of Tails provides useful bash functions to check system clock using Tor's consensus file and Tor's log.
 
-https://github.com/Whonix/anon-shared-helper-scripts/blob/master/usr/lib/anon-shared-helper-scripts/anondate
+https://github.com/{{project_name_short}}/anon-shared-helper-scripts/blob/master/usr/lib/anon-shared-helper-scripts/anondate
 
 Tor connects to the network. The Tor consensus file contains rough time information. Since when and until when it is valid.
 
@@ -397,7 +397,7 @@ Is the authority's cert's valid-after date signed/verified/built-into-Tor or can
 * How accurate has the clock to be so onion services can be accessed? See: https://trac.torproject.org/projects/tor/ticket/3460
 
 ===== Reasons for relying solely on anondate for time setting =====
-* Does not require [https://github.com/Whonix/Whonix/issues/24 ssl certificate pinning].
+* Does not require [https://github.com/{{project_name_short}}/{{project_name_short}}/issues/24 ssl certificate pinning].
 * Does not rely on remote web servers.
 * Does not require a somewhat accurate clock as [[#Remote Web Servers Method]] requires to get a rough time guess.
 
