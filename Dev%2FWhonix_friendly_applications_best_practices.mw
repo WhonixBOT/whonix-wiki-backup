@@ -1,0 +1,94 @@
+{{Header}}
+{{#seo:
+|description=Best practices on writing applications compatible with {{project_name}}.
+}}
+
+= config.d support =
+Please parse a /etc/your-application.d configuration folder so Linux distributions such as Debian and {{project name}} can set defaults (such as proxy / stream isolation configuration). Users are of course free to overrule these defaults using the usual configuration files in the user's home folder.
+
+Please parse only configuration files with a file extension such as <code>.conf</code>. This is because graphical editors such as kate create backup files such as <code>file-name~</code> or apt-get / dpkg creating files such as <code>config-file-name.dpkg-old</code> which would lead to unexpected results.
+
+= Stream Isolation =
+* Please set a socks user name for [[Stream Isolation]]. (<code>IsolateSOCKSAuth</code>)
+
+= add_onion =
+* Please use <code>add_onion</code> Tor control protocol command / Tor ephemeral onion services.
+
+ephemeral: Means the onion service will be gone after the Tor control connection is closed. It's however possible and usual to retrieve onion service private key and to restore it at next run.
+
+For example [https://github.com/ricochet-im/ricochet ricochet] by [https://github.com/special @special] is doing that.
+
+Tor ephemeral onion services are a lot a lot better for {{project name}} than preconfigued Tor hidden services.
+
+[https://github.com/micahflee/onionshare onionshare] by [https://github.com/micahflee @micahflee] has superb Tails and {{project name}} support.
+
+= Listen Interface =
+* Listen on all interfaces rather than just localhost. (This is required since the incoming onion service connection comes from the network, not from localhost.)
+
+<pre>
+    # In {{project_name}}, listen on 0.0.0.0 instead of 127.0.0.1 (#220)
+    if os.path.exists('/usr/share/anon-ws-base-files/workstation'):
+        host = '0.0.0.0'
+    else:
+        host = '127.0.0.1'
+</pre>
+
+Related: [https://github.com/{{project_name_short}}/proposals/blob/master/635-listen-port-convention.txt Listen Port Convention]
+
+= Listen Port =
+* Don't listen on a random local server port.
+* Listen on a specific local server port or port range.
+* Tor <code>VIRTPROT</code> (remote virtual port on the onion service) does not matter.
+* <ref>
+* onionshare uses <code>17600 - 17659</code>. That is handy, so we can match for it using <code>(176[0-5][0-9])</code> in the [https://github.com/{{project_name_short}}/onion-grater/blob/master/usr/share/onion-grater-merger/examples/40_onionshare.yml onionshare onion-grater whitelist config].
+* That way onionshare (running inside a compromised workstation) cannot open arbitrary ports on the workstation. For example, not to the real Tor ControlPort and circumvent the filtering. (We use Tor <code>ControlSocket</code> rather than <code>ControlPort</code> now for this reason.) There are no local ports open on {{gateway_product_name}} besides Tor <code>Socks</code>, <code>DNS</code> and <code>TransPort</code>, but if there was (let's say for example for [https://packages.debian.org/brltty brltty]), then we don't want connections to it.
+* That allows us to set a limit on how many Tor hidden services (a compromised) workstation can create.
+* It's also useful so users don't have to open all incoming ports in [[{{workstation product name short}} Firewall]].
+</ref>
+
+= Tor Settings Autodetection =
+* Auto detect Tor settings through <code>TOR_*</code> environment variables.
+
+In Whonix:
+
+<pre>
+TOR_CONTROL_IPC_PATH=/var/run/anon-ws-disable-stacked-tor/127.0.0.1_9151.sock
+</pre>
+
+<pre>
+TOR_SOCKS_IPC_PATH=/var/run/anon-ws-disable-stacked-tor/127.0.0.1_9150.sock
+</pre>
+
+These are unix domain socket files.
+
+Ports would also work but nowadays unix domain socket files are much more advisable since these are less likely to leak.
+
+= Robustness =
+* The application should not crash if Tor ControlPort replies something unexpected such as <code>510 Command filtered</code>.
+
+= Usability =
+* Show an error message if {{project name}} is detected and seeing <code>510 Command filtered</code>:
+
+<blockquote>
+Error talking to the Tor controller.\nIf you're using {{project_name}}, check out https://www.whonix.org/wiki/ProgramName to make ProgramName work.
+</blockquote>
+
+* onionshare has a [http://cdn.ghacks.net/wp-content/uploads/2017/03/onionshare-password.png Tor settings dialog]. But not really needed in {{project_name}}.
+
+= Bonus =
+* Bonus: Make a list of Tor control commands you are using so an onion-grater profile can be written.
+
+* Bonus: Write an [https://github.com/{{project_name_short}}/onion-grater/tree/master/usr/share/onion-grater-merger/examples onion-grater profile].
+
+= See Also =
+* See also [https://trac.torproject.org/projects/tor/wiki/doc/Tor_friendly_applications_best_practices Tor friendly applications best practices].
+
+= Forum Discussion =
+https://forums.whonix.org/t/whonix-friendly-applications-best-practices
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Design]]
