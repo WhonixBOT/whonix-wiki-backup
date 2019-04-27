@@ -155,6 +155,69 @@ Users can edit the sources.list files so it points to the Debian .onion mirrors.
 |filename=/etc/apt/sources.list
 }}
 
+{{project name}} Templates
+
+Whonix templates can be updated exclusivley over onion services by editing the Qubes, Debian and Whonix sources.list files so they point to their respective onion repositories. 
+
+Complete  the following steps in both {{gateway_product_name}} and {{workstation_product_name}} VMs .
+
+Onionize qubes-r4.list 
+ 
+'''1.''' In {{project name}} TempateVM, open qubes-r4.list in a text editor.
+
+{{CodeSelect|code=
+sudo nano /etc/apt/sources.list.d/qubes-r*.list
+}}
+
+'''2.''' Comment the first line underneath "Main qubes updates repository".
+
+The first code block should look similar to this.
+
+<pre> # Main qubes updates repository
+#deb [arch=amd64] http://deb.qubes-os.org/r4.0/vm stretch main
+#deb-src http://deb.qubes-os.org/r4.0/vm stretch main</pre>
+
+'''3.''' Uncomment the corresponding line underneath "Qubes Tor updates repositories".
+
+The first code block should look similar to this.
+
+{{CodeSelect|code=
+# Qubes Tor updates repositories
+# Main qubes updates repository
+deb [arch=amd64] http://deb.{{Qubes onion}}/r4.0/vm stretch main
+#deb-src http://deb.{{Qubes onion}}/r4.0/vm stretch main
+}}
+
+Save and exit.
+
+'''4.''' Confirm the onionized repositories are functional.
+
+{{CodeSelect|code=
+sudo apt-get update && sudo apt-get dist-upgrade
+}}
+
+Onionize debian.list 
+
+{{Onionize Debian Sources.list
+|filename=/etc/apt/sources.list.d/debian.list
+}}
+
+Onionize whonix.list 
+
+Users can point the Whonix sources.list file to its respective v3 .onion mirror with a single command. See; Whonix APT Repository overview for more details on the four repository choices.
+
+In the {{project name}} konsole, run. 
+
+{{CodeSelect|code=	
+sudo whonix_repository --baseuri http://deb.dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion --enable --repository stable
+}}
+
+Next, confirm onion repositories are functional.
+
+{{CodeSelect|code=
+sudo apt-get update && sudo apt-get dist-upgrade
+}}
+
 = Fedora Packages =
 It is not currently possible to update Fedora packages in Qubes' Fedora TemplateVM exclusively over [[Onion_Services|Onion Services]], since Fedora does not provide this update option.
 
