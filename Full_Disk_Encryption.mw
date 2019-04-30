@@ -142,6 +142,22 @@ The plausible deniability feature is available with volume types <code>Normal+Hi
 </ref> <ref>In most emergency situations, the user will not have enough time to reboot the computer and enter the dead-man switch passphrase.</ref><br />
 * Supplying the dead-man switch as the "real passphrase" to the interceptors of the machine is unlikely to be an effective strategy. It is standard forensics procedure to create multiple images of the drive beforehand.
 |-
+! scope="row"| Erase LUKS Header
+| 
+A much quicker alternative to zeroing data on a HDD with DBAN. This is an effective measure on spinning HDDs where wiped data is confirmed to be destroyed. The OS only needs to read the LUKS header off disk once – not every single second. Wiping the header would just make the disk impossible to unlock in the future.<ref>https://superuser.com/questions/1168928/wipe-luks-partition-in-pre-boot/1177362</ref>
+
+Replace <code>/dev/sdXY</code> with the encrypted partition. Reply <code>YES</code> to the prompt:
+{{CodeSelect|code=
+sudo cryptsetup luksErase /dev/sdXY
+}}
+
+You can accomplish the same goal in another way without getting prompted by running this command:
+{{CodeSelect|code=
+sudo dd if=/dev/zero of=/dev/sdXY bs=1M count=2
+}}
+
+It'll overwrite the first two megabytes of the partition <code>/dev/sdXY</code>, which should cover the entire LUKS encryption header.
+|-
 ! scope="row"| Separate /boot Partition
 | When FDE is used on the host, it is inadvisable to keep any unencrypted files on that same physical media. High-risk users are recommended to move the /boot partition to a separate USB media. The bootloader (Grub) should then also be installed on the separate USB. To read more on this subject, see [https://twopointfouristan.wordpress.com/2011/04/17/pwning-past-whole-disk-encryption/ Pwning Past Whole Disk Encryption].
 |-
