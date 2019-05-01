@@ -91,6 +91,8 @@ Most users will probably want to avoid phones altogether and use tablets instead
 
 = Keystroke Fingerprinting =
 
+== Introduction ==
+
 Keystroke biometric algorithms have advanced to the point where it is viable to fingerprint users based on soft biometric traits. This is a privacy risk because masking spatial information -- such as the IP address via Tor -- is insufficient to anonymize users. <ref>https://github.com/vmonaco/keystroke-obfuscation</ref>
 
 Users can be uniquely fingerprinted based on: <ref name=keystroke_dynamics>https://en.wikipedia.org/wiki/Keystroke_dynamics</ref>
@@ -106,57 +108,106 @@ Users can be uniquely fingerprinted based on: <ref name=keystroke_dynamics>https
 
 A unique neural algorithm generates a primary pattern for future comparison. It is thought that most individuals produce keystrokes that are as unique as handwriting or signatures. This technique is imperfect; typing styles can vary during the day and between different days depending on the user's emotional state and energy level. <ref name=keystroke_dynamics />
 
-Unless protective steps are taken to obfuscate the time intervals between key press and release events, it is likely most users can be deanonymized based on their keystroke manner and rhythm biometrics. Adversaries are likely to have samples of clearnet keystroke fingerprinting which they can compare with "anonymous" Tor samples. At a minimum users should not type into browsers with Javascript enabled, since this opens up this deanonymization vector. Text should be written in an offline text editor and then copied and pasted into the web interface when it is complete.
-
-'''News: [https://forums.whonix.org/t/kloak-keystroke-level-online-anonymization-kernel-obfuscates-typing-behavior-at-the-device-level-testers-wanted/7089 kloak - Keystroke Anonymization Tool] - Testers Wanted'''
+Unless protective steps are taken to obfuscate the time intervals between key press and release events, it is likely most users can be deanonymized based on their keystroke manner and rhythm biometrics; see [https://arxiv.org/pdf/1609.07612.pdf Obfuscating Keystroke Time Intervals to Avoid Identification and Impersonation]. Adversaries are likely to have samples of clearnet keystroke fingerprinting which they can compare with "anonymous" Tor samples. At a minimum users should not type into browsers with Javascript enabled, since this opens up this deanonymization vector. Text should be written in an offline text editor and then copied and pasted into the web interface when it is complete.
 
 In addition, users must also disguise their linguistic style to combat [[Surfing_Posting_Blogging#Stylometry|stylometric analysis]] and be aware of [[Surfing_Posting_Blogging#Mouse_Fingerprinting|mouse tracking techniques]] available to adversaries.
 
-== Defense Testing ==
+== Keystroke Anonymization Tool (kloak) ==
 
-You can test that kloak actually works by trying an [https://www.keytrac.net/en/tryout online keystroke biometrics demo]. For example, try these three different scenarios:
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = Non-Qubes-Whonix only. <ref>Qubes-Whonix is unfortunately unsupported (dysfunctional) due to the following Qubes issues: <br />
+* https://github.com/QubesOS/qubes-issues/issues/2558
+* https://github.com/QubesOS/qubes-issues/issues/1850</ref>
+}}
 
-'''Train normal, test normal'''
+=== Overview ===
 
-'''Train normal, test kloak'''
+kloak is designed to stymie adversary attempts to identify and/or impersonate users' biometric traits. The github site succinctly describes kloak's purpose and the tradeoff between usability and the level of privacy. Notably, shorter time delays between keystrokes and release events reduces overall anonymity: <ref>https://github.com/vmonaco/kloak</ref>
 
-'''Train kloak, test kloak'''
+<blockquote>kloak is a privacy tool that makes keystroke biometrics less effective. This is accomplished by obfuscating the time intervals between key press and release events, which are typically used for identification. This project is experimental. 
 
+...
 
-Train normal means to train with normal typing behavior, i.e., without kloak running. At the enrollment page on the KeyTrac demo, enter a username and password without kloak running, and then on the authenticate page, try authenticating. 
+kloak works by introducing a random delay to each key press and release event. This requires temporarily buffering the event before it reaches the application (e.g., a text editor).
 
-Expected results and interpretation:
+The maximum delay is specified with the -d option. This is the maximum delay (in milliseconds) that can occur between the physical key events and writing key events to the user-level input device. The default is 100 ms, which was shown to achieve about a 20-30% reduction in identification accuracy and doesn't create too much lag between the user and the application (see the paper below). As the maximum delay increases, the ability to obfuscate typing behavior also increases and the responsive of the application decreases. This reflects a tradeoff between usability and privacy.</blockquote>
 
+While kloak makes it hard for adversaries to identify users or replicate their typing behavior -- for example to overcome two-factor authentication based on keystroke biometrics -- it is not perfect:
 
-'''Train normal, test normal'''
+* Small delays are not effective; higher values that can be tolerated are preferable.
+* It does not address stylometric threats.
+* Repeated (held-down) key presses that repeat at a unique rate can lead to identification.
 
-trial 1: 94% accuracy identified
+=== Installation ===
 
-trial 2: 92% accuracy
+The following procedure should take place inside {{workstation_product_name}}. <ref>https://forums.whonix.org/t/kloak-keystroke-level-online-anonymization-kernel-obfuscates-typing-behavior-at-the-device-level-testers-wanted/7089</ref>
 
-trial 3: 94% ..
+'''1.''' Update the {{workstation_product_name}} packages lists.
 
+{{CodeSelect|code=
+sudo apt-get update
+}}
 
-'''Train normal, test kloak'''
+'''2.''' Install kloak.
 
-trial 1: 18%
+{{CodeSelect|code=
+sudo apt-get-update-plus install kloak
+}}
 
-trial 2: 15%
+'''3.''' Test kloak was properly installed.
 
-trial 3: 19%
+{{CodeSelect|code=
+sudo systemctl status kloak
+}}
 
+Note: kloak can be manually started or stopped with the following commands:
 
-'''Train kloak, test kloak'''
+{{CodeSelect|code=
+sudo service kloak start
+sudo service kloak stop
+}}
 
-trial 1: 40%
+For detailed troubleshooting, options and other advice refer to [https://github.com/vmonaco/kloak kloak on Github].
 
-trial 2: 42%
+=== Testing and Interpretation ===
 
-trial 3 36%
+It is recommended to test that kloak is actually working by trying an [https://www.keytrac.net/en/tryout online keystroke biometrics demo]. Three different scenarios are available, but "Train normal" (without kloak running) is <u>not</u> recommended for anonymity reasons:
 
+# Train normal, test normal
+# Train normal, test kloak
+# Train kloak, test kloak
 
+The KeyTrac demo allows the entering of a username and password on the enrollment page and then testing it on an authentication page. Below is a sample result and interpretation of entering a username and password without/without kloak running, with both training methods. 
 
-Without kloak users can be identified with very high certainty. The second set of tests show that kloak definitely obfuscates typing behavior, making it difficult to authenticate or identify a particular user. Third set: users running kloak may look "similar" to other users running kloak. That is, it might be possible to identify kloak users from non-kloak users. If this is the case, the anonymity set will increase as more users start running kloak.
+'''Table:''' ''Sample kloak Test Results''
+
+{| class="wikitable"
+|-
+! scope="col"| '''kloak Configuration'''
+! scope="col"| '''Results and Interpretation'''
+|-
+! scope="row"| Train normal, test normal
+| 
+* trial 1: 94% accuracy identified <br />
+* trial 2: 92% accuracy <br />
+* trial 3: 94% ..
+|-
+! scope="row"| Train normal, test kloak
+| 
+* trial 1: 18% <br />
+* trial 2: 15% <br />
+* trial 3: 19%
+|-
+! scope="row"| Train kloak, test kloak
+| 
+* trial 1: 40% <br />
+* trial 2: 42% <br />
+* trial 3 36%
+|}
+
+From the first test set it is evident that without kloak, users can be identified with a high degree of certainty. The second test set demonstrates that kloak definitely obfuscates typing behavior, making it difficult to authenticate or identify a particular user. Finally, the third set evidences that users who run kloak may look "similar" to one another. That is, it might be possible to identify kloak users from non-kloak users; if this is true, then the anonymity set will increase as more users start running kloak.
 
 = Mouse Fingerprinting =
 
