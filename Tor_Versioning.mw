@@ -51,6 +51,107 @@ Install the (potentially) newer version of the <code>tor</code> package, as well
 sudo apt-get install tor deb.torproject.org-keyring
 </pre>
 
+= Onionize Tor Project Updates =
+
+Only complete this step if the above [[Tor_Versioning|Newer Tor versions from The Tor Project Repository]] are in use. The Tor Project deb apt signing key must be added first (see the prior link), or error messages will appear when completing these steps.
+
+== {{non_q_project_name_short}} ==
+{{Box|text=
+The following commands are run in {{gateway_product_name}}.
+
+To onionize Tor Project updates, first create a torproject.list file using an editor.
+
+{{Open with root rights|filename=
+/etc/apt/sources.list.d/torproject.list
+}}
+
+Next, cut and paste the following text and comment out (#) the corresponding http repository.
+
+{{CodeSelect|code=
+#Tor Project Mirror
+#deb http://deb.torproject.org/torproject.org {{Stable_project_version_based_on_Debian_codename}} main
+deb http://{{Torproject_onion}}/torproject.org {{Stable_project_version_based_on_Debian_codename}} main
+}}
+
+Save and exit.
+}}
+== Qubes R4 ==
+
+{{mbox
+| type       = notice
+| image      = [[File:Ambox_notice.png|40px|alt=Info]]
+| text       = In Qubes R4.0 and above, TemplateVMs are non-network connected by default. This means any attempt to download the apt key in <code>{{whonix-gw}}</code> will fail. <ref>https://github.com/QubesOS/qubes-issues/issues/1854</ref>
+}}
+{{Box|text=
+=== Add the Tor Signing Key ===
+
+As a workaround, the Tor apt singing key can be fetched from a (networked) <code>anon-whonix</code> AppVM, then copied over to <code>{{whonix-gw}}</code> in a text file.
+
+'''1.''' Add the Tor Project deb apt signing key.
+
+Run the following command in <code>anon-whonix</code>.
+
+{{CodeSelect|code=
+sudo apt-key adv --keyserver jirk5u4osbsr34t5.onion --recv-keys A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
+}}
+
+'''2.''' Display the key's fingerprint.
+
+Run.
+
+{{CodeSelect|code=
+sudo apt-key adv --fingerprint A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
+}}
+
+'''3.''' Examine the key's fingerprint.
+
+Compare the fingerprint displayed in the terminal with the one listed on this website https://www.torproject.org/docs/signing-keys.html ([http://expyuzz4wqqyqhjn.onion/docs/signing-keys.html v2 onion]).
+
+'''4.''' Copy the Tor signing key to <code>{{whonix-gw}}</code>.
+
+In <code>anon-whonix</code>, copy the Tor singing key to a new text file named <code>tor.key</code>.
+
+{{CodeSelect|code=
+sudo apt-key export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 > /tmp/tor.key
+}}
+
+In <code>anon-whonix</code>, copy the <code>tor.key</code> text file over to <code>{{whonix-gw}}</code>.
+
+{{CodeSelect|code=
+qvm-copy /tmp/tor.key {{whonix-gw}}
+}}
+
+If the following error appears, it can be safely ignored (hit "OK" when prompted). 
+  <i>qfile-agent: Fatal error: stat {{whonix-gw}}-version (error type: No such file or directory)</i>
+
+'''5.''' Add the Tor signing key to the list of trusted keys
+
+In <code>{{whonix-gw}}</code>, run.
+
+{{CodeSelect|code=
+sudo apt-key add ~/QubesIncoming/anon-whonix/tor.key
+}}
+
+=== Onionize the Sources File ===
+
+To onionize Tor Project updates, first create a torproject.list file using an editor.
+
+{{Open with root rights|filename=
+/etc/apt/sources.list.d/torproject.list
+}}
+
+Next, cut and paste the following text and comment out (#) the corresponding http repository.
+
+{{CodeSelect|code=
+#Tor Project Mirror
+#deb http://deb.torproject.org/torproject.org {{Stable_project_version_based_on_Debian_codename}} main
+deb http://{{Torproject_onion}}/torproject.org {{Stable_project_version_based_on_Debian_codename}} main
+}}
+
+Save and exit.
+}}
+
+
 = Footnotes =
 {{reflist|close=1}}
 
