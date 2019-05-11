@@ -127,21 +127,6 @@ The plausible deniability feature is available with volume types <code>Normal+Hi
 ! scope="col"| '''Measure'''
 ! scope="col"| '''Description'''
 |-
-! scope="row"| Killer
-| <code>Killer</code><ref>https://github.com/Lvl4Sword/Killer</ref> is a newer project that supports a range of trigger actions to shutdown a system in the case of tampering (disallowed changes) with USB, Bluetooth, AC, Battery, Disk Tray, and Ethernet. In the future, custom commands will be supported besides shutdown. <ref>https://github.com/Lvl4Sword/Killer/issues/48</ref> Once the program is packaged, it is intended to provide this software in the {{project_name}} repositories for Debian hosts.
-|-
-! scope="row"| LUKS Suspend Scripts
-| On Linux hosts, there is one interesting solution for the risks posed by a computer in a suspended state; luks-suspend scripts. <ref>https://github.com/vianney/arch-luks-suspend/issues/7</ref> This approach has some limitations because it is not yet packaged for Debian, and it has only been tested in the Ubuntu and Arch distributions. As of 2018, luks-suspend and keyslot nuking (mentioned below) is being merged upstream. <ref>https://blog.freesources.org/posts/2018/06/debian_cryptsetup_sprint_report/</ref>
-|-
-! scope="row"| Magic Key Feature
-| In an emergency, [[{{non q project name short}}|{{non q project name}}]] users can power-off the computer immediately with the Magic SysRq key feature. This is invoked by pressing the key combination: <code>Alt</code> + <code>PrintScreen</code> + <code>o</code> (lower-case letter). On bare-metal linux systems, the FDE passphrase is prompted after rebooting.<ref>https://en.wikipedia.org/wiki/Magic_SysRq_key</ref> <ref>https://www.thegeekstuff.com/2008/12/safe-reboot-of-linux-using-magic-sysrq-key/</ref> <ref>https://phabricator.whonix.org/T553</ref>  The magic key feature does not work on Qubes hosts because the Xen hypervisor does not recognize these commands. <ref>https://forums.whonix.org/t/fde-emergency-feature-testing-requested</ref>
-|-
-! scope="row"| Nuke Patch for cryptsetup
-| 
-* The Kali penetration testing distro team has written a [https://www.kali.org/tutorials/emergency-self-destruction-luks-kali/ nuke patch for cryptsetup], which adds the option to nuke all keyslots after a certain passphrase is entered; see footnotes. <ref>https://github.com/offensive-security/cryptsetup-nuke-keys
-</ref> <ref>In most emergency situations, the user will not have enough time to reboot the computer and enter the dead-man switch passphrase.</ref><br />
-* Supplying the dead-man switch as the "real passphrase" to the interceptors of the machine is unlikely to be an effective strategy. It is standard forensics procedure to create multiple images of the drive beforehand.
-|-
 ! scope="row"| Erase LUKS Header
 | 
 A much quicker alternative to zeroing data on a HDD with DBAN. This is an effective measure on spinning HDDs where wiped data is confirmed to be destroyed. The OS only needs to read the LUKS header off disk once – not every single second. Wiping the header would just make the disk impossible to unlock in the future.<ref>https://superuser.com/questions/1168928/wipe-luks-partition-in-pre-boot/1177362</ref>
@@ -157,6 +142,21 @@ sudo dd if=/dev/zero of=/dev/sdXY bs=1M count=2
 }}
 
 It'll overwrite the first two megabytes of the partition <code>/dev/sdXY</code>, which should cover the entire LUKS encryption header.
+|-
+! scope="row"| Killer
+| <code>Killer</code><ref>https://github.com/Lvl4Sword/Killer</ref> is a newer project that supports a range of trigger actions to shutdown a system in the case of tampering (disallowed changes) with USB, Bluetooth, AC, Battery, Disk Tray, and Ethernet. In the future, custom commands will be supported besides shutdown. <ref>https://github.com/Lvl4Sword/Killer/issues/48</ref> Once the program is packaged, it is intended to provide this software in the {{project_name}} repositories for Debian hosts.
+|-
+! scope="row"| LUKS Suspend Scripts
+| On Linux hosts, there is one interesting solution for the risks posed by a computer in a suspended state; luks-suspend scripts. <ref>https://github.com/vianney/arch-luks-suspend/issues/7</ref> This approach has some limitations because it is not yet packaged for Debian, and it has only been tested in the Ubuntu and Arch distributions. As of 2018, luks-suspend and keyslot nuking (mentioned below) is being merged upstream. <ref>https://blog.freesources.org/posts/2018/06/debian_cryptsetup_sprint_report/</ref>
+|-
+! scope="row"| Magic Key Feature
+| In an emergency, [[{{non q project name short}}|{{non q project name}}]] users can power-off the computer immediately with the Magic SysRq key feature. This is invoked by pressing the key combination: <code>Alt</code> + <code>PrintScreen</code> + <code>o</code> (lower-case letter). On bare-metal linux systems, the FDE passphrase is prompted after rebooting.<ref>https://en.wikipedia.org/wiki/Magic_SysRq_key</ref> <ref>https://www.thegeekstuff.com/2008/12/safe-reboot-of-linux-using-magic-sysrq-key/</ref> <ref>https://phabricator.whonix.org/T553</ref>  The magic key feature does not work on Qubes hosts because the Xen hypervisor does not recognize these commands. <ref>https://forums.whonix.org/t/fde-emergency-feature-testing-requested</ref>
+|-
+! scope="row"| Nuke Patch for cryptsetup
+| 
+* The Kali penetration testing distro team has written a [https://www.kali.org/tutorials/emergency-self-destruction-luks-kali/ nuke patch for cryptsetup], which adds the option to nuke all keyslots after a certain passphrase is entered; see footnotes. <ref>https://github.com/offensive-security/cryptsetup-nuke-keys
+</ref> <ref>In most emergency situations, the user will not have enough time to reboot the computer and enter the dead-man switch passphrase.</ref><br />
+* Supplying the dead-man switch as the "real passphrase" to the interceptors of the machine is unlikely to be an effective strategy. It is standard forensics procedure to create multiple images of the drive beforehand.
 |-
 ! scope="row"| Separate /boot Partition
 | When FDE is used on the host, it is inadvisable to keep any unencrypted files on that same physical media. High-risk users are recommended to move the /boot partition to a separate USB media. The bootloader (Grub) should then also be installed on the separate USB. To read more on this subject, see [https://twopointfouristan.wordpress.com/2011/04/17/pwning-past-whole-disk-encryption/ Pwning Past Whole Disk Encryption].
