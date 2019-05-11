@@ -5,35 +5,48 @@
 }}
 
 = Magic-Wormhole =
-The Magic-Wormhole<ref>https://github.com/warner/magic-wormhole</ref><ref>https://magic-wormhole.readthedocs.io/en/latest/</ref> package provides a library and a command-line tool named wormhole, which makes it possible to get arbitrary-sized files and directories (or short pieces of text) from one computer to another. The two endpoints are identified by using identical "wormhole codes": in general, the sending machine generates and displays the code, which must then be typed into the receiving machine. It is by far the simplest way to send files securely between two endpoints, that the Whonix developers have come across.
 
-The wormhole tool uses PAKE “Password-Authenticated Key Exchange”, a family of cryptographic algorithms that uses a short low-entropy password to establish a strong high-entropy shared key. 
+== Introduction ==
 
-The codes are short and human-pronounceable, using a phonetically-distinct wordlist. The receiving side offers tab-completion on the codewords, so usually only a few characters must be typed. Wormhole codes are single-use and do not need to be memorized. 
+The Magic-Wormhole package: <ref>https://github.com/warner/magic-wormhole</ref> <ref>https://magic-wormhole.readthedocs.io/en/latest/</ref> 
 
+<blockquote>... provides a library and a command-line tool named wormhole, which makes it possible to get arbitrary-sized files and directories (or short pieces of text) from one computer to another. The two endpoints are identified by using identical "wormhole codes": in general, the sending machine generates and displays the code, which must then be typed into the receiving machine.</blockquote>
 
-Sender. Replace README.md with the name of any file in the home directory:
-{{CodeSelect|code=
-wormhole send README.md
-Sending 7924 byte file named 'README.md'
-On the other computer, please run: wormhole receive
-Wormhole code is: 7-crossover-clockwork
-}}
+This is by far the simplest way to send files securely between two endpoints that the Whonix developers have encountered.
+
+The wormhole tool uses [https://www.researchgate.net/publication/260357994_Efficient_Two-Server_Password-Only_Authenticated_Key_Exchange PAKE “Password-Authenticated Key Exchange”], a family of cryptographic algorithms that uses a short low-entropy password to establish a strong high-entropy shared key. <ref>https://magic-wormhole.readthedocs.io/en/latest/welcome.html#design</ref> The codes are short and human-pronounceable, using a phonetically-distinct wordlist. The receiving side offers tab-completion on the codewords, so usually only a few characters must be typed. Wormhole codes are single-use and do not need to be memorized. 
+
+== Operation ==
+
+The following example shows the output related to sending the file "README.md" with Magic-Wormhole. Replace README.md with the name of any file in the home directory. <ref>https://magic-wormhole.readthedocs.io/en/latest/welcome.html#example</ref>
+
+Sender:
+<blockquote>% wormhole send README.md
+Sending 7924 byte file named 'README.md' <br />
+On the other computer, please run: wormhole receive <br />
+Wormhole code is: 7-crossover-clockwork <br />
+<br />
+Sending (<-10.0.1.43:58988)..<br />
+100%|=========================| 7.92K/7.92K [00:00<00:00, 6.02MB/s] <br />
+File sent.. waiting for confirmation <br />
+Confirmation received. Transfer complete.</blockquote>
+
 Recipient:
-{{CodeSelect|code=
-wormhole receive
-Enter receive wormhole code: 7-crossover-clockwork
-Receiving file (7924 bytes) into: README.md
-ok? (y/n): y
-Receiving (->tcp:10.0.1.43:58986)..
-}}
+<blockquote>% wormhole receive
+Enter receive wormhole code: 7-crossover-clockwork <br />
+Receiving file (7924 bytes) into: README.md <br />
+ok? (y/n): y <br />
+Receiving (->tcp:10.0.1.43:58986).. <br />
+100%|===========================| 7.92K/7.92K [00:00<00:00, 120KB/s] <br />
+Received file written to README.md</blockquote>
 
 == Codeword Security ==
-The secret wormhole code must NOT be sent over an insecure channel as an adversary can perform a MITM attack and intercept transfers with 100% reliability.
 
-By default, wormhole codes contain 16 bits of entropy. If an attacker can intercept your network connection (either by owning your network, or owning the rendezvous server), they can attempt an attack. They will have a one-in-65536 chance of successfully guessing your code, allowing them to pose as your intended partner. If they succeed, they can turn around and immediately start a new wormhole (using the same code), allowing your partner to connect to them instead of you. By passing, observing, and possibly modifying messages between these two connections, they could perform an MitM (Man In The Middle) attack.<ref>https://magic-wormhole.readthedocs.io/en/latest/attacks.html#low-probability-man-in-the-middle-attacks</ref>
+The secret wormhole code must <u>not</u> be sent over an insecure channel, as an adversary can perform a [[Warning#Man-in-the-middle_Attacks|Man-in-the-Middle (MITM) Attack]] and intercept transfers with complete reliability.
 
-Basic probability tells us that peers will see a large number of WrongPasswordErrors before the attacker has a useful chance of successfully guessing any wormhole code. You should expect to see about 32000 failures before they have a 50% chance of being successful. If you see many failures, and think someone is trying to guess your codes, you can use e.g. <code>wormhole send --code-length=4</code> to make a longer code (reducing their chances significantly).
+By default, wormhole codes contain 16 bits of entropy. If an attacker can intercept your network connection (either by owning your network, or owning the rendezvous server), they can attempt an attack. They will have a one-in-65536 chance of successfully guessing the code, allowing them to pose as your intended partner. If they succeed, they can immediately start a new wormhole (using the same code), allowing your partner to connect to them instead of you. By passing, observing, and possibly modifying messages between these two connections, they could perform an MITM attack. <ref>https://magic-wormhole.readthedocs.io/en/latest/attacks.html#low-probability-man-in-the-middle-attacks</ref>
+
+Basic probability suggests that peers will see a large number of "WrongPasswordErrors" before the attacker is likely to successfully guess any wormhole code. In fact, about 32,000 failures would be reported before they have a 50 percent chance of being successful. If many failures emerge and it appears someone is trying to guess the codes, it is possible to make a longer code and significantly reduce adversary chances, for example: <code>wormhole send --code-length=4</code>.
 
 = OnionShare =
 See [[OnionShare]].
