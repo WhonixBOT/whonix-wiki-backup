@@ -59,33 +59,23 @@ This section briefly addresses possible {{project name}} fingerprinting issues a
 
 Various types of information can be leaked about the user's browser, (host) operating system and hardware depending on the external party in question.
 
-== Visited Websites ==
+== Entry Guards or Bridges ==
 
-Destination websites can retrieve [[Data_Collection_Techniques|a lot of information]] about a user's browser and system, while [[Tor_Browser/Advanced_Users#Adversary_Attack_Capabilities|advanced adversaries]] have even greater capabilities. <ref>Information that is leaked depends on the browser in use, JavaScript settings, Tor Browser's security slider settings, whether it is a malicious attack or not, and other factors.</ref> This information can include: 
-<div style="column-count:2;-moz-column-count:2;-webkit-column-count:2">
-* The browser name and version.
-* CSS media queries:
-** Window dimensions.
-** Desktop size.
-** Widget size.
-** Display type.
-** DPI.
-* A list of available extensions.
-* Timezone. <ref>Via the date object.</ref>
-* Available fonts.
-* User agent.
-* Video card in use. <ref>Via WebGL</ref>
-* CPU and interpreter speed.
-* Browser history. <ref>For example, using CSS and JavaScript to perform history disclosure attacks.</ref>
-* Via exploited plugins:
-** Leak the non-Tor IP address.
-** Interface addresses and other machine information. 
-** List all plugins to fingerprint the user.
-** Retrieve unique plugin identifiers.
-* Read / store identifiers related to HTTP auth, DOM storage, cached scripts, client certificates and TLS session IDs.
-* Browser cache.
-</div>
-To make it difficult to distinguish {{project name}} and TBB <ref name="tbb" /> users, TBB <ref name="tbb" /> is included on the platform. Therefore, {{project name}} should provide the same information as TBB <ref name="tbb" /> in order to generate very similar fingerprints.
+As noted in the [[Tor#Guard_Fingerprinting|Guard Fingerprinting]] chapter, using persistent Tor guards or bridges can threaten anonymity under certain circumstances:
+
+<blockquote>While natural guard rotation is recommended, there are some corner cases in which an adversary could fingerprint the entry guards and de-anonymize a user. For instance:<br />
+* The same entry guards are used across various physical locations and access points.
+* The same entry guards are used after permanently moving to a different physical location.
+</blockquote>
+
+For example, if an adversary monitoring network activity observes a user connecting from multiple physical locations with persistent guards/bridges, then it can be reasonably assumed that all connections stem from the same person. Mitigating this risk requires techniques like using new Tor entry guards or configuring alternate bridges for different places.
+
+Nick Mathewson from The Tor Project suggests additional precautions when moving networks: <ref>[https://lists.torproject.org/pipermail/tor-dev/2013-September/005424.html tor-dev: entry guards and linkability]</ref>
+
+* [[MAC_Address|Spoof the MAC address]] with randomized values on each move.
+* Absolutely prevent non-Tor connections.
+* Ensure a unique set of Tor entry guards (bridges) is utilized for each network you connect from. <ref>Note: this is not a recommendation for non-persistent guards because a hostile DHCP server might provide new IPs until a hostile guard is chosen.</ref>
+* Minimize the threat of stored Tor state files which record every network visited.
 
 {{Anchor|ISP fingerprint}}
 
@@ -123,23 +113,33 @@ One addition which is unique to {{project name}} is the ''configured torrc'' <re
 
 In conclusion, the ability of the ISP or local network administrator to distinctly identify users who utilize TBB, {{project_name}}, Tails, a custom transparent Tor proxy or similar project, depends on how well Tor actually works. As {{project name}} is exclusively generating Tor activity on the network and relies on Tor to obfuscate that traffic, the answer depends on Tor itself and resolution of open research questions.
 
-== Entry Guards or Bridges ==
+== Visited Websites ==
 
-As noted in the [[Tor#Guard_Fingerprinting|Guard Fingerprinting]] chapter, using persistent guards or bridges can threaten anonymity under certain circumstances:
-
-<blockquote>While natural guard rotation is recommended, there are some corner cases in which an adversary could fingerprint the entry guards and de-anonymize a user. For instance:<br />
-* The same entry guards are used across various physical locations and access points.
-* The same entry guards are used after permanently moving to a different physical location.
-</blockquote>
-
-For example, if an adversary monitoring network activity observes a user connecting from multiple physical locations with persistent guards/bridges, then it can be reasonably assumed that all connections stem from the same person. Mitigating this risk requires techniques like using new Tor entry guards or configuring alternate bridges for different places.
-
-Nick Mathewson from The Tor Project suggests additional precautions when moving networks: <ref>[https://lists.torproject.org/pipermail/tor-dev/2013-September/005424.html tor-dev: entry guards and linkability]</ref>
-
-* [[MAC_Address|Spoof the MAC address]] with randomized values on each move.
-* Absolutely prevent non-Tor connections.
-* Ensure a unique set of Tor entry guards (bridges) is utilized for each network you connect from. <ref>Note: this is not a recommendation for non-persistent guards because a hostile DHCP server might provide new IPs until a hostile guard is chosen.</ref>
-* Minimize the threat of stored Tor state files which record every network visited.
+Destination websites can retrieve [[Data_Collection_Techniques|a lot of information]] about a user's browser and system, while [[Tor_Browser/Advanced_Users#Adversary_Attack_Capabilities|advanced adversaries]] have even greater capabilities. <ref>Information that is leaked depends on the browser in use, JavaScript settings, Tor Browser's security slider settings, whether it is a malicious attack or not, and other factors.</ref> This information can include: 
+<div style="column-count:2;-moz-column-count:2;-webkit-column-count:2">
+* The browser name and version.
+* CSS media queries:
+** Window dimensions.
+** Desktop size.
+** Widget size.
+** Display type.
+** DPI.
+* A list of available extensions.
+* Timezone. <ref>Via the date object.</ref>
+* Available fonts.
+* User agent.
+* Video card in use. <ref>Via WebGL</ref>
+* CPU and interpreter speed.
+* Browser history. <ref>For example, using CSS and JavaScript to perform history disclosure attacks.</ref>
+* Via exploited plugins:
+** Leak the non-Tor IP address.
+** Interface addresses and other machine information. 
+** List all plugins to fingerprint the user.
+** Retrieve unique plugin identifiers.
+* Read / store identifiers related to HTTP auth, DOM storage, cached scripts, client certificates and TLS session IDs.
+* Browser cache.
+</div>
+To make it difficult to distinguish {{project name}} and TBB <ref name="tbb" /> users, TBB <ref name="tbb" /> is included on the platform. Therefore, {{project name}} should provide the same information as TBB <ref name="tbb" /> in order to generate very similar fingerprints.
 
 = {{project name}} Fingerprint Comparison =
 
