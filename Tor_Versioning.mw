@@ -4,11 +4,7 @@
 |image=https://www.whonix.org/w/images/7/73/Torversioning243231.png
 }}
 
-= Newer Tor Versions from the {{project_name}} Repository =
-
-Newer Tor versions can be installed by [[{{project name short}}-APT-Repository#Change_{{project_name_short}}_APT_Repository|enabling the {{project_name}} stable-proposed-updates repository]] in {{gateway_product_name}} (<code>{{whonix-gw}}</code>) and then [[Operating_System_Software_and_Updates#Updates|upgrading]] the system as usual. This is only recommended for testers.
-
-= Even Newer Tor Versions from The Tor Project Repository =
+= Introduction = 
 
 {{mbox
 | type    = notice
@@ -17,55 +13,67 @@ Newer Tor versions can be installed by [[{{project name short}}-APT-Repository#C
 }}
 
 
-Note: This action risks breaking connectivity, for instance if the latest Tor version from deb.torproject.org has not been fully tested by {{project_name}} developers at a specific point in time. <ref>
-This has happened in the past. For example, on one occasion Tor from deb.torproject.org came with AppArmor changes that were incompatible with [https://github.com/{{project_name_short}}/anon-gw-anonymizer-config anon-gw-anonymizer-config]'s [https://github.com/{{project_name_short}}/anon-gw-anonymizer-config/blob/master/etc/apparmor.d/local/system_tor.anondist /etc/apparmor.d/local/system_tor.anondist] which resulted in Tor's systemd unit failing.
-</ref>
+It is possible to install newer Tor versions from either the {{project_name}} or Tor Project repositories. 
+Note that a later Tor version will not always be installed from The Tor Project repository -- in the recent past, the stretch repositories for ''packages.debian.org'' and ''deb.torproject.org'' had identical Tor versions. In general, as the Debian stable release ages, the likelihood of receiving a newer Tor version from ''deb.torproject.org'' increases.
 
-To proceed despite the risk, install the even newer Tor version by enabling the deb.torproject.org repository. The [https://github.com/{{project_name_short}}/anon-shared-build-apt-sources-tpo anon-shared-build-apt-sources-tpo] package must be installed. This enables The Tor Project's apt-get signing key and installs the apt source torproject.list. <ref>
-Alternatively you can use [https://www.torproject.org/docs/debian The Tor Project's native instructions for Debian], but these manual steps are more difficult and involved. The verification of The Tor Project apt-get signing key is also harder. Since you already [[trust]] {{project_name}}, the logical choice is to trust another {{project_name}} package to install the right signing key.
-</ref>
+= Newer Tor Versions: {{project_name}} Repository =
 
-In {{gateway_product_name}} (<code>{{whonix-gw}}</code>), [[Operating_System_Software_and_Updates#Updates|update]] the package lists.
+Newer Tor versions can be installed by [[{{project name short}}-APT-Repository#Change_{{project_name_short}}_APT_Repository|enabling the {{project_name}} stable-proposed-updates repository]] in {{gateway_product_name}} (<code>{{whonix-gw}}</code>) and then [[Operating_System_Software_and_Updates#Updates|upgrading]] the system as usual.
+
+= Newer Tor Versions: The Tor Project Repository =
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = If the latest Tor version from deb.torproject.org has not been fully tested by {{project_name}} developers at a specific point in time, then problems can emerge such as broken connectivity. <ref>One example in the recent past was a Tor release that contained AppArmor changes which were incompatible with one of {{gateway_product_name}} (<code>{{whonix-gw}}</code>)'s configuration files ([https://github.com/{{project_name_short}}/anon-gw-anonymizer-config anon-gw-anonymizer-config]'s [https://github.com/{{project_name_short}}/anon-gw-anonymizer-config/blob/master/etc/apparmor.d/local/system_tor.anondist /etc/apparmor.d/local/system_tor.anondist]) causing Tor's systemd unit to fail.</ref>
+}}
+
+
+If you wish to proceed despite the risk, two steps are required: 
+* The ''deb.torproject.org'' repository must be enabled.
+* The [https://github.com/{{project_name_short}}/anon-shared-build-apt-sources-tpo <code>anon-shared-build-apt-sources-tpo</code>] package must be installed, since it enables The Tor Project's apt-get signing key and installs the apt source ''torproject.list'' <ref>Alternatively, [https://www.torproject.org/docs/debian The Tor Project's native instructions for Debian] can be used, but the manual steps are more difficult and involved. The verification of The Tor Project apt-get signing key is also harder. Since you already [[trust]] {{project_name}}, the logical choice is to trust another {{project_name}} package to install the right signing key.</ref>
+{{Box|text=
+'''1.''' In {{gateway_product_name}} (<code>{{whonix-gw}}</code>), [[Operating_System_Software_and_Updates#Updates|update]] the package lists.
 
 <pre>
 sudo apt-get update
 </pre>
 
-Install anon-shared-build-apt-sources-tpo.
+'''2.''' Install <code>anon-shared-build-apt-sources-tpo</code>
 
 <pre>
 sudo apt-get install anon-shared-build-apt-sources-tpo
 </pre>
 
-Refresh the package lists. <ref>
-So the newly installed <i>/etc/apt/sources.list.d/torproject.list</i> takes effect.
-</ref>
+'''3.''' Refresh the package lists. <ref>So the newly installed <i>/etc/apt/sources.list.d/torproject.list</i> takes effect.</ref>
 
 <pre>
 sudo apt-get update
 </pre>
 
-Install the (potentially) newer version of the <code>tor</code> package, as well as the <code>deb.torproject.org-keyring</code> package which keeps the Tor Project repository apt key up-to-date. <ref>A later version of Tor will not always be installed. For example, at the time of writing the stretch repositories for both packages.debian.org and deb.torproject.org have identical Tor versions. As the Debian stable release ages, the likelihood of receiving a newer Tor version from deb.torproject.org increases.</ref>
+'''4.''' Install the (potentially) newer version of the <code>tor</code> package.
+
+This step also installs the <code>deb.torproject.org-keyring</code> package which keeps the Tor Project repository apt key up-to-date.
 
 <pre>
 sudo apt-get install tor deb.torproject.org-keyring
 </pre>
-
+}}
 = Onionize Tor Project Updates =
 
-Only complete this step if the above [[Tor_Versioning|Newer Tor versions from The Tor Project Repository]] are in use. The Tor Project deb apt signing key must be added first (see the prior link), or error messages will appear when completing these steps.
+Only follow these instructions if [[#Newer Tor Versions: The Tor Project Repository|Newer Tor versions from The Tor Project Repository]] was configured. Note that the The Tor Project deb apt signing key must be added first (see the prior link), or error messages will appear when completing these steps.
 
 == {{non_q_project_name_short}} ==
-{{Box|text=
-The following commands are run in {{gateway_product_name}}.
 
-To onionize Tor Project updates, first create a torproject.list file using an editor.
+The following commands are run in {{gateway_product_name}}.
+{{Box|text=
+'''1.''' Create a ''torproject.list'' file using an editor.
 
 {{Open with root rights|filename=
 /etc/apt/sources.list.d/torproject.list
 }}
 
-Next, cut and paste the following text and comment out (#) the corresponding http repository.
+'''2.''' Cut and paste the following text and comment out (#) the corresponding http repository.
 
 {{CodeSelect|code=
 #Tor Project Mirror
@@ -80,7 +88,7 @@ Save and exit.
 {{mbox
 | type       = notice
 | image      = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = In Qubes R4.0 and above, TemplateVMs are non-network connected by default. This means any attempt to download the apt key in <code>{{whonix-gw}}</code> will fail. <ref>https://github.com/QubesOS/qubes-issues/issues/1854</ref>
+| text       = In Qubes R4.0 and above, TemplateVMs do not have network connections by default. This means any attempt to download the apt key in <code>{{whonix-gw}}</code> will fail. <ref>https://github.com/QubesOS/qubes-issues/issues/1854</ref>
 }}
 
 === Add the Tor Signing Key ===
