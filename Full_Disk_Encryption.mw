@@ -56,13 +56,19 @@ Create a LUKS container and change the device name as needed, then follow the pr
 == Legacy Device Encryption Upgrade ==
 
 It is safer to re-encrypt the device with a stronger key rather than performing a quick format that will otherwise leave the old/weaker header intact. 
+{{Box|text=
+'''1.''' First enumerate the device. 
 
-First enumerate the device. They will usually be called 'sdb1', as sdaX is reserved for the system on default installs. To avoid confusion, only connect one removable device at a time.
+They will usually be called 'sdb1', as sdaX is reserved for the system on default installs. To avoid confusion, only connect one removable device at a time.
+
 {{CodeSelect|code=
 # ls /dev/
 }}
 
-To view the LUKS header data in order to make necessary adjustments, run.
+'''2.''' View the LUKS header data in order to make necessary adjustments.
+
+Run.
+
 {{CodeSelect|code=
 # cryptsetup luksDump --debug <device>
 }}
@@ -73,17 +79,21 @@ LUKS header data legend:
 * AES in XTS mode uses a key size double its bit size (512 in this case) since in XTS the key is split in 2, resulting in AES with 256-bit keys. <ref>https://unix.stackexchange.com/questions/254017/how-to-interpret-cryptsetup-benchmark-results</ref>
 * 'Payload offset' is 4096 for 256-bit keys and 2048 for 128-bit keys. <ref>https://wiki.archlinux.org/index.php/dm-crypt/Device_encryption#Re-encrypting_an_existing_LUKS_partition</ref>
 
-Re-encrypt the device with stronger keys. <ref>https://jlk.fjfi.cvut.cz/arch/manpages/man/cryptsetup-reencrypt.8</ref> Fortunately, header resizing is usually unnecessary (otherwise it will abort the process).
+'''3.''' Re-encrypt the device with stronger keys. <ref>https://jlk.fjfi.cvut.cz/arch/manpages/man/cryptsetup-reencrypt.8</ref> 
+
+Fortunately, header resizing is usually unnecessary (otherwise it will abort the process).
+
 {{CodeSelect|code=
 # cryptsetup-reencrypt <device> -c aes-xts-plain64 -s 512 --use-directio
 }}
 
 Abruptly disconnecting power can cause data loss. To safely pause the process (in case of system sleep/shutdown), cryptsetup can be suspended (e.g. by <code>Ctrl+c</code>) and it will automatically restart from where it left off if temporary header files are present in the home directory. <ref>https://asalor.blogspot.com/2012/08/re-encryption-of-luks-device-cryptsetup.html</ref>
+}}
 
 {{mbox
-| type      = notice
+| type    = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text       = It is safest to assume that a machine has been compromised after any unauthorized physical access.
+| text    = It is safest to assume that a machine has been compromised after any unauthorized physical access.
 }}
 
 
