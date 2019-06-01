@@ -1,9 +1,16 @@
 {{Title|title=Tor Browser Advanced Topics}}
 = Tor Browser Adversary Model =
-The Tor Browser design has carefully considered the goals, capabilities and types of attacks undertaken by adversaries and planned accordingly. 
-
-The design specifications address: proxy obedience, state separation, disk avoidance, application data isolation, cross-origin identifier unlinkability, cross-origin fingerprinting unlinkability, long-term unlinkability via the "New Identity" button, and other security measures to address many of the risks outlined below. <ref>https://www.torproject.org/projects/torbrowser/design/#Implementation</ref> <ref>This has also informed the development of the Torbutton extension.</ref>
-
+The Tor Browser design has carefully considered the goals, capabilities and types of attacks undertaken by adversaries and planned accordingly. The design specifications address:
+<div style="column-count:2;-moz-column-count:2;-webkit-column-count:2">
+* Application data isolation.
+* Cross-origin fingerprinting unlinkability.
+* Cross-origin identifier unlinkability.
+* Disk avoidance.
+* Long-term unlinkability via the "New Identity" button.
+* Proxy obedience.
+* State separation.
+* Other security measures to address many of the risks outlined below. <ref>https://www.torproject.org/projects/torbrowser/design/#Implementation</ref> <ref>This has also informed the development of the Torbutton extension.</ref>
+</div>
 == Adversary Goals ==
 
 '''Table:''' ''Adversary Goals'' <ref name=torbutton_adversary>https://www.torproject.org/docs/torbutton/en/design/index.html.en#adversary</ref> <ref name=torbrowser_adversary>https://www.torproject.org/projects/torbrowser/design/#adversary</ref>
@@ -13,8 +20,14 @@ The design specifications address: proxy obedience, state separation, disk avoid
 ! scope="col"| '''Adversary Goals'''
 ! scope="col"| '''Description'''
 |-
+! scope="row"| Anonymity Set Reduction (Fingerprinting)
+| To identify specific individuals, system data like the browser build,  timezone or display resolution is used to track down (or at least track) their activities.
+|-
 ! scope="row"| Bypassing Proxy Settings
 | Directly compromising and bypassing Tor, or having the user connect to specific IP addresses.
+|-
+! scope="row"| Correlating Activity across Multiple Sites
+| Learning if the user who visited site A is the same user who visited site B, in order to serve targeted advertisements.
 |-
 ! scope="row"| Correlating Tor and Non-Tor activity
 | If a proxy bypass is not possible, correlation of Tor and non-Tor activity is sought via cookies, cache identifiers, JavaScript events and Cascading Style Sheets (CSS).
@@ -22,17 +35,11 @@ The design specifications address: proxy obedience, state separation, disk avoid
 ! scope="row"| History Disclosure
 | Querying user history for censored search queries or websites.
 |-
-! scope="row"| Correlating Activity across Multiple Sites
-| Learning if the user who visited site A is the same user who visited site B, in order to serve targeted advertisements.
+! scope="row"| History Records and other On-disk Information
+| Seizing the computers of all Tor users in a given area and extracting history records, cache data, hostnames and disk-logged spoofed MAC address history.
 |-
 ! scope="row"| Location Information
 | Seeking timezone and locality information to determine if the user originates from a specific region they are trying to control, or focusing in on dissidents or whistleblowers.
-|-
-! scope="row"| Anonymity Set Reduction (Fingerprinting)
-| To identify specific individuals, system data like the browser build,  timezone or display resolution is used to track down (or at least track) their activities.
-|-
-! scope="row"| History Records and other On-disk Information
-| Seizing the computers of all Tor users in a given area and extracting history records, cache data, hostnames and disk-logged spoofed MAC address history.
 |}
 
 == Adversary Positioning Capabilities == 
@@ -44,11 +51,11 @@ The design specifications address: proxy obedience, state separation, disk avoid
 ! scope="col"| '''Location'''
 ! scope="col"| '''Description'''
 |-
-! scope="row"| Exit Node or Upstream Router
-| Running exit nodes or controlling routers upstream of exit nodes. <ref>This has already been observed.</ref>
-|-
 ! scope="row"| Adservers and/or Malicious Websites
 | Running websites or contracting ad space from adservers to inject content. Reducing a Tor user's anonymity is also good for marketing purposes. <ref>Partially explaining the unholy alliance between the corporate sector and government.</ref>
+|-
+! scope="row"| Exit Node or Upstream Router
+| Running exit nodes or controlling routers upstream of exit nodes. <ref>This has already been observed.</ref>
 |-
 ! scope="row"| Local Network / ISP / Upstream Router
 | Injecting malicious content at the user's upstream router when Tor is disabled in order to correlate Tor and non-Tor activity. Additionally, block Tor or attempt to recognize traffic patterns of specific web pages at the entrance to the Tor network.
@@ -71,6 +78,12 @@ The design specifications address: proxy obedience, state separation, disk avoid
 ! scope="col"| '''Attack Capabilities'''
 ! scope="col"| '''Description'''
 |-
+! scope="row"| Inserting CSS
+| 
+* Using CSS pop-ups: Correlate Tor and non-Tor activity and reveal a user's non-Tor IP address.<br />
+* Using CSS and JavaScript: Perform CSS-only history disclosure attacks. <br />
+* CSS media queries: Gather information about desktop size, widget size, display type, DPI, user agent type and other information.
+|-
 ! scope="row"| Inserting JavaScript
 | 
 * Extracting fingerprinting information: Available fonts, DOM objects to ascertain the user agent, WebGL to reveal the video card in use, and high precision timing information to reveal the CPU and interpreter speed. <br /> 
@@ -84,12 +97,6 @@ The design specifications address: proxy obedience, state separation, disk avoid
 * Enumerating: The list of plugins to fingerprint the user. <br />
 * Gathering information: Use plugins capable of extracting font lists, interface addresses and other machine information. <br />
 * Retrieving: Unique plugin identifiers.
-|-
-! scope="row"| Inserting CSS
-| 
-* Using CSS pop-ups: Correlate Tor and non-Tor activity and reveal a user's non-Tor IP address.<br />
-* Using CSS and JavaScript: Perform CSS-only history disclosure attacks. <br />
-* CSS media queries: Gather information about desktop size, widget size, display type, DPI, user agent type and other information.
 |-
 ! scope="row"| Reading and Inserting Identifiers
 | 
