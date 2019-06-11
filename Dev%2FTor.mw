@@ -1,0 +1,127 @@
+{{Header}}
+{{#seo:
+|description=Development Notes about Tor.
+}}
+{{forkme}}
+
+= Tor Version =
+
+According to the [https://trac.torproject.org/projects/tor/wiki/org/teams/NetworkTeam/CoreTorReleases#Listofreleases Tor release note], there are usually several different major versions of Tor supported by the Tor project. However, due to the the limited time the Tor packager has, only a few major versions are packaged and ready to be used.
+
+For example, at the time of writing (December, 2017), five major versions of Tor are supported. Specifically:
+
+# Debian stretch repository only contains another LTS which is version 0.2.9.<br />
+# {{code|deb.torproject.org}}, also known as TPO repository, contains only the latest stable Tor which is version 0.3.1.9.
+
+A major consideration in choosing the most suitable Tor version for {{project name}} is that the latest stable found in the TPO repository may lead to network breakage. <ref>https://forums.whonix.org/t/whonix-gateway-tor-0-2-9-9-unrecommended-no-update-unsafe/4240/8</ref> The reason is the "stable" tag indicates it is stable version of Tor, which does not necessarily match the "stable" Debian version that {{project name}} is actually using. <ref>The Debian target is usually the stable package, which is currently: {{Stable_project_version_based_on_Debian_codename}}) or {{project_name}}.</ref>
+
+There are three primary Tor options for {{project name}} developers and each of them has pros and cons:
+
+'''1. Use the Tor LTS version from the official Debian package repository: {{code|packages.debian.org}}'''
+
+* Advantages: Minimal effort is required in {{project_name}}.
+* Disadvantages: Misses the advantages of later versions (see below).
+
+'''2. Use latest stable in TPO repository and allow testers to use the Tor nightly build in {{project_name}}, with bug reporting bug to TPO'''
+
+* Advantages: Latest features, better security, improved Tor Browser compatibility (using SocksPort with flags and even better connectivity performance). <ref>Patrick: "Historically when there was a botnet starting to use Tor, the LTS version barely connected while the latest stable had the ntor handshake which worked." See [https://blog.torproject.org/tor-weekly-news-september-4th-2013].</ref>
+* Disadvantages: From the {{project name}} perspective, these packages are uploaded to {{code|deb.torproject.org}} at random times. These packages are not guaranteed to be compatible with {{project_name}}. While there are no security concerns, these packages could break a system's apt-get package management (due to incompatible dependencies) or connectivity, in case Tor refuses to start. This can arise due to a configuration incompatibility in a newer version of Tor, or for other reasons such as systemd or apparmor related changes.
+
+'''3. Versions are downloaded from {{code|deb.torproject.org}}, verified to work, and then migrated to {{code|deb.whonix.org}}'''
+
+* Advantages: Flexibility in version selection, a guaranteed way to confirm that only stable Tor versions which are functional in {{project name}} will be uploaded.
+* Disadvantages: A few testers are needed, manual uploads are required, and {{project name}} touches Tor.
+
+{{project_name}} developers have chosen the third method for now. <ref>Relative {{project name}} Forum discussion: https://forums.whonix.org/t/tor-releases-discussion/4578</ref> However, the comparison above suggests better security and compatibility is afforded by the second option. This approach requires a lot of active testers who can use the Tor nightly build and report bugs to the Tor project or {{project_name}}. <ref>Please contact us if you would like to be a Tor nightly build tester for {{project_name}}.</ref>
+
+= Tor Config Files =
+== Current Implementation ==
+'''<u>TODO: Update required. Changed in {{project name}} 14.</u>'''
+
+The implementation is as it follows.
+
+* {{Code2|/etc/tor/torrc}} holds minimal content, so we don't have to update it ever again
+* Instructions in {{Code2|/etc/tor/torrc}} say don't edit use /usr/local/etc/torrc.d/50_user.conf instead.
+* <s>We should never update {{Code2|/etc/tor/torrc}} because that would lead to an {{Code2|interactive dpkg conflict resolution dialog}}</s> <ref name=dpkg-conflict-resolution-dialog>
+{{Code2|interactive dpkg conflict resolution dialog}} exampleː
+<pre>
+Configuration file `/etc/tor/torrc'
+ ==> Modified (by you or by a script) since installation.
+ ==> Package distributor has shipped an updated version.
+   What would you like to do about it ?  Your options are:
+    Y or I  : install the package maintainer's version
+    N or O  : keep your currently-installed version
+      D     : show the differences between the versions
+      Z     : background this process to examine the situation
+ The default action is to keep your current version.
+*** interfaces (Y/I/N/O/D/Z) [default=N] ? N
+</pre>
+</ref> <ref>
+<s>Because, {{Code2|/etc/tor/torrc}} comes with an out commented {{Code2|#DisableNetwork 0}}</s> which gets commented in by {{Code2|whonixsetup}}, i.e. {{Code2|whonixsetup}} changes that line to {{Code2|DisableNetwork 0}}, which dpkg will consider as user modification.</ref>, because that would be bad from an usability perspective. Such an {{Code2|interactive dpkg conflict resolution dialog}} confuses quite some users. Also from a security perspective, if the user chooses {{Code2|Y or I}} (install the package maintainer's version), the user may lose its (security) settings such for example its proxy and/or obfuscated bridges settings.
+* {{Code2|/etc/tor/torrc.examples}} contains configuration examples.
+* {{project name}} Tor settings go into {{Code2|/usr/share/tor/tor-service-defaults-torrc}}.
+* Users will ignore {{Code2|/usr/share/tor/tor-service-defaults-torrc}}, because this file is barely advertised and barely popular.
+* {{Code2|/usr/share/tor/tor-service-defaults-torrc}} can be updated without any conflicts with user modifications.
+* https://github.com/{{project_name_short}}/anon-gw-anonymizer-config
+
+== Rejected Alternatives ==
+=== Only Two Config Files ===
+* Using only {{Code2|/usr/share/tor/tor-service-defaults-torrc}} and {{Code2|/etc/tor/torrc}}, not using {{Code2|/etc/tor/torrc.examples}}.
+* And having configuration examples (instructions) in {{Code2|/usr/share/tor/tor-service-defaults-torrc}}. Using a minimal {{Code2|/etc/tor/torrc}} to tell them to look into {{Code2|/usr/share/tor/tor-service-defaults-torrc}} for configuration examples.
+* This is a bad idea, because users get tempted comment in things in {{Code2|/usr/share/tor/tor-service-defaults-torrc}}.
+* When they do this, they settings would get lost and overwritten without asking next time they update [https://github.com/{{project_name_short}}/anon-gw-anonymizer-config anon-gw-anonymizer-config], because {{Code2|/usr/share/tor/tor-service-defaults-torrc}} is not a configuration file (since in {{Code2|/usr}}, not {{Code2|/etc}} folder).
+
+=== Only One Config File ===
+* Using only {{Code2|/etc/tor/torrc}}, leaving {{Code2|/usr/share/tor/tor-service-defaults-torrc}} with defaults (from Debian), not using {{Code2|/etc/tor/torrc.examples}}.
+* Using {{Code2|/etc/tor/torrc}} for user examples, user's own modifications and {{project name}} Tor settings.
+* This is bad, because when users have edited {{Code2|/etc/tor/torrc}} and anon-gw-anonymizer-config gets updated, it will throw an {{Code2|interactive dpkg conflict resolution dialog}}<ref name=dpkg-conflict-resolution-dialog />. Users might decide to keep their old config file and will miss (security) improvements.
+
+= Missing /etc/tor.d/ Feature =
+Upstream feature request: <br />
+[https://trac.torproject.org/projects/tor/ticket/1922  torrc.d-style configuration directories ]
+
+Not having an {{Code|/etc/tor.d/}} style folder (similar to [[{{project name short}} Configuration Files|{{project_name}} modular flexible .d style configuration folders]]) makes implementation of additional features that require additional Tor ({{Code2|/etc/tor/torrc}}) settings much harder. For example it would improve usability to provide a {{Code2|whonix-gw-hidden-webserver}} package, that automates the {{gateway_product_name}} specific instructions for [[Onion Services]]. If there was a {{Code|/etc/tor.d/}} style folder, we could just drop the configuration snippet there, and if the feature gets disabled or the package installed, that configuration snippet gets purged. Adding additions to {{Code2|/etc/tor/torrc}} with a script is problematic, because those additions cannot be removed by a script if the user slightly modified those lines.
+
+Maybe clearly marking the configuration snippet would help.
+
+<pre>
+### BEGIN whonix-gw-hidden-webserver ###
+##
+## DO NOT EDIT THIS SECTION
+##
+## Add your modifications on top of BEGIN or below END.
+## It is automatically generated by whonix-gw-hidden-webserver with settings
+## from /etc/whonix.d folder. If you edit this section, removal by
+## whonix-gw-hidden-webserver will fail. To remove this section, run:
+## sudo whonix-hw
+##
+HiddenServiceDir /var/lib/tor/hidden_service/
+HiddenServicePort 80 10.152.152.11:80
+HiddenServiceVersion 3
+##
+## DO NOT EDIT THIS SECTION
+##
+### END whonix-gw-hidden-webserver ###
+</pre>
+
+= Tor Control =
+socat - UNIX-CONNECT:/var/run/tor/control
+
+echo "AUTHENTICATE $(xxd -c 32 -g 0 /var/run/tor/control.authcookie | awk '{print $2}')"
+
+= Why Waste Network Bandwidth by Downloading Operating System Updates over Tor? =
+
+The short answer is this option was discussed with The Tor Project and {{project name}} was granted permission to do so.
+
+Interested readers who want to learn more should review the following:
+
+* Tor Project thread about this issue; see [https://trac.torproject.org/projects/tor/wiki/doc/TorBOX/Dev/ArchivedDiscussion/DOCUMENTATION#updatesoverTorshouldnotwasteTorbandwidthDOCUMENTATIONSOLVED updates over Tor, should not waste Tor bandwidth]. 
+* The Tor Project was asked directly, after this issue and possible solutions were discussed thoroughly by the {{project name}} team; see [https://lists.torproject.org/pipermail/tor-talk/2012-March/023486.html tor-talk Operating system updates / software installation behind Tor Transparent Proxy]. <ref>Click [https://lists.torproject.org/pipermail/tor-talk/2012-March/subject.html#23507 here] for an overview of all answers.</ref>
+* Andrew Lewman, a former Executive Director, Director and press contact for Tor downloads a lot of updates over the network and [https://lists.torproject.org/pipermail/tor-talk/2012-March/023493.html did not complain].
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Development]]
