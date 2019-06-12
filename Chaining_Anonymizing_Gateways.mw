@@ -1,0 +1,113 @@
+{{Header}}
+{{#seo:
+|description=Chaining Anonymizing Gateways
+|image=https://www.whonix.org/w/images/7/77/Chaininganon23234.jpg
+}}
+
+= Introduction =
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = Only advanced users should attempt these configurations!
+}}
+
+By default, all {{workstation_product_name}} traffic is forced through {{gateway_product_name}}. Alternatively, a chain of anonymizing gateways can be built, with sample tunnel configurations outlined below.
+
+Before attempting complex tunnel configurations, the following basic knowledge is required:
+
+* [[Tunnels/Introduction|Tunnels Introduction]]
+* [[Stream Isolation]]
+
+This [[Dev/Inspiration|Inspiration]] resource may also be useful.
+
+= Possible Configurations =
+
+== Pre-Tor-VPN ==
+
+{{CodeSelect|code=
+## chain:
+{{workstation_product_name}} -> VPN-Gateway -> {{gateway_product_name}} -> clearnet
+## connection scheme:
+user -> VPN -> Tor -> Internet
+}}
+
+For instructions, see [[Tunnels/Connecting_to_a_VPN_before_Tor|here]]. To learn more details about this configuration, refer to this [[Tunnels/Introduction#Connecting_to_a_tunnel-link_.28proxy.2FVPN.2FSSH.29_before_Tor|entry]].
+
+== Post-Tor-VPN ==
+
+{{CodeSelect|code=
+## chain:
+{{workstation_product_name}} -> {{gateway_product_name}} -> VPN-Gateway -> clearnet
+## connection scheme:
+user -> Tor -> VPN -> Internet
+}}
+
+For instructions, see [[Tunnels/Connecting_to_Tor_before_a_VPN|here]]. To learn more details about this configuration, refer to this [[Tunnels/Introduction#Connecting_to_Tor_before_a_tunnel-link_.28proxy.2FVPN.2FSSH.29|entry]].
+
+== Pre- and Post-Tor-VPN ==
+
+{{CodeSelect|code=
+## chain:
+{{workstation_product_name}} -> VPN-Gateway -> {{gateway_product_name}} -> VPN-Gateway -> Internet
+## connection scheme:
+user -> VPN -> Tor -> VPN -> Internet
+}}
+
+{{project_name}} is not limited to VPN-Gateways; the VPN can be replaced with a Proxy-Gateway.
+
+== Post-Tor-Proxy ==
+
+{{CodeSelect|code=
+## chain:
+{{workstation_product_name}} -> Proxy-Gateway -> {{gateway_product_name}} -> clearnet
+## connection scheme:
+user -> Tor -> Proxy -> Internet
+}}
+
+For instructions, see [[Tunnels/Connecting_to_Tor_before_a_proxy|here]]. To learn more details about this configuration, refer to this [[Tunnels/Introduction#Connecting_to_Tor_before_a_tunnel-link_.28proxy.2FVPN.2FSSH.29|entry]].
+
+== Other Connection Schemes ==
+
+Virtually any combination is possible: a Post-Tor-Proxy; a Pre/Post-Tor-SSH; or the proxy being replaced with JonDo or perhaps I2P.
+
+Always remember that the connection will be created in reverse order; see the example below. <ref>"Internet" below refers to the destination server, such as a website.</ref>
+
+{{CodeSelect|code=
+## chain:
+{{workstation_product_name}} -> Proxy-Gateway -> {{gateway_product_name}} -> VPN-Gateway -> clearnet
+## connection scheme:
+user -> VPN -> Tor -> Proxy -> Internet
+}}
+
+Upon reflection, it becomes clear why the connection happens in reverse order:
+
+* {{workstation_product_name}} has no option but to pass through the Proxy-Gateway. 
+* The Proxy-Gateway has no option but to pass through {{gateway_product_name}}. 
+* In this case, the last element in the chain is the VPN-Gateway, which must obviously connect via [[FAQ#What_is_Clearnet.3F|clearnet]]. 
+
+In other terms: 
+
+* The VPN-Gateway uses clearnet. 
+* {{gateway_product_name}} uses the VPN-Gateway to connect.
+* The Proxy-Gateway uses {{gateway_product_name}} to connect.
+* {{workstation_product_name}} uses the Proxy-Gateway to connect. 
+
+Since the Proxy-Gateway can only pass through {{gateway_product_name}} followed by the VPN-Gateway, it is clear why it will be the last hop in front of the destination server.
+
+= Other Considerations =
+
+Whether these combinations make sense in terms of security and anonymity is hotly debated and depends on your personal threat model, see [https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN Tor plus VPN or Proxy]. Advanced tunneling configurations also require knowledge of how to properly edit ''/etc/network/interfaces'' on {{gateway_product_name}} and/or on {{workstation_product_name}}. In the case of [[{{non q project name short}}|{{non q project name}}]], this refers to the virtual internal network name in VirtualBox settings.
+
+This process is generally difficult because there are no other anonymizing gateways (VPN / JonDo / I2P / Proxy / SSH / VPN) available for download in {{project_name}}, just the {{gateway_product_name}} which uses Tor to anonymize traffic. This means a search for instructions is often required and/or an anonymizing gateway must be built from scratch. <ref>Instructions for a pfSense based VPN-Gateway can be found with search engines, but it is untested for leaks.</ref> 
+
+For a VPN-Gateway, see also:
+<br />
+* [https://www.ivpn.net/privacy-guides/advanced-privacy-and-anonymity-part-6 VPN-Gateway] ([http://www.webcitation.org/6RKpGv2y9 w])
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
