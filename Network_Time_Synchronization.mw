@@ -1,0 +1,274 @@
+{{Header}}
+{{#seo:
+|description=Network Time Synchronization
+|image=https://www.whonix.org/w/images/e/e7/TineSynchronization2134234.jpg
+}}
+
+= Introduction =
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = '''Warning:''' The system clock inside {{project name}} is set to UTC to prevent against time zone leaks. This means it may be a few hours ahead or behind the user's host system clock. <u>It is strongly recommended not to change this setting.</u>
+}}
+
+It is recommended to read the [[Dev/TimeSync|TimeSync Technical Design]] page together with this chapter, although it is a difficult topic. Interested users, developers and auditors should also review the footnotes for additional information or to explore design elements and the reasoning for this entry.
+
+= Block Networking until sdwdate Finishes =
+
+[[Sdwdate|sdwdate]] is a Tor-friendly replacement for rdate and ntpdate that sets the system's clock by communicating via end-to-end encrypted TCP with Tor onion webservers. Since timekeeping is crucial for security and anonymity, blocking network access until sdwdate succeeds is sensible. <ref>https://forums.whonix.org/t/testers-wanted-blocking-networking-until-sdwdate-finished-status-of-sdwdate-gui/5372</ref> 
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = [[sdwdate-gui]] is effectively unused in Qubes, since it is not yet automatically started due to usability issues. <ref>https://phabricator.whonix.org/T534</ref> <ref>It is installed by default and is functional when manually started. Users should check back at a later date for further news on sdwdate-GUI development.</ref> 
+}}
+
+[[sdwdate]] is functional on both {{gateway_product_name}} and {{workstation_product_name}}, but in some cases it is possible for the time to leak before it is changed. Potential leak channels include time or other servers, daemons, and client programs such as Tor Browser which are used before sdwdate successfully finishes. <ref>https://phabricator.whonix.org/T533</ref> In this case, the user is only left with the protections afforded by [[Boot Clock Randomization]]. <ref>
+[[Dev/TimeSync#Block_Networking_until_sdwdate_Finishes]]
+</ref>
+
+== TemplateVMs ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = [[{{non q project name short}}|{{non q project name}}]] and [[{{q project name short}}|{{q project name}}]].
+}}
+
+It is easiest to apply changes in the {{gateway_product_name}} and {{workstation_product_name}} TemplateVMs. In [[{{q_project_name_short}}|{{q_project_name}}]], these settings will be inherited by all TemplateBasedVMs.
+{{Box|text=
+'''1.''' Edit the Whonix firewall configuration.
+
+In ''both'' {{gateway_product_name}} (<code>{{whonix-gw}}</code>) and {{workstation_product_name}} (<code>{{whonix-ws}}</code>), run.
+
+{{Open with root rights|filename=
+/etc/whonix_firewall.d/50_user.conf
+}}
+
+'''2.''' Copy and paste the following text.
+
+{{CodeSelect|code=
+firewall_mode=
+}}
+
+'''3.''' Save the file and reboot.
+
+'''4.''' Have the changes take effect.
+
+* <u>{{non_q_project_name_short}}</u>: restart {{gateway_product_name}} and {{workstation_product_name}}.
+* <u>{{q_project_name}}</u>: shutdown the {{gateway_product_name}} (<code>{{whonix-gw}}</code>) and {{workstation_product_name}} (<code>{{whonix-ws}}</code>) TemplateVMs and restart the TemplateBasedVMs (<code>sys-whonix</code> and <code>anon-whonix</code>).
+}}
+
+== {{q_project_name}} TemplateBasedVMs ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = [[{{q project name short}}|{{q project name}}]] only.
+}}
+
+The procedure can optionally be completed in select TemplateBasedVMs (AppVMs) like <code>sys-whonix</code> and <code>anon-whonix</code>.
+{{Box|text=
+'''1.''' Edit the Whonix firewall configuration.
+
+In the chosen {{project name}} TemplateBasedVMs, run.
+
+{{Open with root rights|filename=
+/rw/config/whonix_firewall.d/*.conf
+}}
+
+'''2.''' Copy and paste the following text.
+
+{{CodeSelect|code=
+firewall_mode=
+}}
+
+'''3.''' Save the file and reboot.
+}}
+= Enable sdwdate-gui =
+
+== {{non_q_project_name_short}} ==
+
+By default, [[sdwdate-gui]] automatically starts when {{gateway_product_name}} is booted. This keeps users informed about the status of the Tor network connection and sdwdate's progress, and also helps to test this feature.
+
+== {{q_project_name}} ==
+
+If users are willing to persist with one sdwdate-gui systray instance per VM, then it is recommended to enable sdwdate-gui autostart. This setting keeps users informed about the status of the Tor network connection and sdwdate's progress, and will help to test this feature.
+{{Box|text=
+'''1.''' Configure sdwdate-gui autostart.
+
+{{Open with root rights|filename=
+/usr/lib/sdwdate-gui/start-maybe
+}}
+
+'''2.''' Replace its contents with the following code.
+
+<pre style="white-space: pre-wrap;">
+#!/bin/bash
+
+## This file is part of {{project_name}}.
+## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+set -e
+
+if [ -d /usr/lib/qubes ]; then
+    VM_TYPE="$(/usr/bin/qubesdb-read /qubes-vm-type)"
+
+    if [ "$VM_TYPE" == "AppVM" ]; then
+        /usr/lib/sdwdate-gui/sdwdate-watcher
+    elif [ "$VM_TYPE"  == "ProxyVM" ]; then
+        sdwdate-gui-qubes
+    fi
+
+else
+    sdwdate-gui
+fi
+</pre>
+
+'''3.''' Save and exit.
+}}
+Developers are designing the next sdwdate-gui version so it can be conveniently enabled. Check back later for further information concerning sdwdate-gui modifications to prevent auto-start.
+
+= Network Time Synchronization =
+
+== Disabling NTP ==
+
+If ISP tampering with NTP is ever confirmed, users are advised to [[Time_Attacks#GNU.2FLinux_Host|disable NTP]] and manually update the host clock out-of-band. For example, a watch or [https://en.wikipedia.org/wiki/Atomic_clock atomic clock] can be used for this purpose. If the tampering is targeted and not a widescale attack, then the user already has much bigger problems to worry about than NTP; see [[Warning#Confirmation_Attacks|Confirmation Attacks]].
+
+If following the advice above -- disabling NTP on the host and adjusting the clock out-of-band -- be aware that clearnet traffic might be easier to fingerprint. <ref>See the [[Fingerprint]] page to discover what fingerprinting means in this case.</ref> The reason is that it introduces a device issuing clearnet traffic (such as OS updates), but without the use of NTP. It is unknown how many people have NTP which is deactivated, broken, uninstalled, or never in fact installed in the first place. Also unknown is how many people are using alternative time synchronization methods such as authenticated NTP, tails_htp, tlsdate or similar. However, search engine research suggests that very few people fall into both these categories.
+
+== NTP Issues ==
+
+The host system clock synchronization mechanism still uses unauthenticated NTP from a single source. This is not optimal, but there is no real solution to this problem. <ref>See Design: [[Dev/TimeSync]].</ref> A potential attack vector is created by this NTP behavior; the ISP and/or time server could either inadvertently or maliciously introduce a significant clock skew, or the host clock could simply malfunction.
+
+If the host clock value is grossly inaccurate -- more than one hour in the past or more than 3 hours in future -- Tor cannot connect to the Tor network. <ref>In this case, Tor cannot verify the Tor consensus.</ref> This is easily solved by manually fixing the clock on the host, then powering the {{gateway_product_name}} (<code>sys-whonix</code>) off and on again.
+
+Another side effect of a significantly inaccurate host clock concerns operating system (OS) updates and cryptographic verification on the host. Until the host clock is manually fixed, it may no longer be possible to download updates or verify SSL certificates correctly with the host browser.
+
+Users should always check whether a host clock defect relates to an empty battery before assuming the ISP is tampering with NTP.
+
+== Saving or Suspending the VM State ==
+
+When a user suspends or saves the VM state, the clock will stop and continue after resuming, leading to a time that lags behind the correct value. This can cause later Tor connectivity problems or introduce possible adverse anonymity impacts.
+
+The {{gateway_product_name}} (<code>sys-whonix</code>) state should not be suspended or saved. It is far better to  power it off when it is no longer needed. <ref>If this advice is ignored, Tor can become confused if the time is more than 1 hour in the past or more than 3 hours in the future. When this happens, Tor will only reconnect to the Tor network if the clock is manually fixed or powered off and on again.</ref> 
+
+Similarly, if users  suspend or save the {{workstation_product_name}} (<code>anon-whonix</code>) state, the clock will again lag behind the correct value. This can be manually fixed by running: <code>Start Menu</code> &rarr; <code>Applications</code> &rarr; <code>System</code> &rarr; <code>Time Synchronization Monitor (sdwdate-gui)</code> &rarr; <code>restart sdwdate</code>.
+
+For further detailed information on network time syncing on all {{project name}} platforms, see [[Post_Install_Advice#Network_Time_Syncing|here]].
+
+= Spoof the Initial Virtual Hardware Clock Offset  =
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = '''Tip:''' Spoofing the initial virtual hardware clock offset is useful to prevent [[Dev/TimeSync#Clock_Correlation_Attack|Clock Correlation Attacks]].
+}}
+
+== KVM ==
+<div class="toccolours mw-collapsible mw-collapsed">
+For KVM, click on Expand on the right.
+<div class="mw-collapsible-content">
+[[KVM#XML_Modification_.28OPTIONAL.29|Edit the VM xml before import]] or [[KVM#Editing_an_imported_Machine.27s_XML_Configuration|edit the VM xml after import]] and change the following setting.
+{{CodeSelect|code=
+<clock offset='utc'>
+}}
+To.
+
+{{CodeSelect|code=
+<clock offset='variable' adjustment='123456' basis='utc'>
+}}
+
+The <code>adjustment</code> attribute takes any arbitrary value for seconds. The user must pick a random value that is unknown to others, ranging between 0 and 900 (a 15 minute range).
+</div>
+</div>
+
+== Qubes ==
+
+TODO
+
+Unfortunately, it is not yet possible to set a random clock offset for {{q_project_name}} VMs to prevent clock correlation attacks since it is [https://phabricator.whonix.org/T440 unsupported by Xen]. A related issue is [https://phabricator.whonix.org/T389 denying {{q_project_name}} access to "clocksource=xen"], which may not be possible without Linux kernel and/or Xen patches. For a detailed discussion of these issues, see [https://groups.google.com/forum/#!topic/qubes-devel/aN3IOv6JmKw here].
+
+== VirtualBox ==
+<div class="toccolours mw-collapsible mw-collapsed">
+For [[VirtualBox]], click on Expand on the right.
+<div class="mw-collapsible-content">
+VirtualBox has a feature to spoof the initial virtual hardware clock offset by setting the clock X milliseconds in the future or past. The syntax is outlined below.
+
+{{CodeSelect|code=
+VBoxManage modifyvm <name> --biossystemtimeoffset -<milliseconds>
+VBoxManage modifyvm <name> --biossystemtimeoffset +<milliseconds>
+}}
+
+It is recommended to add a random delay within the following range.
+
+{{CodeSelect|code=
+VBoxManage modifyvm <name> --biossystemtimeoffset -60000
+VBoxManage modifyvm <name> --biossystemtimeoffset +60000
+}}
+
+A spoofing example is below. Users should select their own unique and random values for both the past (-) and future (+) within the specified range. Different values should be used for each distinct VM (on the host).
+
+{{CodeSelect|code=
+VBoxManage modifyvm "{{gateway_product_name_short}}" --biossystemtimeoffset -35017
+VBoxManage modifyvm "{{gateway_product_name_short}}" --biossystemtimeoffset +27931
+
+VBoxManage modifyvm "{{workstation_product_name}}" --biossystemtimeoffset -35017
+VBoxManage modifyvm "{{workstation_product_name}}" --biossystemtimeoffset +27931
+}}
+
+Apart from this small <code>biossystemtimeoffset</code>, a clock skew always degrades privacy. <ref><code>biossystemtimeoffset</code> is used to unlink the virtualizer's initial clock synchronization of the VM from the host clock.</ref> <ref>After powering on a VM, it initially synchronizes the VM clock with the host clock until {{project name}} Timesync adjusts it.</ref> <ref>Clock skews can lead to linkability, meaning the user would be [[DoNot#Confuse_Anonymity_with_Pseudonymity|pseudonymous rather than anonymous]].</ref>
+
+</div>
+</div>
+
+= Summary =
+
+'''Table:''' ''Network Time Synchonization Summary''
+
+{| class="wikitable"
+|-
+! scope="col"| '''Platform'''
+! scope="col"| '''Recommendations'''
+|-
+! scope="row"| All Platforms
+| 
+* Always run [[Sdwdate|secure]] [[Sdwdate-gui|network time synchronization]] after suspending or saving the VM state and resuming it. Preferably do not use the suspend, save and resume functions at all. <br />
+* For greater security, [[#Block_Networking_until_sdwdate_Finishes|block networking until sdwdate finishes]]. <br />
+* Tor cannot connect if the host clock is grossly inaccurate. In this case, users should manually fix the host clock before powering the {{gateway_product_name}} (<code>sys-whonix</code>) off and on again. <br />
+* Periodically check the host clock to ensure that it is accurate or approximately so.
+|-
+! scope="row"| {{non_q_project_name_short}}
+| Only [[#Spoof_the_Initial_Virtual_Hardware_Clock_Offset|spoof the initial virtual hardware clock offset]] after importing the VM.
+|-
+! scope="row"| {{q_project_name_short}}
+| Consider enabling [[#{{q_project_name}}|sdwdate-gui autostart]] to remain informed about the status of the Tor network connection and sdwdate's progress.
+|}
+
+= Appendix =
+
+== Deactivate Automatic TimeSync ==
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = 
+'''Warning:''' This action is recommended against and is usually not required. In all cases, first check with the {{project name}} developers.
+}}
+
+To deactivate sdwdate, run.
+
+{{CodeSelect|code=
+sudo service sdwdate stop
+}}
+
+{{CodeSelect|code=
+sudo systemctl mask sdwdate
+}}
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
