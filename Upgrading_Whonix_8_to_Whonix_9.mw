@@ -1,0 +1,369 @@
+__NOINDEX__
+{{Header}}
+{{#seo:
+|description=How to Upgrade from {{project_name}} 8.x to {{project_name}} 9.x
+}}
+
+= Deprecated =
+{{mbox
+| type    = critical
+| image   = [[File:Ambox_warning_pn.svg.png|40px|alt={{project_name}} first time users warning]]
+| text    = Upgrading {{project_name}} 8 to {{project_name}} 9 is no longer supported. (Unless someone volunteers to fix it.)
+}}
+
+= Before you start =
+== If you want to upgrade {{gateway_product_name}} as well as {{workstation_product_name}} ==
+1. Backup your data. (Ideally have a copy of your VM, so you can try again.) <br />
+2. Consider running the optional [[#Sanity Tests]]. <br />
+3. Upgrade {{workstation_product_name}}. <br />
+4. Power off {{workstation_product_name}}. <br />
+5. Upgrade {{gateway_product_name}}. <br />
+6. Restart {{gateway_product_name}}. <br />
+7. Restart {{workstation_product_name}} <br />
+
+== If you only want to upgrade {{workstation_product_name}} ==
+1. Backup your data. (Ideally have a copy of your VM, so you can try again.) <br />
+2. Consider running the optional [[#Sanity Tests]]. <br />
+3. Upgrade {{workstation_product_name}}. <br />
+4. Power off {{workstation_product_name}}. <br />
+5. [[Download|Get]] {{gateway_product_name}} 9.x. <br />
+6. Start {{gateway_product_name}}. <br />
+7. Start {{workstation_product_name}} <br />
+
+You can ignore the following errors.
+
+== Non-Critical Errors / Warnings ==
+You may see the following non-crtiical errors / warnings. Those can be safely ignored.
+<pre>
+/usr/lib/whonix/uwtwrapper: line 107: /usr/bin/apt-get: syntax error: operand expected (error token is "/usr/bin/apt-get")
+</pre>
+<pre>
+dpkg: warning: while removing whonix-workstation-files, directory '/usr/share/whonix' not empty so not removed
+</pre>
+<pre>
+dpkg: warning: while removing whonix-gateway-files, directory '/usr/share/whonix' not empty so not removed
+</pre>
+<pre>
+line 7: /usr/share/whonix/postinst.d/pre.bsh: No such file or directory
+</pre>
+
+Other warnings / errors should be reported.
+
+= Sanity Tests =
+<pre>
+sudo dpkg --audit ; echo $?
+</pre>
+
+Expected output.
+
+<pre>
+0
+</pre>
+
+<pre>
+sudo dpkg --configure -a ; echo $?
+</pre>
+
+Expected output:
+
+<pre>
+0
+</pre>
+
+<pre>
+sudo apt-get update
+</pre>
+
+<pre>
+sudo apt-get dist-upgrade
+</pre>
+
+Test wise install python-qt4.
+
+<pre>
+sudo apt-get install python-qt4 ; echo $?
+</pre>
+
+<pre>
+## ... successful installation of python-qt4 ...
+0
+</pre>
+
+= Known Issues =
+== whonixcheck / timesync might stall on first boot ==
+If that happens, run.
+
+<pre>
+sudo service msgcollector restart
+</pre>
+
+<pre>
+sudo update-rc.d msgcollector defaults
+</pre>
+
+Should only happen after first boot after upgrading. If this errors persists for you, please post in [https://www.whonix.org/old-forum/index.php/board,1.0.html {{project_name}} support forums].
+
+= Upgrading {{workstation_product_name}} =
+'''[[Download|Downloading]] a new {{workstation_product_name}} will be probably easier than applying the following instructions for upgrading.'''
+
+Consider doing the [[#Sanity Tests]] described above. They'll check if your system is affected by obvious grave issues, that you must fix before attemtping to upgrade. If your package manager is broken, for example because you mixed packages from Debian stable with packages from Debian testing, then the upgrade may fail in the middle leaving your system in a difficult to resolve situation.
+
+Consider keeping the full terminal (Konsole) log. Even if everything apparently worked, there might be issues after reboot. In case of a bug report in the forums you would be asked to share the upgrading log so the issue can be investigated.
+
+Make sure you read [[#Known Issues]] above.
+
+Become root.
+
+Consider doing the sanity tests as already described above in instructions for {{gateway_product_name}}.
+
+Do a usual [[Security_Guide#Updates|upgrade]] of your system's packages from Debian.
+
+<pre>
+sudo su
+</pre>
+
+Do a usual [[Security_Guide#Updates|upgrade]] of your system's packages from Debian.
+
+Temporarily disable uwtwrapper. <ref name=uwtwrapper />
+
+<pre>
+echo uwtwrapper_global=0 > /etc/whonix.d/30_uwt_default
+</pre>
+
+(It will be automatically enabled again after upgrading. No further action required. <ref name=uwtwrapper2 />
+
+Enable {{project name}} {{Code2|wheezy}} repository.
+
+<pre>
+whonix_repository --enable --codename wheezy
+</pre>
+
+Enable extensive debugging so reporting eventual bugs becomes easier.
+
+<pre>
+export DEBDEBUG=1
+</pre>
+
+Will be fixed after the upgrade.
+
+Update your package lists.
+
+<pre>
+apt-get update
+</pre>
+
+Upgrade. (During the upgrade the packages {{Code|whonix-workstation-files}} as well as {{Code|whonix-shared-files}} will be removed. This is expected.) <ref name=aptupgrade />
+
+<pre>
+apt-get install whonix-workstation
+</pre>
+
+Dist-upgrade.
+
+<pre>
+apt-get dist-upgrade
+</pre>
+
+Purge {{Code2|whonix-shared-files}} to get rid of deprecated config files. <ref name=oldconfigs />
+
+<pre>
+dpkg --purge whonix-shared-files ; echo $?
+</pre>
+
+Purge {{Code2|whonix-workstation-files}} to get rid of deprecated config files.
+
+<pre>
+dpkg --purge whonix-workstation-files ; echo $?
+</pre>
+
+Remember to store the terminal (Konsole) log. (File &rarr; Save Output As)
+
+Power off.
+
+<pre>
+poweroff
+</pre>
+
+Your upgraded {{workstation_product_name}} will not be able to connect yet, because that requires either an upgraded {{gateway_product_name}} or a {{gateway_product_name}} 9.x. As soon you upgraded your {{gateway_product_name}} or downloaded a {{gateway_product_name}} 9.x, you should be able to connect.
+
+= Upgrading {{gateway_product_name}} =
+'''[[Download|Downloading]] a new {{gateway_product_name}} will be probably easier than applying the following instructions for upgrading.'''
+
+Warning: Your changes in {{Code|/usr/local/etc/torrc.d/50_user.conf}} will be lost! Backup your torrc <ref>
+sudo cp /usr/local/etc/torrc.d/50_user.conf /usr/local/etc/torrc.d/50_user.conf.mybackup
+</ref> in case you care to restore your settings.
+
+Become root.
+
+Do a usual [[Security_Guide#Updates|upgrade]] of your system's packages from Debian.
+
+<pre>
+sudo su
+</pre>
+
+Temporarily disable uwtwrapper. <ref name=uwtwrapper>
+This is related to [[Stream Isolation]].
+Because during upgrade the following code would cause issues. (Because the marker file /usr/share/whonix/whonix_[gateway|workstation] gets removed.)
+
+<pre>
+   if [ -f "/usr/share/whonix/whonix_workstation" ]; then
+      uwtwrapper_gateway_ip="192.168.0.10"
+   elif [ -f "/usr/share/whonix/whonix_gateway" ]; then
+      uwtwrapper_gateway_ip="127.0.0.1"
+   else
+      error "/usr/bin/"$SCRIPTNAME" uwt wrapper could not determine if this is {{workstation_product_name}} or {{gateway_product_name}}."
+      error "Please report this bug!"
+   fi
+</pre>
+</ref>
+
+<pre>
+echo uwtwrapper_global=0 > /etc/whonix.d/30_uwt_default
+</pre>
+
+(It will be automatically enabled again after upgrading. No further action required. <ref name=uwtwrapper2>After upgrading the [https://github.com/{{project_name_short}}/uwt uwt] package will be installed, which will enable uwtwrapper again.</ref>)
+
+Enable {{project name}} {{Code2|wheezy}} repository.
+
+<pre>
+whonix_repository --enable --codename wheezy
+</pre>
+
+Enable extensive debugging so reporting eventual bugs becomes easier.
+
+<pre>
+export DEBDEBUG=1
+</pre>
+
+Update your package lists. <ref>We need to use uwt because the feature for transparent proxying {{gateway_product_name}} own traffic is disabled by default.</ref>
+
+<pre>
+uwt -i 127.0.0.1 -p 9050 apt-get update
+</pre>
+
+Upgrade. (During the upgrade the packages {{Code|whonix-gateway-files}} as well as {{Code|whonix-shared-files}} will be removed. This is expected.) <ref name=aptupgrade>
+Upgrading using {{Code|sudo apt-get dist-upgrade}} is not possible due to extensive changes on how {{project_name}} is packaged. (The -files packages were [https://github.com/{{project_name_short}}/{{project_name_short}}/issues/40 split into multiple packages].)
+
+Not all packages are strictly required. For example the ...-build-... packages won't do anything. However, they don't hurt either. We're mimicking the behavior of the [https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/build-steps.d/1700_install-packages 1700_install-packages] build step here to end up with a system that is as similar to {{project_name}} 9.x as possible. This is useful to make eventual issues / differences of upgraded {{project_name}} 8.x systems vs {{project_name}} 9.x as unlikely as possible.
+</ref>
+
+<pre>
+uwt -i 127.0.0.1 -p 9050 apt-get install whonix-gateway
+</pre>
+
+Dist-upgrade.
+
+<pre>
+uwt -i 127.0.0.1 -p 9050 apt-get dist-upgrade
+</pre>
+
+Purge {{Code2|whonix-shared-files}} to get rid of deprecated config files. <ref name=oldconfigs>
+Otherwise old config files would interfere.
+</ref>
+
+<pre>
+dpkg --purge whonix-shared-files ; echo $?
+</pre>
+
+Purge {{Code2|whonix-gateway-files}} to get rid of deprecated config files.
+
+<pre>
+dpkg --purge whonix-gateway-files ; echo $?
+</pre>
+
+Remember to store the terminal (Konsole) log. (File &rarr; Save Output As)
+
+Reboot required.
+
+<pre>
+reboot
+</pre>
+
+= Recovery =
+== {{workstation_product_name}} ==
+<div class="toccolours mw-collapsible mw-collapsed">
+If you upgraded using "apt-get dist-upgrade" and now getting the following error.
+
+<pre>
+Errors were encountered while processing:
+ /var/cache/apt/archives/tb-starter_3%3a0.2-2_all.deb
+ /var/cache/apt/archives/whonix-base-files_3%3a0.2-2_all.deb
+</pre>
+
+And want to fix this, then click on expand on the right.
+
+'''[[Download|Downloading]] a new {{workstation_product_name}} will be probably easier than applying the following instructions for upgrading.'''
+<div class="mw-collapsible-content">
+<pre>
+sudo su
+</pre>
+
+<pre>
+dpkg --purge whonix-workstation-files ; echo $?
+</pre>
+
+<pre>
+dpkg --purge whonix-shared-files ; echo $?
+</pre>
+
+<pre>
+apt-get install tb-updater
+</pre>
+
+Be patient when you see about ~14 times.
+
+<pre>
+sudo: unable to resolve host host
+</pre>
+
+Will take a while.
+
+If you use a {{project_name}} 8 Gateway.
+
+<pre>
+echo "nameserver 192.168.0.10" > "/etc/resolv.conf"
+</pre>
+
+Or if you use a {{project_name}} 9 Gateway.
+
+<pre>
+echo "nameserver 10.152.152.10"  > "/etc/resolv.conf"
+</pre>
+
+<pre>
+apt-get install whonix-workstation
+</pre>
+</div>
+</div>
+
+== {{gateway_product_name}} ==
+<div class="toccolours mw-collapsible mw-collapsed">
+In case you run "apt-get dist-upgrade" now having broken apt-get and want to fix it.
+
+<u>'''UNFINISHED'''</u> Probably very difficult to fix.
+
+'''[[Download|Downloading]] a new {{gateway_product_name}} will be probably easier than applying the following instructions for upgrading.'''
+<div class="mw-collapsible-content">
+<pre>
+sudo su
+
+echo "GATEWAY_TRANSPARENT_TCP=1" >> /etc/whonix.d/60_temp
+echo "GATEWAY_TRANSPARENT_DNS=1" >> /etc/whonix.d/60_temp
+
+apt-get install -f
+apt-get install whonix-gateway
+
+dpkg --purge whonix-shared-files ; echo $?
+dpkg --purge whonix-gateway-files ; echo $?
+
+rm /etc/whonix_firewall.d/60_temp
+</pre>
+</div>
+</div>
+
+= Footnotes =
+{{reflist|close=1}}
+
+[[Category:Documentation]]
+
+{{Footer}}
