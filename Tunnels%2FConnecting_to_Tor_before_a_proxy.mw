@@ -1,0 +1,452 @@
+{{Header}}
+{{Title|
+title=Connecting to Tor before a Proxy
+}}
+{{#seo:
+|description=Instructions on how to connect to Tor before a proxy (User &rarr; Tor &rarr; Proxy &rarr; Internet)
+|image=https://www.whonix.org/w/images/f/f3/Balloon-936780640.jpg
+}}
+{{Tunnels_Introduction}}
+<br />
+'''<code>User</code> &rarr; <code>Tor</code> &rarr; <code>Proxy</code> &rarr; <code>Internet</code>'''
+
+= Introduction =
+== Proxy Warning ==
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px|alt={{project_name}} first time users warning]]
+| text    = '''<u>Warning!</u>'''
+There are issues you should be aware of when using standard, common http(s)/socks4(a)/5 proxies. (Anonymizers, that only use http(s)/socks4(a)/5 as an interface<ref>Such as the Tor, [[JonDonym]] or [[I2P]] software.</ref> are exempt.)
+* Most problems with these proxies are not caused by {{project_name}}.
+* Tor exit relays and their ISPs can still monitor your connection to its destination.
+* Be especially careful with http(s) proxies. Some of them send the "[https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN#VPNSSHversusProxy http forwarded for]" header which discloses your IP. Http(s) proxies that do not send this header are sometimes called "elite" or "anonymous" proxies.
+* When using "http forwarded for" http(s) proxies, destination servers can determine the IP of your Tor exit relay.
+See also: [[Comparison_Of_Tor_with_CGI_Proxies,_Proxy_Chains,_and_VPN_Services|Comparison Of Tor with CGI Proxies, Proxy Chains, and VPN_Services]].
+}}
+
+== Generally ==
+There are three different methods.
+
+{| class="wikitable" style="background-color: #fff;text-align: center"
+
+!
+! [[#Proxy Settings Method]]
+! [[#Proxifier Method]]
+! [[#Transparent Proxying Method]]
+
+|-
+! application requires no support for proxy settings
+| {{No}}
+| {{Yes}}
+| {{Yes}}
+
+|-
+! likelihood of leaks <ref>TCP or DNS</ref> going user &rarr; Tor &rarr; Internet
+| depends <ref>Depends if the application has any proxy bypass bugs.</ref>
+| depends <ref>Depends on how bug free the socksifier is.</ref>
+| lower <ref>Because redirection happens at the iptables level, not at the application level.</ref>
+
+|-
+! DNS can be resolved by the same proxy
+| {{Yes}}
+| {{Yes}}
+| needs extra DNS resolver <ref>See [[#DNS_resolution]].</ref>
+
+|-
+! per application configuration required
+| {{Yes}}
+| {{Yes}}
+| {{No}}
+|-
+
+! system wide configuration
+| {{No}}
+| {{No}}
+| {{Yes}}
+|-
+
+! proxy chains possible
+| No
+| Yes, but see footnote
+<ref>Questionable if that adds anything. See: [[Comparison_Of_Tor_with_CGI_Proxies,_Proxy_Chains,_and_VPN_Services#Aren.27t_10_proxies_.28proxychains.29_better_than_Tor_with_only_3_hops.3F_-_proxychains_vs_Tor|Aren't 10 proxies (proxychains) better than Tor with only 3 hops? - proxychains vs Tor]]
+</ref>
+| No <ref>Would require adding such a feature to redsocks.</ref>
+|-
+
+! setup difficulty
+| different per application
+| always very similar
+| initial setup difficult
+|-
+
+|}
+
+<hr>
+
+= Proxy Settings Method =
+== Introduction ==
+You could use an application's native proxy settings to configure applications in {{project_name}} to use an extra proxy. This of course supposes, that the application has proxy settings. After understanding {{project name}} default stream isolation configuration, there is no difference from using proxy settings in an ordinary way, other than that it is running inside {{workstation_product_name}}. If proxy settings are honored by an application or not is another question and out of scope, see [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO TorifyHOWTO]. There is a [[Stream_Isolation#List|list]] of applications that come pre-configured with {{project_name}} for [[Stream Isolation]]. If you plan on changing the proxy settings of any of those, you must read the notes below.
+
+{{Prevent_Bypassing_the_Tunnel-Link_Warning_Box}}
+
+{{Anchor|Tor_Browser_Proxy_Configuration}}
+== Tor Browser Notes ==
+{{Template:TorBrowser Proxy Configuration}}
+
+== Misc Application Notes ==
+{{Deactivate Misc Proxy Settings}}
+
+== uwt wrapped application notes ==
+{{project_name}} ships a list of applications pre-configured for using uwt wrappers by default. If the application you want to tunnel through the extra tunnel-link is on that list, it would conflict with your custom proxy settings. In that case, you need to disable that uwt wrapper first.
+{{Deactivate uwt}}
+
+<hr>
+
+= Proxyfier Method =
+== General ==
+After understanding {{project name}} default stream isolation configuration, there is no difference from using a Proxyfier in an ordinary way, other than that it is running inside {{workstation_product_name}}. There is a [[Stream_Isolation#List|list]] of applications that come pre-configured with {{project_name}} for [[Stream Isolation]]. If you plan on changing the proxy settings of any of those, you must read the notes below.
+
+If the Proxifier is leak free or in worst case leaks through Tor alone (thanks to {{project_name}}), is another question and not in {{project name}} power, see [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO TorifyHOWTO].
+
+{{Prevent_Bypassing_the_Tunnel-Link_Warning_Box}}
+
+== Tor Browser Notes ==
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = There is currently no tested, known to work solution for using [[Tor Browser]] with the [[#Proxyfier Method]]. This is not a {{project_name}} issue but rather an issue with socksifier software and Tor Browser. This would also happen if {{project_name}} was not involved. (For a basic architectural explanation, see [[Support#Free_Support_Principle|Free Support Principle]].) Figuring this out is up to you. Please [[contribute|contribute]]. Alternatively try [[#Proxy Settings Method]].
+}}
+
+{{Tor_Browser_Remove_Proxy_Settings}}
+
+== Misc Application Notes ==
+{{Deactivate Misc Proxy Settings}}
+
+== uwt wrapped application notes ==
+{{project_name}} ships a list of applications pre-configured for using uwt wrappers by default. If the application you want to tunnel through the extra tunnel-link is on that list, it would conflict with your custom proxy settings. In that case, you need to disable that uwt wrapper first.
+{{Deactivate uwt}}
+
+== uwt ==
+=== Introduction ===
+uwt uses {{Code2|torsocks}}. While the name ''tor''socks implies it is Tor specific, it is not. You can point it to any socks proxy.
+
+=== uwt wrapped application example ===
+{{CodeSelect2|code=
+uwt -t 5 -i 10.152.152.10 -p 9153 /usr/bin/wget.anondist-orig -c https://check.torproject.org
+}}
+
+=== regular application example ===
+Requires [[Stream_Isolation#Deactivate_uwt_Stream_Isolation_Wrapper|deactivated]] wget uwt wrapper!
+
+{{CodeSelect2|code=
+uwt -t 5 -i 10.152.152.10 -p 9156 /usr/bin/wget -c https://check.torproject.org
+}}
+
+<ref>Using .anondist-orig, i.e. /usr/bin/wget.anondist-orig will circumvent the wget uwt wrapper.</ref> <ref>
+
+For testing, you could compare the IP shown by the above command with the next one. If you didn't disable the wget uwt wrapper, the following command will most likely fetch another IP, because still using Stream Isolation.
+
+Using Tor's TransPort.<br />
+(/usr/bin/wget.anondist-orig original non-uwt-wrapped version)
+
+{{CodeSelect2|code=
+wget.anondist-orig https://check.torproject.org
+}}
+</ref> <ref>For further explanation only...
+
+If you [[Stream_Isolation#Deactivate_uwt_Stream_Isolation_Wrapper|disabled]] wget's uwt wrapper, to use Tor's TransPort, you could use the following command.
+
+{{CodeSelect2|code=
+wget https://check.torproject.org
+}}
+</ref>
+
+=== Tor Browser Example ===
+(Untested! Please leave feedback if it worked for you!)
+
+First, you must remove Tor Browser proxy settings before you can combine it with a proxifier.
+
+{{Tor_Browser_Remove_Proxy_Settings}}
+
+Then try this command. (Untested! Please leave feedback if it worked for you!)
+
+{{CodeSelect2|code=
+uwt -t 5 -i 10.152.152.10 -p 9153 ~/tor-browser_en-US/App/Firefox/firefox --profile ~/tor-browser_en-US/Data/profile
+}}
+
+<ref>Might be also interesting: [[Advanced Security Guide#More than one Tor Browser in {{project_name}}]]</ref>
+
+== proxychains ==
+=== Warnings ===
+
+* We don't know how well proxychains works. For example <code>torsocks has a IPv6 leak bug</code><ref>https://trac.torproject.org/projects/tor/wiki/doc/torsocks#WorkaroundforIPv6leakbug</ref>. We don't know if proxychains forces everything through the proxies. {{project_name}} only ensures, should their be leaks, they go only through Tor.
+* There are at least three different versions of proxychains. The old/original/unmaintained version on sourceforge.net and two forks on github. We don't know about that status of any of them and haven't heard of anyone looking if they do really work as expected. The two authors argue with each other and we weren't motivated to understand the conflict and to determine which version is better. However, any leaks not going through the proxy(chain) will go through Tor.
+
+=== Setup ===
+Install proxychains.
+
+{{CodeSelect2|code=
+sudo apt-get install proxychains
+}}
+
+Open proxychains configuration file.
+
+{{Open with root rights|filename=
+/etc/proxychains.conf
+}}
+
+Go to the bottom of the settings file. Comment out "{{Code2|socks4 127.0.0.1 9050}}" and add for example "{{Code2|socks5 10.152.152.10 9152}}" (for Tor stream isolation) or "{{Code2|socks5 ip port}}" with an IP and port of your choice to set the proxy settings.
+
+<pre>
+[ProxyList]
+## add proxy here ...
+## meanwhile
+## defaults set to "tor"
+#socks4 127.0.0.1 9050
+socks5 10.152.152.10 9152
+# socks5 x.x.x.x xxxx
+</pre>
+
+<ref>Advanced. Recommendation: Why not use Tor stream isolation for the proxychains connection?
+
+<pre>
+[ProxyList]
+## add proxy here ...
+## meanwhile
+## defaults set to "tor"
+#socks4 127.0.0.1 9050
+socks5 10.152.152.10 9152
+socks5 x.x.x.x xxxx
+</pre>
+</ref>
+
+Save the configuration file. Test afterwards.
+
+=== example uwt wrapped application ===
+{{CodeSelect2|code=
+proxychains /usr/bin/wget.anondist-orig https://check.torproject.org
+}}
+
+<ref>
+For testing, you could compare the IP shown by the above command with the next one. If you didn't disable the wget uwt wrapper, the following command will most likely fetch another IP, because still using Stream Isolation. Using Tor's TransPort.
+
+(/usr/bin/wget.anondist-orig original non-uwt-wrapped version)
+
+{{CodeSelect2|code=
+wget.anondist-orig https://check.torproject.org
+}}
+</ref>
+
+=== example regular application ===
+Requires [[Stream_Isolation#Deactivate_uwt_Stream_Isolation_Wrapper|deactivated]] wget uwt wrapper!
+
+{{CodeSelect2|code=
+proxychains /usr/bin/wget https://check.torproject.org
+}}
+
+=== Tor Browser example ===
+The combination of proxychains and Tor Browser does currently not work. Someone needs to [[Contribute]] by figuring this out. Otherwise this will not be possible for a very long time. [https://forums.whonix.org/t/proxychains-tor-help-needed See forum discussion].
+
+First, you must remove Tor Browser proxy settings before you can combine it with a proxifier.
+
+{{Tor_Browser_Remove_Proxy_Settings}}
+
+Then try this command.
+
+{{CodeSelect2|code=
+proxychains ~/tor-browser_en-US/start-tor-browser
+}}
+
+Might be also interesting:
+
+* [[Advanced Security Guide#More than one Tor Browser in {{project_name}}]]
+
+<hr>
+
+= Transparent Proxying  Method =
+== Introduction ==
+'''Advanced users only!'''
+
+To make clear, what this is about. {{gateway_product_name}} is already serving as a Transparent Proxy <ref>anonymizing middlebox</ref>, which means, that all applications not explicitly configured <ref>by uwt socksifier or proxy settings</ref> to use a SocksPort, can connect through Tor without any settings. This section is about configuring {{workstation_product_name}} also to act as a Transparent Proxy <ref>local redirection</ref>. Use case: a user wants to ensure all traffic goes through Tor (by using {{gateway_product_name}}) and want to additionally ensure, all traffic goes through a proxy choosen by the user after the Tor link, i.e. user &rarr; Tor &rarr; proxy &rarr; internet.
+
+<ref>[https://trac.torproject.org/projects/tor/wiki/doc/TorBOX/OptionalConfigurations?version=129#TransparentProxying torproject.org wiki version 129] contains an old example using privoxy, JonDo and httpsdnsd. The new example uses redsocks and is simpler.</ref>
+
+You always have to keep in mind, which kind of data and which kind of proxy you are using. There are CGIproxies, http(s) proxies and socks4/4a/5 proxies.
+
+In case you redirect the network layer directly with iptables, you need a TransPort. Unfortunately very few applications, do offer a TransPort. For example, Tor supports a TransPort. In most other cases, you need to translate the different kinds of data.
+
+Due to the nature of Transparent Proxying, we need to redirect with iptables and end up with a "Trans data stream". Because most proxies are either http or socks we need to translate this. Below we discuss a few tools which help here, not all are required, depending on what you want to do.
+
+Required reading:
+
+* [[Comparison_Of_Tor_with_CGI_Proxies,_Proxy_Chains,_and_VPN_Services|Comparison Of Tor with CGI Proxies, Proxy Chains, and VPN Services]]
+* [https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN Tor Plus VPN or proxy]
+
+== Tools ==
+
+Tor is a socks proxy and also has a TransPort. Unfortunately, Tor can not be directly used as a http proxy. You must also keep in mind, that Tor does not support UDP, although it offers a DnsPort.
+
+[http://darkk.net.ru/redsocks/ redsocks] can also accept "Trans data streams" and can forward them to http'''s''', socks4 and socks5 proxies. If you were to use a http proxy (no https, without connect-method, see [[Comparison_Of_Tor_with_CGI_Proxies,_Proxy_Chains,_and_VPN_Services|proxy article]]), you could access only http sites, no https sites. Rather redsocks can convert UDP DNS queries to TCP DNS queries.
+
+== DNS resolution ==
+
+The complication (and also advantage/feature) with transparent proxying is, that the internet application (browser, etc.) is not aware of the proxy. Therefore the internet application will attempt to do the DNS resolution itself using the system, not using the proxy. The DNS requests also must be considered. Since Tor does not support UDP, we have to transmit DNS queries via TCP.
+
+It is impossible to resolve DNS directly on the proxy, when using the proxy as a transparent proxy, see [[Dev/Inspiration#Transparent_Proxying_Method|Transparent Proxying Method]] for explanation. You need an extra DNS server, which answers over TCP.
+
+You have several options to resolve DNS.
+
+Either leave the setup as it is, Tor's DnsPort and therefore the Tor exit relays will still do the DNS requests. (See DNS rule #1.) This is probably not what you want, since you wanted to cloak your identity with an additional proxy after Tor.
+
+Alternatively you can use a public DNS resolver. The instructions for [[Secondary DNS Resolver#DNSCrypt by OpenDNS]] should work out of the box (tested). (See DNS rule #2.) 
+
+All DNS resolvers <ref>https://en.wikipedia.org/wiki/Comparison_of_DNS_server_software</ref> should work, as long TCP is supported and as long you are querying a TCP enabled DNS server. <ref>You can't simply add another public DNS resolver (i.e. OpenDNS or Google) to /etc/resolv.conf in {{workstation_product_name}} (i.e. Tor &rarr; public DNS resolver), it would have no effect, as explained under [[Install_Software#{{workstation_product_name}}_is_Firewalled|{{workstation_product_name}} is Firewalled]].</ref>  <ref>Also [[Secondary DNS Resolver#httpsdnsd by JonDos]] might work, but you'd need to make some changes (use httpsdnsd as a system wide, {{workstation_product_name}} wide, DNS resolver, not just for a specific user account).</ref> <ref>DNSCrypt and httpsdnsd add the advantage, that neither the proxy nor the Tor exit relay can sniff or manipulate your DNS requests, since they are encrypted and authenticated.</ref> <ref>Or perhaps also [http://www.mulliner.org/collin/ttdnsd.php ttdnsd] with Google could work.</ref> 
+
+Read the [[Secondary DNS Resolver|DNS related warnings]].
+
+== Prevent Bypassing the Tunnel-Link ==
+{{Prevent_Bypassing_the_Tunnel-Link}}
+
+== How to setup proxy tunnel-link after Tor (User&rarr;Tor&rarr;Proxy&rarr;Internet) ==
+'''Unfinished!''' <br />
+'''Advanced users only!'''
+
+'''Everything on {{workstation_product_name}}.'''
+
+Get a working proxy and test (with any of the above methods) if it works reliable.
+
+Install redsocks.
+
+{{CodeSelect2|code=
+sudo apt-get install redsocks
+}}
+
+Enable redsocks autostart.
+
+{{Open with root rights|filename=
+/etc/default/redsocks
+}}
+
+Look for.
+
+{{CodeSelect2|code=
+START=no
+}}
+
+And replace it with.
+
+{{CodeSelect2|code=
+START=yes
+}}
+
+Configure redsocks by editing {{Code|/etc/redsocks.conf}} to your needs.
+
+{{Open with root rights|filename=
+/etc/redsocks.conf
+}}
+
+Under.
+
+{{CodeSelect2|code=
+redsocks {
+}}
+
+You have to edit.
+
+<pre>
+        ip = 127.0.0.1;
+        port = 1080;
+        type = socks5
+</pre>
+
+To your needs.
+
+Start redsocks.
+
+{{CodeSelect2|code=
+sudo service redsocks start
+}}
+
+Create a file {{Code|fw.bsh}}.
+
+And use the following firewall rules.
+
+<pre>
+#!/bin/bash
+## These iptables rules redirect the traffic for all users,
+## including root, with the exception of the user redsocks,
+## through the proxy.
+
+## TODO: these iptables rules need review.
+## TODO: use iptables default policy drop.
+
+## Choose either DNS rule #1 or DNS rule #2.
+
+## For debugging/testing use this command in console.
+## tail -f /var/log/syslog
+
+## Flush old rules.
+iptables -F
+iptables -t nat -F
+iptables -X
+
+## Allow unlimited traffic on the loopback interface.
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A OUTPUT -o lo -j ACCEPT
+iptables -A OUTPUT --dst 127.0.0.1 -j ACCEPT
+
+## Established incoming connections are accepted.
+iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+## Established outgoing connections are accepted.
+iptables -A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+## DNS rule #1.
+## Allow DNS directly through {{gateway_product_name}}.
+#iptables -A OUTPUT --dst 10.152.152.10 -p udp --dport 53 -j ACCEPT
+
+## DNS rule #2.
+## For DNSCrypt set /etc/resolv.conf to
+## nameserver 127.0.0.1
+##
+## sudo dnscrypt-proxy --tcp-only --user=user
+##
+## DNSCrypt listening on port 53
+iptables -t nat -A OUTPUT --dst 127.0.0.1 -p udp --dport 53 -j ACCEPT
+iptables -t nat -A OUTPUT --dst 127.0.0.1 -p tcp --dport 53 -j ACCEPT
+
+## redsocks must be allowed to establish direct connections.
+iptables -A OUTPUT -j ACCEPT -m owner --uid-owner redsocks
+iptables -t nat -A OUTPUT -j ACCEPT -m owner --uid-owner redsocks
+
+## Redirect remaining traffic to redsocks.
+iptables -t nat -A OUTPUT -p tcp -j REDIRECT --to-port 12345
+
+## TODO: UDP rule untested.
+#iptables -t nat -A OUTPUT -p udp -j REDIRECT --to-port 10053
+
+## Log blocked traffic for debugging.
+iptables -A OUTPUT -j LOG --log-level 4 --log-prefix "iptables: "
+
+## Reject all other traffic.
+iptables -A OUTPUT -j REJECT
+</pre>
+
+Make the firewall script executable.
+
+{{CodeSelect2|code=
+sudo chmod +x fw.bsh
+}}
+
+Apply the firewall rules.
+
+{{CodeSelect2|code=
+sudo fw.bsh
+}}
+
+<hr>
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
