@@ -1,0 +1,76 @@
+{{Header}}
+{{#seo:
+|description=Out-of-band Management Technology, Choosing Suitable Hardware
+|image=https://www.whonix.org/w/images/3/3e/Outofbandmanagement.jpg
+}}
+
+= Introduction =
+
+A commonly decried hardware feature on modern platforms is the [https://software.intel.com/en-us/blogs/2011/12/14/intelr-amt-and-the-intelr-me/ Intel Management Engine (ME) and Active Management Technology (AMT)]. 
+
+= Design =
+
+Out-of-band management has been around since 1998, when it was dubbed the Intelligent Platform Management Interface (IPMI) framework. <ref>https://en.wikipedia.org/wiki/Ipmi</ref> It consists of a proprietary firmware running on the Baseboard Management Controller (BMC), <ref>https://en.wikipedia.org/wiki/Baseboard_management_controller#Baseboard_management_controller</ref> which is a dedicated micro-controller in enterprise NICs to allow complete remote control over a machine despite its power state. <ref>Facebook has put out OpenBMC, an interesting implementation that theoretically can be placed on BMCs. Problematically, most vendors (HP, Dell, IBM and so on) will not let users install firmware that is not signed by them. In addition to permission issues, without available low-level drivers and publicly available hardware that will run the firmware, the user is simply out of luck.</ref>
+
+Modern Intel ME is a firmware running on a dedicated micro-controller in all machines, while Intel AMT is the remote access feature introduced as part of the vPro platform. Most Intel hardware produced in the last ten years supports ME and AMT "features". <ref>https://archive.org/download/IntelCentrino2WithVproTechnologyAndIntelCore2Processor/IntelCentrino2WithVproTechnologyAndIntelCore2ProcessorWithVproTechnology.pdf</ref> This includes: desktops, servers, ultrabooks, tablets, and laptops with the Intel Core vPro processor family (Intel Core i3, i5, i7, and Intel Xeon processor E3-1200 product family). <ref>https://en.wikipedia.org/wiki/Intel_Active_Management_Technology</ref> Other popular hardware manufacturers also have an analogous feature to ME. For instance, AMD's "Secure Processor" (formerly "Platform Security Processor") is based in turn on ARM TrustZone technology. <ref>https://www.amd.com/en-us/innovations/software-technologies/security</ref>
+
+= Functionality =
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = If the Intel ME is shipped with an AMT module which is both enabled and provisioned, then <i>potentially</i> any vulnerabilities might allow attackers to bypass password authentication for the module.
+}}
+
+The Electronic Frontier Foundation (EFF) states: <ref name=ME_hazard>https://www.eff.org/deeplinks/2017/05/intels-management-engine-security-hazard-and-users-need-way-disable-it</ref>
+
+<blockquote>The ME is a largely undocumented master controller for your CPU: it works with system firmware during boot and has direct access to system memory, the screen, keyboard, and network.</blockquote>
+
+Attackers who bypass password authentication can: <ref name=ME_hazard />
+
+* Interact with the screen or console in a fashion identical to a user.
+* Boot arbitrary operating systems or install new operating systems.
+* Steal disk encryption passwords.
+
+If a system is vulnerable, the effect of this Intel technology is administrators (or hackers) can remotely monitor, maintain, update, upgrade and repair (or sabotage) computers, even while they are sleeping. This activity is distinct from software-based (in-band) management, since hardware-based management uses TCP/IP stack communication channels (bypassing any firewalls present) and the presence of an OS or locally installed management agent is not required. <ref>https://en.wikipedia.org/wiki/Intel_Active_Management_Technology#Security</ref>
+
+= Exploitation Risk =
+
+Unfortunately, Intel ME and AMT have created serious security risks, because faults in the design potentially allow remote attackers to access the user's computer secretly and have full control and awareness. <ref name=Intel_remote_exploit>https://semiaccurate.com/2017/05/01/remote-security-exploit-2008-intel-platforms/</ref> On 1 May 2017, these fears were realized when Intel confirmed and patched a remote [https://security-center.intel.com/advisory.aspx?intelid=INTEL-SA-00075&languageid=en-fr Elevation of Privilege bug (CVE-2017-5689)] in the ME technology.
+
+Not every machine is susceptible to this attack, even though every Intel platform with either Intel Standard Manageability, Active Management Technology, or Small Business Technology, from Nehalem in 2008 to Kaby Lake in 2017 has a potentially remotely exploitable security hole. In many cases, AMT is enabled but <i>not</i> provisioned by default for the 1<sup>st</sup> to 7<sup>th</sup> generation processors. Nevertheless, if a system is vulnerable (unpatched) the risks include: <ref name=Intel_remote_exploit />
+
+* An unprivileged network attacker gaining system privileges to provisioned Intel management engines.
+* An unprivileged local attacker could provision manageability features to gain unprivileged network or local system privileges.
+
+The safest course of action is for users to disable the AMT module if possible in BIOS and to make sure that LMS is not installed. Failing that, the Intel firmware image should be updated to remove the security vulnerability. <ref name=ME_hazard />
+
+= Privacy and Security Concerns =
+
+The concerns posed by Intel (and partially AMD) firmware is comparable to any other proprietary firmware blob running on a user's system or all its peripherals. Almost every component in a modern computer has firmware running on auxiliary processors of varying architectures, all of which have privileged machine access. The inner workings of firmware binaries can still be investigated and examined for malware via reverse engineering. <ref>http://xvilka.me/h2hc2014-reversing-firmware-radare-slides.pdf</ref> <ref>https://recon.cx/2014/slides/Recon%202014%20Skochinsky.pdf</ref>
+
+Manufacturers are unlikely to insert a malicious backdoor intentionally into every product. The reason is if/when the backdoor was discovered, its intent would be undeniable and it would destroy the reputation of the business and severely impact revenue. Recent disclosures indicate that some adversaries instead favor targeted attacks (product interdiction and implants) to avoid detection for as long as possible. <ref>https://theintercept.com/2014/10/10/core-secrets/</ref> <ref>https://www.spiegel.de/international/world/the-nsa-uses-powerful-toolbox-in-effort-to-spy-on-global-networks-a-940969.html</ref> "Zero day" exploits are another preferred method of access by adversaries. <ref>Significant and previously unknown vulnerabilities are used as a way into all systems without leaving any ''a priori'' discoverable traces of the infection until they are used. Zero days are typically used selectively to extend their shelf-life. Another similar but more common method is compromising targets via serious bugs that users often fail to patch. See [https://theintercept.com/2017/04/14/leaked-nsa-malware-threatens-windows-users-around-the-world/ here] and [https://www.eff.org/deeplinks/2016/09/nsas-failure-report-shadow-broker-vulnerabilities-underscores-need-oversight here] for examples.</ref>
+
+The problem with out-of-band management is exemplified by the recent Intel security advisory. Exposing proprietary, hard-to-patch blobs which contain bugs to the network can lead to remote exploitation by advanced adversaries, including common criminals. The "Nobody But Us" (NOBUS) concept promoted by adversaries is simply a fallacy as evidenced by recent worldwide security incidents, including the leaking of the adversary toolkit used for hacking targets. <ref>https://www.infowars.com/shadow-brokers-release-most-damaging-nsa-hacking-tools-yet/</ref> According to prominent Intel ME researchers and reverse-engineers, only corporate AMT firmware includes the networking stack, but the safest action is for users to avoid computers with this feature entirely. <ref>https://www.coreboot.org/pipermail/coreboot/2016-December/082748.html</ref> <ref>There were some mobile variants which had access to the wireless 3G chip (for anti-theft), but this functionality has been dropped.</ref>
+
+In principle, the concept of out-of-band management has its place in data centers, not on personal home computers. Even in the former case, without Libre software the owner of the machine(s) cannot be sure they are the only person with remote access control, in order to patch security vulnerabilities on demand. <ref>Libre software can also contain bugs, but it at least gives users the freedom to fix them.</ref> While the functionality is not secret, running a network-facing, bug-ridden proprietary OS and giving hardware privileged access to a machine has proven a [http://fish2.com/ipmi/itrain-gz.html horrible] [https://en.wikipedia.org/wiki/Intel_AMT#Known_vulnerabilities_and_exploits idea].
+
+= Recommendations =
+
+== Avoid Other Out-of-band Features ==
+
+The commonly deployed PXE boot <ref>https://en.wikipedia.org/wiki/Preboot_Execution_Environment#Acceptance</ref> and Wake-on-Lan (WoL) "features" should be avoided or disabled. PXE is implemented either as a Network Interface Card (NIC) BIOS extension or as UEFI code in modern devices (where it can be easily disabled). <ref>https://www.techwalla.com/articles/how-to-disable-pxe</ref> <ref>https://en.wikipedia.org/wiki/Preboot_Execution_Environment#Overview</ref> On most systems, WoL hardware functionality is usually blocked by default and explicitly needs to be enabled using the system BIOS or UEFI. <ref>https://en.wikipedia.org/wiki/Wake-on-LAN#Respond_to_the_Magic_Packet_and_restore_full_power</ref> <ref>https://en.wikipedia.org/wiki/Wake-on-LAN#Hardware_implementations</ref> 
+
+Though rare nowadays, also avoid machines with the LoJack anti-theft feature since it is a persistent BIOS/UEFI firmware module that shares features with trojans or rootkits. For instance, laptops can be remotely locked, have files deleted, or disclose their exact location. Further, the module "phones home" daily to a monitoring center, providing location, user, software and hardware information. <ref>https://en.wikipedia.org/wiki/LoJack_for_Laptops</ref>
+
+== Hardware ==
+
+When buying new hardware, it is recommended to avoid Intel hardware that has AMT. Unfortunately that rules out most modern Intel hardware produced in the last ten years. AMD chipsets do not contain fully-featured, out-of-band management like AMT. However, there are other comparable problems (from a freedom perspective) with hardware produced by both Intel and AMD. <ref>https://www.fsf.org/blogs/community/active-management-technology</ref>
+
+It has been recently discovered that ME can be disabled and mostly erased with a simple python script. The functionality of systems running both Libre and proprietary BIOS firmwares were unaffected, including recent CPU generations. Only experts should attempt this procedure, since the computer may become "bricked" (unusable) if the procedure is completed incorrectly. <ref>https://phoronix.com/scan.php?page=news_item&px=Intel-ME-Cleaning</ref> <ref>https://github.com/corna/me_cleaner/wiki/me_cleaner-status</ref> <ref>https://github.com/corna/me_cleaner</ref>
+
+= References =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
