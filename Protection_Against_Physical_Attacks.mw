@@ -1,0 +1,232 @@
+{{Header}}
+<!--
+Copyright:
+
+   {{project name}} Advanced Security Guide wiki page Copyright (C) Amnesia <amnesia at boum dot org>
+   {{project name}} Advanced Security Guide wiki page Copyright (C) 2012 - 2017 Patrick Schleizer <adrelanos@riseup.net>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+         
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+      
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to:
+
+    Free Software Foundation, Inc. 
+    51 Franklin St, Fifth Floor
+    Boston, MA 02110-1301, USA.
+
+On Debian GNU/Linux systems, the complete text of the GNU General Public
+License can be found in the /usr/share/common-licenses' directory.
+
+The complete text of the GNU General Public License can also be found online on gnu.org <https://www.gnu.org/licenses/gpl.html>, in {{project name}} virtual machine images in /usr/share/common-licenses/GPL-3 file or on Github <https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/GPLv3>.
+-->
+<!--
+Wiki pages found in the Advanced Security Guide contain material from the Tails Protection against cold boot attacks page; see: <http://git.immerda.ch/?p=amnesia.git;a=blob;f=wiki/src/doc/advanced_topics/cold_boot_attacks.mdwn;hb=d249db72228b498407d85fb762b49ec155871ded>.
+-->
+{{Title|title=Protection against Physical Attacks}}
+{{#seo:
+|description=Protection against Physical Attacks
+|image=https://www.whonix.org/w/images/d/d8/Protectionagainst234234234.jpg
+}}
+
+= Introduction =
+
+Physical attacks require adversaries to have direct access to a user's computer and cannot be conducted remotely. This section should be read in conjunction with the [[Full_Disk_Encryption|Full Disk Encryption]] and [[Encrypted_Images|Encrypted Images]] chapters.
+
+= BIOS Password =
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = The instructions in this section refer to BIOS or legacy BIOS. Users with UEFI firware should research specific instructions for their computer.
+}}
+
+The Basic Input/Output System (BIOS) is non-volatile firmware which performs hardware initialization during the computer's  booting process after it is powered on. It also provides runtime services for operating systems and progams. BIOS in modern PCs initialize and test system hardware components, as well as loading a boot loader or operating system from a mass memory device. The Unified Extensible Firmware Interface (UEFI) is the successor to BIOS that was released in 2011. <ref>https://en.wikipedia.org/wiki/BIOS</ref>
+
+All local settings are stored in BIOS, including power options, boot options and memory information. The BIOS menu allows the user to set and change a boot password for the computer upon startup. An administrator password can also be set to prevent others from changing BIOS settings. To set a BIOS boot password: <ref>https://www.techwalla.com/articles/how-to-change-the-administrator-password-in-bios</ref> <ref>http://www.intowindows.com/how-to-set-bios-or-uefi-password-in-windows-10/</ref>
+
+* Turn on / restart the computer.
+* Press the relevant key to access the BIOS menu. It is usually one of: <code>Del</code>, <code>Esc</code>, <code>F2</code>, <code>F10</code>, or <code>F12</code>.
+* Navigate to the Security or Password section using the arrow keys.
+* Search for an entry named "Password on boot" or similar.
+* Enter the new, [[Passwords#Generating_Unbreakable_Passwords|strong password]].
+* Save the changes made to BIOS settings. On most PCs, this is done by pressing <code>Esc</code> or <code>F10</code> &rarr; <code>Save and Exit</code>. Check the bottom of the BIOS screen to be sure.
+* Reboot the computer and confirm a password prompt now appears.
+
+For greater security, a password should be set to access the BIOS menu itself. Search the Security or Password BIOS menu for "Set supervisor password", "User password", "System password", or something similar. <ref>If the system has both a supervisor password and a user password, then set passwords for both.</ref> Also, users may prefer to configure BIOS to only allow booting from HDD/SSD so the computer cannot be booted from CD-ROM or USB flash drives. 
+
+It should be noted that there are [https://www.technibble.com/how-to-bypass-or-remove-a-bios-password/ numerous] [http://www.instructables.com/id/How-to-Bypass-BIOS-Passwords/ methods] of [https://www.askvg.com/how-to-reset-remove-bypass-a-bios-or-cmos-password/ bypassing, removing or resetting BIOS passwords], so this method will only prevent casual attempts to gain access.
+
+= Cold Boot Attacks =
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Due to the design of modern computers, nearly all the data manipulated during a session is temporarily written to RAM. This can include texts, saved files, passwords, and encryption keys! Data from more recent activities has a greater likelihood of still residing in RAM. <ref>https://tails.boum.org/doc/advanced_topics/cold_boot_attacks/index.en.html</ref> 
+}}
+
+Modern computer architecture poses a significant risk to {{project name}} users. Adversaries with physical access to a computer running {{project name}} may be able to recover all session activities, even if FDE is enabled.
+
+Even when a computer is powered off, the data in RAM does not immediately disappear. Depending on the circumstances, data can survive for up to several minutes. For example, this occurs when a computer loses power abruptly and does not go through the normal shutdown cycle. <ref>https://darkwebnews.com/security-guide/cold-boot-attacks-unencrypted-ram-extraction/</ref> If an adversary has immediate physical access to a computer, a [https://en.wikipedia.org/wiki/Cold_boot_attack cold boot attack] can be mounted.
+
+Forensic experts have two main methods of extracting data from RAM: <ref name=coldboot_attack>https://en.wikipedia.org/wiki/Cold_boot_attack</ref>
+
+* The running computer is cold-booted and a lightweight operating system is booted from a removable disk. A tool is used to dump pre-boot physical memory contents to a file.
+* The memory modules are quickly removed from the original system and placed in another computer under the adversary's control. The machine is then booted to access the memory contents.
+
+In both cases, the RAM contents can be analyzed in a computer forensics laboratory. Depending on what is found, the user may be in serious peril. Notably, cold boot attacks have proven effective against [https://en.wikipedia.org/wiki/Trusted_Platform_Module Trusted Platform Modules (TPMs)], as well as [[Full_Disk_Encryption_and_Encrypted_Images#Full_Disk_Encryption_on_the_Host|full disk encryption]] regardless of the vendor or operating system. For certain memory modules, the time window for an attack can be extended to several hours by cooling them with a refrigerant. <ref name=coldboot_attack />
+
+Cold boot attacks are thought to be a very uncommon method of recovering data, but high-risk users should be prepared for such a contingency to stay on the safe side. So long as a cold boot attack is not mounted directly after shutdown, then contents of RAM should be emptied within minutes. <ref>https://tails.boum.org/doc/advanced_topics/cold_boot_attacks/index.en.html</ref>
+
+== Preventative Measures ==
+
+{{project_name}} does not yet provide an analogous feature to Tails, which [https://tails.boum.org/contribute/design/memory_erasure/ wipes RAM on shutdown] by overwriting it with random data. Possible interim solutions include:
+
+* Configuring a computer to automatically shut down after a set period of inactivity.
+* [https://en.wikipedia.org/wiki/Cold_boot_attack#Dismounting_encrypted_disks Dismounting encrypted disks].
+* Not leaving the computer unattended immediately after shutdown.
+* Soldering memory modules onto the motherboard.
+* Using a kexec script to wipe RAM on shutdown. <ref>Unfortunately, an upstream script does not yet exist to implement this feature, so {{project name}} is currently unable to provide a solution for this attack.</ref> <ref> [https://tails.boum.org/contribute/release_process/test/erase_memory_on_shutdown/ Tails] and Liberte Linux have partially solved this problem.</ref> <ref>Instead of waiting for an upstream solution, see the [[Dev/Archived_Discussions#SECURITY_Wipe_RAM_panic_script_OPEN_NEEDS_RESEARCH_NEEDS_CODE|Dev#Wipe RAM panic script]]. The user would need to implement a panic button which will wipe RAM. Please [https://www.whonix.org/wiki/Contribute contribute] by coding this feature.</ref>
+* Using [https://en.wikipedia.org/wiki/Cold_boot_attack#TCG-compliant_systems TCG-compliant] computer hardware.
+* Using the [https://en.wikipedia.org/wiki/TRESOR TRESOR Linux kernel patch] so CPU registers store encryption keys. <ref>https://en.wikipedia.org/wiki/Cold_boot_attack#Register-based_key_storage</ref>
+* Waiting for [https://en.wikipedia.org/wiki/Cold_boot_attack#Full_memory_encryption full memory encryption].
+
+Cold boot attacks are a clear and present danger for high-risk users due to the limited countermeasures available. In the purely hypothetical situation where an adversary is knocking earnestly on the door, safest would be pressing the panic button on the host, leading to the contents of RAM being quickly wiped. Failing that, the computer should be immediately shut down and access to the computer delayed as long as possible.
+
+= Evil Maid Attack =
+
+If an encrypted computer is left unattended, it is possible for an adversary ("evil maid") to secretly access it and install a hacked bootloader. The process has two steps: <ref>https://www.schneier.com/blog/archives/2009/10/evil_maid_attac.html</ref>
+
+# After accessing the shutdown computer, the attacker boots it from a separate volume. A hacked bootloader is written to the system, then shut down. 
+# Later on the owner boots the computer and enters their encryption key. Once the disk is unlocked, the malicious bootloader can capture the key and send it over the internet, store it in a secret location and so on. <ref>An advanced adversary is likely to return again and remove any evidence of the hack.</ref>
+
+In 2009, security researcher Joanna Rutkowska (who coined the term "evil maid attack") demonstrated this technique against a TrueCrypt encrypted system using a small bootable USB stick image; see [https://theinvisiblethings.blogspot.com/2009/10/evil-maid-goes-after-truecrypt.html here] for further details and a discussion about possible solutions.
+
+If the user has a TPM chip, <ref>[https://www.intel.com/content/www/us/en/support/articles/000007452/mini-pcs.html Intel]: <blockquote>TPM is is a microcontroller that stores keys, passwords, and digital certificates.</blockquote></ref> anti-evil maid measures are available for:
+
+* Most [http://theinvisiblethings.blogspot.se/2011/09/anti-evil-maid.html host Linux distributions].
+* The [https://www.qubes-os.org/doc/anti-evil-maid/ Qubes platform]. <ref>By installing the anti-evil-maid package in dom0 and following the [https://github.com/QubesOS/qubes-antievilmaid/blob/master/anti-evil-maid/README configuration steps].</ref>
+
+= Problematic Interfaces =
+
+There are a number of computer interfaces that pose the risk of a [https://en.wikipedia.org/wiki/DMA_attack direct memory access (DMA) attack]. Potentially exploitable interfaces include ExpressCard, PCMCIA, FireWire, PCI, PCI Express or Thunderbolt.
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = High-speed expansion ports allow attackers to penetrate computers and other peripherals because the connected devices have direct hardware access to enable maximum throughput.
+}}
+
+In practice, attached devices are permitted to read and write directly to memory, often without supervision of the operating system. This is in contrast to user-mode applications that are usually prevented from accessing memory locations that are not explicitly authorized by virtual memory controllers. <ref name=DMA_attack>https://en.wikipedia.org/wiki/DMA_attack</ref>
+
+A successful DMA attack on an unattended, live computer allows the adversary to: <ref>http://louwrentius.com/firewire-the-forgotten-security-risk.html</ref> <ref name=DMA_attack /> <ref>https://privatecore.com/resources-overview/physical-memory-attacks/index.html</ref> <ref>http://www.delaat.net/rp/2011-2012/p14/report.pdf</ref>
+
+* Access sensitive cryptographic material in memory.
+* Circumvent FDE.
+* Inject executable code.
+* Partially or fully read the memory address space.
+* Read documents, files or other digital traces present in memory.
+* Take control of the entire system, for example via the network.
+* Unlock screensavers without a passphrase.
+
+DMA attack software tools which mimic the [https://en.wikipedia.org/wiki/FinFireWire abilities of state-level adversaries] are even available on [https://github.com/carmaa/inception GitHub]! <ref>This is not an endorsement for the use of hacking tools.</ref> Mitigating the threat of a DMA attack requires mostly physical security countermeasures; it is recommended to:
+
+* Consider blocking or removing them completely.
+* Disable them in BIOS or UEFI.
+* Never allow unknown and potentially malicious devices to be inserted into these ports. <ref>This is another reason why high-risk users should never leave their devices unattended.</ref>
+* Securely configure these interfaces.
+* Use [https://en.wikipedia.org/wiki/IOMMU IOMMU] technology if available, along with software which supports it, like Qubes. <ref>IOMMU maps device-visible virtual addresses to physical addresses. The security benefit is that operating systems that are run in guest virtualized machines -- AppVMs in Qubes -- do not know the physical memory addresses on the host that are being accessed. This makes DMA attacks very difficult and can lead to memory corruption if attempted.</ref>
+* Use Linux kernel options to disable DMA by Firewire devices.
+
+= Screen Lock =
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = If a computer is left unattended, always lock the screen of the host or shut it down for greater safety. 
+}}
+
+Locking the screen on the host prevents others from viewing or using the device. It is advisable to set the screen to lock after a certain period of inactivity, and a [[Passwords#Generating_Unbreakable_Passwords|strong password]] is recommended. Note that screen lockers provide [http://blog.martin-graesslin.com/blog/2015/01/why-screen-lockers-on-x11-cannot-be-secure/ notoriously weak protection], so do not overestimate their effectiveness. <ref>Attacks that have bypassed screen lockers on most platforms can easily be found online.</ref>
+
+To manually lock the screen: <ref>https://www.isunshare.com/windows-10/3-ways-to-lock-windows-10-computer.html</ref> <ref>https://swissmacuser.ch/new-lock-screen-feature-in-macos-high-sierra/</ref>
+
+<u>Windows</u>
+* <code>Open Start Menu</code> &rarr; <code>Click User Icon</code> &rarr; <code>Select Lock</code>; or
+* <code>Ctrl</code> + <code>Alt</code> + <code>Del</code> &rarr; <code>Select Lock</code>; or
+* <code>Windows key</code> + <code>L</code>.
+
+<u>macOS</u>
+* <code>Apple menu button</code> &rarr; <code>Lock Screen</code>; or
+* <code>CMD</code> + <code>Ctrl</code> + <code>Q</code>. <ref>Some macOS systems instead use <code>Ctrl</code> + <code>Shift</code> + <code>Power button</code> OR <code>Ctrl</code> + <code>Shift</code> + <code>Eject key</code>.</ref>
+
+<u>Linux</u>
+* <code>Menu panel</code> &rarr; <code>Lock Screen</code>.
+* Shortcuts are specific to the desktop environment in use, for example, GNOME, KDE, Xfce and so on.
+
+= Side Channel Attacks =
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = {{project name}} does not provide protection against most [https://en.wikipedia.org/wiki/Side-channel_attack side-channel attacks].
+}}
+
+Side-channel attacks are made possible by physical effects caused by cryptosystem operations (''on the side'') which provide extra information about system secrets like cryptographic keys, state information, or full/partial plaintexts. Wikipedia defines side-channel attacks as: <ref name=sidechannel_attack>https://en.wikipedia.org/wiki/Side-channel_attack</ref>
+
+<blockquote>...any attack based on information gained from the physical implementation of a cryptosystem, rather than brute force or theoretical weaknesses in the algorithms (compare cryptanalysis). For example, timing information, power consumption, electromagnetic leaks or even sound can provide an extra source of information, which can be exploited to break the system.</blockquote>
+
+Side-channels emerge because computation takes place on a non-ideal system, composed of transistors, wires, power supplies, memory, and peripherals. Component characteristics vary with the instructions and data that are processed, allowing measurable variance to be used by attackers. <ref>http://rootlabs.com/articles/IEEE_SideChannelAttacks.pdf</ref>
+
+'''Table:''' ''Primary Side-channel Attack Classes'' <ref name=sidechannel_attack />
+
+{| class="wikitable"
+|-
+! scope="col"| '''Attack Class'''
+! scope="col"| '''Description'''
+|-
+! scope="row"| Acoustic Cryptanalysis
+| Sound produced during computation is used for attacks.
+|-
+! scope="row"| Cache Attacks
+| Attackers monitor cache accesses made by the user in shared physical systems like virtualized environments or cloud services.
+|-
+! scope="row"| Data Remanence
+| Sensitive data are read after supposedly being deleted.
+|-
+! scope="row"| Differential Fault Analysis
+| Secrets are discovered by introducing faults in a computation.
+|-
+! scope="row"| Electromagnetic Attacks
+| Leaked electromagnetic radiation allows attacks that can provide plaintexts and other information. Cryptographic keys can be inferred via this method; for example, see [https://en.wikipedia.org/wiki/TEMPEST TEMPEST].
+|-
+! scope="row"| Optical
+| Secrets and sensitive data are read by visual recordings with a high resolution camera, or other devices.
+|-
+! scope="row"| Power-monitoring Attacks
+| Attacks use measurements of varying hardware power consumption during computation.
+|-
+! scope="row"| Software-initiated Fault Attacks
+| [https://en.wikipedia.org/wiki/Row_hammer Row hammer] is an example of this attack, whereby off-limits memory is changed by rapidly accessing adjacent memory, leading to state retention loss.
+|-
+! scope="row"| Timing Attacks
+| Attacks are based on measuring how long various computations take to perform, such as the attacker's password compared to the user's unknown one.
+|}
+
+While {{project name}} has [[Advanced_Deanonymization_Attacks|some limited countermeasures]] to side-channel attacks, in general it ''cannot'' provide protection against most classes, nor [https://en.wikipedia.org/wiki/Hardware_keylogger hardware keyloggers], TEMPEST, miniature cameras and so on. Full disk encryption is also helpless against these attacks.
+
+For further reading on this complex topic, see [https://www.owasp.org/images/c/cd/Side_Channel_Vulnerabilities.pdf here], [http://gauss.ececs.uc.edu/Courses/c653/lectures/SideC/intro.pdf here] and [http://scl.uconn.edu/courses/ece6095/lectures/side_channels.pdf here].
+
+= Footnotes =
+{{reflist|close=1}}
+
+= License =
+{{License_Amnesia|{{FULLPAGENAME}}}}
+
+{{Footer}}
+
+[[Category:Documentation]]
