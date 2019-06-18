@@ -1,0 +1,163 @@
+__NOINDEX__
+{{Header}}
+{{#seo:
+|description=Instructions on how to set up a {{project name}} Download Mirror
+|image=https://www.whonix.org/w/images/4/4c/Hosting-13348640.jpg
+}}
+{{Anchor|Landing}}
+
+<div class="toccolours mw-collapsible mw-collapsed">
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = '''March 2019:''' {{project name}} is currently looking for a sponsor who is willing to donate a suitably sized virtual or root server.
+}}
+'''Table:''' ''Server Requirements''
+
+{|   class="wikitable" style="margin-left: auto; margin-right: auto; border: none; text-align: left;"
+!  align="center" | <b>Server Software</b>
+!  align="center" | <b>Web Applications</b>
+!  align="center" | <b>Other Criteria</b>
+!  align="center" | <b>Attribution</b>
+!  align="center" | <b>Contact</b>
+|-  class="odd"
+|  align="left" | - Debian <br /> - [https://packages.debian.org/stretch/nginx ngnix] <br /> - [https://packages.debian.org/stretch/apache2 apache2]
+|  align="left" | - [https://www.mediawiki.org/wiki/MediaWiki MediaWiki] <br /> - [https://www.discourse.org/ Discourse] <br /> - [https://phabricator.wikimedia.org/ Phabricator] <br /> - [https://www.gnu.org/software/mailman/ Mailman] <br /> - This setup is the same as the current whonix.org
+|  align="left" | - ssh access <br /> - DDOS protection <br /> - 100 GB HDD <br /> - 16 GB RAM <br /> - unmetered traffic <br /> - requirements can be reduced later on.
+|  align="left" | If you wish to support {{project name}} this way, attribution is possible on the main homepage wiki footer and/or in other appropriate places. Let’s talk.
+|  align="left" | Patrick Schleizer (project leader) <br /> '''email:''' ''[mailto:adrelanos@riseup.net adrelanos@riseup.net]'' <br /> '''gpg:''' {{#widget:Key_Patrick}}
+|}
+
+If desired, a sponsorship contract is also possible.
+<div class="mw-collapsible-content">
+== Table of Contents ==
+__TOC__
+
+== Requirements ==
+Running a {{project name}} mirror can be immensely helpful, but it also takes some knowledge, proper configuration and adequate resources to be truly useful. The following are necessary:
+
+* A server with a publicly accessible IP address. You might already have one of these, but [http://lowendbox.com/ lowendbox] often has decent boxes at low prices. Look for those with higher bandwidth caps, as you will be serving a lot of data (~2 GB for a download of Workstation+Gateway for {{project name}} 14). The load on your individual mirror will decrease as more mirrors are added. If you exceed the allocated bandwidth, then depending on the provider, additional charges may be incurred or the service could even be terminated; be careful and overestimate bandwidth requirements.
+* SSH root access to that server (sudo is fine).
+* Recommended: Debian [https://www.debian.org/releases/stretch/ stretch] as the operating system. Other distributions are possible, but this guide is written using stretch.
+
+== Install Apache ==
+
+First, install Apache.
+{{CodeSelect|code=
+sudo apt-get install apache2
+}}
+
+This will create the directory structure where we will put our mirrored copy of {{project_name}}, as well as install Apache in order to serve the mirrored content.
+
+== Getting {{project name}} ==
+
+Install rsync.
+{{CodeSelect|code=
+sudo apt-get install rsync
+}}
+
+Then get {{project name}} from the rsync master.
+{{CodeSelect|code=
+sudo rsync -rtvp --delete rsync://rsync.whonix.org/whonix /var/www/whonix
+}}
+
+This will put the contents of http://rsync.whonix.org/ in your server's directory {{Code|/var/www/whonix}}
+
+== Automating Updates from Master ==
+
+To ensure your mirror is up-to-date whenever a new version of {{project name}} is released, add an entry to the crontab to check for updates every hour.
+{{CodeSelect|code=
+sudo crontab -e
+}}
+
+In Debian stretch, crontab will be visible (open) in nano. Hit "Page Down" or the down cursor key until you are on the last line (below "m h  dom mon dow   command") and enter:
+{{CodeSelect|code=
+0 *   *   *   *    rsync -rtp --delete rsync://rsync.whonix.org/whonix /var/www/whonix
+}}
+
+The numbers do not have to line up exactly with the heading, but this makes it easier to read.
+
+== Serving the Mirror Content ==
+
+Paste the following text into {{Code|/etc/apache2/sites-available/mirror.whonix.de.conf}}
+{{CodeSelect|code=
+#
+#  mirror.whonix.de (/etc/apache2/sites-available/mirror.whonix.de.conf)
+#
+<VirtualHost *:80>
+        ServerAdmin <YourContactEmail>EDIT THIS
+        ServerName  mirror.whonix.de
+        DocumentRoot /var/www/whonix/
+        # Logfile
+        ErrorLog /var/log/apache2/whonix/error.log
+</VirtualHost>
+}}
+
+Make the directory for the new logs. <ref>This has been modified from: https://www.debian-administration.org/articles/412</ref>
+{{CodeSelect|code=
+sudo mkdir /var/log/apache2/whonix
+}}
+After entering your contact email (it will throw errors otherwise), enable the site.
+{{CodeSelect|code=
+sudo a2ensite mirror.whonix.de.conf
+}}
+A prompt will appear to reload apache.
+{{CodeSelect|code=
+sudo service apache2 reload
+}}
+
+== Stripping User IPs ==
+
+While the config file above does not have an access log, user IPs can still be logged in {{Code|error.log}} It is therefore recommended to install mod-removeip to make Apache "blind" to the IP addresses of users. 
+
+Install mod-removeip.
+{{CodeSelect|code=
+sudo apt-get install libapache2-mod-removeip
+}}
+Activate it.
+{{CodeSelect|code=
+sudo a2enmod removeip
+}}
+Reload Apache.
+{{CodeSelect|code=
+sudo service apache2 restart
+}}
+
+== Test the Mirror ==
+Replace {{Code2|109.230.212.54}} below with the IP of your server.
+
+{{CodeSelect|code=
+curl -H "Host: mirror.whonix.de" 109.230.212.54
+}}
+
+The output should appear similar to this.
+
+<pre>
+<html>
+<head><title>Index of /</title></head>
+<body bgcolor="white">
+<h1>Index of /</h1><hr><pre><a href="../">../</a>
+<a href="9/">9/</a>                                                 10-Oct-2014 13:56                   -
+<a href="9.2/">9.2/</a>                                               27-Sep-2014 12:46                   -
+<a href="9.3/">9.3/</a>                                               18-Oct-2014 01:49                   -
+<a href="WikiBackups/">WikiBackups/</a>                                       15-Apr-2014 01:17                   -
+\</pre\><hr></body>
+</html>
+</pre>
+
+== Getting the Mirror Added ==
+
+Email the IP address of your new mirror to [[Contact|Patrick Schleizer]], and you will be notified when it has been added to the rotation. Due to the way DNS propagates, it may take up to 24 hours before your system starts seeing traffic.
+
+'''Thank you for your support!'''
+
+== Optional Customization ==
+
+It is possible to customize the header and footer of your directory listing as explained [http://answers.oreilly.com/topic/118-how-to-display-a-standard-header-and-footer-on-directory-listings/ here]. Feel free to have something like "Mirror provided by <link to your blog or company>", but please do not go overboard. Mirrors with blatant banner ads or user-tracking scripts will be rejected.
+
+{{reflist|close=1}}
+</div>
+</div>
+{{Footer}}
+
+[[Category:Development]]
