@@ -1,0 +1,1289 @@
+__NOINDEX__
+
+= Introduction =
+All kinds of tunnels are possible and tested to work with {{project_name}}. With {{project name}} you can route a connection through a VPN, SSH, or proxy before Tor, after Tor, or both.
+
+Read first: 
+*[https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN Tor Plus VPN or proxy]
+*[[{{project name short}}:General_disclaimer#{{project_name}}_VPN_disclaimer|{{project_name}} VPN disclaimer]].
+
+= Comparison Table =
+{| class="wikitable" style="background-color: #fff;text-align: center"
+
+! 
+! USER -> PROXY -> TOR -> INTERNET
+! USER -> VPN/SSH -> TOR -> INTERNET
+! USER -> TOR -> PROXY/VPN/SSH -> INTERNET
+
+|-
+! configuration modification applied where
+| {{gateway_product_name}}
+| {{gateway_product_name}} [or host ([[FAQ#What.27s_the_difference_of_installing_a_VPN_on_the_host_versus_installing_on_{{gateway_product_name}}.3F|FAQ]])]
+| {{workstation_product_name}}
+
+|-
+! evade Tor bans by websites
+| {{No}}
+| {{No}}
+| style="background-color: {{Green}}"| possibly
+
+|-
+! evade Tor bans by network censors
+| style="background-color: {{yellow}}"| maybe <ref>See [[Hide_Tor_and_{{project name short}}_from_your_ISP#Using_a_Proxy]].</ref> <ref>Works only against simplistic IP blocking lists, because connections to such proxies are usually not encrypted.</ref>
+| style="background-color: {{yellow}}"| maybe <ref>In these situations, VPNs are also often censored. You might be better off using [[Bridges]].</ref>
+| {{No}}
+
+|-
+! [[Hide_Tor_and_{{project name short}}_from_your_ISP|Hide Tor and {{project name}} from your ISP]]
+| style="background-color: {{Red}}"| very weak <ref>See [[Hide_Tor_and_{{project name short}}_from_your_ISP#Using_a_Proxy]].</ref>
+| style="background-color: {{yellow}}"| maybe <ref>See [[Hide_Tor_and_{{project name short}}_from_your_ISP]].</ref>
+| {{No}}
+
+|-
+! no loss of [[Stream Isolation]]
+| {{Yes}}
+| {{Yes}}
+| {{No}}
+
+|-
+! no {{Code2|reconfiguration}}<ref>Disabling [[Stream Isolation]].</ref> of pre-configured software {{Code2|required}}<ref>If you did not disable [[Stream Isolation]], then applications still pre-configured for Stream Isolation would go only through Tor and not through the extra tunnel-link. It is up to you for which applications you disable Stream Isolation and for which not. If for some reason, you want for example to use gpg through the extra tunnel link, but Tor Browser not, then just disable stream isolation for gpg, but not for Tor Browser.</ref> in order to use extra tunnel-link
+| {{Yes}}
+| {{Yes}}
+| {{No}}
+
+|-
+! no permanent exit relay
+| style="background-color: {{Green}}"| unaffected
+| style="background-color: {{Green}}"| unaffected
+| {{No}}
+
+|-
+! increased tunnel length
+| style="background-color: {{Green}}"| Yes
+| style="background-color: {{Green}}"| Yes
+| style="background-color: {{Green}}"| Yes
+
+|-
+! effects on anonymity
+| style="background-color: {{yellow}}"| disputed <ref name=torplusvpn>See [https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN Tor Plus VPN or proxy].</ref>
+| style="background-color: {{yellow}}"| disputed <ref name=torplusvpn />
+| style="background-color: {{yellow}}"| disputed <ref name=torplusvpn />
+
+|-
+! [[Tunnel_UDP_over_Tor|Tunnel UDP over Tor]]
+| {{No}}
+| {{No}}
+| Proxy: [[Tunnel_UDP_over_Tor#socks5_proxy_method_.28FAILED.29|<span style="background:#FF9090">No]]<br />
+VPN: [[Tunnel_UDP_over_Tor#VPN_method_.28WORKING.29|<span style="background:#90FF90">Yes]]<br />
+ssh: [[Tunnel_UDP_over_Tor#SSH_method_.28NOT_DOCUMENTED.29|<span style="background:{{Yellow}}">undocumented]]
+|}
+
+= Connecting to a tunnel-link (proxy/VPN/SSH) before Tor (User -> proxy/VPN/SSH -> Tor -> Internet) =
+'''DESCRIPTION: (USER -> PROXY/VPN/SSH -> TOR -> INTERNET)'''
+
+'''When to use a tunnel-link before Tor'''
+
+Sometimes you have to use a tunnel-link to make outgoing connections to the internet because some ISP's censor your ability to access the full internet (e.g. the Great Firewall of China), or you are linked within a LAN (such as in an educational or corporate environment).
+
+A proxy, VPN or SSH can also be possibly
+* Used to circumvent Tor blocks by network censors or to
+* Hide the fact you are using Tor from your Internet Service Provider
+** In that case make sure you have read [[Hide Tor and {{project name short}} from your ISP]]. 
+** You may also want to check out [[Bridges|Using Tor bridges]]
+
+
+'''Safety issues to consider when connecting to a tunnel-link before Tor'''
+ 
+In determining whether to use a tunnel-link before Tor, the question basically is how much you can trust the server / connecting tunnel-link provider (a VPN host being an example). The server will be able to see that you are using Tor, but thanks to Tor, they won't see what you are doing. However, note that when connecting directly to a tunnel-link before connecting to Tor, the server (for example the VPN hosting service) will know and *may* log your IP Address, the times when you log on, etc. If you have paid for the tunnel-link provider's service (thereby establishing a "money trail") this could be of additional concern and more easily enable a third-party (the government for example) to specifically identify you. For these reasons alone, it may be ill-advised to use a tunnel-link before connecting to Tor. Still, if it is incredibly unsafe for your ISP to see that you are using Tor in any way and you use your own server in a safe country, while you are in a dangerous country, connecting to a tunnel-link before Tor may be your best bet. Note: not many people seem to use a tunnel before they connect to Tor, therefore it is safety in providing anonymity and privacy have not been fully tested. *Do not rely on this too much to protect your anonymity*
+
+== Connecting to a VPN before Tor (User -> VPN -> Tor -> Internet) ==
+There are many different VPN protocols (too many for this guide). However, OpenVPN, which is open-source and free software, has been vetted by multiple Tor users and is the recommended VPN protocol to use (not pptp).
+
+=== Setting up VPN before Tor (User -> VPN -> Tor -> Internet) ===
+If you are forced to use a VPN server or if you are already using a VPN server, you most likely know how you can connect to it. When your VPN is properly set up, all your connections are forced through the VPN first. If you start Tor on top of that, you will now connecting to the VPN, then to Tor, then to the Internet. In other words, your connection will be the following: (User -> VPN -> Tor -> Internet).
+
+There are two ways of setting up the VPN:<br />
+1. You can either add the VPN on the host, in which {{gateway_product_name}} will be tunneled through it.<br />
+2. Or you can add the VPN into {{gateway_product_name}}.
+
+See also [[FAQ#What.27s_the_difference_of_installing_a_VPN_on_the_host_versus_installing_on_{{gateway_product_name}}.3F|What's the difference of installing a VPN on the host versus installing on {{gateway_product_name}}?]]
+
+See also [[#Examples_of_setting_up_VPNs_to_work_with_{{project_name}}examples of setting up VPNs to work with {{project_name}}]].
+
+==== Use a Fail Closed Mechanism ====
+{{Fail_Closed_Mechanism}}
+
+==== How to add the VPN on the host ====
+Just as you would if you were not using {{project_name}}. (Consider the security precautions and links to examples discussed above.)
+
+==== How to add the VPN in {{gateway_product_name}} ====
+
+After installing {{gateway_product_name}}, do the following steps before activating Tor in {{Code|{{project_name}} Setup Wizard}}.
+
+1. {{Firewall Settings}}
+
+2. Add the following settings. You can skip comments (starting with {{Code|#}}). Note: make sure to adjust the {{Code|VPN_SERVERS}} variable in your config (unless you are using {{Code|seattle.vpn.riseup.net}} as your VPN service).
+
+<pre>
+###########################
+## VPN-Firewall Settings ##
+###########################
+## Make sure Tor always connects through the VPN.
+## Enable: 1
+## Disable: 0
+## DISABELD BY DEFAULT, because it requires a VPN provider.
+VPN_FIREWALL=1
+
+## IP address of the VPN server.
+## Get the IP using: nslookup vpn-example-server.org
+## Example: seattle.vpn.riseup.net
+## Some providers provide multiple VPN servers.
+## You can enter multiple IP addresses, separated by spaces.
+VPN_SERVERS="198.252.153.26"
+
+## For OpenVPN.
+VPN_INTERFACE=tun0
+
+## Destinations you don not want routed through the VPN.
+## 10.0.2.2/24: VirtualBox DHCP
+LOCAL_NET="192.168.1.0/24 192.168.0.0/24 127.0.0.0/8 10.152.152.0/24 10.0.2.2/24"
+</pre>
+
+3. Exit and save the file.
+
+<pre>
+<CTRL-X> --> Press Y --> <ENTER>
+</pre>
+
+4. {{Reload Firewall}}
+
+5. Now setup OpenVPN. It should be able to connect. You find some help in chapter [[#Examples_of_setting_up_VPNs_to_work_with_{{project_name}}]].
+
+6. Enable Tor using {{project name}} Setup Wizard.
+
+{{whonixsetup}}
+
+==== Additional Tweaks / Recommendations / Troubleshooting====
+'''If having problems with the connection / Tor is not fully bootstrapped'''
+
+You have may have to manually restart Tor. This is because the VPN may not be ready when Tor is attempting to connect, because the VPN connection initialization takes too long. Due to a bug in Tor, it won't keep trying to connect. To fix this, you may have to manually restart Tor after boot, if whonixcheck reports that Tor is not fully bootstrapped. The same may be necessary if your VPN software or connection temporarily broke down.
+
+'''To Manually restart Tor:'''
+
+{{Reload Tor}}
+
+'''Leak Tests'''
+
+When you shut down the VPN, neither Tor, nor {{gateway_product_name}} whonixcheck/apt-get/etc. nor {{workstation_product_name}} should be able to connect anywhere anymore.
+
+''' Force Tor to wait for OpenVPN '''
+
+sysvinit: (Legacy. Prefer the systemd method below.) <ref>
+To improve this situation, if you are using OpenVPN and Debian's init script to automatically start it, add an insserv override to wait for openvpn being started.
+
+1. Create a new file {{Code|/etc/insserv/overrides/tor}}. 
+
+{{Open with root rights|filename=
+/etc/insserv/overrides/tor
+}}
+
+2. Add the following content.
+
+<pre>
+### BEGIN INIT INFO
+# Provides:          tor
+# Required-Start:    $local_fs $remote_fs $network $named $time
+# Required-Stop:     $local_fs $remote_fs $network $named $time
+# Should-Start:      $syslog openvpn
+# Should-Stop:       $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Starts The Onion Router daemon processes
+# Description:       Start The Onion Router, a TCP overlay
+#                    network client that provides anonymous
+#                    transport.
+### END INIT INFO
+</pre>
+
+3. Then apply these changes by running.
+
+{{CodeSelect2|code=
+sudo update-rc.d tor defaults
+}}
+</ref>
+
+systemd ({{project_name}} 11 and above):
+
+Create a folder /etc/systemd/system/tor.service.d.
+
+{{CodeSelect2|code=
+sudo mkdir /etc/systemd/system/tor.service.d
+}}
+
+Create a file /etc/systemd/system/tor.service.d/50_user.conf.
+
+{{Open with root rights|filename=
+/etc/systemd/system/tor.service.d/50_user.conf
+}}
+
+Add the following content.
+
+{{CodeSelect2|code=
+[Unit]
+After=openvpn.service
+}}
+
+Save.
+
+At next boot, the Tor daemon will be started after the OpenVPN daemon.
+
+Debugging: <ref>
+Reload systemd.
+
+{{CodeSelect2|code=
+sudo systemctl daemon-reload
+}}
+
+Check Tor service status.
+
+{{CodeSelect2|code=
+sudo service tor status
+}}
+
+It should list the drop-in file {{Code2|/etc/systemd/system/tor.service.d/50_user.conf}}.
+</ref>
+
+'''Limitations'''
+* Only tested with OpenVPN. Most other VPN's have deficiencies anyway.
+* DNS (IP address) of VPN server has to be manually resolved. There is technically no way to automatically resolve DNS without making the setup much more complex. The VPN server's IP address should not be resolved over Tor, because that's what you wanted to hide in the first place. Since outside observers will know, that you are connecting to the VPN IP anyway, it is probably safe to resolve the DNS over clearnet or by asking the VPN provider if they don't already document their IPs on their website anyway.
+* No support for IPv6 yet.
+
+'''Troubleshooting VPN -> Tor'''
+
+*If not connecting, see above to manually restart Tor
+*Check your VPN software's logs.
+
+*'''Test if you are able to connect using your VPN'''
+
+1. Login as user {{Code|clearnet}}.
+
+{{CodeSelect2|code=
+sudo su clearnet
+}}
+
+2. Try connecting to check.tpo. Note, at time of writing, it looked like usaip free trial is probably blocking SSL, therefore it might not work.
+
+{{CodeSelect2|code=
+{{Curl Plain}} {{Curl Secure}} --silent -H 'Host: check.torproject.org' -k https://38.229.72.22 | grep IP
+}}
+
+Should show something along: {{Code2|Your IP address appears to be: xxx.xxx.xxx.xxx}}
+
+3. Get back to normal user.
+
+{{CodeSelect2|code=
+exit
+}}
+
+== Connecting to a proxy before Tor (User -> proxy -> Tor -> Internet) ==
+
+=== Proxy Warning ===
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px|alt={{project_name}} first time users warning]]
+| text    = '''<u>Warning!</u>'''
+There are issues you should be aware of when using standard, common http(s)/socks4(a)/5 proxies. (Anonymizers, that only use http(s)/socks4(a)/5 as an interface<ref>Such as the Tor, [[JonDonym]] or [[I2P]] software.</ref> are exempt.)
+* Most problems with these proxies are not caused by {{project_name}}.
+* ISP-level adversaries can still determine that the user is connecting to the Tor network.
+* Be especially careful with http(s) proxies. Some of them send the "[https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN#VPNSSHversusProxy http forwarded for]" header which discloses your IP. Http(s) proxies that do not send this header are sometimes called "elite" or "anonymous" proxies.
+* When using "http forwarded for" http(s) proxies, Tor entry guards and Tor [[Bridges|bridges]] can determine your IP.
+See also: [[Comparison_Of_Tor_with_CGI_Proxies,_Proxy_Chains,_and_VPN_Services|Comparison Of Tor with CGI Proxies, Proxy Chains, and VPN_Services]].
+}}
+
+=== How to setup proxy before Tor (User -> proxy -> Tor -> Internet) ===
+Tor natively supports proxy settings.
+
+'''On {{gateway_product_name}}:'''
+
+{{Open /usr/local/etc/torrc.d/50_user.conf}}
+
+Depending on your proxy configuration, add the settings you'll need to your {{Code2|/usr/local/etc/torrc.d/50_user.conf}}. For more information on these settings, have a look in the [https://www.torproject.org/docs/tor-manual.html.en Tor manual] and read the [https://trac.torproject.org/projects/tor/wiki/doc/TorFAQ#MyInternetconnectionrequiresanHTTPorSOCKSproxy. FAQ].
+
+<pre>
+HTTPProxy host[:port]
+HTTPProxyAuthenticator username:password
+HTTPSProxy host[:port]
+HTTPSProxyAuthenticator username:password
+
+Socks4Proxy host[:port]
+
+Socks5Proxy host[:port]
+Socks5ProxyUsername username
+Socks5ProxyPassword password
+
+FascistFirewall 0|1 
+
+ReachableAddresses ADDR[/MASK][:PORT]… 
+ReachableDirAddresses ADDR[/MASK][:PORT]… 
+ReachableORAddresses ADDR[/MASK][:PORT]… 
+</pre>
+
+'''Note:''' You need to use the IP instead of the hostname (proxy.example.com). If you don't know the IP of your proxy, please run {{Code|nslookup proxy.example.com}} (replace proxy.example.com with the hostname of your actual proxy) in a terminal (Konsole) on your host operating system. Using IP instead of hostname might cause subtle fingerprinting issues, see <ref>https://github.com/{{project_name_short}}/{{project_name_short}}/issues/94</ref> for more information.
+
+== Connecting to SSH before Tor (User -> SSH -> Tor -> Internet) ==
+
+'''This chapter is not fully tested/complete. Please give feedback if it worked for you.''' This doesn't seem to be very popular, no one ever asked about it in over one year.
+
+Setting up the SSH tunnel could be either done on the host or inside {{gateway_product_name}}.
+
+1. First we have to install the ssh client.
+
+{{CodeSelect2|code=
+sudo apt-get update
+}}
+
+{{CodeSelect2|code=
+sudo apt-get install ssh
+}}
+
+2. Then be sure that your SSH connection itself is working well. SSH to your ssh server using.
+
+{{CodeSelect2|code=
+ssh yourusername@your.ssh.server
+}}
+
+3. It is recommended to set up public key authentication.
+(TODO: how to create a private and public key)
+
+{{CodeSelect2|code=
+cd /home/yourusername
+}}
+
+{{CodeSelect2|code=
+mkdir .ssh
+}}
+
+{{CodeSelect2|code=
+nano authorized_keys
+}}
+
+Paste line beginning with {{Code|ssh-rsa ...}} (your public key) (TODO: how to create that line).
+
+4.
+Terminate SSH connection.
+
+{{CodeSelect2|code=
+exit
+}}
+
+Login again using public key authentication. (TODO: how to do that)
+
+5. When that is working install your favorite text mode browser, for example.
+
+{{CodeSelect2|code=
+apt-get install lynx
+}}
+
+And test if the shell's external internet connection is working. Try.
+
+{{CodeSelect2|code=
+lynx check.torproject.org
+}}
+
+You're done with the per-requisets. Exit your shell.
+
+{{CodeSelect2|code=
+exit
+}}
+
+6. Now we will tell the SSH client to start a socks5 proxy server listening on localhost 127.0.0.1 port 1080. The following command has to be run in background (TODO: add line how to do that) on each start up, before Tor starts (TODO: to which file, to do that). It would be wise to activate public key authentication (TODO: how to add private key to use public key authentication).
+
+{{CodeSelect2|code=
+ssh -D 1080 your.ssh.server
+}}
+
+Now we have to tell Tor to use the new local ssh server.
+
+{{Open /usr/local/etc/torrc.d/50_user.conf}}
+
+And add.
+
+(In case SSH tunnel has been setup from {{gateway_product_name}}.)
+
+{{CodeSelect2|code=
+Socks5Proxy 127.0.0.1:1080
+}}
+
+(Or in case SSH tunnel has been setup on the host.)
+
+<pre>
+#Socks5Proxy IP:PORT
+</pre>
+
+7. (TODO: if running inside {{gateway_product_name}}, probably new firewall rules are required.)
+
+8. We are done, from now on, Tor will connect through the SSH server.
+
+= Connecting to Tor before a tunnel-link (proxy/VPN/SSH) (User -> Tor -> proxy/VPN/SSH -> Internet) =
+'''DESCRIPTION: (USER -> TOR -> PROXY/VPN/SSH -> INTERNET)'''
+
+You can tunnel through Tor first and add a tunnel-link (proxy/SSH/VPN) as your "exit relay". When setting up your tunnel-chain in this way, services (such as websites, etc.) that you connect to will not know that you are using Tor <ref>Unless it is a "transparent proxy" in sense of sending http forwarded for, covered in the [https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN Tor Plus VPN or proxy] article.</ref>. This can be useful to '''evade Tor bans''', for example, to be able to visit websites or IRC networks who blacklisted Tor. Beware of the risks, this adds a "permanent exit relay", read [https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN Tor Plus VPN or proxy].
+
+To do that, go to your {{workstation_product_name}} and add the proxy, SSH or VPN normally, just like you would do, if you wouldn't use the {{gateway_product_name}}. Adding your proxy, SSH or VPN inside {{workstation_product_name}} will, thanks to {{gateway_product_name}}, result in them getting tunneled over Tor.
+
+Protocol leaks<ref>https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO</ref> still apply, though to a lesser extent. Leaks would ''only'' leak through Tor and you have best possible [[Protocol-Leak-Protection and Fingerprinting-Protection]].
+
+== Things to keep in mind when connecting to Tor before a tunnel-link ==
+'''uwt and Tor Browser'''
+
+There are two special cases in Whonix: (1) applications using uwt and (2) Tor Browser.
+
+Applications using uwt are pre-configured to use Socks Proxy settings. <ref>...and not just TransPort, which is a security feature: [[Stream Isolation]].</ref> You may have to disable the affected uwt wrapper, in case there is one, for the application you want to tunnel. See [[Stream Isolation]] to learn what uwt and uwt wrappers are. You could [[Stream_Isolation#Deactivate_uwt_Stream_Isolation_Wrapper|disable]] them.
+
+If you want to do it with Tor Browser, read [[Tor_Browser#Change/Remove_Proxy_Settings|Change/Remove Proxy Settings]].
+
+'''Malware'''
+
+Also note that once {{workstation_product_name}} gets rooted by malware, the VPN/SSH/proxy can be easily circumvented by the attacker and you are left to the protections by {{project name}} and Tor.
+
+'''Leaks'''
+
+If setting up socksifier, proxy settings, transparent proxy with local redirection, SSH tunnel or a VPN in a leak free manner were easy, this means while ensuring nothing will bypass the VPN, SSH or proxy, there would have been no reason to develop {{project name}} in the first place.
+
+The methods described on this page are all tested and should all more or less work. Should there be any misconfiguration or leak bug, you are left to the protections by {{project name}} and Tor. This means, the leak will still go through {{gateway_product_name}} and therefore forced through Tor. The methods on this page are not as safe as a {{gateway_product_name}}. There were development discussions and some progress<ref>see [[Dev/Inspiration]]</ref>, about chaining multiple Gateways, VPNBOX, JonDoBOX, I2PBOX, FreenetBOX and ProxyBOX, but nothing was finished due to the lack of community interest, support and developers.
+
+'''Web Browser'''
+
+It is unknown how anonymous it is to use (proxy/VPN/SSH ->) Tor -> Proxy/VPN/SSH -> Tor Browser -> website. How many people show up with a proxy, VPN or SSH IP using Tor Browser? This setup is so special that probably only very few people are doing it. For this reason, recommend against.
+
+On the other hand, due to browser fingerprinting, it can't be recommend using any browser other than Tor Browser either.
+
+'''Loss of Onion Services Connectivity'''
+
+When using USER -> TOR -> PROXY/VPN/SSH -> INTERNET, i.e. if the last server is not a Tor relay, you will be no longer able to connect to [[Onion Services]]. (Unless you would run another Tor client on top, but this would lead to [[DoNot#Prevent_Tor_over_Tor_scenarios.|Tor over Tor, which is discouraged for security reasons]].
+
+== Connecting to Tor before a VPN (User -> Tor -> VPN -> Internet) ==
+
+=== Important things to consider when connecting to Tor before a VPN === 
+'''Loss of stream isolation'''
+
+While you are connecting to Tor before a VPN, you probably will not be able to make use of the stream isolation feature <ref>[https://trac.torproject.org/projects/tor/ticket/3455 Bug #3455: Tor Browser should set SOCKS username for a request based on referer]</ref>, which is planned for Tor Browser. This is because Tor Browser would not talk to Tor directly anymore. Tor Browser would connect to the VPN instead.
+
+'''Possible increased threat of identity correlation'''
+
+By design, a VPN routes all your applications (those without any proxy settings, as explained above) through the VPN. You may not want this, as explained above ([[Stream Isolation]]). To circumvent that, you should use this {{workstation_product_name}} only for the particular application you want to route through the VPN. You are advised to read [[Multiple {{workstation_product_name_short}}|Multiple {{workstation_product_name}}]].
+
+=== How to setup connecting to Tor before a VPN (User -> Tor -> VPN -> Internet) ===
+
+Note: that you have to choose TCP transport, because Tor does not support UDP.
+
+Just use general instructions on doing so and of course do it inside {{workstation_product_name}}. Don't forget to read all the notes above. Since everything is routed through Tor, the VPN can be easily tunneled through Tor.
+
+See also section at the bottom of this page [[#Examples_of_setting_up_VPNs_to_work_with_{{project_name}}]].
+
+==== Using TransPort instead of SocksPort is required for Tor -> VPN ====
+For applications configured to use SocksPort, instead of TransPort, which is the default setting for most {{project name}} default applications, such as [[Tor Browser]].
+
+SocksPort is configured for [[Stream Isolation]]. As [https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN Tor Plus VPN or proxy] explains, you have to keep in mind, a VPN behind Tor adds a permanent exit relay.
+
+Rather, all applications, which are configured to use SocksPort, will not be tunneled through the VPN. They will be "only" tunneled through Tor. This is because, the VPN will not touch connections to {{Code2|10.152.152.10}}, which is the {{gateway_product_name}}. For example, if you wish to tunnel Tor Browser through Tor -> VPN, you have to remove all proxy settings from Tor Browser, see [[Tor_Browser#Change.2FRemove_Proxy_Settings|Change/Remove Proxy Settings]]. Check.torproject.org will tell you then "{{Code2|You are not using Tor.}}" and you'll see your VPN's IP. In fact your VPN was tunneled through Tor first. (Because {{workstation_product_name}} can not make any non-Tor connections by design, everything is tunneled over Tor.) When you stop your VPN for test reasons ({{Code2|sudo /etc/init.d/openvpn stop}}), it will show "{{Code2|You are using Tor.}}" again.
+
+==== Use a Fail Closed Mechanism ====
+
+{{Fail_Closed_Mechanism}}
+
+== Connecting to Tor before a proxy (User -> Tor -> proxy -> Internet) ==
+
+=== Proxy Warning ===
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px|alt={{project_name}} first time users warning]]
+| text    = '''<u>Warning!</u>'''
+There are issues you should be aware of when using standard, common http(s)/socks4(a)/5 proxies. (Anonymizers, that only use http(s)/socks4(a)/5 as an interface<ref>Such as the Tor, [[JonDonym]] or [[I2P]] software.</ref> are exempt.)
+* Most problems with these proxies are not caused by {{project_name}}.
+* Tor exit relays and their ISPs can still monitor your connection to its destination.
+* Be especially careful with http(s) proxies. Some of them send the "[https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN#VPNSSHversusProxy http forwarded for]" header which discloses your IP. Http(s) proxies that do not send this header are sometimes called "elite" or "anonymous" proxies.
+* When using "http forwarded for" http(s) proxies, destination servers can determine the IP of your Tor exit relay.
+See also: [[Comparison_Of_Tor_with_CGI_Proxies,_Proxy_Chains,_and_VPN_Services|Comparison Of Tor with CGI Proxies, Proxy Chains, and VPN_Services]].
+}}
+
+=== Proxy Settings Method ===
+==== Generally ====
+After understanding the "Read First" information in the [[#Introduction]] there is no difference from using proxy settings in an ordinary why, other than that it is running inside {{workstation_product_name}}.
+
+If proxy settings are honored by an application or in the worst case there are leaks (still forced through Tor thanks to {{project_name}}), is another question and out of scope, see [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO TorifyHOWTO].
+
+==== Tor Browser Proxy Configuration ====
+{{Template:TorBrowser Proxy Configuration}}
+
+=== Proxyfier Method ===
+
+==== General ====
+After understanding the "Read First" information in the [[#Introduction]], there is no difference from using a Proxyfier in an ordinary way, other than that it is running inside {{workstation_product_name}}.
+
+If the Proxifier is leak free or in worst case leaks through Tor alone (thanks to {{project_name}}), is another question and not in {{project name}} power, see [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO TorifyHOWTO].
+
+==== uwt ====
+uwt uses {{Code2|torsocks}}. While the name ''tor''socks implies it is Tor specific, it is not. You can point it to any socks proxy.
+
+'''uwt - wget Example'''
+
+Tor Tor stream isolation #1
+
+{{CodeSelect2|code=
+uwt -t 5 -i 10.152.152.10 -p 9153 /usr/bin/wget.anondist-orig -c https://check.torproject.org
+}}
+
+For Tor stream isolation #2
+
+{{CodeSelect2|code=
+uwt -t 5 -i 10.152.152.10 -p 9154 /usr/bin/wget.anondist-orig -c https://check.torproject.org
+}}
+
+For Tor stream isolation #3</br>
+Requires deactivated wget uwt wrapper!
+
+{{CodeSelect2|code=
+uwt -t 5 -i 10.152.152.10 -p 9155 /usr/bin/wget -c https://check.torproject.org
+}}
+
+Proxy #1
+
+{{CodeSelect2|code=
+uwt -t 5 -i x.x.x.x -p xxxx /usr/bin/wget.anondist-orig -c https://check.torproject.org
+}}
+
+Proxy #2<br />
+Requires deactivated wget uwt wrapper!
+
+{{CodeSelect2|code=
+uwt -t 5 -i x.x.x.x -p xxxx /usr/bin/wget -c https://check.torproject.org
+}}
+
+<ref>Using .anondist-orig, i.e. /usr/bin/wget.anondist-orig will circumvent the wget uwt wrapper.</ref>
+
+For testing, if you didn't disable the wget uwt wrapper, the following command will most likely get another IP, because still using Stream Isolation.
+
+Using Tor's TransPort.<br />
+(/usr/bin/wget.anondist-orig original non-uwt-wrapped version)
+
+{{CodeSelect2|code=
+wget.anondist-orig https://check.torproject.org
+}}
+
+If you [[Stream_Isolation#Deactivate_uwt_Stream_Isolation_Wrapper|disabled]] wget's uwt wrapper, you could use.
+
+Using Tor's TransPort.<br />
+Requires deactivated wget uwt wrapper!
+
+{{CodeSelect2|code=
+wget https://check.torproject.org
+}}
+
+'''uwt - Tor Browser Example'''
+
+Do not forget to [[Tor_Browser#Change.2FRemove_Proxy_Settings|Remove Proxy Settings]] from Tor Browser.
+
+Then try this command. (Untested! Please leave feedback if it worked for you!)
+
+{{CodeSelect2|code=
+uwt -t 5 -i 10.152.152.10 -p 9153 ~/tor-browser_en-US/App/Firefox/firefox --profile ~/tor-browser_en-US/Data/profile
+}}
+
+See also the wget example above for more information and usage examples.
+
+Might be also interesting:
+
+* [[Advanced Security Guide#More than one Tor Browser in {{project_name}}]]
+
+==== proxychains ====
+===== Warnings =====
+
+* We don't know how well proxychains works. For example <code>torsocks has a IPv6 leak bug</code><ref>https://trac.torproject.org/projects/tor/wiki/doc/torsocks#WorkaroundforIPv6leakbug</ref>. We don't know if proxychains forces everything through the proxies. {{project name}} only ensures, should their be leaks, they go only through Tor.
+* There are at least three different versions of proxychains. The old/original/unmaintained version on sourceforge.net and two forks on github. We don't know about that status of any of them and haven't heard of anyone looking if they do really work as expected. The two authors argue with each other and we weren't motivated to understand the conflict and to determine which version is better. However, any leaks not going through the proxy(chain) will go through Tor.
+
+===== Instructions =====
+====== General ======
+Install proxychains.
+
+{{CodeSelect2|code=
+sudo apt-get install proxychains
+}}
+
+Note the uwt and Tor Browser notice above first. After you have done so it is quite simple.
+
+Open proxychains configuration file.
+
+{{Open with root rights|filename=
+/etc/proxychains.conf
+}}
+
+Go to the bottom of the settings file. Comment out "{{Code2|socks4 127.0.0.1 9050}}" and add for example "{{Code2|socks5 10.152.152.10 9152}}" (for Tor stream isolation) or "{{Code2|socks5 ip port}}" with an IP and port of your choice to set the proxy settings.
+
+<pre>
+[ProxyList]
+## add proxy here ...
+## meanwhile
+## defaults set to "tor"
+#socks4 127.0.0.1 9050
+socks5 10.152.152.10 9152
+# socks5 x.x.x.x xxxx
+</pre>
+
+Advanced. Recommendation: Why not use Tor stream isolation for the proxychains connection?
+
+<pre>
+[ProxyList]
+## add proxy here ...
+## meanwhile
+## defaults set to "tor"
+#socks4 127.0.0.1 9050
+socks5 10.152.152.10 9152
+socks5 x.x.x.x xxxx
+</pre>
+
+Save the configuration file. Test afterwards.
+
+====== test uwt wrapped application ======
+For example:
+
+{{CodeSelect2|code=
+proxychains /usr/bin/wget.anondist-orig https://check.torproject.org
+}}
+
+For testing, if you didn't disable the wget uwt wrapper, the following command will most likely get another IP. (Stream Isolation)
+
+Using Tor's TransPort.<br />
+(/usr/bin/wget.anondist-orig original non-uwt-wrapped version)
+
+{{CodeSelect2|code=
+wget.anondist-orig https://check.torproject.org
+}}
+
+====== Tor Browser ======
+The combination of proxychains and Tor Browser does currently not work. Someone needs to [[Contribute]] by figuring this out. Otherwise this will not be possible for a very long time. [https://forums.whonix.org/t/proxychains-tor-help-needed/779 See forum discussion].
+
+Do not forget to [[Tor_Browser#Change.2FRemove_Proxy_Settings|Remove Proxy Settings]] from Tor Browser.
+
+Then try this command.
+
+{{CodeSelect2|code=
+proxychains ~/tor-browser_en-US/start-tor-browser
+}}
+
+Might be also interesting:
+
+* [[Advanced Security Guide#More than one Tor Browser in {{project_name}}]]
+
+=== Transparent Proxying ('''Advanced users only!''') ===
+To make clear, what this is about. {{gateway_product_name}} is already serving as a Transparent Proxy <ref>anonymizing middlebox</ref>, which means, that all applications not explicitly configured <ref>by uwt socksifier or proxy settings</ref> to use a SocksPort, can connect through Tor without any settings. This section is about configuring {{workstation_product_name}} also to act as a Transparent Proxy <ref>local redirection</ref>. Use case: a user wants to ensure all traffic goes through Tor (by using {{gateway_product_name}}) and want to additionally ensure, all traffic goes through a proxy choosen by the user after the Tor link, i.e. user -> Tor -> proxy -> internet.
+
+<ref>[https://trac.torproject.org/projects/tor/wiki/doc/TorBOX/OptionalConfigurations?version=129#TransparentProxying torproject.org wiki version 129] contains an old example using privoxy, JonDo and httpsdnsd. The new example uses redsocks and is simpler.</ref>
+
+You always have to keep in mind, which kind of data and which kind of proxy you are using. There are CGIproxies, http(s) proxies and socks4/4a/5 proxies.
+
+In case you redirect the network layer directly with iptables, you need a TransPort. Unfortunately very few applications, do offer a TransPort. For example, Tor supports a TransPort. In most other cases, you need to translate the different kinds of data.
+
+Due to the nature of Transparent Proxying, we need to redirect with iptables and end up with a "Trans data stream". Because most proxies are either http or socks we need to translate this. Below we discuss a few tools which help here, not all are required, depending on what you want to do.
+
+Required reading:
+
+* [[Comparison_Of_Tor_with_CGI_Proxies,_Proxy_Chains,_and_VPN_Services|Comparison Of Tor with CGI Proxies, Proxy Chains, and VPN Services]]
+* [https://trac.torproject.org/projects/tor/wiki/doc/TorPlusVPN Tor Plus VPN or proxy]
+
+===== Tools =====
+
+Tor is a socks proxy and also has a TransPort. Unfortunately, Tor can not be directly used as a http proxy. You must also keep in mind, that Tor does not support UDP, although it offers a DnsPort..
+
+[http://darkk.net.ru/redsocks/ redsocks] can also accept "Trans data streams" and can forward them to http'''s''', socks4 and socks5 proxies. If you were to use a http proxy (no https, without connect-method, see [[Comparison_Of_Tor_with_CGI_Proxies,_Proxy_Chains,_and_VPN_Services|proxy article]]), you could access only http sites, no https sites. Rather redsocks can convert UDP DNS queries to TCP DNS queries.
+
+===== DNS resolution =====
+
+The complication (and also advantage/feature) with transparent proxying is, that the internet application (browser, etc.) is not aware of the proxy. Therefore the internet application will attempt to do the DNS resolution itself using the system, not using the proxy. The DNS requests also must be considered. Since Tor does not support UDP, we have to transmit DNS queries via TCP.
+
+It is impossible to resolve DNS directly on the proxy, when using the proxy as a transparent proxy, see [[Dev/Inspiration#Transparent_Proxying_Method|Transparent Proxying Method]] for explanation. You need an extra DNS server, which answers over TCP.
+
+You have several options to resolve DNS.
+
+Either leave the setup as it is, Tor's DnsPort and therefore the Tor exit relays will still do the DNS requests. (See DNS rule #1.) This is probably not what you want, since you wanted to cloak your identity with an additional proxy after Tor.
+
+Alternatively you can use a public DNS resolver. The instructions for [[Secondary DNS Resolver#DNSCrypt by OpenDNS]] should work out of the box (tested). (See DNS rule #2.) 
+
+All DNS resolvers <ref>https://en.wikipedia.org/wiki/Comparison_of_DNS_server_software</ref> should work, as long TCP is supported and as long you are querying a TCP enabled DNS server. <ref>You can't simply add another public DNS resolver (i.e. OpenDNS or Google) to /etc/resolv.conf in {{workstation_product_name}} (i.e. Tor -> public DNS resolver), it would have no effect, as explained under [[Install_Software#{{workstation_product_name_short}}_is_firewalled|{{workstation_product_name}} is firewalled]].</ref>  <ref>Also [[Secondary DNS Resolver#httpsdnsd by JonDos]] might work, but you'd need to make some changes (use httpsdnsd as a system wide, {{workstation_product_name}} wide, DNS resolver, not just for a specific user account).</ref> <ref>DNSCrypt and httpsdnsd add the advantage, that neither the proxy nor the Tor exit relay can sniff or manipulate your DNS requests, since they are encrypted and authenticated.</ref> <ref>Or perhaps also [http://www.mulliner.org/collin/ttdnsd.php ttdnsd] with Google could work.</ref> 
+
+Read the [[Secondary DNS Resolver|DNS related warnings]].
+
+==== How to setup proxy tunnel-link after Tor (User->Tor->Proxy->Internet)====
+'''Unfinished!''' <br />
+'''Advanced users only!'''
+
+'''Everything on {{workstation_product_name}}.'''
+Get a working proxy and test if it works reliable.
+
+1. Install redsocks.
+
+{{CodeSelect2|code=
+sudo apt-get install redsocks
+}}
+
+{{Open with root rights|filename=
+/etc/default/redsocks
+}}
+
+Look for.
+
+{{CodeSelect2|code=
+START=no
+}}
+
+And replace it with.
+
+{{CodeSelect2|code=
+START=yes
+}}
+
+2. Configure redsocks by editing {{Code|/etc/redsocks.conf}} to your needs.
+
+{{Open with root rights|filename=
+/etc/redsocks.conf
+}}
+
+Under.
+
+{{CodeSelect2|code=
+redsocks {
+}}
+
+You have to edit.
+
+<pre>
+        ip = 127.0.0.1;
+        port = 1080;
+        type = socks5
+</pre>
+
+To your needs.
+
+3. Start redsocks.
+
+{{CodeSelect2|code=
+sudo service redsocks start
+}}
+
+4. Create a file {{Code|fw.bsh}}.
+
+5. And use the following firewall rules.
+
+<pre>
+#!/bin/bash
+## These iptables rules redirect the traffic for all users,
+## including root, with the exception of the user redsocks,
+## through the proxy.
+
+## TODO: these iptables rules need review.
+## TODO: use iptables default policy drop.
+
+## Choose either DNS rule #1 or DNS rule #2.
+
+## For debugging/testing use this command in console.
+## tail -f /var/log/syslog
+
+## Flush old rules.
+iptables -F
+iptables -t nat -F
+iptables -X
+
+## Allow unlimited traffic on the loopback interface.
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A OUTPUT -o lo -j ACCEPT
+iptables -A OUTPUT --dst 127.0.0.1 -j ACCEPT
+
+## Established incoming connections are accepted.
+iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+## Established outgoing connections are accepted.
+iptables -A OUTPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+## DNS rule #1.
+## Allow DNS directly through {{gateway_product_name}}.
+#iptables -A OUTPUT --dst 10.152.152.10 -p udp --dport 53 -j ACCEPT
+
+## DNS rule #2.
+## For DNSCrypt set /etc/resolv.conf to
+## nameserver 127.0.0.1
+##
+## sudo dnscrypt-proxy --tcp-only --user=user
+##
+## DNSCrypt listening on port 53
+iptables -t nat -A OUTPUT --dst 127.0.0.1 -p udp --dport 53 -j ACCEPT
+iptables -t nat -A OUTPUT --dst 127.0.0.1 -p tcp --dport 53 -j ACCEPT
+
+## redsocks must be allowed to establish direct connections.
+iptables -A OUTPUT -j ACCEPT -m owner --uid-owner redsocks
+iptables -t nat -A OUTPUT -j ACCEPT -m owner --uid-owner redsocks
+
+## Redirect remaining traffic to redsocks.
+iptables -t nat -A OUTPUT -p tcp -j REDIRECT --to-port 12345
+
+## TODO: UDP rule untested.
+#iptables -t nat -A OUTPUT -p udp -j REDIRECT --to-port 10053
+
+## Log blocked traffic for debugging.
+iptables -A OUTPUT -j LOG --log-level 4 --log-prefix "iptables: "
+
+## Reject all other traffic.
+iptables -A OUTPUT -j REJECT
+</pre>
+
+5. Make the firewall script executable.
+
+{{CodeSelect2|code=
+sudo chmod +x fw.bsh
+}}
+
+6. Apply the firewall rules.
+
+{{CodeSelect2|code=
+sudo fw.bsh
+}}
+
+== Connecting to Tor before a SSH (User -> Tor -> SSH -> Internet) ==
+This chapter is not about connecting to a SSH server as a client (see {{project name}} in general and the Torify HOWTO). It is about adding an extra SSH tunnel after Tor.
+
+Note that even though SSH supports socks5, SSH is still not able to forward UDP on its own. Have a look at the [http://zarb.org/~gc/html/udp-in-ssh-tunneling.html source] of that information. To summarize: to tunnel UDP over SSH client and shell admin need a special setup, which is for most shells, not going to happen.
+
+A SSH tunnel will provide a local socks5 proxy. Create the SSH tunnel in the {{workstation_product_name}}. From there you'll end up with a local socks5 proxy. You can use this socks5 proxy following the proxy instructions above. Once the SSH tunnel is established, there are not many differences, besides the difference already clarified above about UDP and that the warning about missing encryption to the proxy does not apply to SSH tunnels, since SSH is encrypted. The SSH process needs to be allowed to access the internet directly, if you use transparent proxying, run the SSH process under an account, which is privileged to access the internet directly.
+
+Another untested method may be [https://github.com/apenwarr/sshuttle sshuttle].
+
+== User -> Tor -> VPN -> proxy -> Internet ==
+https://forums.whonix.org/t/source-list-error/1680/18
+
+****************************************************************************************************************************************************************************************
+
+= Examples of setting up VPNs to work with {{project name}} =
+The purpose of this chapter is mainly to demonstrate how easy it is to add a VPN to {{project_name}}, whether is to use a VPN tunnel-link before or after Tor (i.e. User -> Tor -> VPN -> Internet or User -> VPN -> Tor -> Internet).
+
+The examples given below were mainly for testing purposes. You may setup accounts for the same reasons, or use the information below as a very rough "guide" for setting up a VPN with {{project_name}}. When setting up the accounts within the examples, make sure not to enter personal information while signing up. Use an extra e-mail address for registration, which you will never use for anything else. If you plan to use User -> Tor -> VPN, you should obviously also sign up through Tor. When using User -> VPN -> Tor, it is unknown what is best (to sign up through Tor or not), but using probably Tor can't hurt.
+
+== Riseup.net ==
+
+=== Riseup.net Quick VPN Command Line Test ===
+Known to support TCP, UDP, SSL.
+
+(1) You need a riseup.net account.<br />
+(2) You need to know your riseup account name.<br />
+(3) Go to riseup.net -> help -> VPN and obtain your VPN secret. (VPN password)<br />
+(4) Look inside the [https://help.riseup.net/vpn riseup VPN help page] for [https://help.riseup.net/en/riseup-ca <code>RiseupCA.pem</code>] and download it.<br />
+(5) Open a terminal. (konsole) Get into the same folder, you stored <code>RiseupCA.pem</code>.<br />
+(6) Install openvpn.
+{{CodeSelect2|code=
+sudo apt-get update && apt-get install openvpn
+}}
+(7) The following line from the riseup OpenVPN help page<ref>https://help.riseup.net/en/openvpn-linux</ref> won't work for user -> Tor -> VPN -> Internet, because the Tor network does not support UDP.<br />
+{{CodeSelect2|code=
+sudo openvpn --client --dev tun --auth-user-pass --remote vpn.riseup.net 1194 --ca RiseupCA.pem
+}}
+The following line works for user -> Tor -> VPN -> Internet.<br />
+{{CodeSelect2|code=
+sudo openvpn --client --dev tun --auth-user-pass --remote vpn.riseup.net 1194 --ca RiseupCA.pem --proto tcp
+}}
+(8) For DNS, see [[#Riseup DNS]] below.
+
+=== Riseup.net riseup.conf ===
+Known to support TCP, UDP, SSL.<br />
+(1) You need a riseup.net account.<br />
+(2) You need to know your riseup account name.<br />
+(3) Go to https://user.riseup.net/users/riseupusername/vpn to obtain your VPN secret. (VPN password) (Replace "riseupusername" with your actual riseup user name.) (Or just got to https://user.riseup.net, login and click on "VPN".)<br />
+(4) Look inside the [https://help.riseup.net/vpn riseup VPN help page] for [https://help.riseup.net/en/riseup-ca <code>RiseupCA.pem</code>] and (right click) [https://help.riseup.net/en/security/network-security/riseup-ca/RiseupCA.pem download] it.<br />
+(5) Create a file auth.txt inside the same folder.
+
+<pre>
+riseupusername
+vpnsecret
+</pre>
+(6) Create a file riseup.conf inside the same folder.
+
+<pre>
+client
+dev tun
+auth-user-pass auth.txt
+#remote vpn.riseup.net 443
+#remote seattle.vpn.riseup.net 443
+remote nyc.vpn.riseup.net 80
+ca RiseupCA.pem
+remote-cert-tls server
+script-security 1
+#user nobody
+#group nobody
+proto tcp
+#log /var/log/openvpn.log
+</pre>
+
+(7) Start OpenVPN.
+
+{{CodeSelect2|code=
+sudo openvpn riseup.conf
+}}
+
+(8) For DNS, see [[#Riseup DNS]] below.
+
+=== Riseup DNS ===
+==== Setup ====
+{{Open with root rights|filename=
+/etc/resolv.conf
+}}
+
+Comment out.
+
+<pre>
+#nameserver 10.152.152.10
+</pre>
+
+Add.
+
+<pre>
+## Riseup.net OpenVPN DNS server
+nameserver 172.27.100.1
+</pre>
+
+Save.
+
+If you want to be sure, that ''/etc/resolv.conf'' does not get overwritten by other packages. (Such as DHCP or resolvconf.)
+
+{{CodeSelect2|code=
+sudo chattr +i /etc/resolv.conf
+}}
+
+If you ever want to remove it, use ''-i''.
+
+==== Testing ====
+When using "''nameserver 10.152.152.10''"...
+
+{{CodeSelect2|code=
+nslookup idnxcnkne4qt76tg.onion
+}}
+
+Will show.
+
+<pre>
+Server:         10.152.152.10
+Address:        10.152.152.10#53
+Non-authoritative answer:
+Name:   idnxcnkne4qt76tg.onion
+Address: 10.192.0.1
+</pre>
+
+When using "''nameserver 172.27.100.1''"...
+
+{{CodeSelect2|code=
+nslookup idnxcnkne4qt76tg.onion
+}}
+
+Will show.
+
+<pre>
+Server:         172.27.100.1
+Address:        172.27.100.1#53
+** server can't find idnxcnkne4qt76tg.onion: NXDOMAIN
+</pre>
+
+Because you can not access .onion domains when a VPN has be chained. (user -> Tor -> VPN -> Internet)
+
+Resolving clearnet DNS should work.
+
+{{CodeSelect2|code=
+nslookup riseup.net
+}}
+
+Should show.
+
+<pre>
+Server:         172.27.100.1
+Address:        172.27.100.1#53
+Non-authoritative answer:
+Name:   riseup.net
+Address: 198.252.153.35
+</pre>
+
+== securityKISS.com ==
+Unfortunately securityKISS.com drops many TCP and UDP ports besides ports 80 and 443. That limits its usefulness for testing purposes, such as [[Tunnel UDP over Tor]]. If you know a less restrictive free VPN provider, we'd be thankful for a comment.
+
+Install openvpn.
+
+{{CodeSelect2|code=
+sudo apt-get install openvpn
+}}
+
+Register at securitykiss.com, login and download their OpenVPN package to {{Code|/home/user}}. Unpack. The folder contains contains {{Code|ca.cert}}, {{Code|client.cert}}, {{Code|client.key}}, {{Code|README.txt}} (with list of their servers and ports). Rename the folder to securitykiss. Structure should be like {{Code|/home/user/securitykiss/ca.cert}} etc.
+
+{{Open with root rights|filename=
+/etc/openvpn/client.conf
+}}
+
+Paste the following content.
+
+<pre>
+##############################################
+# Sample client-side OpenVPN 2.0 config file #
+# for connecting to multi-client server.     #
+#                                            #
+# This configuration can be used by multiple #
+# clients, however each client should have   #
+# its own cert and key files.                #
+#                                            #
+# On Windows, you might want to rename this  #
+# file so it has a .ovpn extension           #
+##############################################
+
+# Specify that we are a client and that we
+# will be pulling certain config file directives
+# from the server.
+client
+
+# Use the same setting as you are using on
+# the server.
+# On most systems, the VPN will not function
+# unless you partially or fully disable
+# the firewall for the TUN/TAP interface.
+;dev tap
+dev tun
+
+# Windows needs the TAP-Win32 adapter name
+# from the Network Connections panel
+# if you have more than one.  On XP SP2,
+# you may need to disable the firewall
+# for the TAP adapter.
+;dev-node MyTap
+
+# Are we connecting to a TCP or
+# UDP server?  Use the same setting as
+# on the server.
+proto tcp
+;proto udp
+
+# The hostname/IP and port of the server.
+# You can have multiple remote entries
+# to load balance between the servers.
+remote 91.121.208.218 443
+;remote my-server-2 1194
+
+# Choose a random host from the remote
+# list for load-balancing.  Otherwise
+# try hosts in the order specified.
+;remote-random
+
+# Keep trying indefinitely to resolve the
+# host name of the OpenVPN server.  Very useful
+# on machines which are not permanently connected
+# to the internet such as laptops.
+resolv-retry infinite
+
+# Most clients don't need to bind to
+# a specific local port number.
+nobind
+
+# Downgrade privileges after initialization (non-Windows only)
+user nobody
+group nogroup
+
+# Try to preserve some state across restarts.
+persist-key
+persist-tun
+
+# If you are connecting through an
+# HTTP proxy to reach the actual OpenVPN
+# server, put the proxy server/IP and
+# port number here.  See the man page
+# if your proxy server requires
+# authentication.
+;http-proxy-retry # retry on connection failures
+;http-proxy [proxy server] [proxy port #]
+
+# Wireless networks often produce a lot
+# of duplicate packets.  Set this flag
+# to silence duplicate packet warnings.
+;mute-replay-warnings
+
+# SSL/TLS parms.
+# See the server config file for more
+# description.  It is best to use
+# a separate .crt/.key file pair
+# for each client.  A single ca
+# file can be used for all clients.
+ca /home/user/securitykiss/ca.crt
+cert /home/user/securitykiss/client.crt
+key /home/user/securitykiss/client.key
+
+# Verify server certificate by checking
+# that the certicate has the nsCertType
+# field set to "server".  This is an
+# important precaution to protect against
+# a potential attack discussed here:
+#  http://openvpn.net/howto.html#mitm
+#
+# To use this feature, you will need to generate
+# your server certificates with the nsCertType
+# field set to "server".  The build-key-server
+# script in the easy-rsa folder will do this.
+ns-cert-type server
+
+# If a tls-auth key is used on the server
+# then every client must also have the key.
+;tls-auth ta.key 1
+
+# Select a cryptographic cipher.
+# If the cipher option is used on the server
+# then you must also specify it here.
+;cipher x
+
+# Enable compression on the VPN link.
+# Don't enable this unless it is also
+# enabled in the server config file.
+comp-lzo
+
+# Set log file verbosity.
+verb 3
+
+# Silence repeating messages
+;mute 20
+</pre>
+
+Edit server IP and port and paste it. (It is almost only the default openvpn {{Code|client.conf}} with minor changes.)
+
+Save.
+
+To initially start the VPN type:
+
+{{CodeSelect2|code=
+sudo service openvpn start
+}}
+
+After rebooting the VPN will be automatically started.
+
+If you do not wish to start the VPN automatically for some reason:
+
+{{Open with root rights|filename=
+/etc/default/openvpn
+}}
+
+Add.
+
+{{CodeSelect2|code=
+AUTOSTART=="none"
+}}
+
+Save.
+
+DNS settings have not been considered for this securitykiss.com chapter.
+
+== usaip.eu ==
+
+For testing purposes, in past, [https://www.usaip.eu/ usaip.eu] was used. They have been chosen, because they were free and didn't block the tested outgoing UDP port. The free version of usaip.eu can probably only be used for testing purposes, as it is only a test version, which force disconnects every 7 minutes. For longer and serious/stable use, you'll probably need another, VPN account.
+
+'''Note, at time of writing, it looked like, that usaip is probably blocking SSL, therefore'''
+
+{{CodeSelect2|code=
+{{Curl Plain}} {{Curl Secure}} https://check.torproject.org
+}}
+
+'''will probably not work.'''
+
+Install OpenVPN.
+
+{{CodeSelect2|code=
+sudo apt-get install openvpn
+}}
+
+Go to [http://usaip.eu/en/index.php usaip.eu] and click on free demo. Download the ''usaip.zip''. It contains the OpenVPN configuration files. Unpack. Open a shell and get into the folder ''cd usaip''. List all files ''dir''. Connect to a VPN, for example:
+
+{{CodeSelect2|code=
+sudo openvpn /home/user/usaip/eu-luxemburg.ovpn
+}}
+
+At time of writing, the page stated, the password was ''demo'', password also ''demo''. Wait until it is connected. When success, it will show "Initialization Sequence Completed". It might happen, that the connection will not succeed for some unknown reason. In this case try replacing the eu-luxemburg.ovpn from the example above with another <country>.ovpn from the usaip folder.
+
+DNS settings have not been considered for this usaip.eu chapter.
+
+== Using a graphical user interface ==
+
+=== KDE Network Manager ===
+
+If you want to install the KDE Network Manager.
+
+{{CodeSelect2|code=
+sudo apt-get install network-manager-kde
+}}
+
+Start menu -> System Settings -> Network Settings
+
+At time of writing the [https://www.riseup.net/en/openvpn-linux#kde riseup.net OpenVPN instructions for KDE] where not finished. Perhaps you'll find out yourself, use another guide for KDE Network Manager or use the command line based examples above.
+
+Don't wonder if you don't see {{workstation_product_name}} (virtual) wired network interface to {{gateway_product_name}}. That's still managed by the ordinary ifupdown way in /etc/network/interfaces. See [[Dev/Network Manager]] if you want to know why it is not installed by default in {{project_name}}.
+
+=== GNOME Network Manager ===
+
+Although {{project name}} is by default based on KDE, you can usually integrate GNOME applications.
+
+In case of GNOME Network Manager it just requires some more fiddling because upstream developers wanted to make GNOME and KDE as compatible as possible, which includes that one settings manager won't show up when the other desktop has been started in a dual (KDE, GNOME) installation.
+
+If you want to install the GNOME Network Manager.
+
+{{CodeSelect2|code=
+sudo apt-get install network-manager-gnome network-manager-openvpn-gnome
+}}
+
+If you want to autostart GNOME Network Manager, open /etc/xdg/autostart/nm-applet.desktop with root rights.
+
+{{Open with root rights|filename=
+/etc/xdg/autostart/nm-applet.desktop
+}}
+
+And comment out.
+
+{{CodeSelect2|code=
+NotShowIn=KDE;
+}}
+
+If you want to make the nm-applet start menu entries visible and to start it manually, open /usr/share/applications/nm-applet.desktop.
+
+{{Open with root rights|filename=
+/usr/share/applications/nm-applet.desktop
+}}
+
+And comment out.
+
+{{CodeSelect2|code=
+NotShowIn=KDE;
+}}
+
+And add.
+
+{{CodeSelect2|code=
+Categories=GNOME;GTK;Settings;X-GNOME-NetworkSettings;
+}}
+
+If you want to make the nm-connection-editor start menu entries visible and to start it manually, open nm-connection-editor.
+
+{{Open with root rights|filename=
+/usr/share/applications/nm-connection-editor.desktop
+}}
+
+And comment out.
+
+{{CodeSelect2|code=
+NotShowIn=KDE;
+}}
+
+Then you could open the settings.
+
+<pre>
+Applications -> Settings -> Network Connections
+</pre>
+
+You could try the [https://www.riseup.net/en/openvpn-linux#gnome riseup.net OpenVPN instructions for GNOME].
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
