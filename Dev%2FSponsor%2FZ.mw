@@ -1,0 +1,211 @@
+{{#seo:
+|description=...
+}}
+{{Header}}
+__NOINDEX__
+
+= DO IT =
+
+* just connected to the router by the router
+* netrunner based
+* port to KDE plasma
+* <s>port to ARM</s> - done: https://github.com/netrunner-core/live-config
+* optional: cross compile to ARM
+* produce image that can be flashed on the odroid
+* incoming port for VNC [password protected only]
+* incoming port for SSH
+* install yacy
+* install zeronet
+* yacy index only zeronet
+* no browser on the ondroid required
+* zeronet over Tor
+* yacy over Tor
+* yacy indexing zeronet
+* later feature: deactivate Tor
+* hardening
+* maybe later feature: contribute to the Tor networking by being a relay, but hard because requiring port forwarding
+
+
+* Tor Browser Bundle (yes, with Tor) installed on PC for anonymity
+* or usual browser installed on PC for connectivity
+-&rarr; accessing local web interfaces for zeronet / yacy
+
+= third party tasks =
+
+{| class="wikitable" style="background-color: #fff;text-align: center"
+
+! whom
+! what
+! ticket
+! status
+|-
+
+| blue systems / zeronet
+| get zeronet Debian package into Debian repository
+| https://github.com/HelloZeroNet/ZeroNet/issues/241
+| ?
+|-
+
+| zeronet
+| do not show "PORT: CLOSED" in the webinterface when file /usr/share/anon-dist/marker exists
+| TODO
+| create ticket
+|-
+
+| zeronet
+| zeronet: audit torrent implementation for IP leaks
+| https://github.com/HelloZeroNet/ZeroNet/issues/274
+| ?
+|-
+
+| zeronet
+| /etc/zeronet.d
+| TODO
+| create ticket
+|-
+
+| yacy
+| <s>socks proxy support</s>
+| <s>http://mantis.tokeek.de/view.php?id=219</s>
+| ?
+|-
+
+| yacy
+| /etc/yacy.d
+| TODO
+| create ticket
+|-
+
+| yacy
+| zeronet aware, capable of using zeronet
+| TODO
+| create ticket
+|-
+
+|-
+|}
+
+= repositories to be used =
+
+* debian repo
+* torproject repo
+* yacy repo
+* zeronet install from netrunner repo
+* plasma install from netrunner repo
+
+= DO NOT =
+
+* no iceweasel / Tor Browser installed due to resource issues on the odroid
+* yacy freeworld indexing NOT indexing
+* no torifying middle box [but that would work out of the box]
+
+= Notes =
+== questions ==
+* odroid reboot button?
+* odroid case?
+* bridges stuff
+* RTC functional?
+* default ssh security?
+** default onion and password? &rarr; not prestart the odroid &rarr; avoid keeping records that could get lost &rarr; not possible
+** reachable in local network by default only
+
+https://raspberrypi.stackexchange.com/a/24073
+https://pihw.wordpress.com/guides/direct-network-connection/
+
+== reports ==
+* reboot not functional: acpi
+* not use first boot click me
+* first boot click: script (to resize the disk &rarr; automate &rarr; then reboot)
+* not using debian security repository
+* sid not great, need jessie [not stable]
+* disable power saving monitor off?
+* remove avahi
+* remove cups
+* remove networkmanager
+* remove openssh-server (?)
+* package zeronet
+* install zeronet
+* install yacy
+* install tor
+* install tor-arm
+* sid related bug most likely
+* disable AppArmor in /lib/systemd/system/tor@default
+* systemctl daemon-reload
+* service tor restart
+* switch to ifupdown
+* create a package whonix-gw-network-conf to set up static networking and to fulfill dependency?
+
+== todo ==
+* systemtl units-list
+
+== how to ==
+* git clone https://github.com/{{project_name_short}}/{{project_name_short}}
+* git submodule update --init --recursive
+* install devscripts build-essential faketime ruby-ronn config-package-dev
+* /etc/network/interfaces.d/config-file
+<pre>
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet dhcp
+
+have it listen on 10.152.152.10
+</pre>
+
+* tor-service-defaults-torrc delete 2 sections, delete workstation socks dns trans port sections
+* static ip config / magic IP
+* install python-stem
+* install kwrite
+* install genmkfile
+* install helper-scripts
+* install anon-base-files
+* install anon-gw-base-files
+* install anon-gw-anonymizer
+* /usr/local/etc/torrc.d/50_user.conf DisableNetwork 0
+* sudo make install whonix-gw-firewall (dependency issue)
+* sudo debian/whonix-gw-firewall.postinst configure
+* 
+* /etc/whonix_firewall.d/40_zerobox.conf
+<pre>
+GATEWAY_ALLOW_INCOMING_SSH=1
+#ALLOW_GATEWAY_ROOT_USER=1
+#ALLOW_GATEWAY_USER_USER=1
+INT_IF=eth0
+INT_TIF=eth0
+
+     NON_TOR_GATEWAY="\
+         127.0.0.0-127.0.0.24 \
+         192.168.0.0-192.168.0.99 \
+         192.168.1.0-192.168.1.99 \
+         10.152.152.0-10.152.152.24 \
+         10.0.2.2-10.0.2.24 \
+      "
+
+#GATEWAY_ALLOW_INCOMING_ICMP=1
+WORKSTATION_TRANSPARENT_DNS=0
+WORKSTATION_TRANSPARENT_TCP=0
+</pre>
+
+* install python2.7
+* sudo chmod -R 755 /var/run/tor
+* git clone https://github.com/HelloZeroNet/ZeroNet.git
+* cd ZeroNet
+* ./zeronet.py --tor always --ip_external 127.0.0.1
+* (cannot use bundle - need to use arm)
+
+== demo ==
+sudo torsocks apt-get install bash-completion
+
+http://192.168.0.6:43110
+
+== misc ==
+https://github.com/HelloZeroNet/ZeroNet/issues/993 (ZeroNet devs explain security concerns)
+
+https://github.com/HelloZeroNet/ZeroNet/issues/1292 (Switch to next-gen onion services)
+
+
+
+{{Footer}}
+
+[[Category:Development]]
