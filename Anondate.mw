@@ -1,0 +1,122 @@
+{{Header}}
+{{#seo:
+|description=extracting time from Tor consensus
+}}
+
+===== Introduction =====
+
+* anondate interface description as per latest git master:
+* https://github.com/{{project_name_short}}/helper-scripts/blob/master/usr/lib/helper-scripts/anondate
+* See also: [[#Tor Consensus Method]]
+* Needs access to either:
+** <code>/var/run/tor/log</code> [only default in {{project name}} specific] [Tor Project Upstream Feature Request: [https://trac.torproject.org/projects/tor/ticket/16821 additional /var/run/tor/log default log]] This is better, because it only contains Tor's log since last boot. More relevant information. Easier for anondate to parse.
+** Or access to <code>/var/log/tor/log</code>. Configurable through the environment variable <code>TOR_LOG</code>.  (<code>export TOR_LOG=/var/log/tor/log</code>) (Or we can change the default in the code.)
+
+===== Consensus Related Options =====
+
+* <code>--verified-only</code>
+* <code>--prefer-verified</code>
+* <code>--unverified-only</code>
+
+===== Special Exit Codes =====
+* exit <code>3</code>: <code>$TOR_LOG</code> not readable.
+* exit <code>4</code>: <code>$consensus</code> not readable.
+
+===== Simple Status Checking =====
+====== /usr/lib/helper-scripts/anondate --has-consensus ======
+
+Useful for checking if asking for any [[#Date Ranges Output]] is worthwhile.
+
+* yes:
+** exit <code>0</code>
+* no:
+** exit <code>1</code>
+<br />
+Can be replaced by Tor ControlPort / python-stem?
+
+* verified-only: Yes. (<code>consensus/valid-after</code>)
+* unverified: No.
+
+====== /usr/lib/helper-scripts/anondate --current-time-in-valid-range ======
+
+Useful for a sanity test before setting the time for the first time and before setting the time to a newly fetched timestamp.
+
+* yes:
+** exit <code>0</code>
+* no:
+** exit <code>1</code>
+<br />
+Can be replaced by Tor ControlPort / python-stem?
+
+* verified-only: Yes. (See below.)
+* unverified: No. Tor Project Upstream Feature Request: [https://trac.torproject.org/projects/tor/ticket/16845 make unverified consensus ISOTime accessible through Tor's ControlPort]
+
+===== Date Ranges Output =====
+====== /usr/lib/helper-scripts/anondate --show-valid-after ======
+
+* yes:
+** output: <code>2015-08-15 22:00:00</code>
+** exit <code>0</code>
+* no:
+** exit <code>1</code>
+<br />
+Can be replaced by Tor ControlPort / python-stem?
+
+* verified-only: Yes. <code>consensus/valid-after</code>
+* unverified: No. Tor Project Upstream Feature Request: [https://trac.torproject.org/projects/tor/ticket/16845 make unverified consensus ISOTime accessible through Tor's ControlPort]
+
+====== /usr/lib/helper-scripts/anondate --show-valid-until  ======
+
+* yes:
+** output: <code>2015-08-16 01:00:00</code>
+** exit <code>0</code>
+* no:
+** exit <code>1</code>
+<br />
+Can be replaced by Tor ControlPort / python-stem?
+
+* verified-only: Yes. <code>consensus/valid-until</code>
+* unverified: No. Tor Project Upstream Feature Request: [https://trac.torproject.org/projects/tor/ticket/16845 make unverified consensus ISOTime accessible through Tor's ControlPort]
+
+====== /usr/lib/helper-scripts/anondate --show-middle-range ======
+
+* yes:
+** output: <code>2015-08-15 23:30:00</code>
+** exit <code>0</code>
+* no:
+** exit <code>1</code>
+<br />
+(A scripted calculation of the above.)
+
+===== Certificate Validity =====
+====== /usr/lib/helper-scripts/anondate --tor-cert-lifetime-invalid ======
+When this exits <code>0</code>, this is actually a bad sign. Example Tor log:
+
+<pre>
+Sep 03 10:32:59.000 [warn] Certificate already expired. Either their clock is set wrong, or your clock is wrong.
+Sep 03 10:32:59.000 [warn] (certificate lifetime runs from Aug 16 00:00:00 2014 GMT through Jul 29 23:59:59 2015 GMT. Your time is Sep 03 10:32:59 2015 UTC.)
+</pre>
+
+When clock is several months or years fast or slow, Tor cannot even download Tor consensus.
+(In this case, Tails is probably setting time from unverified(?) consensus and restarts Tor. We probably won't do this. Not sure that date is any useful. But the info, that clock is way off, is useful.)
+
+* yes:
+** output: <code>Sep 03 10:34:00.000 [warn] Certificate already expired. Either their clock is set wrong, or your clock is wrong.</code>
+** exit <code>0</code>
+* no:
+** exit <code>1</code>
+
+Can be replaced by Tor ControlPort / python-stem? No. Tor Project Upstream Feature Request: [https://trac.torproject.org/projects/tor/ticket/16822 make certificate lifetime accessible through Tor's ControlPort]
+
+====== /usr/lib/helper-scripts/anondate --tor-cert-valid-after ======
+
+Similar to above, but less output.
+
+* output: <code>Jun 16 00:00:00 2014 GMT</code>
+* Exit codes unreliable.
+* Don't use without using the above first.
+* (Could be fixed in the code if worthwhile.)
+
+{{Footer}}
+
+[[Category:Development]]
