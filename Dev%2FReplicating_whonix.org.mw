@@ -1,0 +1,245 @@
+{{Header}}
+{{forkme}}
+
+= Installation =
+(Firefox-ESR is required, because Tor Browser no longer supports visiting 127.0.0.1. Any other browser would work as well.)
+
+(Due to no instructions available on how to get mediawiki's {{Code|maintenance/install.php}} to work, we must do a normal install of mediawiki first. Then we upgrade it to replicate whonix.org.)
+
+Open a terminal. As normal, not root user!
+
+Get into your home folder.
+
+{{CodeSelect|code=
+cd ~
+}}
+
+Install web software:
+
+{{CodeSelect|code=
+sudo apt-get install git apache2 libapache2-mod-removeip php5-mysql php5 libapache2-mod-php5 php-apc mysql-client mysql-server firefox-esr php5-dev liblua5.1-dev lua5.1 curl
+}}
+
+You will be asked for a mysql root password. Remember it.
+
+Get our wiki images and content database backup:
+
+{{CodeSelect|code=
+git clone --depth=1 https://github.com/{{project_name_short}}BOT/{{project_name_short}}WikiBackups.git
+}}
+
+Get and install the mediawiki web app:
+
+{{CodeSelect|code=
+curl {{Curl Secure}} https://releases.wikimedia.org/mediawiki/1.26/mediawiki-1.26.2.tar.gz > mediawiki-1.26.2.tar.gz
+}}
+{{CodeSelect|code=
+tar -xvzf mediawiki-*.tar.gz
+}}
+{{CodeSelect|code=
+rm mediawiki-*.tar.gz
+}}
+{{CodeSelect|code=
+sudo mv mediawiki-* /var/www/wiki
+}}
+
+Start Firefox-ESR.
+
+Setup mediawiki. Go to http://127.0.0.1/wiki/mw-config/index.php.
+
+Use the following settings:
+
+<pre>
+Database name: wiki
+Datebase password: what you remembered above
+No more questions.
+Otherwise use the defaults.
+Name of wiki: Whonix
+</pre>
+
+Download LocalSettings.php, save as in your home folder as {{Code|~/LocalSettings.php}}.
+
+{{CodeSelect|code=
+sudo mv ~/LocalSettings.php /var/www/wiki/
+}}
+
+Go to http://127.0.0.1/wiki, see if you see a fresh wiki, log in, see if that works as well.
+
+Move the dummy wiki out of the way:
+
+{{CodeSelect|code=
+## Maybe rm when this instructions are finished.
+sudo mv /var/www /var/www_dummy
+}}
+
+Replicate {{project name}} {{Code|/var/www}} folder from git:
+
+{{CodeSelect|code=
+sudo git clone --depth=1 https://github.com/{{project_name_short}}/www.git /var/www
+}}
+
+Create a file {{Code|/etc/apache2/wikiSecrets.php}}.
+
+{{CodeSelect|code=
+lxsudo mousepad /etc/apache2/wikiSecrets.php
+}}
+
+With the following content. Make sure you replace xxxxxx with your actual you remembered password. (You need to replace xxxxxx with your actual password 3 times, for wgDBpassword, wgSecretKey and wgUpgradeKey.)
+
+<pre>
+<?php
+## Database settings
+$wgDBtype = "mysql";
+$wgDBserver = "localhost";
+$wgDBname = "wiki";
+$wgDBuser = "root";
+$wgDBpassword = "xxxxxx";
+
+# MySQL specific settings
+$wgDBprefix = "";
+
+# MySQL table options to use during installation or update
+$wgDBTableOptions = "ENGINE=InnoDB, DEFAULT CHARSET=binary";
+
+# Experimental charset support for MySQL 5.0.
+$wgDBmysql5 = false;
+
+$wgSecretKey = "xxxxxx";
+
+# Site upgrade key. Must be set to a string (default provided) to turn on the
+# web installer while LocalSettings.php is in place
+$wgUpgradeKey = "xxxxxx";
+
+#CAPTCHA here
+
+require_once( "$IP/extensions/ConfirmEdit/ConfirmEdit.php" );
+require_once( "$IP/extensions/ConfirmEdit/QuestyCaptcha.php");
+$wgCaptchaClass = 'QuestyCaptcha';
+$arr = array (
+        "type answerhere" => "answerhere",
+);
+foreach ( $arr as $key => $value ) {
+        $wgCaptchaQuestions[] = array( 'question' => $key, 'answer' => $value );
+}
+</pre>
+
+Edit {{Code|/etc/apache2/sites-enabled/000-default}}:
+
+{{CodeSelect|code=
+lxsudo mousepad /etc/apache2/sites-enabled/000-default
+}}
+
+Insert the following at the end of the file, but before </VirtualHost>:
+
+<pre>
+RewriteEngine On
+RewriteRule ^/?wiki(/.*)?$ /w/index.php [QSA,L]
+RewriteRule ^/?$ /w/index.php [QSA,L]
+
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-f
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-d
+RewriteRule ^/?w/images/thumb/[0-9a-f]/[0-9a-f][0-9a-f]/([^/]+)/([0-9]+)px-.*$ %{DOCUMENT_ROOT}/w/thumb.php?f=$1&width=$2 [L,QSA,B]
+
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-f
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-d
+RewriteRule ^/?w/images/thumb/archive/[0-9a-f]/[0-9a-f][0-9a-f]/([^/]+)/([0-9]+)px-.*$ %{DOCUMENT_ROOT}/w/thumb.php?f=$1&width=$2&archived=1 [L,QSA,B]
+</pre>
+
+Run:
+
+{{CodeSelect|code=
+sudo mkdir /var/www/w/cache
+}}
+
+Your webserver must have read/write access to your /var/www folder. Run:
+
+{{CodeSelect|code=
+sudo chown --recursive www-data:www-data /var/www
+}}
+
+Run:
+
+{{CodeSelect|code=
+sudo -u www-data php /var/www/wiki/maintenance/update.php --quick
+sudo -u www-data php /var/www/wiki/maintenance/importImages.php ~/{{project_name_short}}WikiBackups/mediafiles/
+sudo -u www-data php /var/www/wiki/maintenance/importDump.php ~/{{project_name_short}}WikiBackups/dumpContentCurrent.xml
+sudo -u www-data php /var/www/wiki/maintenance/rebuildrecentchanges.php
+}}
+
+Run:
+
+{{CodeSelect|code=
+sudo a2enmod rewrite
+sudo a2enmod removeip
+}}
+
+Run:
+
+{{CodeSelect|code=
+sudo service apache2 restart
+}}
+
+You should now be able to visit http://127.0.0.1 and/or http://127.0.0.1/wiki/Main_Page.
+
+= Debugging =
+== Rewrites ==
+Perhaps working:
+
+* http://127.0.0.1/wiki/index.php/Documentation
+* http://127.0.0.1/w/index.php/Documentation
+
+Perhaps not working:
+
+* http://127.0.0.1/w/Documentation
+* http://127.0.0.1/wiki/Documentation
+
+In that case, something is wrong with shorturl / rewrite.
+
+== Apache Error Log ==
+{{CodeSelect|code=
+tail -f /var/log/apache2/error.log
+}}
+
+== Mediawiki Debug Log ==
+Run.
+
+{{CodeSelect|code=
+## Replace "user" with your actual operating system user name.
+touch /home/user/wgdebuglog
+chmod o+w /home/user/wgdebuglog
+chmod g+w /home/user/wgdebuglog
+}}
+
+Edit /var/www/wiki/LocalSettings.php.
+
+{{CodeSelect|code=
+lxsudo mousepad /var/www/wiki/LocalSettings.php
+}}
+
+And add.
+
+{{CodeSelect|code=
+## Replace "user" with your actual operating system user name.
+$wgDebugLogFile = "/home/user/wgdebuglog";
+}}
+
+Watch the log while trying to access the wiki in Firefox-ESR.
+
+{{CodeSelect|code=
+## Replace "user" with your actual operating system user name.
+tail -f /home/user/wgdebuglog
+}}
+
+= Alternative Backup =
+Maybe it would be simpler if we shared a mysql backup without passwords.
+
+mediawiki irc channel:
+
+{{CodeSelect|code=
+mysqldump --ignore-table=wiki.user
+}}
+
+although it would result in a broken database if you restore it
+
+{{Footer}}
+[[Category:Development]]
