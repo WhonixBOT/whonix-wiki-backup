@@ -1,0 +1,446 @@
+{{Header}}
+{{#seo:
+|description=Creating an Air Gapped OpenPGP Key for better GnuPG Security. Protect your gpg keys from malware!
+|image=https://www.whonix.org/w/images/5/50/Airgapped12321.jpg
+}}
+
+'''ADVANCED USERS ONLY!'''
+
+[[Image:hauke_laging_gepruefter_artikel.en.png|400px|link=http://www.openpgp-schulungen.de/fuer/webautoren/|[http://www.hauke-laging.de/ Hauke Laging]'s clearsigned version of this text can be found here: [[OpenPGP_Certified]]. <br />
+<br />
+The [http://www.openpgp-schulungen.de/fuer/webautoren/ certification] image ([https://www.whonix.org/wiki/File:Hauke_laging_gepruefter_artikel.en.png hauke_laging_gepruefter_artikel.en.png]) is copyrighted by [http://www.hauke-laging.de/ Hauke Laging].|thumb]]
+
+= Introduction =
+The high level overview of this concept is as follows:
+
+# Shut down your every day operating system. Boot your air gapped operating system. You can boot a Live DVD or an operating system installed on external media such as USB (recommendation: use full disk encryption). Using a separate physical hardware is better than just booting another operating system, but still, using another operating system is better than nothing.
+# By default GPG creates a signing key as your main key (your identity) and one encryption subkey (how you receive messages intended for you). We will only create a primary signing/certification key.
+# Use GPG to add an additional encryption and signing subkey to your keypair. These new subkeys are linked to your main key. Now we have two subkeys. Store the whole key in a protected place. Your master keypair is the one whose compromise would be truly catastrophic.
+# Then create a slave key which won't contain your master key.
+# Copy your slave key to your every day operating system.
+
+= Prerequisites =
+It is recommended to first quickly read this article from top to bottom without taking actions. Some readers might also take inspiration from the [https://wiki.debian.org/GnuPG/AirgappedMasterKey Debian GnuPG AirgappedMasterKey] guide for further background on this topic. After you roughly understood how it is supposed to work, re-read this page and do it step-by-step. Exercise this with test keys first. If that works, consider doing this with your primary keys.
+
+Make backups of your existing GnuPG files ($HOME/.gnupg). Keep them safe. If something goes wrong during the following steps, you may need this to return to a known good place. 
+
+You should know how to boot other operating systems than your primary every day operating system from Live DVD and/or other external media such as USB.
+
+Optionally, if your storage medium could get accessed or stolen by an adversary, it is also recommended to learn how to use disk encryption software. As a precaution, it is wise to do this anyway.
+
+Additionally to protect yourself against mistakes it may make sense to manage your gpg master key folder with a version revision system such as git.
+
+= Creating your Air Gapped OpenPGP Key =
+== Preparation ==
+Boot your air gapped system.
+
+<pre>
+mkdir ~/gpg-master
+mkdir ~/.gnupg
+chmod 700 ~/gpg-master
+chmod 700 ~/.gnupg
+</pre>
+
+Create a {{Code|~/gpg-master/gpg.conf}} and {{Code|~/.gnupg/gpg.conf}}. Source: [https://github.com/ioerror/torbirdy/blob/master/gpg.conf gpg.conf optimized for privacy] Check if there is a newer version available. It probably makes sense to copy that file to an USB stick beforehand so you don't have to type it by hand.
+
+<pre>
+## gpg.conf optimized for privacy
+
+##################################################################
+## BEGIN some suggestions from TorBirdy setting extensions.enigmail.agentAdditionalParam
+
+## Don't disclose the version
+no-emit-version
+
+## Don't add additional comments (may leak language, etc)
+no-comments
+
+## We want to force UTF-8 everywhere
+display-charset utf-8
+
+## Proxy settings
+keyserver-options http-proxy=socks5://TORIP:TORPORT
+
+keyserver hkp://qdigse2yzvuglcix.onion
+
+## END some suggestions from TorBirdy TorBirdy setting extensions.enigmail.agentAdditionalParam
+##################################################################
+
+##################################################################
+## BEGIN Some suggestions from Debian http://keyring.debian.org/creating-key.html
+
+personal-digest-preferences SHA512
+cert-digest-algo SHA512
+default-preference-list SHA512 SHA384 SHA256 SHA224 AES256 AES192 AES CAST5 ZLIB BZIP2 ZIP Uncompressed
+
+## END Some suggestions from Debian http://keyring.debian.org/creating-key.html
+##################################################################
+
+##################################################################
+## BEGIN Some suggestions added from riseup https://we.riseup.net/riseuplabs+paow/openpgp-best-practices
+
+## When creating a key, individuals may designate a specific keyserver to use to pull their keys from.
+## The above option will disregard this designation and use the pool, which is useful because (1) it
+## prevents someone from designating an insecure method for pulling their key and (2) if the server
+## designated uses hkps, the refresh will fail because the ca-cert will not match, so the keys will
+## never be refreshed.
+keyserver-options no-honor-keyserver-url
+
+## when outputting certificates, view user IDs distinctly from keys:
+fixed-list-mode
+
+## long keyids are more collision-resistant than short keyids (it is trivial to make a key with any desired short keyid)
+keyid-format 0xlong
+
+## when multiple digests are supported by all recipients, choose the strongest one:
+## already defined above
+#personal-digest-preferences SHA512 SHA384 SHA256 SHA224
+
+## preferences chosen for new keys should prioritize stronger algorithms:
+## already defined above
+#default-preference-list SHA512 SHA384 SHA256 SHA224 AES256 AES192 AES CAST5 BZIP2 ZLIB ZIP Uncompressed
+
+## If you use a graphical environment (and even if you don't) you should be using an agent:
+## (similar arguments as https://www.debian-administration.org/users/dkg/weblog/64)
+use-agent
+
+## You should always know at a glance which User IDs gpg thinks are legitimately bound to the keys in your keyring:
+verify-options show-uid-validity
+list-options show-uid-validity
+
+## include an unambiguous indicator of which key made a signature:
+## (see http://thread.gmane.org/gmane.mail.notmuch.general/3721/focus=7234)
+sig-notation issuer-fpr@notations.openpgp.fifthhorseman.net=%g
+
+## when making an OpenPGP certification, use a stronger digest than the default SHA1:
+## already defined above
+#cert-digest-algo SHA256
+
+## END Some suggestions added from riseup https://we.riseup.net/riseuplabs+paow/openpgp-best-practices
+##################################################################
+
+##################################################################
+## BEGIN Some suggestions from TorBirdy opt-in's
+
+## Up to you whether you in comment it (remove the single # in front of
+## it) or not. Disabled by default, because it causes too much complaints and
+## confusion.
+
+## Don't include keyids that may disclose the sender or any other non-obvious keyids
+#throw-keyids
+
+## END Some suggestions from TorBirdy opt-in's
+##################################################################
+</pre>
+
+== Creating your Initial Keypair ==
+Use the {{Code2|gpg ‐‐gen-key}} command to create a new GPG keypair.
+
+When you create your new keypair, use the highest possible values for key length. As computers get more powerful and storage gets cheaper, it’s conceivable that a nasty person could archive a message that’s unbreakable today, then in the future break it using a more powerful computer. Using the highest possible value for key length helps protect you from that scenario. Don’t use GPG’s default of 2048!
+
+To prevent filling up the keyserver with garbage and outdated keys or if something goes wrong, it is recommended to set an expire data on your key.
+
+When prompted for a passphrase, make sure to pick a long and unique one. It will be your passphrase for your master key. (We'll later set a different passphrase for your slave key.) If your key gets stolen, this passphrase is the only thing protecting it! Don't use a passphrase you've ever used on your every day operating system, because that will help you to store a backup of your private master key on your every day operating system and thanks to the passphrase protection, you can even back it up in places without strong guarantees of privacy such as free cloud hosting or you public homepage. Just remember, to never enter the passphrase on your every day operating system.
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px|alt={{project_name}} first time users warning]]
+| text    = Consider creating an ECC key.
+}}
+
+<pre>
+gpg --homedir ~/gpg-master --gen-key
+gpg (GnuPG) 1.4.15; Copyright (C) 2013 Free Software Foundation, Inc.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+gpg: keyring `/home/user/gpg-master/secring.gpg' created
+gpg: keyring `/home/user/gpg-master/pubring.gpg' created
+Please select what kind of key you want:
+   (1) RSA and RSA (default)
+   (2) DSA and Elgamal
+   (3) DSA (sign only)
+   (4) RSA (sign only)
+Your selection? 1
+RSA keys may be between 1024 and 4096 bits long.
+What keysize do you want? (2048) 4096
+Requested keysize is 4096 bits
+Please specify how long the key should be valid.
+         0 = key does not expire
+      <n>  = key expires in n days
+      <n>w = key expires in n weeks
+      <n>m = key expires in n months
+      <n>y = key expires in n years
+Key is valid for? (0) 1y
+Key expires at Sun 21 Dec 2014 03:51:23 PM UTC
+Is this correct? (y/N) y
+
+You need a user ID to identify your key; the software constructs the user ID
+from the Real Name, Comment and Email Address in this form:
+    "Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>"
+
+Real name: Bilbo Baggins
+Email address: bilbo@shire.org
+Comment: 
+You selected this USER-ID:
+    "Bilbo Baggins <bilbo@shire.org>"
+
+Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? o
+You need a Passphrase to protect your secret key.
+<passphrase>
+public and secret key created and signed.
+
+gpg: checking the trustdb
+gpg: 3 marginal(s) needed, 1 complete(s) needed, PGP trust model
+gpg: depth: 0  valid:   1  signed:   0  trust: 0-, 0q, 0n, 0m, 0f, 1u
+gpg: next trustdb check due at 2014-12-21
+pub   4096R/0x310F6FAD4BD6D42A 2013-12-21 [expires: 2014-12-21]
+      Key fingerprint = C451 1D27 531E 3B5F E84D  F579 310F 6FAD 4BD6 D42A
+uid                 [ultimate] Bilbo Baggins <bilbo@shire.org>
+sub   4096R/0x2516E552C8D4D937 2013-12-21 [expires: 2014-12-21]
+</pre>
+
+Have a look at the "pub  4096R/488BA441 2013-03-13" line. In this example 0x2516E552C8D4D937 is your short key id, your key id will differ.
+
+== Creating your Signing Sub Key ==
+Now for the special sauce: let’s add our new signing subkey.
+
+Use the {{Code2|gpg ‐‐edit-key}} command. At the gpg> prompt, enter the command addkey. Select RSA (sign only) and 4096 for the keysize. Don’t forget to save at the last gpg> prompt:
+
+<pre>
+gpg --homedir ~/gpg-master --edit-key 0x2516E552C8D4D937
+gpg (GnuPG) 1.4.15; Copyright (C) 2013 Free Software Foundation, Inc.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Secret key is available.
+
+pub  4096R/0x310F6FAD4BD6D42A  created: 2013-12-21  expires: 2014-12-21  usage: SC  
+                               trust: ultimate      validity: ultimate
+sub  4096R/0x2516E552C8D4D937  created: 2013-12-21  expires: 2014-12-21  usage: E   
+[ultimate] (1). Bilbo Baggins <bilbo@shire.org>
+
+gpg> addkey
+Key is protected.
+
+You need a passphrase to unlock the secret key for
+user: "Bilbo Baggins <bilbo@shire.org>"
+4096-bit RSA key, ID 0x310F6FAD4BD6D42A, created 2013-12-21
+<passphrase>
+Please select what kind of key you want:
+   (3) DSA (sign only)
+   (4) RSA (sign only)
+   (5) Elgamal (encrypt only)
+   (6) RSA (encrypt only)
+Your selection? 4
+RSA keys may be between 1024 and 4096 bits long.
+What keysize do you want? (2048) 4096
+Requested keysize is 4096 bits
+Please specify how long the key should be valid.
+         0 = key does not expire
+      <n>  = key expires in n days
+      <n>w = key expires in n weeks
+      <n>m = key expires in n months
+      <n>y = key expires in n years
+Key is valid for? (0) 1y
+Key expires at Sun 21 Dec 2014 03:58:16 PM UTC
+Is this correct? (y/N) y
+Really create? (y/N) y
+
+pub  4096R/0x310F6FAD4BD6D42A  created: 2013-12-21  expires: 2014-12-21  usage: SC  
+                               trust: ultimate      validity: ultimate
+sub  4096R/0x2516E552C8D4D937  created: 2013-12-21  expires: 2014-12-21  usage: E   
+sub  4096R/0x44FE8C6D8E9594FC  created: 2013-12-21  expires: 2014-12-21  usage: S   
+[ultimate] (1). Bilbo Baggins <bilbo@shire.org>
+
+gpg> save
+</pre>
+
+== Exporting your Master Key ==
+Now that your keypair has been created, let’s export it so that we can back it up:
+
+<pre>
+gpg --homedir ~/gpg-master --armor --export-secret-keys 0x2516E552C8D4D937 > 0x2516E552C8D4D937.private.gpg-key
+gpg --homedir ~/gpg-master --armor --export 0x2516E552C8D4D937 > 0x2516E552C8D4D937.public.gpg-key
+</pre>
+
+This will create two files: your public key and your private key. Backup these two files, as best as you can.
+
+= Creating your Slave Key =
+== Export Secret Subkeys ==
+Now we have our master keypair in our keyring, along with two files representing the master keypair plus the keypair’s revocation certificate. To derive our slave keypair from our master keypair, we have to create a copy of our master keypair and remove the master secret key.
+
+Export all of the subkeys from our new keypair to a file:
+
+<pre>
+gpg --homedir ~/gpg-master --armor --export-secret-subkeys 0x2516E552C8D4D937 > subkeys
+</pre>
+
+== Create your Slave Key without Master Key ==
+'''We are now no longer using {{Code|--homedir ~/gpg-master}}!'''
+
+Re-import the sub keys we exported.
+<pre>
+gpg --import subkeys
+</pre>
+
+Clean up our temporary file.
+
+<pre>
+rm subkeys
+</pre>
+
+Re-import our public key we exported.
+
+<pre>
+gpg --import 0x2516E552C8D4D937.public.gpg-key
+</pre>
+
+Set a new password for your slave key. Remember, you'll have two different passwords. One for your master key, one for your slave key.
+
+<pre>
+gpg --edit-key 0x2516E552C8D4D937
+passwd
+...
+save
+</pre>
+
+That’s all! You can verify it worked by running:
+
+<pre>
+gpg --list-secret-keys
+/home/user/gpg-slave/secring.gpg
+-----------------------------
+sec#  4096R/488BA441 2013-03-13
+uid                  Bilbo Baggins <bilbo@shire.org>
+ssb   4096R/69B0EA85 2013-03-13
+ssb   4096R/C24C2CDA 2013-03-13
+</pre>
+
+See how the third line begins with “sec#”, not “sec”? The pound sign means the signing subkey is not in the keypair located in the keyring. Or more correctly said, see footnote. <ref>The pound sign means that the mainkey has been replaced by a stub.</ref>
+
+To make sure everything is alright, use switch gpg's homedir to {{Code|~/gpg-master}} and see if the secret master key is available.
+
+Store your slave key in a file.
+
+<pre>
+gpg --armor --export-secret-subkeys 0x2516E552C8D4D937 > 0x2516E552C8D4D937.secret-subkeys.gpg-key
+</pre>
+
+You can now copy your public key, master key and slave key to a disk and import your public key and your slave key to your every day operating system(s).
+
+= In Case of Emergency =
+Should the worst happen and your slave keypair gets lost, compromised or stolen, we need to revoke the subkeys on that keypair.
+
+Unlock your safe-deposit box and get your master keypair out.
+
+Boot a live USB of Debian or your distro of choice. Then, import your master keypair into the live USB’s keyring:
+
+<pre>
+gpg --import /path/to/0x2516E552C8D4D937.public.gpg-key /path/to/0x2516E552C8D4D937.private.gpg-key
+</pre>
+
+Now use {{Code2|gpg ‐‐edit-key}} to interactively revoke your subkeys:
+
+<pre>
+gpg --edit-key 0x2516E552C8D4D937
+gpg (GnuPG) 1.4.11; Copyright (C) 2010 Free Software Foundation, Inc.
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Secret key is available.
+
+pub  4096R/488BA441  created: 2013-03-13  expires: never       usage: SC  
+                     trust: ultimate      validity: ultimate
+sub  4096R/69B0EA85  created: 2013-03-13  expires: never       usage: E   
+sub  4096R/C24C2CDA  created: 2013-03-13  expires: never       usage: S   
+[ultimate] (1). Bilbo Baggins <bilbo@shire.org>
+
+gpg> key 1
+
+pub  4096R/488BA441  created: 2013-03-13  expires: never       usage: SC  
+                     trust: ultimate      validity: ultimate
+sub* 4096R/69B0EA85  created: 2013-03-13  expires: never       usage: E   
+sub  4096R/C24C2CDA  created: 2013-03-13  expires: never       usage: S   
+[ultimate] (1). Bilbo Baggins <bilbo@shire.org>
+
+gpg> key 2
+
+pub  4096R/488BA441  created: 2013-03-13  expires: never       usage: SC  
+                     trust: ultimate      validity: ultimate
+sub* 4096R/69B0EA85  created: 2013-03-13  expires: never       usage: E   
+sub* 4096R/C24C2CDA  created: 2013-03-13  expires: never       usage: S   
+[ultimate] (1). Bilbo Baggins <bilbo@shire.org>
+
+gpg> revkey
+
+Do you really want to revoke the selected subkeys? (y/N) y
+Please select the reason for the revocation:
+  0 = No reason specified
+  1 = Key has been compromised
+  2 = Key is superseded
+  3 = Key is no longer used
+  Q = Cancel
+Your decision? 1
+Enter an optional description; end it with an empty line:
+> 
+Reason for revocation: Key has been compromised
+(No description given)
+Is this okay? (y/N) y
+
+You need a passphrase to unlock the secret key for
+user: "Bilbo Baggins <bilbo@shire.org>"
+4096-bit RSA key, ID 488BA441, created 2013-03-13
+<passphrase>
+
+You need a passphrase to unlock the secret key for
+user: "Bilbo Baggins <bilbo@shire.org>"
+4096-bit RSA key, ID 488BA441, created 2013-03-13
+<passphrase>
+
+pub  4096R/488BA441  created: 2013-03-13  expires: never       usage: SC  
+                     trust: ultimate      validity: ultimate
+This key was revoked on 2013-03-13 by RSA key 488BA441 Bilbo Baggins <bilbo@shire.org>   
+sub  4096R/69B0EA85  created: 2013-03-13  expires: never       usage: E
+This key was revoked on 2013-03-13 by RSA key 488BA441 Bilbo Baggins <bilbo@shire.org>   
+sub  4096R/C24C2CDA  created: 2013-03-13  expires: never       usage: S   
+[ultimate] (1). Bilbo Baggins <bilbo@shire.org>
+
+gpg> save
+</pre>
+
+Now that your subkey has been revoked, you have to tell the world about it by distributing your key to a keyserver, then you have to add new subkeys.
+
+= Other Interesting Stuff =
+== Backups ==
+Make sure you always have a backup of your master key in case one USB stick breaks down. Maybe you like to use paperkey [http://packages.debian.org/jessie/paperkey (in debian)] for that purpose.
+
+== Smartcards ==
+You can then use the smartcard on your everyday system without risk of exposing the private keys (i.e. they cannot be copied from the smartcard but it is possible to abuse them on the smartcard which can cause less but severe damage, too). Smartcards are worth checking out, but outside the scope of this guide.
+
+= Security Considerations =
+'''You can skip this if you are not interested in this! This is just a justification why we do things as we do.'''
+
+Alex Cabal's original text recommends to use {{Code2|gpg --delete-secret-key}}. We're not using this for two reasons.
+
+* Securely wiping of data [https://en.wikipedia.org/wiki/Data_remanence is a difficult issue]. We believe it is safer to create a new keypair (a new secring.gpg) than trusting gpg to remove the private master key from secring.gpg. This is just an assumption, could be FUD.
+* Users may confuse the gpg-master homedir from their gpg-slave homedir after using like ten times the gpg-master homedir. When they don't carefully read, they could accidentally delete their master key.
+
+Our every day operating system never gets to see our OpenPGP master key, because we regard our every day operating system to be untrusted for these purposes.
+
+Alex Cabal's original text uses {{Code2|gpg e-mail@address}}, we're using short key ids to avoid user mistakes when editing more complex keys.
+
+Alex Cabal's original text uses gpg setpref and we're using a gpg config file to have these settings enforced already during key creation.
+
+= Footnotes =
+{{reflist|close=1}}
+
+= License / Credits =
+The [http://www.openpgp-schulungen.de/fuer/webautoren/ certification] image ([https://www.whonix.org/wiki/File:Hauke_laging_gepruefter_artikel.en.png hauke_laging_gepruefter_artikel.en.png]) is copyrighted by [http://www.hauke-laging.de/ Hauke Laging].
+
+The rest of this page is under the following license.
+
+Most of this text has been written by [https://alexcabal.com/creating-the-perfect-gpg-keypair/ Alex Cabal] [http://www.webcitation.org/6KtyMPYen (w)] [https://alexcabal.com/why-i-release-things-into-the-public-domain released] [http://www.webcitation.org/6KtyRvq2n (w)] under [https://creativecommons.org/publicdomain/zero/1.0/ CC0 1.0 Universal (CC0 1.0) Public Domain Dedication] [http://www.webcitation.org/6KtyP8886 (w)]. Modified under the same license by adrelanos.
+
+{{Footer}}
+
+[[Category:Documentation]]
