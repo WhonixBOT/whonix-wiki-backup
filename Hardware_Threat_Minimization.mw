@@ -1,0 +1,133 @@
+{{Header}}
+{{#seo:
+|description=Hardware Threat Minimization: Webcams, Microphones and Wireless Devices
+|image=https://www.whonix.org/w/images/7/70/Hardwareminimize.jpg
+}}
+
+{{Anchor|Microphone}}
+= Microphones =
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Advanced adversaries already have specialized implant plug-ins which can [https://theintercept.com/2014/03/12/nsa-plans-infect-millions-computers-malware/ take over the computer's microphone] and record nearby conversations. <ref>The implant is called CAPTIVATEAUDIENCE, while the webcam equivalent is called GUMFISH.</ref> <ref>https://www.wired.com/2014/03/webcams-mics/</ref>
+}}
+
+== Eavesdropping Risk ==
+
+It is recommended to check whether the computer or notebook has a microphone. Microphones are often built-in and go unnoticed. In most cases it is advisable to disable the microphone for security reasons. If {{workstation_product_name}} (<code>anon-whonix</code>) is ever compromised by malware, an adversary could eavesdrop through the microphone. <ref>One attack vector is the use of [https://theintercept.com/2014/03/12/nsa-plans-infect-millions-computers-malware/ spam emails which contain malware].</ref> Similarly, keyboard acoustic side channel attacks can use the audio leakage from keyboard typing to infer the words up to a certain degree of accuracy. <ref>https://fc16.ifca.ai/preproceedings/21_Anand.pdf</ref> <ref>Researchers continue to improve the accuracy of various techniques and attack vectors like feature extraction and classification, keyboard geometry and triangulation.</ref> This also applies to touch screen devices like smartphones and tablets. <ref>https://www.schneier.com/blog/archives/2019/04/recovering_smar.html</ref>
+
+The attack paper [https://arxiv.org/ftp/arxiv/papers/1611/1611.07350.pdf SPEAKE(a)R: Turn Speakers to Microphones for Fun and Profit] does not apply to VMs. <ref>The abstract notes: <blockquote>It's possible to manipulate the headphones (or earphones) connected to a computer, silently turning them into a pair of eavesdropping microphones – with software alone. The same is also true for some types of loudspeakers. This paper focuses on this threat in a cyber-security context. We present SPEAKE(a)R, a software that can covertly turn the headphones connected to a PC into a microphone. We present technical background and explain why most of today’s PCs and laptops are susceptible to this type of attack. We examine an attack scenario in which malware can use a computer as an eavesdropping device, even when a microphone is not present, muted, taped, or turned off. We measure the signal quality and the effective distance, and survey the defensive countermeasures.</blockquote></ref> While it might be possible to retask virtual sound devices with software too, the malware still cannot access the soundcard settings of the host unless there is a VM escape; QEMU developers have also concluded that no risk is posed to the host. It should be noted that virtual soundcards also have optional, half-duplex modes that make audio input impossible. <ref>https://lists.nongnu.org/archive/html/qemu-devel/2016-11/msg04754.html2</ref> <ref>https://lists.nongnu.org/archive/html/qemu-devel/2016-11/msg04899.html2</ref> <ref>https://lists.nongnu.org/archive/html/qemu-devel/2016-11/msg04906.html2</ref> <ref>https://lists.nongnu.org/archive/html/qemu-devel/2016-11/msg04904.html2</ref>
+
+Another eavesdropping risk concerns mechanical HDDs. Researchers have discovered that maliciously modified firmware is able to record Positional Error Signal (PES) data that registers minute disturbances in the platter with internal sensors; high-quality recordings of sounds like human speech could be reconstructed from this information. This attack has several limitations: <ref>https://www.extremetech.com/electronics/287324-researchers-turn-hard-drives-into-covert-listening-devices</ref> 
+# An attacker needs to physically tamper with the targeted equipment. <ref>One possible method is hardware interception during shipping.</ref>
+# Sounds near the hard drive must be rather loud:
+* To identify human speech a 75dB minimum level is necessary, which is equivalent to a noisy argument within a few feet of the HDD. 
+* To identify music that is playing, a 90dB level is required -- this is as loud as a lawnmower. 
+
+Note that this attack does not apply to VMs where disk devices are emulated. While the SSD alternative avoids this threat, it has the drawback of uncertainty when encrypted volume headers are deleted or encryption passphrases are changed.
+
+== Voice Recognition ==
+
+It is safe to assume that everyone has had an unencrypted phone call during their lifetime and that one of them has been recorded. Voiceprints allow a person to be identified from the specific characteristics (acoustics) of their voice and it is a useful biometric marker. <ref>https://en.wikipedia.org/wiki/Speaker_recognition#Technology</ref> This means personal and unique voiceprints can be used to link non-anonymous and "anonymous" voice samples; a process called voice recognition and documented on the [[VoIP|VoIP]] wiki page in the introduction chapter. <ref>Writing styles are also personal and unique. Individuals can be identified with a similar method called [https://en.wikipedia.org/wiki/Stylometry stylometry], which is documented on the [[Surfing_Posting_Blogging|Surfing Posting Blogging]] wiki page.</ref>
+
+== Disabling or Removing Microphones ==
+
+By default, microphones that are connected to the host are made available to virtual machines like {{workstation_product_name}} (except for {{project_name}} KVM on Buster hosts and [[{{q_project_name_short}}|{{q_project_name}}]], see further below).
+
+For best security, external microphones should be unplugged. If the microphone is built-in and the user decides to disable it, there might be a BIOS option available. Suitably skilled users can also attempt to remove built-in microphones, although this is more difficult.
+
+The drivers for the sound card can also be disabled, which prevents all output/input audio:
+
+* Linux: the names of the drivers can be found in <code>/proc/asound/modules</code>. To blacklist them, create a file in the <code>/etc/modprobe.d</code> folder containing <code>install (module) /bin/true</code>, for example <code>install snd_hda_intel /bin/true</code>. 
+* Windows: the drivers can be disabled from the Device Manager.
+
+The microphone can also be muted on Linux by running <code>alsamixer</code> and entering "M" on the microphone channel.
+
+== Select Use of Microphones ==
+
+[[Multiple_{{workstation_product_name_short}}|Multiple {{workstation_product_name}}s]] should be used for: 
+
+* Making Internet calls.
+* Conducting [[Voip|Voice over IP (VoIP)]].
+* Any other microphone use inside {{workstation_product_name}} (<code>anon-whonix</code>). 
+
+In this way, the microphone is used in select {{workstation_product_name}}s and not all. The microphone should be unplugged after use.
+
+For [[VoIP|VoIP]] purposes, audio pass-through capability may need to be enabled for the respective hypervisor. The following section documents how to get audio working on [[Download|supported platforms]].
+
+Expand for further information:
+
+<div class="toccolours mw-collapsible mw-collapsed">
+=== KVM ===
+<div class="mw-collapsible-content">
+[[KVM]] by default emulates a line-in/line-out in the virtual sound device, meaning microphone passthrough to guests is enabled if it is turned on for the host.
+</div>
+</div>
+
+<div class="toccolours mw-collapsible mw-collapsed">
+=== VirtualBox ===
+<div class="mw-collapsible-content">
+[[VirtualBox]] has access to the host's microphone by default. Access can be disabled by either muting it on the host or alternatively <ref>From VirtualBox 5.2</ref> it is possible to enable/disable VM guest access to the host's microphone on the command line. <ref>https://www.virtualbox.org/ticket/12026</ref> 
+
+When the VM is stopped, run.
+
+{{CodeSelect|code=
+VBoxManage modifyvm <uuid{{!}}vmname> audioin off
+}}
+
+Or when the VM is up and running, use.
+
+{{CodeSelect|code=
+VBoxManage controlvm <uuid{{!}}vmname> audioin off
+}}
+</div>
+</div>
+
+<div class="toccolours mw-collapsible mw-collapsed">
+
+=== Qubes ===
+<div class="mw-collapsible-content">
+From Qubes R4, the desktop panel icon ("Q") is used to attach or detach microphones to select VMs: <ref>https://www.linuxjournal.com/content/whats-new-qubes-4</ref> <ref>Functionality is gradually being shifted from Qube Manager to standalone tools.</ref>
+
+<code>Left-click "Q"</code> &rarr; <code>Assign the microphone to select VM</code>
+</div>
+</div>
+
+= Speakers =
+Newer methods of advertisement tracking can link multiple devices via ultrasound covert channels. This deanonymization technique works by playing a unique sound inaudible to human ears which is picked up by the microphones of untrusted devices. Watermarked audible sounds are equally dangerous, which means that hardware incapable of ultrasound is an ineffective protection. <ref>https://www.schneier.com/blog/archives/2015/11/ads_surreptitio.html</ref>
+
+To mitigate this threat, apply the following measures on the host:
+
+* Always connect headphones. <ref>It is unclear if this measure can be circumvented by malicious software.</ref>
+* Physically remove speakers (very difficult). <ref name=handcraft-skills>Many users are incapable of opening their notebooks, but desktop computer hardware is easily accessed.</ref>
+* Physically remove the beeper (very difficult). <ref name=handcraft-skills />
+* If possible, disable the beeper in BIOS (moderately difficult).
+
+= Webcams =
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Webcams pose a serious [https://www.wired.com/2014/03/webcams-mics/ spying] [https://www.theguardian.com/world/2014/feb/27/gchq-nsa-webcam-images-internet-yahoo risk]! 
+}}
+
+Webcams on infected machines can be used to take snapshots, record video or eavesdrop using the built-in microphone. [https://arstechnica.com/information-technology/2018/08/researchers-find-way-to-spy-on-remote-screens-through-the-webcam-mic/ Recent research] reveals that even remote screen views can be accurately determined via webcams, due to "content-dependent acoustic leakage from LCD screens." <ref>This is a novel acoustic side-channel attack variant that relies on neural networks and the "coil whine" audio emissions from electronic components that power the LCD display.</ref>
+
+Always check if the computer or notebook has a webcam; one might be built-in, but have gone unnoticed. Check the computer's datasheet and operating system hardware manager to be sure. It is recommended that (external) webcams are disabled or removed, unless there are immediate plans to use it inside {{workstation_product_name}} (<code>anon-whonix</code>). Once a webcam session has finished, it should be disabled and preferably unplugged straight away. 
+
+If the webcam is built-in, check whether it can be disabled with a BIOS setting. Suitably skilled users can attempt to remove built-in webcams, although this may be difficult. As a stop-gap measure, the webcam can always be covered with thick adhesive tape or a cap, so long as it is opaque.
+
+If a BIOS option is unavailable or it is impossible to physically disable the webcam, then the webcam drivers should be disabled:
+
+* Linux: a file must be added to the <code>/etc/modprobe.d</code> folder that contains <code>blacklist uvcvideo</code>. This blacklists the webcam driver from loading.
+* Windows: the webcam driver can be disabled from the Device Manager.
+
+= Wireless Input Devices =
+
+Avoid using wireless keyboards and mice because most send data unencrypted. Even if this was not the case, the robustness of the cryptography involved in proprietary products cannot be verified. A local adversary up to 100 meters away can sniff keystrokes and inject their own, allowing them to take over the machine.<ref>https://www.schneier.com/blog/archives/2016/03/security_vulner_6.html</ref> <ref>https://www.schneier.com/blog/archives/2016/08/security_vulner_7.html</ref>
+
+= References =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
