@@ -1,0 +1,65 @@
+{{Title|title=Signify (by OpenBSD Developers) Cryptographically Sign and Verify Files}}
+{{Header}}
+{{#seo:
+|description=HowTo: use Signify on Debian (based) Distributions
+}}
+
+<ref>
+Installing package <code>qrencode</code> is optional and only needed if you intent to create QR codes.
+</ref>
+
+{{Install_Package
+|package=signify-openbsd qrencode
+}}
+
+Create key. Needs to be done only once. Unless desired to use multiple keys, in which case different key names should be used. In the following example, <code>keyname</code> is used as example key name.
+
+{{CodeSelect|code=
+signify-openbsd -G -p keyname.pub -s keyname.sec
+}}
+
+Alternatively add a key comment. Replace <code>comments here</code> with the actual comment but keep the <code>"</code>. Comment could be a name, position, website, e-mail address and/or anything else.
+
+{{CodeSelect|code=
+signify-openbsd -G -p keyname.pub -s keyname.sec -c "comments here"
+}}
+
+The private key file <code>keyname.sec</code> needs to stay private, i.e. never share <code>keyname.sec</code> with anyone as this would defeat the purpose of signing files!
+
+The public key file <code>keyname.pub</code> can be shared with anyone.
+
+To sign a file <code>message.txt</code> (which has to be created by the user beforehand).
+
+{{CodeSelect|code=
+signify-openbsd -S -s keyname.sec -m message.txt
+}}
+
+Will create a signature file <code>message.txt.sig</code>.
+
+To verify a file <code>message.txt</code> with signature file <code>message.txt.sig</code>.
+
+{{CodeSelect|code=
+signify-openbsd -V -p keyname.pub -m message.txt
+}}
+
+Optional. To create a QR code for the public key.
+
+{{CodeSelect|code=
+qrencode -r keyname.pub -o keyname.pub.png
+}}
+
+File <code>keyname.pub.png</code> would be the QR code of the public key.
+
+[https://manpages.debian.org/signify-openbsd signify-openbsd Manual Page]
+
+<ref>
+* https://www.openbsd.org/papers/bsdcan-signify.html
+* https://forums.whonix.org/t/signify-openbsd/7842
+</ref>
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
