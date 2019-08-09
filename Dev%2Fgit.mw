@@ -1,0 +1,275 @@
+{{Header}}
+{{#seo:
+|description=Development Notes about git and ways to stay up to date of source code changes
+}}
+{{forkme}}
+= Branches =
+
+== Introduction ==
+
+While the project is small adrelanos thinks it is best not to make a too difficult policy.
+
+== Compare ==
+Upstream git issue. Currently not easy to compare tags in a superproject while showing what changed in the submodules.
+
+{{CodeSelect|code=
+git log -p --submodule=log 15.0.0.3.3-stable..15.0.0.3.7-developers-only
+}}
+
+== master ==
+
+* <s>Adrelanos's progress of work.</s>
+* Not calling it unstable, because the changes will most likely never make it unstable but it is just not tested if it still builds.
+* Branching model, project readme, information, gpg...
+
+== signed git tags ==
+
+Releases will be tagged and gpg signed.
+
+== Link to Source Code ==
+
+https://github.com/{{project_name_short}}/{{project_name_short}}
+
+-----
+
+= subscribe to code changes =
+== git ==
+Git clone [https://github.com/{{project_name_short}}/{{project_name_short}} github].
+
+A git specific work flow could be:
+
+<pre>git fetch</pre>
+
+every (few) day(s) and then git diff(tool), merge, etc.
+
+== rss feed notification ==
+https://github.com/{{project_name_short}}/{{project_name_short}}/commits/master.atom
+
+== manually in your browser ==
+Check every now and then https://github.com/{{project_name_short}}/{{project_name_short}}/commits/master.
+
+== Github Commits Mailing List ==
+[https://lists.sourceforge.net/lists/listinfo/whonix-commits {{project_name}}-commits read only mailing list]
+
+(Stay hosted on sourceforge.net. Barely anyone is signed up and it is quite high traffic.)
+
+== Twitter ==
+If you prefer Twitter, use the [https://twitter.com/{{project_name_short}}Source Secondary Twitter Account for Source Code Commit Notification].
+
+-----
+
+{{Anchor|grep {{project name short}} source code}}
+= grep {{project name}} source code =
+{{Build Documentation Get Source Code}}
+
+== grep ==
+Create folder <code>~/bin</code>.
+
+{{CodeSelect|code=
+mkdir ~/bin
+}}
+
+Create a file <code>~/bin/mygrep</code>. Paste the following.
+
+{{CodeSelect|code=
+#!/bin/bash
+set -x
+exec \
+grep \
+--exclude=README.md \
+--exclude=GPLv2 \
+--exclude=GPLv3 \
+--exclude=COPYING \
+--exclude=changelog.upstream-old1 \
+--exclude-dir=mnt \
+--exclude-dir=qubes-src/linux-template-builder/mnt \
+--exclude=changelog.upstream \
+--exclude-dir=".git" \
+--exclude-dir=chroot-debian \
+--exclude-dir=chroot-stretch \
+--exclude-dir=chroot-jessie "$@"
+}}
+
+Save.
+
+{{CodeSelect|code=
+chmod +x ~/bin/mygrep
+}}
+
+Make executable.
+
+{{CodeSelect|code=
+cd {{project_name_short}}
+}}
+
+Search for string. For example <code>grub-pc</code>.
+
+{{CodeSelect|code=
+mygrep -r grub-pc
+}}
+
+-----
+
+= Compiled Code =
+{{CodeSelect|code=
+find . -name '*.c' -not -iwholename '*.git*'
+}}
+
+<pre>
+./sdwdate/usr/lib/sdwdate/sclockadj.c
+./bindp/usr/lib/bindp.c
+./kloak/src/main.c
+./kloak/src/keycodes.c
+./kloak/src/eventcap.c
+</pre>
+
+= Put folder under Git Version Control =
+== Setup ==
+{{Update}}
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+Install <code>git</code>.
+
+{{CodeSelect|code=
+sudo apt-get install git
+}}
+
+Unless you want to use git for pushing changes to remotes which you probably won't in a testing VM you can use the following git config without using any real names or pseudonyms. (These are the git suggested defaults. <ref>
+<pre>
+git commit -a -m .
+
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: empty ident name (for <(null)>) not allowed
+</pre>
+</ref>)
+
+{{CodeSelect|code=
+git config --global user.email "you@example.com"
+}}
+
+{{CodeSelect|code=
+git config --global user.name "Your Name"
+}}
+
+== Enable Git Version Control for Folder ==
+Go to the folder you want to set under git version control.
+
+{{CodeSelect|code=
+cd ~
+}}
+
+Initialize git version control.
+
+{{CodeSelect|code=
+git init
+}}
+
+Add all files to git version control.
+
+{{CodeSelect|code=
+git add -A
+}}
+
+Commit all files to git. <ref>
+Without any useful commit message. <code>.</code> is the commit message here.
+</ref>
+
+{{CodeSelect|code=
+git commit -a -m .
+}}
+
+Do changes such as changing KDE settings.
+
+See which files changed.
+
+{{CodeSelect|code=
+git status
+}}
+
+See diff.
+
+{{CodeSelect|code=
+git diff
+}}
+
+-----
+
+= Goodies =
+
+Optional. Just sharing. Like it or not.
+
+* Bash completion can complete git commands and branch names.
+* [http://www.opinionatedprogrammer.com/2011/01/colorful-bash-prompt-reflecting-git-status/ Colorful git prompt.]
+
+[http://www.opinionatedprogrammer.com/post-img/git-prompt-screenshot.png screenshot]
+
+= apt-get source =
+You need to enable <code>deb-src</code> in <code>/etc/apt/sources.list.d/whonix.list</code>!
+
+<pre>
+sudo apt-get update
+</pre>
+<pre>
+Hit:1 tor+http://deb.dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion stretch InRelease
+Hit:2 http://deb.qubes-os.org/r4.0/vm stretch InRelease                                            
+Ign:3 tor+http://vwakviie2ienjx6t.onion/debian stretch InRelease                                   
+Hit:4 tor+http://sgvtcaew4bxjd7ln.onion stretch/updates InRelease                                  
+Hit:5 tor+http://vwakviie2ienjx6t.onion/debian stretch Release                                     
+Ign:7 http://ftp.us.debian.org/debian stretch InRelease                                            
+Hit:8 http://security.debian.org stretch/updates InRelease                                  
+Hit:9 http://ftp.us.debian.org/debian stretch Release                                       
+Hit:11 http://deb.whonix.org stretch InRelease                             
+Reading package lists... Done 
+E: Failed to fetch tor+http://deb.dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion/dists/stretch/InRelease  Unable to find expected entry 'contrib/source/Sources' in Release file (Wrong sources.list entry or malformed file)
+E: Failed to fetch http://deb.whonix.org/dists/stretch/InRelease  Unable to find expected entry 'non-free/source/Sources' in Release file (Wrong sources.list entry or malformed file)
+E: Some index files failed to download. They have been ignored, or old ones used instead.
+</pre>
+
+The following can be ignored:
+
+* "Unable to find expected entry 'contrib/source/Sources'" and
+* "Unable to find expected entry 'non-free/source/Sources'"
+
+There is nothing in these repositories. Does not limit functionality in any way. Inconinent message but won't fix since only asked once in 5 years.
+
+apt-get source fully functional.
+
+<pre>
+apt-get source apparmor-profiles-hardened-debian
+</pre>
+
+<pre>
+Reading package lists... Done
+Picking 'anon-meta-packages' as source package instead of 'apparmor-profiles-hardened-debian'
+NOTICE: 'anon-meta-packages' packaging is maintained in the 'Git' version control system at:
+https://github.com/{{project_name_short}}/anon-meta-packages.git
+Please use:
+git clone https://github.com/{{project_name_short}}/anon-meta-packages.git
+to retrieve the latest (possibly unreleased) updates to the package.
+Need to get 48.9 kB of source archives.
+Get:1 tor+http://deb.dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion stretch/main anon-meta-packages 3:7.9-1 (dsc) [5,513 B]
+Get:2 tor+http://deb.dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion stretch/main anon-meta-packages 3:7.9-1 (tar) [37.8 kB]
+Get:3 tor+http://deb.dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion stretch/main anon-meta-packages 3:7.9-1 (diff) [5,588 B]
+Fetched 48.9 kB in 2s (19.4 kB/s)             
+dpkg-source: info: extracting anon-meta-packages in anon-meta-packages-7.9
+dpkg-source: info: unpacking anon-meta-packages_7.9.orig.tar.xz
+dpkg-source: info: unpacking anon-meta-packages_7.9-1.debian.tar.xz
+</pre>
+
+-----
+
+{{Footer}}
+
+[[Category:Development]] [[Category:Design]]
