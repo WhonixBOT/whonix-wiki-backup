@@ -1,0 +1,93 @@
+{{Header}}
+{{#seo:
+|description=Use Signal Private Messenger over the Tor network with Whonix.
+|image=https://www.whonix.org/w/images/e/e0/Signalmessenger.png
+}}
+{{title|title=
+Send Signal Messages over Tor with Whonix
+}}
+{{Maintainer|
+|status=stable
+|about=About this {{Code2|{{PAGENAME}}}} Page
+|difficulty=medium
+|maintainer=Patrick
+|support=[[Professional Support]]
+}}
+
+= Introduction = 
+
+[https://www.signal.org Signal] is a well-respected, free, open source, cross-platform encrypted messaging service. It supports individual and group messages (files, voice notes, images and video) as well as one-to-one voice and video calls. All communications are encrypted end-to-end for security, and mechanisms exist to independently verify the identity of contacts as well as the integrity of the data channel. The encryption keys are generated and stored at the endpoints (user devices), rather than by the servers. Both the client and server code is openly published, and the software is recommended by noted privacy advocates Edward Snowden and Bruce Schneier, among others. This is due to the strong architecture and limited metadata available in the ecosystem. <ref>https://en.wikipedia.org/wiki/Signal_%28software%29</ref> <ref>For additional Signal features, see: [https://en.wikipedia.org/wiki/Signal_(software)#Features Wikipedia: Signal (software) - Features]</ref> <ref>[https://www.signal.org/blog/setback-in-the-outback/ Signal blog]: <blockquote>By design, Signal does not have a record of your contacts, social graph, conversation list, location, user avatar, user profile name, group memberships, group titles, or group avatars. The end-to-end encrypted contents of every message and voice/video call are protected by keys that are entirely inaccessible to us. In most cases now we don’t even have access to who is messaging whom.</blockquote></ref>
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = It is possible to pair Signal with {{project_name}} by installing the [https://www.signal.org/blog/standalone-signal-desktop/ standalone Signal Desktop application] for Linux in {{workstation_product_name}}, and tunneling the application over the Tor network. However, this configuration is <u>not</u> recommended because although the traffic will be routed over the Tor network, Signal requires the user provide a phone number for verification. <ref>The number can be different form the device's SIM card; it can be a landline or VOIP number, so long as the user can receive the verfication code and possesses a separate device to set up the software.</ref>
+}}
+
+The mandatory linkage of the desktop software application with a phone number makes it very likely adversaries can easily link any 'anonymous' use of Signal in {{project_name}} with a user's real identity, even if a secondary phone number is used as a limited workaround. Notably, to date Signal has ignored user requests to enable registration with an email account as a possible alternative.  For this reason alone, alternative options like [[Chat#Gajim|Gajim]], [[HexChat|HexChat]] and [[Chat#Tox|Tox]] should be investigated instead; see [[Chat|Instant Messenger Chat]] for further information. Readers are of course free to ignore this advice -- see below for Whonix instructions.
+
+= Prerequisites =
+
+Signal must already be installed on your Android or iOS device -- first follow the [https://signal.org/download download instructions] on the Signal homepage if required. <ref>Also see: [https://support.signal.org/hc/en-us/articles/360008216551-Installing-Signal Installing Signal].</ref>
+
+It is also recommended to create a separate  {{workstation_product_name}} that is only used for Signal because these instructions require the enabling of the Ubuntu Xenial repository for the desktop client. <ref>Common advice is to not mix repositories from related distributions like Ubuntu and Debian, since this can cause system instability.</ref> The Signal developers do not maintain specific versions for other distributions, which is why Ubuntu is defaulted to.
+
+= Install the Signal Desktop Client =
+
+This configuration allows the standalone Signal desktop client to link with the mobile device and send/receive messages from a laptop or desktop computer. <ref>https://www.signal.org/blog/standalone-signal-desktop/</ref> As of early-2019, the desktop application does not support voice or video calling. After launching the desktop client, it must be linked with the (mobile) phone. Be aware that messages are synchronized with Signal on the mobile phone.
+
+In Linux, the Signal desktop client is available for both 64-bit Debian and Ubuntu, as well as other distributions supporting APT. The APT repository signing key has been sourced from the [https://updates.signal.org/desktop/apt/keys.asc following address]; at the time of writing (2019), the full GPG fingerprint is: <code>DBA36B5181D0C816F630E889D980A17457F6FB06</code>. <ref>https://github.com/freedomofpress/ansible-role-signal-desktop</ref> 
+
+{{Box|text=
+'''1.''' Add the Signal GPG key to the APT sources keyring.
+
+{{apt-key-onion
+|filename=/etc/apt/trusted.gpg.d/signal.gpg
+|fingerprint=DBA36B5181D0C816F630E889D980A17457F6FB06
+}}
+
+'''2.''' Create a signal starter script <code>~/signal-start</code>.
+
+{{Open File|filename=
+~/signal-start
+}}
+
+'''3.''' Paste the following text. <ref>https://signal.org/download</ref>
+
+{{CodeSelect|code=
+#!/bin/bash
+set -x
+set -e
+echo "deb [arch=amd64] https://updates.signal.org/desktop/apt xenial main" {{!}} sudo tee /etc/apt/sources.list.d/signal-xenial.list
+sudo apt-get update
+sudo apt-get install --yes signal-desktop
+signal-desktop
+}}
+
+'''4.''' Make the file executable.
+
+{{CodeSelect|code=
+chmod +x ~/signal-start
+}}
+
+'''5.''' Install and start Signal from command line.
+
+{{CodeSelect|code=
+~/signal-start
+}}
+
+Done.
+}}
+
+To launch Signal in the future, run.
+
+{{CodeSelect|code=
+signal-desktop
+}}
+
+= Footnotes / References =
+
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
