@@ -1,0 +1,145 @@
+{{Title|title=How-to: Fix dom0 {{q_project_name}} UpdatesProxy Settings}}
+{{Header}}
+{{#seo:
+|description=How to Fix dom0 {{q_project_name}} UpdatesProxy Settings. How to fix "WARNING: Execution of /usr/bin/apt-get prevented by /etc/uwt.d/40_qubes.conf because no torified Qubes updates proxy found."
+}}
+<!--EDITORS NOTE:
+https://github.com/{{project_name_short}}/qubes-whonix/blob/master/usr/share/uwt/qubes_torfied_dom0.txt links to this wiki page.
+-->
+If you see the following warning...
+
+<pre>
+WARNING: Execution of /usr/bin/apt-get prevented by /etc/uwt.d/40_qubes.conf because no torified Qubes updates proxy found.
+</pre>
+
+If this warning message is transient, it can be safely ignored. Otherwise, try one of the fixes below.
+
+= Update dom0 =
+{{Qubes_upgrade_dom0}}
+
+= TemplateVMs =
+== Error Resolution Methods ==
+
+The following fixes are listed in order of preference.
+
+=== Salt Fix ===
+Use <code>salt</code> to setup dom0 settings. <ref>
+[[Dev/Qubes#salt]]
+</ref>
+
+{{CodeSelect|code=
+sudo qubesctl state.sls qvm.anon-whonix
+}}
+
+Next, check if the problem has been corrected. Run the following command in {{project name}} TemplateVM.
+
+{{CodeSelect|code=
+sudo systemctl restart qubes-whonix-torified-updates-proxy-check
+}}
+
+Then try to update / use apt-get again.
+
+If there are still problems, try the manual fix below.
+
+=== Manual Fix ===
+Please make sure {{gateway_product_name}} (<code>sys-whonix</code>) is running.
+
+* <u>Qubes R3.2</u>: The NetVM of this TemplateVM should be set to {{gateway_product_name}} (<code>sys-whonix</code>). <ref>Qubes R3.2 reached [https://www.qubes-os.org/news/2019/03/28/qubes-3-2-has-reached-eol/ EOL] on 28 March, 2019. It is strongly recommended to [https://www.qubes-os.org/downloads/ upgrade to Qubes R4.0] to stay safe.</ref>
+* <u>Qubes R4 or higher</u>: Check the '''dom0''' <code>/etc/qubes-rpc/policy/qubes.UpdatesProxy</code> settings.
+
+At the very top of that file, the following text should appear.
+
+{{CodeSelect|code=
+$tag:whonix-updatevm $default allow,target=sys-whonix
+}}
+
+If it is not there, add it.
+
+<div class="toccolours mw-collapsible mw-collapsed">
+To view a complete example of the <code>/etc/qubes-rpc/policy/qubes.UpdatesProxy</code> file, please press on expand on the right.
+<div class="mw-collapsible-content">
+
+[https://github.com/QubesOS/qubes-core-admin/blob/master/qubes-rpc-policy/qubes.UpdatesProxy.policy <code>/etc/qubes-rpc/policy/qubes.UpdatesProxy</code>] ([https://raw.githubusercontent.com/QubesOS/qubes-core-admin/master/qubes-rpc-policy/qubes.UpdatesProxy.policy raw]):
+
+<pre>
+## Note that policy parsing stops at the first match,
+## so adding anything below "$anyvm $anyvm action" line will have no effect
+
+## Please use a single # to start your custom comments
+
+# Upgrade all TemplateVMs through sys-whonix.
+#$type:TemplateVM $default allow,target=sys-whonix
+
+# Upgrade Whonix TemplateVMs through sys-whonix.
+$tag:whonix-updatevm $default allow,target=sys-whonix
+
+# Deny Whonix TemplateVMs using UpdatesProxy of any other VM.
+$tag:whonix-updatevm $anyvm deny
+
+# Default rule for all TemplateVMs - direct the connection to sys-net
+$type:TemplateVM $default allow,target=sys-net
+
+$anyvm $anyvm deny
+</pre>
+</div>
+</div>
+
+<div class="toccolours mw-collapsible mw-collapsed">
+If [[Multiple_{{workstation_product_name_short}}#Multiple_{{q_project_name}}_TemplateVMs|Multiple {{q_project_name}} TemplateVMs]] are configured -- like when the {{project name}} TemplateVM is cloned -- please press on expand on the right.
+<div class="mw-collapsible-content">
+The following syntax should apply.
+
+{{CodeSelect|code=
+Name-Of-{{project_name_short}}-TemplateVM $default allow,target={{gateway_product_name_short}}-TemplateBased-ProxyVM
+}}
+
+Example entry for {{gateway_product_name}} TemplateVM.
+
+{{CodeSelect|code=
+{{whonix-gw}} $default allow,target=sys-whonix
+}}
+
+Example entry for {{workstation_product_name}} TemplateVM.
+
+{{CodeSelect|code=
+{{whonix-ws}} $default allow,target=sys-whonix
+}}
+</div>
+</div>
+
+To test if it is fixed, run the following command in {{project name}} TemplateVM.
+
+{{CodeSelect|code=
+sudo systemctl restart qubes-whonix-torified-updates-proxy-check
+}}
+
+Then try to update / use apt-get again.
+
+=== Reinstallation Fix ===
+
+If the salt and manual fix attempts both fail, then follow the steps to [[Qubes/Reinstall|Reinstall {{q_project_name}} TemplateVMs]]. If reinstallation also fails, then ask for support in the [https://forums.whonix.org {{project name}} forums].
+
+= dom0 =
+Qubes dom0 does not use Qubes UpdatesProxy. <ref>
+Qubes generally, not Whonix specific implementation.
+</ref> Therefore file <code>/etc/qubes-rpc/policy/qubes.UpdatesProxy</code> does not influence which VM will be used by dom0 for fetching updates.
+
+For completeness sake, see below on how to configure Qubes dom0 UpdateVM setting.
+
+{{Qubes dom0 Updates over Tor}}
+
+= Development =
+The following development resources are recommended for interested readers:
+* https://github.com/{{project_name_short}}/qubes-whonix/blob/master/etc/uwt.d/40_qubes.conf
+* https://github.com/{{project_name_short}}/qubes-whonix/blob/master/usr/share/uwt/qubes_torfied_dom0.txt
+* https://github.com/{{project_name_short}}/qubes-whonix/blob/master/lib/systemd/system/qubes-whonix-torified-updates-proxy-check.service
+* https://github.com/{{project_name_short}}/qubes-whonix/blob/master/usr/lib/qubes-whonix/init/torified-updates-proxy-check
+* https://github.com/QubesOS/qubes-core-admin/blob/master/qubes-rpc-policy/qubes.UpdatesProxy.policy
+* https://github.com/{{project_name_short}}/uwt
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
