@@ -1,0 +1,157 @@
+{{Header}}
+{{#seo:
+|description=YubiKey Development Notes and Threat Model
+}}
+
+= authentication to arbitrary web sites =
+YubiKey authentication to arbitrary web sites, i.e. to websites that don't explicitly support YubiKey (U2F or similar) by themselves, archived. Some notes:
+
+* YubiKey https://packages.debian.org/search?keywords=yubikey-personalization-gui
+** backups are sorted in case a yubykey breaks or gets lost
+** because the same HMAC-SHA1 secret can be written to all YubiKeys
+** used "configuration slot 2", which somehow works with short touch of the YubiKey button as well
+** "configuration slot 1" can be used for something else
+
+* keepassxc installation hints: [[Keepassxc]]
+** enable keepassxc browser integration
+** set keepassxc to close its database when closed (minimized to tray)
+** set keepassxc to always save the database on changes
+** https://github.com/smorks/keepasshttp-connector
+*** https://addons.mozilla.org/en-US/firefox/addon/keepasshttp-connector/
+*** https://chrome.google.com/webstore/detail/keepasshttp-connector/dafgdjggglmmknipkhngniifhplpcldb
+** <s>result: Firefox's password manager uses keepassxc as backend. And keepassxc's database gets unlocked by password plus YubiKey.  (It's and/or. Would also be possible only password or only YubiKey.)</s>
+*** Firefox 54 with new add-on API (Web Extensions) broke it - https://github.com/smorks/keepasshttp-connector/issues/46#issuecomment-346847247
+** (Or keyfiles, but keyfiles make no sense since when using YubiKeys.)
+** (Qubes and Qubes USBVM compatible.)
+
+* All implemented using Free, Open Source and Freedom Software.
+
+In total there are 3 factor authentication to arbitrary websites etc.:
+
+* first factor: password (to unlock keepassxc database) ("something you know")
+* second factor: YubiKey with key press (to unlock keepassxc database) (HMAC-SHA1) ("something you have")
+* third factor: google authentication / AndOTP (HTOP one time passwords) ("something you have")
+
+(Currently there is no factor "something you are", but I wouldn't know how to implement it for arbitrary websites. Above authentication setup should be complex [read breakage, difficult, lockout oneself] and secure enough. Rather than trying to hack these three factors, [[Malware]] would rather just hijack the web login session.)
+
+= YubiKey Info =
+* Configured yubikey configuration slot 1 with static password and configured yubkkey configuration slot 2 with challenge response. (google) U2F still working. Pretty awesome.
+
+* Could even enter my BIOS password using yubikey using a static yubikey password.
+
+* Static password works even for full disk encryption password entry. Either as a single factor or to increase the lenght of the password. It acts as a USB keyboard. Even works with Qubes. ([[Two-factor authentication 2FA|2FA]] vs BadUSB.)
+
+* Yubikey U2F (FIDO Universal 2nd Factor): no backup possible. (But U2F supporting services might support alternative login methods or multiple U2F (yubikey) keys.) Not an issue, since we won't be using yubikey for U2F.
+
+* Yubikey static passwords / HMAC-SHA1 challenge response: (paper) backup easily possible.
+
+* It might have a bug resetting keyboard layout to en-US but it's not a big deal.
+
+* Yubikeys supports storing OpenPGP (GnuPG / gpg) keys, OpenSSH keys, but I wouldn't trust it. Another yubikey model had a PIN bypass bug. ( https://developers.yubico.com/ykneo-openpgp/SecurityAdvisory%202015-04-14.html )
+
+= Static Password vs Challenge Response =
+protection goal:
+
+* deny unauthorized decryption of notebook full disk encryption when notebook is powered off, gets stolen and user password has been sniffed
+
+adversary capabilities:
+
+* [A] temporarily grab the YubiKey for a moment, temporarily attach the YubiKey to a prepared smartphone or similar, press YubiKey button, thereby steal the static password ("very easy")
+* [B] temporarily grab the YubiKey for a moment, extract challenge response secret key from smart chip through side channel or exploit ("harder")
+* [C] bruteforce or sniff (camera / side channel) user entered password
+* [D] unauthorized access to notebook (theft)
+
+We assume the adversary has succeeded with [C] plus [D].
+
+boot full disk encryption authentication methods:
+
+* YubiKey static password   : fails against adversary capability [A]
+* YubiKey static password   : fails against adversary capability [B]
+* YubiKey challenge response:  safe against adversary capability [A]
+* YubiKey challenge response: fails against adversary capability [B]
+
+Both authentication methods (Static Password; Challenge Response) are easy to program into YubiKey, allow easy legitimate clones to other YubiKeys as backup. Paper backups are also possible.
+
+In other words, YubiKey static password authentication fails when an adversary can get their hands on it for a moment. YubiKey challenge response is superior here since it is harder to extract the HMAC secret from the YubiKey.
+
+However, YubiKey challenge response authentication is much more complex. Speak: the chance of having an implementation which is so secure that the owners themselfes get locked out. More time consuming to develop, research, and setup for Qubes OS.
+
+Qubes OS YubiKey luks challenge response authentication:
+
+https://github.com/the2nd/ykluks
+
+{| class="wikitable" style="background-color:#fff;text-align:center"
+|- style="background-color: #f9f9f9"
+| || Static Password || Challenge Response
+|-
+| BIOS password entry
+| {{Yes}}
+| {{No}}
+|-
+| Boot Password Entry for Full Disk Encryption on Debian
+| {{Yes}}
+| {{Yes}}
+|-
+| Boot Password Entry for Full Disk Encryption on Qubes OS
+| {{Yes}}
+| difficult
+|-
+| Login
+| {{Yes}}
+| {{Yes}}
+|-
+| lightdm
+| {{Yes}}
+| {{Yes}}
+|-
+| xscreensaver
+| {{Yes}}
+| {{Yes}}
+|-
+| [[keepassxc]]
+| {{Yes}}
+| {{Yes}}
+|-
+| paper backups
+| {{Yes}}
+| {{Yes}}
+|-
+| ssh
+| {{Yes}}
+| {{Yes}} <ref>Probably, untested, very doable in theory.</ref>
+|-
+|}
+
+= Conclusion =
+
+2FA (Commonly refereed to as "Google Authenticator") works against simple phishing, i.e. the user sending their password by email to a scammer. Or in case the server's password database gets hacked but the 2FA database not.
+
+Against local compromise by [[malware]] nothing helps as the attacker can simply takeover the login session. The of 2FA usefulness is limited.
+
+YubiKey can help to strengthen passwords for login, screensavers, BIOS, full disk encryption and others. Or a stolen, powered off, full disk encrypted notebook might remain securely encrypted even though its password was leaked on camera as long as the adversary does not get its hand on the YubiKey too.
+
+= Table =
+
+{| class="wikitable" style="background-color:#fff;text-align:center"
+|- style="background-color: #f9f9f9"
+| || Protection
+|-
+| Simple Password phishing <ref>User replying to fraudulent password request by e-mail.</ref>
+| {{Yes}} <ref>With the password alone, no fraudulent login is possible.</ref>
+|-
+| redirection to phishing website <ref>Such as DNS spoofing or man-in-the-middle attacks.</ref>
+| {{No}} <ref>The user has to spot the browser SSL warning.</ref>
+|-
+| server password database hacked
+| {{Yes}} <ref>When the server password database was hacked, but the 2FA database not, malicious logins are prevented.</ref>
+|-
+| local compromise <ref>By [[Malware]]</ref>
+| {{No}} <ref>No protection against session hijacking.</ref>
+|}
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Development]]
