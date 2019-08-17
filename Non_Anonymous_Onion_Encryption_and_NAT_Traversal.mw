@@ -1,0 +1,158 @@
+{{Header}}
+{{#seo:
+|description=Using Tor for Onion Encryption / Authentication and NAT Traversal Only - Without Anonymity!
+|image=https://www.whonix.org/w/images/3/32/Nontanonymous213132.jpg
+}}
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = 
+Not anonymous!
+}}
+
+{{stub}}
+
+= Introduction =
+
+It is possible to make Tor on a server using a single Tor hop (only one Tor relay instead of three) by using Tor configuration options <code>HiddenServiceNonAnonymousMode 1</code>, <code>HiddenServiceSingleHopMode 1</code>. This is non-anonymous but faster. Server should use [[Onion_Services#Onion_Service_Authentication|Onions Services Authentication]]. The advantage of this is to have a server which is:
+
+* reachable (for users having access to Tor) for NAT traversal, i.e. it works behind common NAT routers.
+* capable to secure inherently insecure protocols (such as VNC) by using the encryption / authentication provided by Tor Onion Services
+
+Independently, if clients prefer speed over anonymity, they can configure Tor in Tor2Web mode, which means outgoing Tor circuits will have a length of one rather than three.
+
+These two options combined reduce a 6 hop Tor connection to a 2 hop Tor connection. It's not anonymous, but providing NAT traversal as well as onion encryption / authentication.
+
+https://forums.whonix.org/t/should-we-use-hiddenservicesinglehopmode-for-whonix-org-server
+
+= Server Side =
+{{Open_/usr/local/etc/torrc.d/50_user.conf}}
+
+Add.
+
+{{CodeSelect|code=
+HiddenServiceNonAnonymousMode 1
+HiddenServiceSingleHopMode 1
+SocksPort 0
+
+HiddenServiceDir /var/lib/tor/hidden_service/
+HiddenServicePort 22 127.0.0.1:22
+HiddenServicePort 5900 127.0.0.1:5900
+HiddenServiceVersion 3
+## syntax:
+## HiddenServiceAuthorizeClient auth-type client-name,client-name,…
+## The auth-type can either be 'basic' for a general-purpose authorization protocol or 'stealth' for a less scalable protocol that also hides service activity from unauthorized clients.
+## Valid client names are 1 to 16 characters long and only use characters in A-Za-z0-9+-_ (no spaces). 
+HiddenServiceAuthorizeClient stealth 1234567890123456
+}}
+
+Save and exit.
+
+= Client Side =
+{{Update}}
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+Install Tor's build dependencies.
+
+{{CodeSelect|code=
+sudo apt-get build-dep tor
+}}
+
+<ref>
+{{CodeSelect|code=
+sudo apt-get install zlib1g-dev libevent-dev asciidoc xmlto libsystemd-dev
+}}
+</ref>
+
+Create directory <code>~/tor-src</code>.
+
+{{CodeSelect|code=
+mkdir ~/tor-src
+}}
+
+Change directory to <code>~/tor-src</code>.
+
+{{CodeSelect|code=
+cd tor-src
+}}
+
+Download the Tor source package.
+
+{{CodeSelect|code=
+apt-get source tor
+}}
+
+Change directory to Tor source directory.
+
+{{CodeSelect|code=
+cd tor-*/
+}}
+
+{{Open_File|filename=
+debian/rules
+}}
+
+Change:
+
+{{CodeSelect|code=
+dh_auto_configure \
+        $(confflags) \
+        --prefix=/usr \
+        --mandir=\$${prefix}/share/man \
+        --infodir=\$${prefix}/share/info \
+        --localstatedir=/var \
+        --sysconfdir=/etc \
+        --disable-silent-rules \
+        --enable-gcc-warnings-advisory
+}}
+
+To:
+
+{{CodeSelect|code=
+dh_auto_configure \
+        $(confflags) \
+        --prefix=/usr \
+        --mandir=\$${prefix}/share/man \
+        --infodir=\$${prefix}/share/info \
+        --localstatedir=/var \
+        --sysconfdir=/etc \
+        --disable-silent-rules \
+        --enable-gcc-warnings-advisory \
+        --enable-tor2web-mode
+}}
+
+{{Open_File|filename=
+src/or/config.c
+}}
+
+Change
+
+{{CodeSelect|code=
+V(Tor2webMode,                 BOOL,     "0"),
+}}
+
+To
+
+{{CodeSelect|code=
+V(Tor2webMode,                 BOOL,     "1"),
+}}
+
+Build the Tor package.
+
+{{CodeSelect|code=
+debuild
+}}
+
+<ref>
+* https://github.com/globaleaks/Tor2web/wiki/Installation-Guide
+* https://github.com/globaleaks/Tor2web/issues/327
+</ref>
+
+= Footnotes =
+
+{{Footer}}
+
+[[Category:Documentation]]
