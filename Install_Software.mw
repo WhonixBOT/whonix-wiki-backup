@@ -1,0 +1,392 @@
+{{Title|title=Install Additional Software Safely}}
+{{Header}}
+{{#seo:
+|description=Installing additional Software on {{project_name}}. Safety considerations.
+|image=https://www.whonix.org/w/images/7/7e/Software-871026-640.jpg
+}}
+
+= Easy =
+== Introduction ==
+{{mbox
+| image   = [[File:Ambox_notice.png|40px]]
+| text    =
+[[{{q_project_name_short}}|{{q_project_name}}]] users need to [https://qubes-os.org/doc/software-update-vm/ install and update persistant software] in the {{workstation_product_name}} TemplateVM(s) (<code>{{whonix-ws}}</code>). 
+-----
+Using ''apt-get'' in the a TemplateBased AppVM (<code>anon-whonix</code>) will only install software for the current session, with changes being lost when the VM is shut down; see [[#Install_Software_in_a_TemplateBasedVM|Install Software in a TemplateBasedVM]].
+}}
+
+A primary {{project name}} goal is to greatly reduce the risk posed by (additional) software installations that are not exclusively designed to work with Tor.
+
+Users can install any software inside {{workstation_product_name}} using [[#APT|apt-get]], since it is [[Support#Free_Support_Principle|based on Debian]]. However, this is <i>not</i> a recommendation for installing additional software.
+
+{{project_name}} is currently the most secure platform for running Tor-unsafe applications like Adobe Flash; see the [[Comparison_with_Others#Flash_.2F_Browser_Plugin_Security|operating system comparison]].
+
+The [[Software|{{project_name}} software]] page lists:
+
+* Pre-installed {{project name}} applications which are available for different tasks.
+* Recommended software for different user activities.
+* Safety advice.
+* Installation instructions.
+
+== Install from Debian stable ==
+To install a package from Debian stable, follow the steps below. Replace <code>package-name</code> with the name of the software you want to install.
+
+{{Install_Package
+|package=package-name
+}}
+
+There are numerous examples of this procedure in the [[Software]] chapter and throughout the wiki.
+
+= Best Practices =
+
+'''Table:''' ''Best Software Installation Practices''
+
+{| class="wikitable"
+|-
+! scope="col"| '''Domain'''
+! scope="col"| '''Advice'''
+|-
+! scope="row"| Prefer APT
+| 
+* The safest option is to stick with Debian's official package manager <code>APT</code>. This is referenced throughout the wiki whenever the user runs <code>apt-get</code>. <br />
+* <code>APT</code> is a secure package manager which passes the TUF threat model, since it features metadata verification and expiration detection. <ref name=tufaaw>https://github.com/theupdateframework/tuf/blob/develop/SECURITY.md http://www.webcitation.org/6F7Io2ncN</ref> <ref>
+https://www2.cs.arizona.edu/stork/packagemanagersecurity/attacks-on-package-managers.html
+</ref>
+|-
+! scope="row"| Avoid Third Party Package Managers
+| 
+* There are many third party package managers besides <code>APT</code>, however many lack the security safeguards that are standard in Debian. Popular examples are <code>pip</code> and <code>node.js</code>. <br />
+* The security concern with third party options is they do not verify the code comes from the author. When used, these package managers run processes that pull untrusted code from the Internet and perform operations with root level permissions. <br />
+* If a trusted Workstation VM is required for sensitive use cases such as a Bitcoin wallet, then completely avoid this option. <ref>https://web.archive.org/web/20170919173146/https://arstechnica.com/information-technology/2017/09/devs-unknowingly-use-malicious-modules-put-into-official-python-repository/</ref> <ref>The pip developers refused to implement any kind of proper GPG signature verification, [https://github.com/pypa/pip/issues/1035 opting to support server HTTPS instead] which is a lot weaker. While the TUF secure updater project has [https://theupdateframework.github.io/ implemented a safe version of pip], it is not clear how widely it has been adopted and whether it will become popular.</ref>
+|-
+! scope="row"| Avoid Manual Software Installation
+| 
+* Generally avoid the manual installation of packages, even trusted ones. In practice that means software should only be installed with <code>apt-get</code>, unless special circumstances exist. <ref>Such as desirable software versions that are not yet bundled in the official repositories.</ref> <br />
+* Other risks: foreign packages are often unsigned, and users may forget to regularly update the software.
+|-
+! scope="row"| Always Verify Signatures
+| 
+* For greater system security, it is strongly recommended to avoid installing unsigned software. Always make sure that [[Verifying_Software_Signatures|signing keys and signatures are correct]] and/or use mechanisms that heavily simplify and automate this process, like [[Operating_System_Software_and_Updates#Updates|apt-get upgrades]]. <br />
+* Note: digital signatures are not a magic bullet. While they increase the certainty that no backdoor was introduced by a third party during transit, this does not mean the software is absolutely "backdoor-free". Learn more about this process and [[Verifying_Software_Signatures#What_Digital_Signatures_Prove|what digital signatures prove]].
+|-
+{{Anchor|Prefer Packages from Debian Stable Repository}}
+! scope="row"| Prefer Packages from Debian Stable Repository
+| 
+* Considering the risks, it is safest to install new software from Debian's stable repository, rather than the testing / unstable or third party repositories -- the [https://www.debian.org/doc/manuals/debian-faq/ch-choosing.en.html#s3.1 Debian FAQ] provides a strong rationale for using the stable repository; see footnote. <ref><blockquote>
+If security or stability are at all important for you: install stable. period. This is the most preferred way.<br />
+...<br />
+Since there is typically over 1 year between releases you might find that stable contains old versions of packages. However, they have been tested in and out. One can confidently say that the packages do not have any known severe bugs, security holes etc., in them. The packages in stable integrate seamlessly with other stable packages. These characteristics are very important for production servers which have to work 24 hours a day, 7 days a week. <br />
+...<br />
+Stable is rock solid. It does not break and has full security support. But it might not have support for the latest hardware.<br /> <br />
+
+On the other hand, packages in testing or unstable can have hidden bugs, security holes etc. Moreover, some packages in testing and unstable might not be working as intended.
+</blockquote></ref> <br />
+* Only advanced users should attempt to mix packages from Debian testing or Debian unstable. The reason is it can lead to a [[#Dependency Hell|dependency hell]], making it very difficult to resolve the breakage of APT package management. <br />
+* To use newer package versions, Debian backports <ref>[http://backports.debian.org Debian Backports]: "Backports are packages taken from the next Debian release (called "testing"), adjusted and recompiled for usage on Debian stable."</ref> is a far safer alternative than the Debian testing or unstable repositories. However, Debian backports should be used conservatively; see footnote. <ref>
+<blockquote>
+Backports cannot be tested as extensively as Debian stable, and backports are provided on an as-is basis, with risk of incompatibilities with other components in Debian stable. Use with care!
+</blockquote>
+</ref> For instructions on using Debian backports, see [[#Backports|here]].
+|}
+
+= More Security =
+
+== General Advice ==
+
+{{project_name}} users are free to install their favorite software packages, but should be aware that additional software increases the [https://en.wikipedia.org/wiki/Attack_surface attack surface] of the platform. Almost any application can be installed, with a few exceptions for programs that are [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Howtotorifyspecificprograms impossible to torify]. In addition, {{project name}} provides:
+
+* Protection from IP and DNS leaks (see above for details).
+* Partial protection against [[Protocol-Leak-Protection and Fingerprinting-Protection|protocol leaks and fingerprinting]], but this is far from perfect.
+
+Users are responsible for trying to prevent any other [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Protocolleaks protocol leaks] using the [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO "Torify: How-to" guide], but most of those are mitigated by {{project_name}}.
+
+== apt-get Meta-data ==
+
+When updating with <code>apt-get</code>, information will leak about which software packages and versions have been installed, unless [[Onionizing_Repositories|Tor onion repositories]] have been configured. <ref>See [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Softwareupdaters software updaters] for more information on this topic.</ref> This meta-data cannot be directly linked to any other activity like web browsing, because the {{project name}} <i>apt-get</i> uwt wrapper forces it to pass through its own circuit. Despite this isolation, it is still possible for updates to be [[Stream Isolation|correlated]] with the same pseudonym. <ref>Consider the following example. A user announces online that software X is being utilized, and another specific application set x, y, and z is installed. If this information becomes available to an adversary and the circuit-isolated <i>apt-get</i> passes through any Tor exit relays, mirrors or ISPs under their control, then they may guess it is associated with the same pseudonym. In that case, the adversary has a list of the user's installed packages, and can attempt a stale mirror attack (if the user has a [[Ubuntu Tips#About_Ubuntu|custom Ubuntu build]]), or try other attacks against <i>apt-get</i>.</ref> <ref>As per the previous footnote, this threat equally applies to users who run an onion service with a specific set of server software, for example apache, mediawiki, phpbb, and others.</ref>
+
+== Recommendations ==
+
+For greater security when updating:
+
+* Follow the guidelines [[#How to install or update with most caution?|below]].
+* Be especially careful when adding custom repositories, particularly Personal Package Archives (PPAs). Single developers are more easily pressured and/or likely to have malicious intent than the main distribution repositories.
+* Read the [[Protocol-Leak-Protection and Fingerprinting-Protection|protocol leak and fingerprinting protection]] entry first. It highlights useful information, like the fact that DNS and IP-related leaks do not apply to {{project_name}}.
+* Refer to the Tor Project's [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO Torify: How-to] which discusses various [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Protocolleaks protocol leaks] and how to mitigate them.
+* Review the Tor Project's [https://trac.torproject.org/projects/tor/wiki/doc/TransparentProxyLeaks Transparent Proxy Leaks] documentation, which is particularly relevant for Microsoft Windows.
+
+== How-to: Install or Update with Utmost Caution ==
+
+# Stop all activities and shutdown any open applications like Tor Browser.
+# Change the Tor circuit (this step may not apply if the user is running an onion service). <ref>One option is using [[Tor Controller|Arm]]: Navigate to {{gateway_product_name}} ([[{{q project name short}}|{{q project name}}]]: <code>sys-whonix</code>) and select
+<code>Arm - Tor Controller</code>. Press <code>n</code> for a "New Identity". Alternatively, press <code>m</code> for the menu, scroll down to ''New Identity'' and press <code>Enter</code>.</ref>
+# Update using apt-get after a random delay. By default, a new Tor circuit is generated after 10 seconds.
+# Change the Tor circuit again.
+# Continue user activities after another random period has elapsed.
+
+= {{workstation_product_name}} is Firewalled =
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = '''Note:''' This section is for users interested in server software or other advanced / uncommon applications.
+}}
+
+The {{gateway_product_name}} firewall <ref>The firewall is found on the {{gateway_product_name}}: <i>{{W_Firewall}}</i></ref> has several effects upon the {{workstation_product_name}}:
+
+* Incoming connections are not supported.
+** If programs make outgoing connections, then incoming connections are accepted for web browsing, IRC, or other relevant applications.
+** Server [[Ports|ports]] ("open ports") are blocked.
+** The Ident Protocol / web server listening port is not reachable, unless it is explicitly configured.
+* [[Onion Services]] can be hosted.
+* Standard DNS requests on UDP port 53 are redirected to Tor's DnsPort. <ref>If the DNS server is changed in {{workstation_product_name}} <i>/etc/resolv.conf</i>, this will likely have no effect. The reason is the firewall on {{gateway_product_name}} will redirect all those requests to Tor's DnsPort. The working exception to this rule is when users tunnel / encrypt DNS requests (DNSCrypt, httpsdnsd), as per the [[Secondary DNS Resolver|secondary DNS resolver instructions]].</ref>
+
+Also note:
+
+* [[Tor#UDP|Tor does not support UDP]]. This is not a {{project_name}}-specific issue.
+* Tor only [https://trac.torproject.org/projects/tor/wiki/org/roadmaps/Tor/IPv6Features partially supports IPv6], although full implementation is likely in the near term. <ref>
+The only missing elements at the time of writing were automatic client connections and inter-relay connections via IPv6. Bridges are fully supported. See also: [https://trac.torproject.org/projects/tor/wiki/org/roadmaps/Tor/IPv6 IPv6 roadmap].
+</ref> This is not a {{project_name}}-specific issue. <ref>
+https://phabricator.whonix.org/T509
+</ref>
+* {{TorifiedGateway}} Users should read the footnotes on the left-hand side.
+
+The firewall on the {{gateway_product_name}} is very restrictive. It can be made even more restrictive by activating <i>#OptionalFeatureNr.3#</i> within the firewall script. It is possible to limit which outgoing ports are redirected to Tor's TransPort. Depending on what the user is trying to achieve, it could also be useful to remove all SocksPorts.
+
+Related:
+
+* [[{{workstation product name short}}_Firewall|{{workstation_product_name}} Firewall]]
+* [[Ports]]
+
+= Advanced =
+== Backports ==
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = Replace <code>package-name</code> below with the package you actually want to install.
+}}
+
+{{Install Backport|package=
+package-name
+}}
+
+== Install from Debian Testing ==
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = Mixing packages from Debian <code>stable</code> with those from a later release like <code>testing</code> can destabilize the system due to associated software [[#Dependency_Hell|dependencies]] required for full functionality.
+}}
+
+Before completing steps in this section, first read [[#Prefer Packages from Debian Stable Repository|Prefer Packages from Debian Stable Repository]]. Carefully check how packages will change before proceeding -- a host of upgrades is usually safe, but no {{project name}} packages should be removed as part of the process; see [[{{project name short}} Debian Packages]]. Be aware that problems are still possible - see [https://forums.whonix.org/t/modulenotfounderror-no-module-named-distutils-spawn/6826 here] for an example. 
+
+It is recommended to complete this process in a [[Multiple_{{workstation_product_name_short}}|separate {{workstation_product_name}}]] (<code>{{whonix-ws}}-debian-testing-mix</code>) due to the risks. Ask for advice in the forums on a case-by-case basis.
+{{Box|text=
+'''1.''' Boot the {{workstation_product_name}} (<code>{{whonix-ws}}-debian-testing-mix</code>) TemplateVM.
+
+'''2.''' Add the current Debian testing codename <code>{{Debian_Codename_Testing}}</code> to ''sources.list'' 
+
+Note: this applies to {{project name}} 14. Later {{project name}} versions may use a codename different to <code>{{Debian_Codename_Testing}}</code>.
+
+In the {{workstation_product_name}} (<code>{{whonix-ws}}-debian-testing-mix</code>) TemplateVM, run.
+
+{{CodeSelect|code=
+sudo su -c "echo -e 'deb http://http.debian.net/debian {{Debian_Codename_Testing}} main' > /etc/apt/sources.list.d/testing.list"
+}}
+
+Or alternatively use the <i>.onion</i> mirror. 
+
+{{CodeSelect|code=
+sudo su -c "echo -e 'deb tor+http://{{Debian_onion}}/debian {{Debian_Codename_Testing}} main' > /etc/apt/sources.list.d/testing.list"
+}}
+
+'''3.''' [[Update#Updates|Update]] the package lists.
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+'''4.''' Install the select software.
+
+{{CodeSelect|code=
+sudo apt-get -t {{Debian_Codename_Testing}} install packagename
+}}
+
+* Replace <code>packagename</code> with the package you actually want to install.
+
+The procedure is now complete.
+
+'''5.''' Undo.
+
+On occasion it is necessary to undo this configuration, for example when upgrading from Debian <code>{{Stable_project_version_based_on_Debian_codename}}</code> to <code>{{Debian_Codename_Testing}}</code>. <ref>Most often this step applies before attempting major {{project name}} upgrades; upgrade instructions are also made available at that time (see [[Stay_Tuned|Stay Tuned]]).</ref> To proceed, run.
+
+{{CodeSelect|code=
+sudo rm /etc/apt/sources.list.d/testing.list
+}}
+}}
+
+== Install from Debian Unstable ==
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Managing security updates for the "stable" distribution remains the hightest priority for the Debian security team. This means security-fixes for Debian "unstable" are managed by the maintainers themselves and not not by the Debian security team. Therefore, "unstable" does not receive security updates in a timely manner.<ref>https://www.debian.org/releases/sid/</ref> <ref>https://www.debian.org/security/faq#unstable</ref> 
+}}
+
+Before completing steps in this section, first read [[#Prefer Packages from Debian Stable Repository|Prefer Packages from Debian Stable Repository]].
+
+Mixing packages from Debian <code>stable</code> with those from a later release like <code>unstable</code> can destabilize the system due to associated software [[#Dependency_Hell|dependencies]] required for full functionality. First carefully check how packages will change before proceeding. <ref>See: https://wiki.debian.org/DebianUnstable#What_are_some_best_practices_for_testing.2Fsid_users.3F</ref> 
+
+A host of upgrades is usually safe, but no {{project name}} packages should be removed as part of the process; see [[{{project name short}} Debian Packages]]. It is recommended to complete this process in a [[Multiple_{{workstation_product_name_short}}|separate {{workstation_product_name}}]] (<code>{{whonix-ws}}-debian-unstable-mix</code>) due to the risks. Ask for advice in the forums on a case-by-case basis.
+
+{{Install Unstable|
+package=package-name
+}}
+
+== Package Reinstallation ==
+As per the [[Support#Free_Support_Principle|free support principle]], package reinstallation utilizes normal Debian processes.
+
+The example below shows how the {{Code2|thunderbird}} package would be reinstalled. It is possible to  substitute {{Code2|thunderbird}} with many other packages, so long as they do not have too many dependencies. These instructions are not suitable for any packages needed for connectivity such as {{Code2|tor}}, because the reinstallation would be very difficult and is currently [[unsupported]].
+
+Even in the {{Code2|thunderbird}} package example, dependency complications emerge. The {{Code2|anon-workstation-packages-recommended}} package also depends on {{Code2|thunderbird}}. Further, the {{Code2|whonix-workstation}} package depends on {{Code2|anon-workstation-packages-recommended}}.
+{{Box|text=
+'''1.''' Update the package lists and upgrade. 
+
+See [[Operating_System_Software_and_Updates#Updates|Updates]] for instructions.
+
+'''2.''' Purge the package you want to reinstall.
+
+{{CodeSelect|code=
+sudo apt-get purge thunderbird
+}}
+
+The output will show something like the following.
+
+<pre>
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following packages will be REMOVED:
+  anon-workstation-packages-recommended* thunderbird* whonix-workstation*
+0 upgraded, 0 newly installed, 3 to remove and 0 not upgraded.
+After this operation, 90.8 MB disk space will be freed.
+Do you want to continue? [Y/n] 
+(Reading database ... 100681 files and directories currently installed.)
+Removing whonix-workstation (3:2.9-1) ...
+Removing anon-workstation-packages-recommended (3:2.9-1) ...
+Removing thunderbird (38.4.0esr-1~deb8u1) ...
+Purging configuration files for thunderbird (38.4.0esr-1~deb8u1) ...
+Processing triggers for hicolor-icon-theme (0.13-1) ...
+Processing triggers for menu (2.1.47) ...
+Processing triggers for man-db (2.7.0.2-5) ...
+Processing triggers for desktop-file-utils (0.22-1) ...
+Processing triggers for qubes-core-agent (3.0.20-1+deb8u1) ...
+Processing triggers for mime-support (3.58) ...
+</pre>
+
+The packages {{Code2|anon-workstation-packages-recommended}} and {{Code2|whonix-workstation}} have been inadvertently uninstalled due to technical limitations. <ref>[[{{project name short}}_Debian_Packages#Technical_Stuff]]</ref> These packages are reinstalled at a later step.
+
+'''3.''' Delete the user configuration folder if that is desired. 
+
+In this {{Code2|thunderbird}} example, the user configuration folder is specified below (it changes depending on the package).
+
+{{CodeSelect|code=
+rm -r ~/.thunderbird
+}}
+
+'''4.''' Reinstall the {{Code2|thunderbird}} package and the additional packages that were purged. 
+
+The <code>--no-install-recommends</code> parameter below is optional.
+
+{{CodeSelect|code=
+sudo apt-get install --no-install-recommends thunderbird anon-workstation-packages-recommended whonix-workstation
+}}
+
+Related to: [[{{project name short}} Debian Packages]].
+}}
+
+== Install Software in a TemplateBasedVM ==
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = [[{{q_project_name_short}}|{{q_project_name}}]] only! Custom scripting is recommended, which is beyond the scope of this entry. Numerous free articles and instructions can be easily found with a search engine.   
+}}
+
+There is no reason to avoid installing software in [https://www.qubes-os.org/doc/glossary/#templatebasedvm TemplateBasedVMs], although software installed this way will not persist across reboots. Users can opt to use a custom script to automate this process, thereby minimizing time spent re-installing packages. 
+
+=== Advantages ===
+
+This software installation method means a single [https://www.qubes-os.org/doc/glossary/#vm VM] assumes many of the positive characteristics found in both TemplateBasedVMs and [https://www.qubes-os.org/doc/glossary/#standalonevm StandaloneVMs].
+
+*<u>Centralized Updates:</u> [https://www.qubes-os.org/doc/glossary/#templatebasedvm AppVMs] are based on a [https://www.qubes-os.org/doc/glossary/#templatebasedvm TemplateVM]. This means the AppVM's root filesystem is based on the corresponding template's root filesystem. Users need only update the TemplateVM and those updates will be reflected in the TemplateBasedVM's root filesystem upon restart.<ref name="qubes-software">[https://www.qubes-os.org/doc/software-update-vm/ Qubes install software]</ref>
+*<u>Minimal Disk Usage:</u> TemplateBasedVMs require much less disk space than StandaloneVMs, since the AppVM's root filesystem is based the corresponding template. The AppVM only requires enough disk space to hold user files in the <code>/home</code> directory.
+*<u>Semi-persistent Storage:</u> User data stored in <code>/home</code> , <code>/rw</code> and <code>/usr/local</code> survives reboot. Many applications like [https://www.whonix.org/wiki/Signal Signal] and [https://en.wikipedia.org/wiki/Wire_(software) Wire] store user data in the <code>/home</code> folder. Since the custom script installs the software seamlessly with little or no user interaction, the AppVM has <i>"quasi-full persistence"</i>, not unlike a StandaloneVM's full persistence.
+
+=== AppVM Preparation ===
+{{Box|text=
+'''1.''' Create an AppVM based on <code>{{whonix-ws}}</code>.
+
+'''2.''' Pre-install any necessary dependencies.
+
+Dependencies are available from [https://packages.debian.org/stable/ packages.debian.org] and can be pre-installed in the TemplateVM to speed up the repetitive software installation process. This means only packages or software missing from [https://packages.debian.org/stable packages.debian.org] will be repeatedly installed in the AppVM.
+
+'''3.''' Create a custom script that runs at VM boot. 
+
+The purpose of this script is to automate software installation that would otherwise require manual user steps. Note that script functionality is variable, dependent on the software packages being installed and the experience of the user.
+
+Scripting is useful for common tasks such as:  
+
+* Adding specific software repositories.
+* Importing verified signing keys.
+* Updating the package list with <code>apt-get update</code>, after the repository and signing key are imported.
+* Finally running <code>apt-get install</code> to install the relevant software package(s).
+}}
+
+=== AppVM Use ===
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = The AppVM's root filesystem does not provide a strong [https://www.qubes-os.org/doc/software-update-vm/#note-on-treating-appvms-root-filesystem-non-persistence-as-a-security-feature non-persistent security feature]. The persistence of the <code>/home</code>, <code>/rw</code>, and <code>/usr/local</code> filesystem means malware can be specifically written to target Qubes-based AppVMs, inserting hooks inside these directory's files. <ref>https://www.qubes-os.org/doc/software-update-vm/#note-on-treating-appvms-root-filesystem-non-persistence-as-a-security-feature</ref> <ref>Obvious hook targets include .bashrc, the Firefox profile directory (which contains extensions), or PDF or DOC documents that are likely to be opened by the user.</ref>
+}}
+
+Once user preparation is complete and the AppVM is started, it will automatically start the script to begin installing software. When the process finishes, the AppVM can be used like any other TemplateBasedVM. However when the AppVM is shutdown, all data outside of the persistent <code>/home</code> folder will be lost, including the newly installed software packages. Following reboot, the VM will again install the software packages automatically.
+
+=== Using bind-dirs Selective Persistence ===
+
+Using selective [https://www.qubes-os.org/doc/bind-dirs/ bind-dirs] persistence is currently a difficult problem and undocumented. Further research is required to ascertain which files require persistence across VM reboots.
+
+== Add Application Launcher to Start Menu ==
+{{Launcher
+|name=program-name
+|path=/path/to/program
+|categories=Other
+}}
+
+= Foreign Sources =
+
+In most cases, the extensive software range available from the official Debian repositories should be enough to satisfy the user's needs. A selection of more than 50,000 programs can be installed within a couple of steps. These packages are constantly maintained for bug/security fixes and tightly integrated to provide a stable distribution. 
+
+To guarantee stability, no new versions are uploaded to Debian stable archives to avoid breaking the system. This makes Debian stable a dependable distribution and an excellent base for downstream distributions. However, the Linux software scene is very dynamic and sometimes the user will want software that is not yet packaged in Debian. In this instance, it may be necessary to install software from separate sources; either from third party repositories, as a stand-alone precompiled <i>.deb</i> binary, or directly compiled source packages. <ref>https://www.debian.org/doc/manuals/debian-faq/ch-pkg_basics.en.html</ref>
+
+== Risks ==
+The use of foreign sources should be kept to a minimum, as it may cause problems. Note this is simply a warning about the worst case scenario and not a predetermined outcome of installing third party software.
+
+=== Security Issues ===
+Keep in mind that foreign sources pose important security implications for the user's system. Installing software is tantamount to granting root privileges to the developers. Software originating from dubious sources could replace important system components with malicious versions that allow backdoors or [https://en.wikipedia.org/wiki/Trojan_horse_%28computing%29 Trojan horses] to be installed on the system.
+
+In general, the installation of software is a matter of trust. The fact is that users have to trust every software source they install. This trust is two-fold: firstly that the developers have integrity, and secondly that the community will notice any suspicious code, which might indicate compromise of the developers' machines. <ref>With reproducible package builds on the horizon, the security risk from the second factor will be minimal in the future.</ref>
+
+=== Dependency Hell ===
+Manually installed packages can contain library versions not available in the standard repositories. This causes problems with dependency resolution when installing additional software from the official repository. Individual applications are less critical in this context, but when important system libraries in the third-party software are considered, complications are inevitable.
+
+Depending on the severity of the complications, upgrades to the next version of the operating system might fail, or the system may become unbootable or generally unstable.
+
+=== Mitigation ===
+Users can reduce [[#Security Issues|security risks]] and eliminate [[#Dependency Hell|the risk of making the workstation unusable]] by using [[Multiple {{workstation_product_name_short}}|Multiple {{workstation_product_name}}s]].
+
+= GUI Applications with Root Rights =
+Moved to [[root#Graphical Applications with Root Rights|root - Graphical Applications with Root Rights]].
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
