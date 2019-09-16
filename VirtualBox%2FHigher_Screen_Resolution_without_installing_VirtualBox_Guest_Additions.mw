@@ -1,0 +1,111 @@
+{{Header}}
+{{#seo:
+|description=Higher Screen Resolution without installing VirtualBox guest additions
+|image=https://www.whonix.org/w/images/5/55/Anaglyph-102548640.jpg
+}}
+
+= Higher Screen Resolution without installing VirtualBox guest additions =
+'''This is still experimental.''' As in tested by few people. You should always be able to undo these changes. Doesn't hurt to always have a recent backup, just in case. This is an alternative to using [[VirtualBox/Guest Additions|VirtualBox Guest Additions]] for higher screen resolution. See also [[#Security Considerations]].
+
+To get higher screen resolution without installing VirtualBox guest additions, create a file called, say {{Code2|/etc/X11/xorg.conf.d/00-virtualbox-monitor.conf}}.
+
+If there's no such directory, you need to create it first:
+
+{{CodeSelect|code=
+sudo mkdir -p /etc/X11/xorg.conf.d
+}}
+
+{{Open with root rights|filename=
+/etc/X11/xorg.conf.d/00-virtualbox-monitor.conf
+}}
+
+With the following contents:
+
+{{CodeSelect|code=
+Section "Device"
+  Identifier "VirtualBox-Device"
+  Option "Monitor-default" "VirtualBox-Monitor"
+EndSection
+
+Section "Monitor"
+  Identifier "VirtualBox-Monitor"
+  VendorName "VirtualBox"
+  ModelName "VirtualBox"
+  HorizSync 1.0 - 1000.0
+  VertRefresh 1.0 - 1000.0
+  Option "MinClock" "1.0"
+  Option "MaxClock" "10000.0"
+  Option "Primary" "True"
+  Option "PreferredMode" "1600x1200"
+EndSection
+
+Section "Screen"
+  Identifier "MyScreen"
+  Device "VirtualBox-Device"
+  Monitor "VirtualBox-Monitor"
+EndSection
+}}
+
+And {{Code2|restart lightdm}}<ref name=restart-lightdm /> or reboot.
+
+This will make {{project_name}} come up in 1600x1200 mode by default.
+
+You can change the default mode by changing the "{{Code2|PreferredMode}}" option in the "{{Code2|Monitor}}" section. You can dynamically switch modes from the command line with "{{Code2|xrandr --output default --mode [whatever]}}", and you can see a list of available modes with plain "{{Code2|xrandr}}".
+
+You can also change screen resolution using the KDE graphical user interface, go to Start Menu &rarr; System Settings &rarr; Display and Monitor. If you want some screen resolution that is not listed there (e.g. 1440x900), you can can try the next on your host:
+
+{{CodeSelect|code=
+vboxmanage setextradata "VM Name" "CustomVideoMode1" "1440x900x32"
+}}
+
+If you do not see your Start Menu button anymore (because it is outside the screen), you can start Konsole and manually start System Settings by running {{Code2|systemsettings}}.
+
+==Ubuntu==
+
+If Ubuntu 14.04 has a screen resolution of 640x480 you may be able to get 1024x768 by simply by running xdiagnose and changing any setting under Debug. Marking them all or unmarking "Enable automatic crash reporting", are reported to work. Reboot.
+
+= Security Considerations =
+* It [https://trac.torproject.org/projects/tor/ticket/7255 might] be better not to maximize the [[Tor Browser]] window.
+* To prevent accidentally maximizing a window, it is recommend to deactivate the following option: {{Code2|KDE &rarr; System Settings &rarr; Screen Edges &rarr; Uncheck: Maximize Windows by dragging them to the top of the screen.}}
+* It might also be better not to use the same screen resolution as on your host.
+
+= Troubleshooting =
+If this doesn't work for you for some reason or if you want to revert these changes, simply delete {{Code2|/etc/X11/xorg.conf.d/00-virtualbox-monitor.conf}}.
+
+{{CodeSelect|code=
+sudo rm /etc/X11/xorg.conf.d/00-virtualbox-monitor.conf
+}}
+
+And {{Code2|restart lightdm}}<ref name=restart-lightdm>
+{{CodeSelect|code=
+sudo service lightdm stop
+}}
+
+{{CodeSelect|code=
+sudo service lightdm start
+}}
+</ref> or reboot.
+
+= Technical Stuff =
+== EDID ==
+By anonymous user.
+<blockquote>
+The reason you can't just get higher resolutions using {{Code2|xrandr}} "{{Code2|--newmode}}" and "{{Code2|--addmode}}" without an xorg.conf file appears to be that VirtualBox is not providing EDID information to the default VESA driver. The driver therefore makes the conservative assumption that it can't drive the "monitor" with the high clock rates needed for larger display sizes. The above config file tells the driver that it can use an effectively infinite range of clock rates.
+</blockquote>
+
+See [[Protocol-Leak-Protection_and_Fingerprinting-Protection#VirtualBox|VirtualBox get-edid output]].
+
+== How to use xserver-xorg-video-modesetting? ==
+* No reply from maintainers of the [https://packages.debian.org/source/jessie/xserver-xorg-video-modesetting xserver-xorg-video-modesetting] package.
+* No reply from [https://lists.debian.org/debian-user/2013/05/msg00745.html debian-user mailing list].
+* Maybe helpful:
+** http://wiki.gentoo.org/wiki/Xorg/Configuration#Kernel_modesetting
+** https://wiki.debian.org/KernelModesetting
+** http://manpages.debian.org/modesetting
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
