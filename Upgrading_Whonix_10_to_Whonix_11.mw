@@ -1,0 +1,610 @@
+__NOINDEX__
+{{Header}}
+{{#seo:
+|description=How to Upgrade from {{project_name}} 10.x to {{project_name}} 11.x
+}}
+
+= Before you start =
+== If you want to upgrade {{gateway_product_name}} as well as {{workstation_product_name}} ==
+1. Backup your data. (Ideally have a copy of your VM, so you can try again.) <br />
+2. Consider running the optional [[#Sanity Tests]]. <br />
+3. Upgrade {{workstation_product_name}}. <br />
+4. Power off {{workstation_product_name}}. <br />
+5. Upgrade {{gateway_product_name}}. <br />
+6. Restart {{gateway_product_name}}. <br />
+7. Restart {{workstation_product_name}} <br />
+
+== If you only want to upgrade {{workstation_product_name}} ==
+1. Backup your data. (Ideally have a copy of your VM, so you can try again.) <br />
+2. Consider running the optional [[#Sanity Tests]]. <br />
+3. Upgrade {{workstation_product_name}}. <br />
+4. Power off {{workstation_product_name}}. <br />
+5. [[Download|Get]] {{gateway_product_name}}. <br />
+6. Start {{gateway_product_name}}. <br />
+7. Start {{workstation_product_name}} <br />
+
+You can ignore the following errors.
+
+== Non-Critical Errors / Warnings ==
+<pre>
+[Jun 09 15:39:42] WARNING torsocks[18737]
+</pre>
+
+Other warnings / errors should be reported.
+
+= Sanity Tests =
+<pre>
+sudo dpkg --audit ; echo $?
+</pre>
+
+Expected output.
+
+<pre>
+0
+</pre>
+
+<pre>
+sudo dpkg --configure -a ; echo $?
+</pre>
+
+Expected output:
+
+<pre>
+0
+</pre>
+
+[[Security_Guide#Updates|Get package upgrades.]]
+
+<pre>
+sudo apt-get update
+</pre>
+
+<pre>
+sudo apt-get dist-upgrade
+</pre>
+
+Test wise install python-qt4.
+
+<pre>
+sudo apt-get install python-qt4 ; echo $?
+</pre>
+
+<pre>
+## ... successful installation of python-qt4 ...
+0
+</pre>
+
+= Known Issues =
+== General ==
+Upgrade of the whonix-gw-desktop-shortcuts, whonix-ww-desktop-shortcuts could take a while. <ref>
+During
+<pre>
+sudo -u user ln -s /usr/share/applications/kde4/konsole.desktop /home/user/Desktop/
+</pre>
+</ref> The output "sudo: unable to resolve host host" is expected. No big issue. Just annoying time sunk. Will be fixed after upgrade.
+
+== Qubes specific ==
+[[Qubes]] specific.
+
+=== apt-get not linked warning ===
+<pre>
+*** OMINOUS WARNING ***: /usr/bin/apt-get is not linked to either apt-get.anondist or apt-get.anondist-orig
+</pre>
+
+Can be ignored. (Something we ought to fix for {{project_name}} 12.)
+
+=== warning: setlocale: LC_ALL: ===
+[[Qubes]] specific.
+
+<pre>
+/bin/bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+/bin/bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+</pre>
+
+TODO
+
+=== Configuring iptables-persistent dialog ===
+[[Qubes]] specific. ([https://github.com/QubesOS/qubes-core-agent-linux/pull/2 ticket])
+
+<pre>
+Package configuration                                                                                                 
+ ┌───────────────────────────────────────┤ Configuring iptables-persistent ├───────────────────────────────────────┐  
+ │                                                                                                                 │  
+ │ Current iptables rules can be saved to the configuration file /etc/iptables/rules.v4. These rules will then be  │  
+ │ loaded automatically during system startup.                                                                     │  
+ │                                                                                                                 │  
+ │ Rules are only saved automatically during package installation. See the manual page of iptables-save(8) for     │  
+ │ instructions on keeping the rules file up-to-date.                                                              │  
+ │                                                                                                                 │  
+ │ Save current IPv4 rules?                                                                                        │  
+ │                                                                                                                 │  
+ │                                 <Yes>                                    <No>                                   │  
+ │                                                                                                                 │  
+ └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘  
+</pre>
+Say no. (Just keep the default=N. Just press enter.)
+
+=== Configuring base-passwd  ===
+Qubes specific.
+
+<pre>
+Package configuration                                                                                                 
+ ┌───────────────────────────────────────────┤ Configuring base-passwd ├───────────────────────────────────────────┐  
+ │                                                                                                                 │  
+ │ update-passwd has found a difference between your system accounts and the current Debian defaults.  It is       │  
+ │ advisable to allow update-passwd to change your system; without those changes some packages might not work      │  
+ │ correctly.  For more documentation on the Debian account policies, please see                                   │  
+ │ /usr/share/doc/base-passwd/README.                                                                              │  
+ │                                                                                                                 │  
+ │ The proposed change is:                                                                                         │  
+ │                                                                                                                 │  
+ │ Remove group "qubes" (98)                                                                                       │  
+ │                                                                                                                 │  
+ │ If you allow this change, a backup of modified files will be made with the extension .org, which you can use    │  
+ │ if necessary to restore the current settings.  If you do not make this change now, you can make it later with   │  
+ │ the update-passwd utility.                                                                                      │  
+ │                                                                                                                 │  
+ │ Do you want to remove the group qubes?                                                                          │  
+ │                                                                                                                 │  
+ │                                 <Yes>                                    <No>                                   │  
+ │                                                                                                                 │  
+ └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+</pre>
+
+Say no. <ref>
+Qubes bug [https://github.com/QubesOS/qubes-issues/issues/1105 in place upgrade issue - base-passwd debconf interative question asks 'Remove group "qubes"'?] will be fixed after the upgrade.
+</ref>
+
+=== dependency problems, but removing anyway as you requested ===
+[[Qubes]] specific.
+
+<pre>
+dpkg: gcc-4.7-base:amd64: dependency problems, but removing anyway as you requested:
+ libstdc++6:amd64 depends on gcc-4.7-base (= 4.7.2-5).
+ libgfortran3:amd64 depends on gcc-4.7-base (= 4.7.2-5).
+ libgcc1:amd64 depends on gcc-4.7-base (= 4.7.2-5).
+ gcc-4.7 depends on gcc-4.7-base (= 4.7.2-5).
+ libquadmath0:amd64 depends on gcc-4.7-base (= 4.7.2-5).
+ g++-4.7 depends on gcc-4.7-base (= 4.7.2-5).
+ cpp-4.7 depends on gcc-4.7-base (= 4.7.2-5).
+ libstdc++6-4.7-dev depends on gcc-4.7-base (= 4.7.2-5).
+</pre>
+
+Can be ignored.
+
+=== interactive dpkg conflict resolution dialog /etc/network/interfaces.whonix ===
+[[Qubes]] specific.
+
+<pre>
+Configuration file '/etc/network/interfaces.whonix'
+ ==> Modified (by you or by a script) since installation.
+ ==> Package distributor has shipped an updated version.
+   What would you like to do about it ?  Your options are:
+    Y or I  : install the package maintainer's version
+    N or O  : keep your currently-installed version
+      D     : show the differences between the versions
+      Z     : start a shell to examine the situation
+ The default action is to keep your current version.
+*** interfaces.whonix (Y/I/N/O/D/Z) [default=N] ? 
+</pre>
+Say no. (Just keep the default=N. Just press enter.)
+
+=== interactive dpkg conflict resolution dialog /etc/xdg/autostart/nm-applet.desktop ===
+[[Qubes]] specific.
+<pre>
+Configuration file '/etc/xdg/autostart/nm-applet.desktop'
+ ==> Modified (by you or by a script) since installation.
+ ==> Package distributor has shipped an updated version.
+   What would you like to do about it ?  Your options are:
+    Y or I  : install the package maintainer's version
+    N or O  : keep your currently-installed version
+      D     : show the differences between the versions
+      Z     : start a shell to examine the situation
+ The default action is to keep your current version.
+*** nm-applet.desktop (Y/I/N/O/D/Z) [default=N] ? 
+</pre>
+Say yes. Press Y followed by enter. Would not be a big problem if you said no also. <ref>https://github.com/QubesOS/qubes-issues/issues/1095#issuecomment-129236062</ref>
+
+=== interactive dpkg conflict resolution dialog /etc/pulse/client.conf ===
+[[Qubes]] specific.
+
+<pre>
+Configuration file '/etc/pulse/client.conf'
+ ==> Modified (by you or by a script) since installation.
+ ==> Package distributor has shipped an updated version.
+   What would you like to do about it ?  Your options are:
+    Y or I  : install the package maintainer's version
+    N or O  : keep your currently-installed version
+      D     : show the differences between the versions
+      Z     : start a shell to examine the situation
+ The default action is to keep your current version.
+*** client.conf (Y/I/N/O/D/Z) [default=N] ?
+</pre>
+
+Say yes. Press Y followed by enter. Would not be a big problem if you said no also.
+
+=== purge unneeded packages ===
+When running.
+<pre>
+sudo apt-get purge db5.1-util grub-common grub-pc grub-pc-bin grub2-common
+</pre>
+
+You'll get the following dialog.
+
+<pre>
+Package configuration
+                                                 ┌────────────────────────────┤ Configuring grub-pc ├─────────────────────────────┐
+                                                 │                                                                                │
+                                                 │ Do you want to have all GRUB 2 files removed from /boot/grub?                  │
+                                                 │                                                                                │
+                                                 │ This will make the system unbootable unless another boot loader is installed.  │
+                                                 │                                                                                │
+                                                 │ Remove GRUB 2 from /boot/grub?                                                 │
+                                                 │                                                                                │
+                                                 │                      <Yes>                         <No>                        │
+                                                 │                                                                                │
+                                                 └────────────────────────────────────────────────────────────────────────────────┘
+</pre>
+
+In Qubes (!!!), it is safe to say yes.
+
+=== connect: Connection refused ===
+Can be ignored.
+<pre>
+connect: Connection refused
+</pre>
+
+=== whonix-ws whonixcheck TemplateVM error ===
+whonixcheck automatically starts in whonix-ws TemplateVM and shows an error. Ignore it.
+
+=== Other Qubes specific Issues ===
+See ticket:<br />
+https://phabricator.whonix.org/T380
+
+== Other Unlisted ==
+Please post any issues in [https://www.whonix.org/old-forum/index.php/board,1.0.html {{project_name}} support forums].
+
+= Qubes Pre Fixup =
+Only required for [[Qubes]] users. Other users must skip this.
+
+Delete firewall.png. <ref>
+[https://github.com/QubesOS/qubes-issues/issues/1095#issuecomment-129236062 This might trigger a qrexec bug.]
+</ref>
+
+<pre>
+sudo rm /usr/share/icons/anon-icon-pack/firewall.png
+</pre>
+
+Stop qubes-qrexec-agent. <ref>
+Because there are [https://groups.google.com/d/msg/qubes-users/MoUqGfMpMu0/d0g4ts95CAAJ known issues with qrexec during distribution upgrades].
+</ref> Testing.
+<pre>
+sudo systemctl stop qubes-qrexec-agent
+</pre>
+
+<div class="toccolours mw-collapsible mw-collapsed">
+Ignore the expand button on the right side.
+<div class="mw-collapsible-content">
+Upgrade {{Code2|qubes-core-agent}} to at least {{Code2|3.0.15-1+deb8u1}} and {{Code2|qubes-gui-agent}} to at least {{Code2|3.0.9+deb8u1}}. Otherwise you'll run into grave issues. <ref name=qubes-grave-issues>
+* https://github.com/QubesOS/qubes-issues/issues/1095
+* https://groups.google.com/d/msg/qubes-users/MoUqGfMpMu0/2tGlVYbiBwAJ
+</ref> This is currently only possible from Qubes' {{Code2|wheezy-testing}} repository. To do that, open {{Code2|/etc/apt/sources.list.d/qubes-r3.list}} with root rights. For example.
+
+{{Open with root rights|filename=
+/etc/apt/sources.list.d/qubes-r3.list
+}}
+
+Comment in the following line by removing the {{Code2|#}} in front of it.
+
+<pre>
+deb [arch=amd64] http://deb.qubes-os.org/r3.0/vm wheezy-testing main
+</pre>
+
+Close and save.
+
+<pre>
+sudo apt-get update
+</pre>
+
+<pre>
+sudo apt-get dist-upgrade
+</pre>
+
+You'll see something like the following. Then it will hang.
+
+<pre>
+Setting up qubes-core-agent (3.0.15-1+deb7u1) ...
+
+Configuration file `/etc/apt/sources.list.d/qubes-r3.list'
+ ==> Modified (by you or by a script) since installation.
+ ==> Package distributor has shipped an updated version.
+   What would you like to do about it ?  Your options are:
+    Y or I  : install the package maintainer's version
+    N or O  : keep your currently-installed version
+      D     : show the differences between the versions
+      Z     : start a shell to examine the situation
+ The default action is to keep your current version.
+*** qubes-r3.list (Y/I/N/O/D/Z) [default=N] ? 
+Installing new version of config file /etc/xen/scripts/vif-route-qubes ...
+Leaving 'diversion of /etc/init/plymouth-shutdown.conf to /etc/init/plymouth-shutdown.conf.qubes-disabled by qubes-core-agent'
+Leaving 'diversion of /etc/init/prefdm.conf to /etc/init/prefdm.conf.qubes-disabled by qubes-core-agent'
+Leaving 'diversion of /etc/init/splash-manager.conf to /etc/init/splash-manager.conf.qubes-disabled by qubes-core-agent'
+Leaving 'diversion of /etc/init/start-ttys.conf to /etc/init/start-ttys.conf.qubes-disabled by qubes-core-agent'
+Leaving 'diversion of /etc/init/tty.conf to /etc/init/tty.conf.qubes-disabled by qubes-core-agent'
+Leaving 'diversion of /etc/init/serial.conf to /etc/init/serial.conf.qubes-orig by qubes-core-agent'
+</pre>
+
+This is an expected, known qrexec bug<ref>https://groups.google.com/d/msg/qubes-users/MoUqGfMpMu0/2tGlVYbiBwAJ</ref> that was fixed in the version you are installing. Wait a two minutes. Then open a second konsole (or konsole tab) and run.
+
+<pre>
+sudo killall qubes-trigger-sync-appmenus.sh
+</pre>
+
+To make sure all upgrades were applied besides the one hanging command, run again.
+
+<pre>
+sudo apt-get dist-upgrade
+</pre>
+
+Turn off the VM and start it again so the new qrexec will be used.
+
+<pre>
+sudo poweroff
+</pre>
+
+Then proceed.
+</div>
+</div>
+
+= Upgrading =
+'''[[Download|Downloading]] a new {{gateway_product_name}} / {{workstation_product_name}} will be probably easier than applying the following instructions for upgrading.'''
+
+Backups are important as noted in above chapter [[#Before you start]]. Especially for [[Qubes]] users. <ref>Qubes has some more issues with distribution upgrades.</ref>
+
+Consider doing the [[#Sanity Tests]] described above. They'll check if your system is affected by obvious grave issues, that you must fix before attempting to upgrade. If your package manager is broken, for example because you mixed packages from Debian stable with packages from Debian testing, then the upgrade may fail in the middle leaving your system in a difficult to resolve situation.
+
+Consider keeping the full terminal (Konsole) log. Even if everything apparently worked, there might be issues after reboot. In case of a bug report in the forums you would be asked to share the upgrading log so the issue can be investigated.
+
+Make sure you read [[#Known Issues]] above.
+
+Become root.
+
+<pre>
+sudo su
+</pre>
+
+Do a usual [[Security_Guide#Updates|upgrade]] of your system's packages from Debian.
+
+For [[Qubes]] users, before you proceed, it is strongly recommended that you apply the above [[#Qubes Pre Fixup]].
+
+Enable {{project name}} {{Code2|jessie}} repository. Don't use the {{Code2|testers}} repository just yet. [Wait for new information.]
+
+<pre>
+whonix_repository --enable --codename jessie
+</pre>
+
+Now we have to edit a few apt sources. The following three {{Code2|sed}} commands will do that for you. (But if you cannot or are not comfortable with using copy and paste, and you know what you are doing, you could also manually open an editor and make the described changes.)
+
+Switch Debian sources from {{Code2|wheezy}} to {{Code2|jessie}} in {{Code2|/etc/apt/sources.list.d/debian.list}}.
+
+<pre>
+sed -i "s/wheezy/jessie/g" /etc/apt/sources.list.d/debian.list
+</pre>
+
+Switch Torproject sources from {{Code2|wheezy}} to {{Code2|jessie}} in {{Code2|/etc/apt/sources.list.d/debian.list}}.
+
+<pre>
+sed -i "s/wheezy/jessie/g" /etc/apt/sources.list.d/torproject.list
+</pre>
+
+As a [[Qubes]] user, note that upgrades are currently only possible using Qubes' testing repository. Otherwise you run into grave issues. <ref name=qubes-grave-issues /> Switch Qubes' sources from {{Code2|wheezy}} to {{Code2|jessie-testing}} in {{Code2|/etc/apt/sources.list.d/qubes-r3.list}}. (Non-Qubes users should skip Qubes specific steps.) <ref>
+Once the fixed packages migrate into stable we can drop the "-testing".
+<pre>
+sed -i "s/wheezy/jessie/g" /etc/apt/sources.list.d/qubes-r3.list
+</pre>
+</ref> One [https://github.com/QubesOS/qubes-issues/issues/1095 the related bug] has been fixed, consider removing the "-testing" from /etc/apt/sources.list.d/qubes-r3.list.
+
+<pre>
+sed -i "s/wheezy/jessie-testing/g" /etc/apt/sources.list.d/qubes-r3.list
+</pre>
+
+As a [[Qubes]] user, remove the {{Code2|wheezy-backports}} repository from {{Code2|/etc/apt/sources.list.d/debian.list}}. <ref>
+The following line.
+
+<pre>
+deb http://ftp.us.debian.org/debian/ wheezy-backports main
+</pre>
+
+Needs to be removed from {{Code2|/etc/apt/sources.list}} because fortunately, Qubes no longer needs it.
+</ref>
+
+<pre>
+sed -i "s#deb http://ftp.us.debian.org/debian/ wheezy-backports main##g" /etc/apt/sources.list
+</pre>
+
+Make the upgrade process less interactive. Optional. (Mostly Qubes specific unless you installed apt-listchanges.)
+
+<pre>
+export APT_LISTCHANGES_FRONTEND=text
+</pre>
+
+Enable extensive debugging so reporting eventual bugs becomes easier.
+
+<pre>
+export DEBDEBUG=1
+</pre>
+
+Set environment variable TORSOCKS_LOG_LEVEL=1 to reduce unnecessary torsocks warnings. <ref>
+Disable torsocks warning spam such as.<br />
+[May 20 11:45:27] WARNING torsocks[2645]: [syscall] Unsupported syscall number 224. Denying the call (in tsocks_syscall() at syscall.c:165)<br />
+https://phabricator.whonix.org/T317
+</ref>
+<pre>
+export TORSOCKS_LOG_LEVEL=1
+</pre>
+
+Update your package lists.
+
+<pre>
+apt-get update
+</pre>
+
+Let's first upgrade torsocks and uwt, so we see fewer torsocks warning later on. <ref>Due to transition from torsocks 1.x to torsocks 2.x.</ref>
+<pre>
+apt-get install torsocks uwt
+</pre>
+
+Qubes specific fix.
+
+<pre>
+localedef -f UTF-8 -i en_US -c en_US.UTF-8
+</pre>
+
+Qubes specific fix.
+
+<pre>
+update-locale LC_ALL=en_US.UTF-8
+</pre>
+
+Upgrade.
+
+<pre>
+apt-get dist-upgrade || apt-get -f install || apt-get dist-upgrade
+</pre>
+
+Make sure the packages ntp, ntpdate and chrony are not installed. Trying to remove them is enough. Specifically important for Qubes users.<ref>https://github.com/QubesOS/qubes-issues/issues/1102</ref>
+
+<pre>
+apt-get purge ntp ntpdate chrony
+</pre>
+
+If you are not a user of KVM, you can optionally remove the spice-vdagent package. KVM users are probably better of keeping it.
+
+<pre>
+apt-get purge spice-vdagent
+</pre>
+
+Qubes only. {{gateway_product_name}} only. Move old qubes-whonix-control-port-filter-python.service out of the way.
+
+<pre>
+sudo mv /etc/systemd/system/qubes-whonix-control-port-filter-python.service ~/
+</pre>
+
+Qubes only. {{gateway_product_name}} only. Move old /etc/init.d/control-port-filter-python out of the way.
+
+<pre>
+sudo mv /etc/init.d/control-port-filter-python ~/
+</pre>
+
+Qubes only. {{gateway_product_name}} only. Enable control-port-filter-python.
+
+<pre>
+sudo systemctl enable control-port-filter-python
+</pre>
+
+Qubes only. {{workstation_product_name}} only. Move old /etc/tmpfiles.d/tor.conf out of the way. <ref>Otherwise systemd service systemd-tmpfiles-setup would enter a failed state.</ref>
+
+<pre>
+sudo mv /etc/tmpfiles.d/tor.conf ~/
+</pre>
+
+It is recommended to have the {{Code2|whonix-gateway}} / {{Code2|whonix-workstation}} package installed to make sure nothing is broken. (If you like to uninstall it later as per [[{{project name short}} Debian Packages]], you're free to do so. Still, it is recommended to re-install it before removal to make sure you're as close to official package selection as possible.)
+
+If you are upgrading {{gateway_product_name}}...
+
+<pre>
+apt-get install whonix-gateway
+</pre>
+
+If you are upgrading {{workstation_product_name}}...
+<pre>
+apt-get install whonix-workstation
+</pre>
+
+Get rid of old packages.
+
+<pre>
+apt-get autoremove
+</pre>
+
+Optional: Users of [[VirtualBox]], [[KVM]] and [[Physical Isolation]] can optionally consider installation of the [https://github.com/{{project_name_short}}/grub-screen-resolution grub-screen-resolution] package, which would set resolution to 1024x768 during boot. <ref>https://github.com/{{project_name_short}}/grub-screen-resolution/blob/master/etc/default/grub.d/30_screen_resolution.cfg</ref> (Recommended.)
+
+<pre>
+apt-get install grub-screen-resolution
+</pre>
+
+Optional: Users of VirtualBox, KVM and Physical Isolation can optionally consider installation of the [https://github.com/{{project_name_short}}/grub-output-verbose grub-output-verbose] package, which would show more verbose output during boot. For better usability, so it doesn't look like boot hangs on slow systems and to ease debugging in case of issues. <ref>https://github.com/{{project_name_short}}/grub-output-verbose/blob/master/etc/default/grub.d/30_output_verbose.cfg</ref> (Recommended.)
+
+<pre>
+apt-get install grub-output-verbose
+</pre>
+
+Qubes only! Get rid of {{project name}} autostart of {{project_name}} Setup Wizard.
+<pre>
+sudo mv /etc/xdg/autostart/whonix-setup-wizard.desktop ~/
+</pre>
+
+Restore original {{Code2|/etc/default/grub}}. <ref>The grub-enable-apparmor package no longer modifies that file. Now implemented using {{Code2|/etc/default/grub.d}}. See also: https://phabricator.whonix.org/T25</ref>
+
+<pre>
+sudo cp /etc/default/grub.anondist-orig /etc/default/grub
+</pre>
+
+Update grub. ([[Qubes]] users can skip this.)
+
+<pre>
+update-grub
+</pre>
+
+Consider applying the [[#Grub Fix]] now or after reboot.
+
+Remember to store the terminal (Konsole) log. (File &rarr; Save Output As)
+
+Reboot required.
+
+<pre>
+reboot
+</pre>
+
+= Grub Fix =
+Applying this fix is recommended after upgrading from {{project_name}} 10 to {{project_name}} 11.
+
+Useful if you saw the the error shown on the following screenshot after boot.
+
+[[File:grub_error_file_not_found_issue.png|400px]]
+
+Fortunately, this fix is not critical. The system is still bootable. To have it bootable also in future it is a good idea to fix this.
+
+Recommended for users of [[VirtualBox]] and [[KVM]]. Not required for users of [[Qubes]], because it is not yet using grub. <ref>https://phabricator.whonix.org/T353#5523</ref> Maybe not required for users of [[Physical Isolation]].
+
+* [[VirtualBox]] users: <code>sudo grub-install /dev/sda ; echo $?</code>
+* [[KVM]] users: <code>sudo grub-install /dev/vda ; echo $?</code>
+* [[Qubes]] users: Not required.
+* [[Physical Isolation]] users: Probably not required.
+
+Expected output.
+
+<pre>
+Installing for i386-pc platform.
+Installation finished. No error reported.
+0
+</pre>
+
+= Qubes Cleanup =
+== purge unneeded packages ==
+{{q_project_name}} {{gateway_product_name}} only!
+
+You can optionally purge the following unneeded packages from {{q_project_name}} {{gateway_product_name}}.
+<pre>
+sudo apt-get purge cups mutt icedove amd64-microcode intel-microcode avahi-daemon
+</pre>
+
+= Footnotes =
+{{reflist|close=1}}
+
+[[Category:Documentation]]
+
+{{Footer}}
