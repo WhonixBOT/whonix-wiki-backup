@@ -1,0 +1,259 @@
+__NOINDEX__
+{{Header}}
+{{#seo:
+|description=How to Upgrade from {{project_name}} 10.x to {{project_name}} 11.x
+}}
+
+{{mbox
+| type    = critical
+| image   = [[File:Ambox_warning_pn.svg.png|40px|alt=warning]]
+| text    = Unfinished! Don't use yet!
+}}
+
+= Before you start =
+== If you want to upgrade {{gateway_product_name}} as well as {{workstation_product_name}} ==
+1. Backup your data. (Ideally have a copy of your VM, so you can try again.) <br />
+2. Consider running the optional [[#Sanity Tests]]. <br />
+3. Upgrade {{workstation_product_name}}. <br />
+4. Power off {{workstation_product_name}}. <br />
+5. Upgrade {{gateway_product_name}}. <br />
+6. Restart {{gateway_product_name}}. <br />
+7. Restart {{workstation_product_name}} <br />
+
+== If you only want to upgrade {{workstation_product_name}} ==
+1. Backup your data. (Ideally have a copy of your VM, so you can try again.) <br />
+2. Consider running the optional [[#Sanity Tests]]. <br />
+3. Upgrade {{workstation_product_name}}. <br />
+4. Power off {{workstation_product_name}}. <br />
+5. [[Download|Get]] {{gateway_product_name}} 9.x. <br />
+6. Start {{gateway_product_name}}. <br />
+7. Start {{workstation_product_name}} <br />
+
+You can ignore the following errors.
+
+== Non-Critical Errors / Warnings ==
+Should be reported if any.
+
+= Sanity Tests =
+<pre>
+sudo dpkg --audit ; echo $?
+</pre>
+
+Expected output.
+
+<pre>
+0
+</pre>
+
+<pre>
+sudo dpkg --configure -a ; echo $?
+</pre>
+
+Expected output:
+
+<pre>
+0
+</pre>
+
+[[Security_Guide#Updates|Get package upgrades.]]
+
+<pre>
+sudo apt-get update
+</pre>
+
+<pre>
+sudo apt-get dist-upgrade
+</pre>
+
+Test wise install python-qt4.
+
+<pre>
+sudo apt-get install python-qt4 ; echo $?
+</pre>
+
+<pre>
+## ... successful installation of python-qt4 ...
+0
+</pre>
+
+= Known Issues =
+== General ==
+
+== Qubes specific ==
+[[Qubes]] specific.
+
+=== apt-get not linked warning ===
+<pre>
+*** OMINOUS WARNING ***: /usr/bin/apt-get is not linked to either apt-get.anondist or apt-get.anondist-orig
+</pre>
+
+Can be ignored. (Something we ought to fix for {{project_name}} 12.)
+
+=== warning: setlocale: LC_ALL: ===
+[[Qubes]] specific.
+
+<pre>
+/bin/bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+/bin/bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+bash: warning: setlocale: LC_ALL: cannot change locale (en_US.UTF-8)
+</pre>
+
+<ref>
+[https://github.com/QubesOS/qubes-issues/issues/1055 Debian Template: rely on existing tool for base image creation]
+</ref>
+
+=== Configuring iptables-persistent dialog ===
+[[Qubes]] specific. ([https://github.com/QubesOS/qubes-core-agent-linux/pull/2 ticket])
+
+<pre>
+Package configuration                                                                                                 
+ ┌───────────────────────────────────────┤ Configuring iptables-persistent ├───────────────────────────────────────┐  
+ │                                                                                                                 │  
+ │ Current iptables rules can be saved to the configuration file /etc/iptables/rules.v4. These rules will then be  │  
+ │ loaded automatically during system startup.                                                                     │  
+ │                                                                                                                 │  
+ │ Rules are only saved automatically during package installation. See the manual page of iptables-save(8) for     │  
+ │ instructions on keeping the rules file up-to-date.                                                              │  
+ │                                                                                                                 │  
+ │ Save current IPv4 rules?                                                                                        │  
+ │                                                                                                                 │  
+ │                                 <Yes>                                    <No>                                   │  
+ │                                                                                                                 │  
+ └─────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘  
+</pre>
+Say no. (Just keep the default=N. Just press enter.)
+
+=== interactive dpkg conflict resolution dialog /etc/xdg/autostart/nm-applet.desktop ===
+[[Qubes]] specific.
+<pre>
+Configuration file '/etc/xdg/autostart/nm-applet.desktop'
+ ==> Modified (by you or by a script) since installation.
+ ==> Package distributor has shipped an updated version.
+   What would you like to do about it ?  Your options are:
+    Y or I  : install the package maintainer's version
+    N or O  : keep your currently-installed version
+      D     : show the differences between the versions
+      Z     : start a shell to examine the situation
+ The default action is to keep your current version.
+*** nm-applet.desktop (Y/I/N/O/D/Z) [default=N] ? 
+</pre>
+Say yes. Press Y followed by enter. Would not be a big problem if you said no also. <ref>https://github.com/QubesOS/qubes-issues/issues/1095#issuecomment-129236062</ref>
+
+=== interactive dpkg conflict resolution dialog /etc/pulse/client.conf ===
+[[Qubes]] specific.
+
+<pre>
+Configuration file '/etc/pulse/client.conf'
+ ==> Modified (by you or by a script) since installation.
+ ==> Package distributor has shipped an updated version.
+   What would you like to do about it ?  Your options are:
+    Y or I  : install the package maintainer's version
+    N or O  : keep your currently-installed version
+      D     : show the differences between the versions
+      Z     : start a shell to examine the situation
+ The default action is to keep your current version.
+*** client.conf (Y/I/N/O/D/Z) [default=N] ?
+</pre>
+
+Say yes. Press Y followed by enter. Would not be a big problem if you said no also.
+
+== Other Unlisted ==
+Please post any issues in [https://www.whonix.org/old-forum/index.php/board,1.0.html {{project_name}} support forums].
+
+= Upgrading =
+'''[[Download|Downloading]] a new {{gateway_product_name}} / {{workstation_product_name}} will be probably easier than applying the following instructions for upgrading.'''
+
+Backups are important as noted in above chapter [[#Before you start]]. Especially for [[Qubes]] users. <ref>Qubes has some more issues with distribution upgrades.</ref>
+
+Consider doing the [[#Sanity Tests]] described above. They'll check if your system is affected by obvious grave issues, that you must fix before attempting to upgrade. If your package manager is broken, for example because you mixed packages from Debian stable with packages from Debian testing, then the upgrade may fail in the middle leaving your system in a difficult to resolve situation.
+
+Consider keeping the full terminal (Konsole) log. Even if everything apparently worked, there might be issues after reboot. In case of a bug report in the forums you would be asked to share the upgrading log so the issue can be investigated.
+
+Make sure you read [[#Known Issues]] above.
+
+Become root.
+
+<pre>
+sudo su
+</pre>
+
+Do a usual [[Security_Guide#Updates|upgrade]] of your system's packages from Debian.
+
+For [[Qubes]] users, before you proceed, it is strongly recommended that you apply the above [[#Qubes Pre Fixup]].
+
+Enable {{project name}} {{Code2|jessie}} repository. Don't use the {{Code2|testers}} repository just yet. [Wait for new information.]
+
+<pre>
+whonix_repository --enable --codename jessie
+</pre>
+
+As a [[Qubes]] user, note that upgrades are currently only possible using Qubes' testing repository. Otherwise you run into grave issues. <ref name=qubes-grave-issues /> Switch Qubes' sources from {{Code2|wheezy}} to {{Code2|jessie-testing}} in {{Code2|/etc/apt/sources.list.d/qubes-r3.list}}. (Non-Qubes users should skip Qubes specific steps.) <ref>
+Once the fixed packages migrate into stable we can drop the "-testing".
+<pre>
+sed -i "s/wheezy/jessie/g" /etc/apt/sources.list.d/qubes-r3.list
+</pre>
+</ref> Once [https://github.com/QubesOS/qubes-issues/issues/1095 the related bug] has been fixed, consider removing the "-testing" from /etc/apt/sources.list.d/qubes-r3.list.
+
+<pre>
+sed -i "s/wheezy/jessie-testing/g" /etc/apt/sources.list.d/qubes-r3.list
+</pre>
+
+Make the upgrade process less interactive. Optional. (Mostly Qubes specific unless you installed apt-listchanges.)
+
+<pre>
+export APT_LISTCHANGES_FRONTEND=text
+</pre>
+
+Enable extensive debugging so reporting eventual bugs becomes easier.
+
+<pre>
+export DEBDEBUG=1
+</pre>
+
+Update your package lists.
+
+<pre>
+apt-get update
+</pre>
+
+Upgrade.
+
+<pre>
+apt-get dist-upgrade || apt-get -f install || apt-get dist-upgrade
+</pre>
+
+It is recommended to have the {{Code2|whonix-gateway}} / {{Code2|whonix-workstation}} package installed to make sure nothing is broken. (If you like to uninstall it later as per [[{{project name short}} Debian Packages]], you're free to do so. Still, it is recommended to re-install it before removal to make sure you're as close to official package selection as possible.)
+
+If you are upgrading {{gateway_product_name}}...
+
+<pre>
+apt-get install whonix-gateway
+</pre>
+
+If you are upgrading {{workstation_product_name}}...
+<pre>
+apt-get install whonix-workstation
+</pre>
+
+Get rid of old packages.
+
+<pre>
+apt-get autoremove
+</pre>
+
+Remember to store the terminal (Konsole) log. (File &rarr; Save Output As)
+
+Reboot required.
+
+<pre>
+reboot
+</pre>
+
+= Footnotes =
+{{reflist|close=1}}
+
+[[Category:Documentation]]
+
+{{Footer}}
