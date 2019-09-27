@@ -1,0 +1,254 @@
+{{Title|
+title=How-to: Use Electrum Bitcoin Wallet in {{project_name}}
+}}
+{{Header}}
+{{#seo:
+|description=How-to: Use Electrum Bitcoin Wallet in Whonix
+|image=https://www.whonix.org/w/images/c/cb/Electrum.png
+}}
+
+__FORCETOC__
+
+= Introduction =
+
+[https://electrum.org/ Electrum] is a popular Bitcoin wallet. According to the [http://docs.electrum.org/en/latest/faq.html#how-does-electrum-work Electrum FAQ]:
+
+<blockquote>
+<b>How does Electrum work?</b>
+
+Electrum’s focus is speed, with low resource usage and simplifying Bitcoin. Startup times are instant because it operates in conjunction with high-performance servers that handle the most complicated parts of the Bitcoin system.
+
+<b>Does Electrum trust servers?</b>
+
+Not really; the Electrum client never sends private keys to the servers. In addition, it verifies the information reported by servers, using a technique called [http://docs.electrum.org/en/latest/spv.html#spv Simple Payment Verification].</blockquote>
+
+The non-official thin client Electrum appears to be well-designed. It does not need to download/verify the blockchain and users store their private keys locally, which eliminates the need to trust third-party severs. This is an advantage over some other Bitcoin wallets which are affected by this: if the third-party server were ever compromised, all of the users' bitcoins could be stolen. There is also the possibility that the third-party could lose a user's private keys or walk away with them.
+
+= Install Electrum =
+
+== Functional Version ==
+
+=== Notices ===
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = <u>Note</u>: To mitigate the risk of a known exploit, Electrum versions older than v3.3 are prevented from connecting to public servers. <ref name=elecrum_fishing_exploit>https://github.com/spesmilo/electrum/issues/5183</ref> <ref name=elecrum_fishing_expoit2>https://github.com/spesmilo/electrum/issues/5190</ref> This step was necessary to prevent user exposure to phishing messages. <ref>For further details, see: [https://github.com/spesmilo/electrum/issues/5195 Github Electrum issues].</ref> If you have an Electrum version older than v3.3 installed, then it is necessary to upgrade.
+}}
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = <u>Note</u>: At the time of writing (July 20, 2019) the Electrum website (https://electrum.org) was the target of a large [https://en.wikipedia.org/wiki/Denial-of-service_attack DDoS attack]. 
+To follow developments, refer to this [https://forums.whonix.org/t/i-can-not-install-electrum/7794 Whonix forum thread].
+
+This prevents users from downloading the Electrum AppImage using file downloaders like [https://whonix.org/wiki/Secure_Downloads scurl] and [https://www.gnu.org/software/wget/ wget]. If you are affected by this issue, the downloaded AppImage and signature will show the corresponding file to be composed of an HTML document and ASCII text. This means there are limited options for securely downloading a functional Electrum version right now.
+-----
+For greater convenience and security, the Electrum AppImage will [https://forums.whonix.org/t/policy-for-inclusion-of-compiled-software/6635 soon be installed in {{project_name}} by default] as part of the <code>binaries-freedom</code> package. <ref>The latter package has been added to <code>whonix-workstation-packages-recommended-gui</code>, see: [https://github.com/Whonix/anon-meta-packages/commit/71d40f5316ee7eb38eb04142d80d23c56a48407b Install Electrum by default].</ref>
+}}
+
+=== Installation Source ===
+
+While it is usually strongly recommended <ref>See: [[Install_Software#Best_Practices|Install Software: Best Practices]].</ref> <ref>
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = 
+Installing software best practices: 
+
+* [[Install_Software#Prefer_APT|Prefer APT]]: it is generally safest to stick with Debian's official APT package manager.
+* [[Install_Software#Avoid_Third_Party_Package_Managers| Avoid Third Party Package Managers]]: there are many third party package managers besides APT, however many lack the security safeguards that are standard in Debian. 
+* [[Install_Software#Avoid_Manual_Software_Installation| Avoid Manual Software Installation]]: generally avoid the manual installation of packages, even trusted ones.
+* [[Verifying_Software_Signatures|Always Verify Signatures]]: for greater system security, the installation of unsigned software is strongly discouraged.
+* [[Install_Software#Prefer_Packages_from_Debian_Stable_Repository| Prefer Packages from Debian Stable Repository]]: if deciding to install new software after considering the risks, then prefer Debian's stable repository rather than the testing / unstable or third party repositories.
+}}</ref> to install software from the Debian repositories, the [https://packages.debian.org/sid/utils/electrum latest available package] is too old and will not connect to public servers. This means Debian's official package manager (<code>APT</code>) cannot be used to install a working Electrum version.
+
+The best option at present is to install Electrum from the official website, although it is currently being attacked (see the notices section). The following instructions provide steps to verify the AppImage, but keep in mind the risks involved with manual software installation, particularly if the server infrastructure is under assault.
+
+== Installation Steps ==
+
+{{Box|text=
+'''Note:''' The following instructions should be applied in {{workstation_product_name}} ([[{{q project name short}}|{{q project name}}]]: <code>anon-whonix</code>).
+
+'''1.''' {{Open_a _product_ws_terminal}}
+
+'''2.''' Import the gpg public key of Electrum developer Thomas Voegtlin. <ref>
+https://github.com/spesmilo/electrum/issues/4789
+</ref>
+
+{{gpg key
+|url=scurl-download https://raw.githubusercontent.com/spesmilo/electrum/master/pubkeys/ThomasV.asc
+|source_filename=ThomasV.asc
+|fingerprint=6694D8DE7BE8EE5631BED9502BD5824B7F9470E6
+|gpg_fingerprint_output=
+
+In early-2019, the output is identical to the following image.
+
+'''Figure:''' ''Fingerprint Verification''
+
+[[Image:electrum_verify_gpg_fingerprint.png]]
+
+pub   rsa4096/2BD5824B7F9470E6 2011-06-15 [SC]<br />
+      Key fingerprint = 6694 D8DE 7BE8 EE56 31BE  D950 2BD5 824B 7F94 70E6<br />
+uid                            Thomas Voegtlin (https://electrum.org) <thomasv@electrum.org><br />
+uid                            ThomasV <thomasv1@gmx.de><br />
+uid                            Thomas Voegtlin <thomasv1@gmx.de><br />
+sub   rsa4096/1A25C4602021CD84 2011-06-15 [E]
+}}
+
+'''3.''' Download the Electrum AppImage.
+
+<u>Note:</u> At the time of writing, <code>electrum-3.3.8</code> was the latest stable release. Before starting the Electrum download, browse to [https://electrum.org/#download electrum.org/#download] to verify the correct file path. Then download the file with [[Secure_Downloads#Downloads_with_scurl_-_SSL_Command_Line_Downloader|scurl]]. <ref>To find the correct image download: <i><code>"Right-click"</code></i> <code>AppImage</code> &rarr; <i><code>"Select"</i> Copy Link Location</code> &rarr; <i><code>Append</i> to scurl command</code>.</ref>
+
+{{CodeSelect|code=
+scurl-download https://download.electrum.org/3.3.8/electrum-3.3.8-x86_64.AppImage
+}}
+
+'''5.''' Check the Electrum AppImage is not corrupted after download. <ref>Due to recent DDoS attacks.</ref>
+
+To check the Electrum AppImage, run.
+
+{{CodeSelect|code= 
+file electrum-3.*x86_64.AppImage 
+}}
+
+The following output indicates a corrupted and/or non-existent AppImage file.
+<pre>
+electrum-3.3.8-x86_64.AppImage: HTML document, ASCII text, with very long lines
+</pre>
+
+In that case, delete the file and try downloading the AppImage again.
+
+'''6.''' Download the corresponding gpg signature.
+
+It is necessary to verify the integrity of the AppImage with the correct signature.
+
+<u>Note:</u> If users downloaded a later Electrum version at <i>step 4</i>, then modify the following command to match the corresponding signature file. <ref>To find the correct signature file download: <i><code>"Right-click"</i> signature</code> &rarr; <i><code>"Select"</i> Copy Link Location</code> &rarr; <i><code>"Append"</i> to scurl command</code></ref>
+
+{{CodeSelect|code=
+scurl-download https://download.electrum.org/3.3.8/electrum-3.3.8-x86_64.AppImage.asc
+}}
+ 
+'''7.''' Verify the integrity of the AppImage image.
+
+<u>Note:</u> This command must be run in the same directory as the downloaded AppImage and signature.
+
+{{CodeSelect|code=
+gpg --verify electrum-3.3.8-x86_64.AppImage.asc
+}}
+
+If the image is verified successfully, the output will show a "Good signature" similar to the screenshot below. 
+
+'''Figure:''' ''Good Signature'' <ref>
+<pre>
+gpg: assuming signed data in 'electrum-3.3.8-x86_64.AppImage'
+gpg: Signature made Thu 16 May 2019 02:14:30 PM EDT
+gpg:                using RSA key 6694D8DE7BE8EE5631BED9502BD5824B7F9470E6
+gpg: Good signature from "Thomas Voegtlin (https://electrum.org) <thomasv@electrum.org>" [unknown]
+gpg:                 aka "ThomasV <thomasv1@gmx.de>" [unknown]
+gpg:                 aka "Thomas Voegtlin <thomasv1@gmx.de>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 6694 D8DE 7BE8 EE56 31BE  D950 2BD5 824B 7F94 70E6
+</pre>
+</ref>
+
+[[Image:electrum_gpg_good_signature.png]]
+
+The above "gpg: WARNING" can be ignored since it does not alter the validity of the signature related to the downloaded key. Rather, this warning refers to the level of trust placed in the developers signing key and the web of trust. To remove this warning, the developers signing key must be personally signed with your own key.
+
+If the following "gpg: BAD signature" message appears, the Appimage has been corrupted or altered during the download process.
+
+'''Figure:''' ''Bad Signature''
+
+[[Image:Electrum_bad_gpg_signature.png]]
+
+In this event, delete both the AppImage and signature and either wait 10-15 minutes for the Tor circuits to change, or open up the [[Tor_Controller#Nyx|Nyx Tor Controller]] in {{gateway_product_name}} ([[{{q project name short}}|{{q project name}}]]: <code>sys-whonix</code>) and type "n" to create new Tor circuits. Wait for a random period of time before repeating the steps to download the AppImage and signature.
+
+'''8.''' Change file permissions.
+
+Make the electrum AppImage executable.
+
+{{CodeSelect|code=
+chmod +x electrum-3.3.8-x86_64.AppImage
+}}
+}}
+
+= Start Electrum =
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = Users should create a wallet with a [[Passwords#Generating_Unbreakable_Passwords|strong password]]!
+}}
+Please refer to the official Documentation at [http://docs.electrum.org docs.electrum.org] for comprehensive instructions, as well as more advanced topics like [http://docs.electrum.org/en/latest/coldstorage.html Cold Storage] of private keys.
+
+To start Electrum on all platforms, run.
+
+{{CodeSelect|code=
+./electrum-3.3.8-x86_64.AppImage
+}}
+
+[[{{q project name short}}|{{q project name}}]] users are recommended to configure a [https://qubes-os.org//doc/split-bitcoin/ Split Bitcoin Wallet] to better protect their private keys. To protect against identity correlation through Tor circuit sharing, follow the instructions below (see [[Stream_Isolation|Stream Isolation]] for more information).
+
+= Electrum: First Run =
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = These steps enable [[Stream Isolation]] for the Electrum application.
+}}
+
+{{Box|text=
+'''1.''' Configure a manual server connection.
+
+When Electrum is started for the first time, users are met with the prompt: <code>"How do you want to connect to a server?"</code>. 
+
+Choose <code>Select server manually</code> and press <code>Next</code>.
+
+'''Figure:''' ''Server Setting''
+
+[[Image:Electrum_select_server_manually.png]]
+
+'''2.''' Change the proxy settings.
+
+The necessary settings are:
+
+* Proxy: <code>SOCKS5</code>
+* Host: <code>10.152.152.10</code>
+* Port: <code>9111</code>
+
+Press <code>Next</code> and the application should be fully functional.
+
+'''Figure:''' ''SOCKS5 Proxy Configuration''
+
+[[Image:Electrum_use_proxy_socks5_.png]]
+
+'''Note:''' If Electrum is already set up but stream isolation was not enabled, then navigate to <code>Tools</code> &rarr; <code>Network</code> in Electrum to bring up the server and proxy settings.
+}}
+
+= Add Application Launcher to Start Menu =
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = This step is optional.
+}}
+{{Launcher
+|name=electrum
+|path=/home/user/electrum-3.3.6-x86_64.AppImage
+|categories=Other
+}}
+
+= Donations =
+
+After installing Electrum, please consider making a [[Donate|donation]] to {{project name}} to keep it running for years to come.
+
+Donate Bitcoin (BTC) to {{project_name}}.
+
+{{Pay Bitcoin}}
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
