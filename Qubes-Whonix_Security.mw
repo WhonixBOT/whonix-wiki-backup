@@ -1,0 +1,101 @@
+{{Header}}
+{{#seo:
+|description={{q_project_name}} Security
+|image=https://www.whonix.org/w/images/1/1e/Qubeswhonix23324.jpg
+}}
+{{Title|title=
+{{q_project_name}} Security
+}}
+{{Maintainer|
+|status=stable
+|about=About this {{Code2|{{PAGENAME}}}} Page
+|difficulty=easy
+|maintainer=[https://forums.whonix.org/users/torjunkie torjunkie]
+|support=[[Support]]
+}}
+
+= Introduction =
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Qubes R3.2 reached [https://www.qubes-os.org/news/2019/03/28/qubes-3-2-has-reached-eol/ EOL] on 28 March, 2019. It is strongly recommended to [https://www.qubes-os.org/downloads/ upgrade to Qubes R4.0] to stay safe.
+}}
+
+The following list of actionable items can help to improve security and anonymity on the Qubes platform, and by extension [[{{q project name short}}|{{q project name}}]] users. It is advised to regularly consult either the Google [https://groups.google.com/d/forum/qubes-users Qubes forums] or preferably the JavaScript-free option [https://www.mail-archive.com/qubes-users@googlegroups.com/ The Mail Archive].  Additional channels exist for the latest [https://www.qubes-os.org/news/ security news] and [https://www.qubes-os.org/doc/security-guidelines/ advice].
+
+= Security Domain =
+
+== GPG and Software Packages ==
+
+* Always keep the system up-to-date in [https://www.qubes-os.org/doc/software-update-dom0/ dom0], [https://www.qubes-os.org/doc/software-update-vm/ template VMs] and standalone VMs.
+* Check gpg is enabled in [http://docs.fedoraproject.org/en-US/Fedora/12/html/Deployment_Guide/sec-Configuring_Yum_and_Yum_Repositories.html config files] (gpgcheck=1) if new Fedora repositories are installed.
+* [[Verifying_Software_Signatures#Checking_Digital_Fingerprints_of_Signing_Keys|Safely import new signing keys]] by checking it is the same from multiple sources.
+* Preferably only install packages from trusted sources, for example pre-configured Fedora, Debian, {{project name}} and Qubes sources.
+* Untrusted or unverifiable programs should be installed in Standalone VMs or less trusted, cloned templates.
+
+== Hardware / Hardware Settings ==
+
+* Enable [https://en.wikipedia.org/wiki/IOMMU VT-d/IOMMU] via BIOS to have [https://en.wikipedia.org/wiki/DMA_attack DMA protection], <ref>[https://qubes-os.org/faq/#general--security Qubes FAQ]: <blockquote>DMA is mechanism for PCI devices to access system memory (read/write). Without VT-d, any PCI device can access all the memory, regardless to which VM it is assigned (or if it is left in dom0). Most PCI devices allow the driver to request an arbitrary DMA operation (like “put received network packets at this address in memory”, or “get this memory area and send it to the network”). So, without VT-d, it gives unlimited access to the whole system. Now, it is only a matter of knowing where to read/write to take over the system, instead of just crashing. But since you can read the whole memory, it isn’t that hard.</blockquote></ref> effective network isolation and the ability to assign PCIe devices to a HVM. Check it is running via dom0 (qubes-hcl-report). <ref>The [https://www.qubes-os.org/doc/security-guidelines/ Qubes wiki] notes: <blockquote>If VT-d is not active, attempt to activate it by selecting the VT-d flag within the BIOS settings. If your processor/BIOS does not allow VT-d activation you still enjoy much better security than alternative systems, but you may be vulnerable to DMA attacks. Next time you buy a computer consult our [https://www.qubes-os.org/hcl/ HCL (Hardware Compatibility List)] and possibly contribute to it.</blockquote></ref>
+* Ensure [https://en.wikipedia.org/wiki/X86_virtualization#Intel_virtualization_(VT-x) Intel VT-x] or [https://www.amd.com/en/technologies/virtualization AMD-V] is available, since it is required for running HVM domains, such as Windows-based AppVMs.
+* Prepare and utilize a [https://www.qubes-os.org/doc/usb-devices/ USB qube] to protect against side-channel attacks. <ref>Automatically configured in Qubes R4, but an optional configuration in R3.2.</ref>
+* Use a [https://www.qubes-os.org/doc/yubi-key/ Yubikey] to enhance the security of Qubes user authentication, mitigate the risk of password snooping and to improve USB keyboard security.
+* Prefer Intel Integrated Graphics Processing (IGP) units for greater system stability and security. <ref>Proprietary binary blobs of other GPU manufacturers pose security risks and the available open source drivers are notoriously unstable in Qubes.</ref>
+* Ensure computer hardware meets all other [[System_Requirements#{{q_project_name}}_System_Requirements|{{q_project_name}}  requirements]] for the best security, functionality and future compatibility with Qubes 4.X releases.
+
+== ISO and Qubes Version ==
+
+* Verify the [https://www.qubes-os.org/security/verifying-signatures/ authenticity and integrity] of the Qubes iso download.
+* Prefer Qubes R4.0 over earlier releases, as fully virtualized (HVM or PVH) VMs provide [https://www.qubes-os.org/news/2018/03/15/qsb-37-update/ greater protection] against processor speculative execution bugs like the Meltdown and Spectre attacks, and other exploits. <ref>Qubes R3.2 and earlier versions rely on para-virtualized (PV) VMs.</ref> <ref> For instance, this [https://xenbits.xen.org/xsa/advisory-260.html recent security bug] allows an attacker to escape from a PV domain and exploit the dom0 hypervisor. It only affects Qubes R3.2, since Qubes R4 [https://github.com/QubesOS/qubes-secpack/blob/master/QSBs/qsb-039-2018.txt only runs untrusted code in PVH or HVM domains] by default.</ref>
+
+== Protecting User Data and Activities ==
+
+* For critical user data, protect against [https://www.qubes-os.org/doc/data-leaks/ unintentional leaks] by setting an empty NetVM field (set to "none") for the corresponding qube. 
+* For sensitive activities, do not run trusted, high-value VMs in paralell with untrusted VMs. <ref>A successful exploit of the untrusted qube provides an avenue for attacking the sensitive qube.</ref>
+* Observe the [https://theinvisiblethings.blogspot.fr/2011/05/app-oriented-ui-model-and-its-security.html security context] of colored windows borders in Qubes before running applications or manipulating data.
+* If paying in cryptocurrencies, utilize a [https://www.qubes-os.org/doc/split-bitcoin/ “split” bitcoin wallet] which creates an offline “cold storage” wallet and an online “watching only” wallet.
+* Avoid [https://www.qubes-os.org/doc/multiboot/ dual / multi-boot configurations] in Qubes. The other OS could modify the unprotected <i>/boot</i> partition or firmware to maliciously compromise Qubes and/or spy on user activities.
+* Be careful when running command line operations. Refer to a [https://github.com/Jeeppler/qubes-cheatsheet/blob/master/qubes-cheatsheet.md suitable resource first], then proceed.
+* Use [https://www.qubes-os.org/doc/split-gpg/ split-GPG] for email to reduce the risk of key theft used for encryption / decryption and signing.
+* Do not allow {{q_project_name}} or other VMs to [https://www.qubes-os.org/doc/full-screen-mode/ completely "own" the full screen]. <ref>Without visible, colored decorations drawn by each VM window, a malicious application might only pretend to release the full screen (while the screen appears normal), or the full desktop may be emulated so users are tricked into entering sensitive information into false "trusted" domains.</ref>
+* Disable previews (thumbnails) when using a file manager like Nautilus, as this is a known attack vector.
+* If utilizing a SSD, consider setting up a periodic job in dom0 to [https://www.qubes-os.org/doc/disk-trim/ trim the disk] since this aids against local forensics. <ref>This can be configured with either systemd (weekly only) or cron (daily or weekly).</ref> <ref>[https://www.qubes-os.org/doc/disk-trim/ Qubes wiki]: <blockquote>TRIM can improve security against local forensics when using SSDs, because with TRIM enabled deleting data (usually) results in the actual data being erased quickly, rather than remaining in unallocated space indefinitely. However deletion is not guaranteed, and can fail to happen without warning for a variety of reasons.</blockquote></ref>
+
+== Template and Other VMs ==
+
+* Never run applications in TemplateVMs or dom0, except updating tools or editors for configuration purposes (running applications poses security risks).
+* Avoid configuring [https://www.qubes-os.org/doc/firewall/ network traffic between two qubes] for security reasons.
+* Consider [https://www.qubes-os.org/doc/vm-sudo/#replacing-passwordless-root-access-with-dom0-user-prompt replacing passwordless root access with a dom0 user prompt]. <ref>There might be potential attacks against the hypervisor or daemons/backends in dom0 that require root access. Qubes founder Joanna Rutkowska initially assessed there was limited benefit from isolating the root account from the user account, because [https://www.qubes-os.org/doc/vm-sudo/#passwordless-root-access-in-VMs all user data is already accessible from the latter]. However, she later changed her opinion on the matter; see [https://github.com/QubesOS/qubes-issues/issues/2695#issuecomment-301316132 here].</ref>
+* Consider leveraging the non-persistence of Qubes' templates to [https://github.com/tasket/Qubes-VM-hardening fend off malware] by locking-down, quarantining and checking the contents of ''/rw'' private storage. <ref><blockquote><code>vm-boot-protect.service</code>:
+* Acts at VM startup before private volume /rw mounts
+* User: Protect /home desktop & shell startup executables
+* Root: Quarantine all /rw configs & scripts, with whitelisting
+* Re-deploy custom or default files to /rw on each boot
+* SHA256 hash checking against unwanted changes
+* Provides rescue shell on error or request
+* Works with template-based AppVMs, sys-net and sys-vpn</blockquote></ref> <ref>Disabling of Qubes' default passwordless-root is also required.</ref>
+** <u><code>vm-boot-protect-root</code></u>: suitable for service VMs like <code>sys-usb</code> and <code>sys-net</code>, as well as AppVMs such as <code>untrusted</code>, <code>personal</code>, <code>banking</code>, <code>vault</code> and so. <ref>If regular Linux applications like Firefox, Chromium, KeePassXC, office/media applications and Thunderbird are used without tailored Qubes-specific settings in <code>/rw</code>, then no configuration should be necessary.</ref>
+** <u><code>vm-boot-protect</code></u>: suitable for virtually any Debian or Fedora VM, such as {{project_name}} VMs, Standalone VMs and DispVMs. 
+** Non-Linux VMs are currently unsupported for both modes.
+* Consider [https://github.com/rustybird/qubes-split-dm-crypt split dm-crypt] to isolate device-mapper based secondary storage encryption (not the root filesystem) and LUKS header processing to DisposableVMs.
+* Consider running <code>sys-net</code>, <code>sys-firewall</code> and <code>sys-usb</code> as [https://www.qubes-os.org/doc/disposablevm-customization/ Static DisposableVMs].
+* Consider setting dom0 and all TemplateVMs to update over Tor by configuring this option on Qubes' first boot. <ref>https://github.com/QubesOS/qubes-issues/issues/1159#issuecomment-167432121</ref> <ref>This option has been available since Qubes R3.1 and prevents adversaries from easily learning which packages are installed or updated / upgraded. The dom0 UpdateVM can also be changed in Qube Manager Global settings.</ref>
+* Prevent qubes which normally connect to clearnet from downloading repository metadata; see footnotes. <ref>https://www.mail-archive.com/qubes-users@googlegroups.com/msg27567.html <blockquote>It is the qubes that perform  update checks and then notify dom0 accordingly. So if you have a qube connected to clearnet it will check over clearnet. You can disable this in clearnet connected qubes - it's the qubes-update-check service. Or you can disable globally in qubes-global-settings.</blockquote></ref> <ref>This removes any time-based correlation by adversaries, which might otherwise occur when package updates over Tor happen shortly after clearnet repository metadata is downloaded.</ref> 
+** Disable the "Check for qube updates by default" option in Qube Manager Global settings: <code>Qube Manager</code> &rarr; <code><u>S</u>ystem</code> &rarr; <code><u>G</u>lobal settings</code> &rarr; ''Uncheck'' <code>Check for qube updates by default</code>; and
+** Disable the <code>qubes-update-check</code> service for relevant TemplateVMs: <code>Qubes Manager</code> &rarr; <code>Right-click TemplateVM</code> &rarr; <code>Qubes s<u>e</u>ttings</code> &rarr; <code>Services</code> &rarr; ''Uncheck'' <code>qubes-update-check</code>. <ref>Tests have shown that both settings must be disabled to prevent clearnet repository metadata downloads and update notifications.</ref>
+* Disable cups in all TemplateVMs as well as in StandaloneVMs that have been created; see footnotes. <ref>https://github.com/QubesOS/qubes-issues/issues/5179</ref> <ref>In TemplateVM / StandaloneVM.
+{{CodeSelect|code=
+sudo systemctl mask cups
+}}
+Now cups will no longer needlessly autostart in every VM. If it is necessary to use a dedicated printing VM later on, follow these steps to start cups.
+{{CodeSelect|code=
+sudo systemctl unmask cups
+sudo systemctl start cups
+}}
+These two commands can probably be automated using <code>/etc/rc.local</code>.</ref>
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
