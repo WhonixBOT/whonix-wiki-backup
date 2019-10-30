@@ -1,0 +1,148 @@
+{{Header}}
+{{forkme}}
+{{#seo:
+|description=The {{project_name}}-Windows-Installer for Windows is a simple and fast way to set-up {{project name}} on a system running Microsoft Windows. Screenshots. Rationale. Build documentation. Source code. whonix-installer.exe
+|image=https://www.whonix.org/w/images/d/da/Whonix_installer_wizard.png
+}}
+
+= Introduction =
+
+The {{project_name}}-Windows-Installer for Windows is a simple and fast way to set-up {{project name}} on a system running Microsoft Windows.
+
+[[File:210px-Download_Button.svg.png|center|link=Windows_Quick_Start|250px|alt=Download {{project_name}}]]
+
+{{Anchor|Rationale}}
+The {{project name}} Windows Installer was developed with a focus on providing users with an fast and easy method to install {{project name}} in Microsoft Windows. This gives users the opportunity to experiment with {{project name}} in a familiar environment without the necessity of complex virtual machine imports or host operating system changes. When the <code>whonix-installer.exe</code> is executed, the latest VirtualBox version and both {{project name}} VMs are seamlessly installed on the Windows machine. From there, users can immediately start using {{project name}} with no further configuration required.<ref>While no further action is required to install or configure the {{project name}} VMs, it is ''possible'' (in some cases) that host bios settings or workarounds for VirtualBox bugs will require user intervention. These are <u>not</u> {{project name}} issues.</ref>
+
+= Screenshots =
+'''Figure:''' ''Run Whonix Installer''
+
+[[Image:Install_Whonix.gif]]
+
+'''Figure:''' ''Install Whonix''
+
+[[Image:Whonix_installer_wizard.png]]
+
+'''Figure:''' ''License Agreement''
+
+[[Image:Whonix_windows_installer_license_agreement.png]]
+
+'''Figure:''' ''Extracting Files''
+
+[[Image:Installing_whonix.png]]
+
+'''Figure:''' ''Complete Whonix Installation''
+
+[[Image:Whonix_setup_wizard_complete.png]]
+
+= Building the {{project_name}}-Windows-Installer from Source Code =
+== Requirements ==
+{{Box|text=
+'''1.''' The {{project_name}} VirtualBox XFCE ova found here: [[VirtualBox/XFCE]] <ref>
+[[VirtualBox/CLI]] is [[unsupported]].</ref>
+
+'''2.''' The newest build of the VirtualBox-Installer found here under <code>Windows hosts</code>: https://www.virtualbox.org/wiki/Downloads?replytocom=98578
+
+'''3.''' <code>7zSD.sfx</code> which you may obtain under <code>7-Zip 9.20 Extra</code> here: http://www.7-zip.org/download.html
+
+ You need to download the <code>.7z</code> compressed archive file and extract it.
+<br>
+'''Figure:''' ''Download 7zSD.sfx'' 
+
+   [[Image:windows_installer_7zSD-sfx.png]]
+<br>
+'''4.''' <code>7za.exe</code> which you may obtain under <code>7-Zip 16.04 Extra</code> here: http://www.7-zip.org/download.html
+ You need to download the <code>.7z</code> compressed archive file and extract it.
+<br>
+
+'''Figure:''' ''Download 7za.exe''
+
+[[Image:windows_installer_7za-exe.png]]
+
+'''5.''' The newest version of Inno Setup Unicode, a tool for easily creating installers, found here: http://www.jrsoftware.org/isdl.php
+
+'''6.''' {{project_name}}-Windows-User-Interface, which can be built from source via this guide: [[Dev/{{project_name_short}}-Windows-User-Interface|Dev/{{project_name}}-Windows-User-Interface]]
+
+'''7.''' The Source for the installer, the logo, the license text, configuration files and the batch file handling the compilation, found here: https://github.com/{{project_name_short}}/{{project_name_short}}-Windows-Installer
+}}
+== File Preparation ==
+
+Note: All commands must be run from the folder containing the corresponding file(s).
+{{Box|text=
+'''1.''' Install Inno Setup Unicode on your system.
+<br>
+'''2.''' The VirtualBox-Installer <code>.exe</code> must be taken "apart". 
+
+This is necessary because the <code>.exe</code> contains the Microsoft Software Installation (<code>.msi</code>) based Installers for x64 systems, as well as a compressed <code>.cab</code> file. 
+
+To separate these files, run the following at the Windows command prompt.
+
+{{CodeSelect|code=
+VirtualBox[Characters based on your version].exe -extract
+}}
+
+When completed, a window will open with the destination folder and the following files (<code>VirtualBox[Characters based on your version]amd64.msi</code>, <code>common.cab</code>) which have been extracted.
+<br>
+'''3.''' Rename <code>VirtualBox[Characters based on your version]amd64.msi</code> to <code>virtualbox_x64.msi</code>. 
+
+At the Windows command prompt, run.
+
+{{CodeSelect|code=
+move VirtualBox[Characters based on your version]and64.msi virtualbox_x64.msi
+}}
+
+All files must be located in the same folder for the {{project_name}} Windows Installer build. Choose a folder and move all files to this folder as preparation continues.
+
+'''4.''' Move the stable {{project_name}} ova image [[VirtualBox/XFCE]] to the folder and rename it to <code>whonix.ova</code>. 
+
+{{CodeSelect|code=
+move {{project_name_short}}-XFCE-{{VersionNew}}.ova C:\path\to\your_build_folder\whonix.ova
+}}
+
+'''5.''' Move the source files (<code>{{project_name_short}}.iss</code>, <code>logo.ico</code>, <code>license.txt</code>, <code>MakeInstaller.bat</code>, <code>config.txt</code>) to the build folder.
+
+{{CodeSelect|code=
+move <your_source_file> C:\path\to\your_build_folder\
+}}
+
+'''6.''' Finally, move {{project_name}}-Windows-User-Interface (<code>{{project_name_short}}.exe</code>), <code>7zSD.sfx</code> and <code>7za.exe</code> to the build folder.
+
+{{CodeSelect|code=
+move <your_file> C:\path\to\your_build_folder\
+}}
+
+You should now have the following files in the build folder:
+
+* <code>{{project_name_short}}.exe</code>
+* <code>virtualbox_x64.msi</code>
+* <code>common.cab</code>
+* <code>whonix.ova</code>
+* <code>{{project_name_short}}.iss</code>
+* <code>logo.ico</code>
+* <code>license.txt</code>
+* <code>7zSD.sfx</code>
+* <code>7za.exe</code>
+* <code>MakeInstaller.bat</code>
+* <code>config.txt</code>
+
+The preparation step is finished and the Installer can now be built.
+}}
+
+== Building ==
+
+Building the installer itself is very easy once everything has been properly set up -- just launch the <code>MakeInstaller.bat</code> file. The compilation via InnoSetup, the packaging and the combination of all files via 7-Zip, as well as any other required steps are handled automatically. The end result is the named <code>whonix-installer.exe</code> file.
+
+This concludes the guide to building the {{project_name}}-Installer for Windows from source.
+
+= Forum Discussion =
+https://forums.whonix.org/t/testing-whonix-installer-for-windows/2987/210
+
+= Deprecated Installer =
+There used to be a version of this installer based on NSIS which has been discontinued, due to stability and a host of other issues. It can still be found here: https://github.com/{{project_name_short}}/{{project_name_short}}-Windows-Installer-deprecated
+
+= Footnotes =
+<references />
+
+{{Footer}}
+
+[[Category:Development]]
