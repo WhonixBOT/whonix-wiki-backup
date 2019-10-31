@@ -1,0 +1,147 @@
+{{Header}}
+{{#seo:
+|description=memory allocator for many applications to increase security - manual installation
+}}
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = Look into [[Hardened_Malloc|Hardened Malloc]] first.
+}}
+
+== Install Hardened Malloc ==
+
+Users of Linux distributions that are not based on Debian must compile Hardened Malloc from source. <ref>Hardened Malloc is available form the Whonix APT repository for Debian-based distributions.</ref> To do this, it is necessary to install g++ for compilation.
+{{Box|text=
+'''1.''' Update the package lists.
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+'''2.''' Install <code>g++</code>, and <code>git</code> to clone the repository.
+
+{{CodeSelect|code=
+sudo apt-get install g++ git
+}}
+
+'''3.''' {{git clone verify
+
+|software=hardened malloc
+
+|where= a terminal to download and verify the signing key and source code
+
+|footnote=<ref>
+https://grapheneos.org/install
+https://github.com/GrapheneOS/hardened_malloc/issues/82
+</ref>
+
+|key=scurl-download https://github.com/thestinger.gpg
+
+|fingerprintcheck=gpg --keyid-format long --with-fingerprint thestinger.gpg
+
+|fingerprintresult=<blockquote>
+gpg: WARNING: no command supplied.  Trying to guess what you mean ...<br/>
+pub   rsa4096/F9E712E59AF5F22A 2012-12-06 [SC]<br/>
+      Key fingerprint = 65EE FE02 2108 E2B7 08CB  FCF7 F9E7 12E5 9AF5 F22A<br/>
+uid                           Daniel Micay <danielmicay@gmail.com><br/>
+uid                           Daniel Micay <daniel.micay@copperhead.co><br/>
+uid                           Daniel Micay <security@attestation.app><br/>
+uid                           Daniel Micay <security@seamlessupdate.app><br/>
+uid                           Daniel Micay <security@grapheneos.org><br/>
+sub   rsa4096/7363D2F61FDC8A7F 2012-12-06 [E]
+</blockquote>
+
+|keyimport=gpg --import thestinger.gpg
+
+|git=git clone https://github.com/GrapheneOS/hardened_malloc
+
+|folder=hardened_malloc
+
+|verification=git tag --verify 1
+
+|result=<blockquote>
+object d80919fa1e8042a070a3f9b2560ff2ecac8a75da<br />
+type commit<br />
+tag 1<br />
+tagger Daniel Micay <danielmicay@gmail.com> 1562939118 -0400<br />
+<br />
+1<br />
+gpg: Signature made Fri 12 Jul 2019 09:45:21 AM EDT<br />
+gpg:                using RSA key 65EEFE022108E2B708CBFCF7F9E712E59AF5F22A<br />
+gpg:                issuer "danielmicay@gmail.com"<br />
+gpg: Good signature from "Daniel Micay <danielmicay@gmail.com>" [unknown]<br />
+gpg:                 aka "Daniel Micay <security@attestation.app>" [unknown]<br />
+gpg:                 aka "Daniel Micay <security@seamlessupdate.app>" [unknown]<br />
+gpg:                 aka "Daniel Micay <security@grapheneos.org>" [unknown]<br />
+gpg: WARNING: This key is not certified with a trusted signature!<br />
+gpg:          There is no indication that the signature belongs to the owner.<br />
+Primary key fingerprint: 65EE FE02 2108 E2B7 08CB  FCF7 F9E7 12E5 9AF5 F22A
+</blockquote>
+
+}}
+
+'''4.''' Build the program. 
+
+This will only take a few seconds, depending on your system's resources.
+
+{{CodeSelect|code=
+make
+}}
+
+'''5.''' Move the hardened_malloc library into /usr/lib
+
+{{CodeSelect|code=
+sudo mkdir -p /usr/lib/libhardened_malloc.so
+}}
+
+{{CodeSelect|code=
+sudo mv libhardened_malloc.so /usr/lib/libhardened_malloc.so/libhardened_malloc.so
+}}
+}}
+
+= How-to: Launch Applications with Hardened Malloc =
+
+== Systemd Services ==
+
+To launch individual systemd services with hardened malloc, add drop a systemd configuration snippet.
+
+{{CodeSelect|code=
+Environment="LD_PRELOAD='/usr/lib/libhardened_malloc.so/libhardened_malloc.so'"
+}}
+
+== Other Applications ==
+
+To launch other applications with Hardened Malloc, the <code>LD_PRELOAD</code> environment variable must be edited before starting the application. For example, to launch <code>application-name</code> in this way, run.
+
+{{CodeSelect|code=
+LD_PRELOAD='/usr/lib/libhardened_malloc.so/libhardened_malloc.so' application-name
+}}
+
+== All Applications by Default ==
+<u>Note</u>: This action may break numerous applications such as man, apt or Xorg.
+
+It is possible to make all applications use Hardened Malloc as the default memory allocator. To configure this option, the path to the <code>hardened_malloc.so</code> library must be added to the <code>/etc/ld.so.preload</code> file.
+{{Box|text=
+'''1.''' 
+{{Open with root rights|filename=
+/etc/ld.so.preload
+}}
+
+'''2.''' Add the <code>hardened_malloc.so</code> library.
+
+{{CodeSelect|code=
+/usr/lib/libhardened_malloc.so/libhardened_malloc.so
+}}
+
+'''3.''' Save the file.
+
+The procedure is complete.
+}}
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
