@@ -1,0 +1,350 @@
+{{Header}}
+{{#seo:
+|description={{project_name}} Security Check Application. Connectivity Test. Sanity Test. Leak Test. Update Check.
+|image=https://www.whonix.org/w/images/7/72/Whonixchecknotification.png
+}}
+
+[[Image:whonixchecknotification.png|thumb|whonixcheck completion]]
+
+[[Image:Whonixcheck_GUI.png|thumb|whonixcheck progress meter]]
+
+[[Image:whonixcheck_cli.png|thumb|whonixcheck in Konsole]]
+
+[[Image:writing to tty1 by adrelanos.png|thumb|
+
+[[Desktop#whonixcheck.2Ftimesync_writing_to_tty1|Automatically started whonixcheck writing to tty1.]]]]
+= Introduction =
+{{Code2|whonixcheck}} is a bash script which checks numerous, important system variables. whonixcheck can be run in a CLI environment (Konsole / Terminal) or via the GUI option, which has an in-built progress meter and summary notification popup of the results. The script is stored in the {{Code|/usr/bin/whonixcheck}} and {{Code|/usr/lib/whonix/whonixcheck/}} directories. {{project_name}} is functional without the whonixcheck script since it only checks the system status; it is not responsible for core settings. Nothing is compiled, and the script can be easily inspected in the source code.
+
+The whonixcheck script was inspired by https://check.torproject.org. In the past this was an important check when people were still recommended to use proxy settings to torify web browsers. Tor Browser is now securely pre-configured upon release, which means manual torification of web browsers is now recommended against. As an additional protection the default Tor Browser visits check.tpo to confirm everything is working as expected. <ref>Tor Browser in {{project_name}} is configured to load a local {{project_name}} resource after launch -- the familiar landing page.</ref> This site also checks whether Tor Browser is up-to-date by having Tor Button perform a local check after downloading version information.
+
+check.tpo is useful for a browser check, but {{project_name}} is a complete operating system. This means certain checks must be performed before the browser starts, otherwise a user's anonymity or security might be compromised. whonicheck's design allows the entire {{project_name}} community to stay informed about important updates or advice, and this is particularly important for users who might not start the browser or visit the {{project_name}} website regularly. For these reasons, whonixcheck is automatically started after boot/login if it has not been completed within the last 24 hours. This behavior holds true even if the system is not restarted, thereby keeping any long-running systems (like [[Onion_Services|Onion Services]]) safely informed.
+
+If it is necessary to hide Tor and {{project_name}} use from an ISP, see [[Hide_Tor_and_{{project_name_short}}_from_your_ISP|here]]. While only a small minority of users configure their system to hide Tor, it is still desirable to hide any obvious {{project_name}} signature. {{project_name}} users are better off if adversaries cannot distinguish them from vanilla Tor Browser users, as the {{project_name}} user pool is far smaller. 
+
+When whonixcheck auto-starts, it first waits for a randomized period of time ranging between 60 and 500 seconds. This obfuscation feature is intended to further stymie traffic analysis, while Tor is still responsible for basic defenses against traffic volume and pattern signatures. Without waiting for a randomized period traffic flows would be more distinguishable, since a spike in whonixcheck traffic would always occur immediately after bootstrapping.
+
+{{Running_Whonixcheck}}
+
+= System Checks =
+
+In all the checks below, whonixcheck warnings appear if a problem is detected. Conversely, whonixcheck output is otherwise quiet unless using the <code>--verbose</code> option. Any operating system updates, downloads or other network activity are [[Stream_Isolation|stream-isolated]] by default.
+
+'''Table:''' ''whonixcheck System Checks''
+
+{| class="wikitable"
+|-
+! scope="col"| '''Check'''
+! scope="col"| '''Description'''
+|-
+! scope="row"| Clock Source
+| Check if the clock source is KVMClock and warn if that is the case. <ref>This is only expected to affect those following the [[KVM]] instructions.</ref>
+|-
+! scope="row"| Control Port Filter Proxy
+| Check if [[Dev/CPFP|Control Port Filter Proxy]] is running.
+|-
+! scope="row"| Entropy Test
+| An entropy availability check confirms {{Code|/proc/sys/kernel/random/entropy_avail}} contains no less than 112 bytes.
+|-
+! scope="row"| Hostname
+| Check if:
+* {{Code|hostname --fqdn}} outputs {{Code|host.localdomain}}.
+* {{Code|hostname }} outputs {{Code|host}}.
+* {{Code|hostname --ip-address }} outputs {{Code|127.0.0.1}}.
+* {{Code|hostname --domain }} outputs {{Code|localdomain}}.
+Also inform if [[{{project name short}}-APT-Repository]] is enabled, and if so, which repository has been selected.
+|-
+! scope="row"| IP Address Routing
+| Check if IP forwarding is disabled on {{gateway_product_name}} (<code>sys-whonix</code>).
+|-
+! scope="row"| Log Inspection
+| When using the <code>--verbose</code> option, check if {{Code|~/.whonix/msgdispatcher-error.log}} or {{Code|~/.whonix/whonix_torbrowser_updater_error.log}} exist and report this if confirmed.
+|-
+! scope="row"| Meta-package Check
+| Check if the relevant meta-packages <ref>These capture packages which depend on all other recommended / default-installed packages.</ref> are installed on {{gateway_product_name}} (<code>sys-whonix</code>) or {{workstation_product_name}} (<code>anon-whonix</code>). Also see: [[{{project name short}}_Debian_Packages|{{project_name}} Debian Packages]].
+|-
+! scope="row"| Network Connection
+| Check whonixsetup has properly configured networking.
+|-
+! scope="row"| Operating System Updates
+| ''apt-get update'' is run through a separate apt-get SocksPort for stream isolation. A notification is provided whether the system is up-to-date or requires updating.
+|-
+! scope="row"| Package Manager
+| Check if a package manager is currently running and wait until the process is finished. <ref>Otherwise, eventually the system is locked or the package manager is left in a broken state. Advice is provided on what to do in such circumstances.</ref> This prevents connection failures during concurrent upgrades of the Tor or [[Dev/CPFP|Control Port Filter Proxy]] packages.
+|-
+! scope="row"| Tor
+| Check: 
+* If Tor has been enabled by inspecting if {{Code|DisableNetwork 1}} has been commented out from {{Code|/usr/local/etc/torrc.d/50_user.conf}} either manually or via whonixsetup.
+* If the Tor process (pid) is running on {{gateway_product_name}} (<code>sys-whonix</code>).
+* The validity of Tor configuration files in {{gateway_product_name}} (<code>sys-whonix</code>) by using {{Code|sudo tor --verify-config}}.
+Notify about the Tor connection / IP address. <ref>Some users may wonder why it is necessary to check the IP address if the {{project_name}} design ensures that the real IP cannot be leaked. Sometimes check.tpo reports false positives and fails to detect Tor exit nodes, so it is better to provide information about that possibility. This also reduces support requests and bad press. Users are welcome to investigate a Tor exit node that could not be detected, but it can be stated with high confidence that the IP address will be associated with a known Tor exit node.</ref> <ref>Another reason to perform this check is because some users set up dangerous and/or unsupported configurations, such as:
+* Changing the {{workstation_product_name}} (<code>anon-whonix</code>) network interface from {{Code|internal}} network {{Code|"{{project_name_short}}"}} to {{Code|bridged}} or {{Code|NAT}}.
+* Using virtualizers which are entirely unsupported and untested by {{project_name}} developers.
+* Installing arbitrary packages on {{workstation_product_name}} (<code>{{whonix-ws}}</code>). This could theoretically create leak vectors, and whonixcheck is the last layer of defense against such leaks.</ref>
+|-
+! scope="row"| Tor Bootstrap and Browser Version
+| Tor Bootstrap Status:
+# Download https://check.torproject.org with curl through an extra SocksPort.
+# Download https://check.torproject.org with curl through TransPort.
+On {{workstation_product_name}} (<code>anon-whonix</code>), a [[Stream Isolation]] test checks the IP addresses from (1) and (2) differ. <br /><br />
+Tor Browser version:
+* Download https://check.torproject.org/RecommendedTBBVersions with curl through an extra SocksPort.
+|-
+! scope="row"| Virtualization Platform
+| Check {{project_name}} is being run on one of the supported virtualizer platforms, including bare metal ([[Physical Isolation]]), [[VirtualBox]], [[KVM]] or [[Qubes]].
+|-
+! scope="row"| {{project_name}} Version and News
+| [[Download#{{project_name}}_Version_Check_and_{{project_name_short}}_News|Download the {{project_name}} version and {{project_name}} news]]. <ref>One future development goal is to provide protection against a [[Dev/ptt|Permanent Takedown Attack]].</ref> <ref>Also see [[Trust]].</ref>
+Download {{project_name}} News Files with curl through an extra {{project_name}} news SocksPort. This check is designed to be functional:
+* If the {{project_name}} repository is down or has changed.
+* For users who have disabled [[{{project name short}}-APT-Repository]] permanently or only enable it intermittently.
+News features:
+* The [[Dev/News|{{project_name}} News Format]] only reports the most important news for those not following {{project_name}} developments. <ref>For example, if a theoretical IP address leak was discovered in {{project_name}}, or exit nodes were discovered to be actively exploiting apt-get traffic, then this avenue would briefly inform users about the danger.</ref>
+* The {{project_name}} version and news file is cryptographically signed by lead {{project_name}} developer Patrick Schleizer.
+* Patrick's GPG key is copied to {{Code|whonix_shared/usr/share/whonix/keys/whonix-keys.d/}} at build time.
+* A warning appears if the file can not be GPG-verified with Patrick's OpenPGP key. In that instance the version information and news is ignored.
+* Messages signed more than one month in the past are rejected and the user is informed the message is no longer valid.
+|}
+
+= Version Numbers =
+{{Anchor|Whonix Build Version}}
+== {{project_name}} Build Version ==
+
+The version number of the {{project_name}} build never changes. This is acceptable because at build time <ref>The time at which the image was created.</ref> the current {{project_name}} version number is added to the image itself. <ref>
+The [https://github.com/{{project_name_short}}/anon-shared-build-log-build-version anon-shared-build-log-build-version] package, [https://github.com/{{project_name_short}}/anon-shared-build-log-build-version/blob/master/usr/lib/anon-dist/chroot-scripts-post.d/70_log_build_version 70_log_build_version] [[Dev/Source_Code_Intro#Chroot_Scripts|chroot script]] in essence runs:
+<pre>
+echo "$anon_dist_build_version" > "/var/lib/anon-dist/build_version"
+</pre>
+</ref> 
+This information is made available so whonixcheck can determine which build script version was used to create that particular image. 
+
+This version number should remain static and be unaffected by updating or other issues, since it only applies to specific (usually older) versions of the build script. This is useful for diagnostic purposes and means specific build versions can be deprecated if they are too difficult or expensive to upgrade. In this case,  whonixcheck's [[#System_Checks|{{project_name}} News]] function would inform users about the change.
+
+== Check Version ==
+
+To check the current {{project_name}} version, run the following command.
+
+{{CodeSelect|code=
+whonixcheck --verbose --function show_versions
+}}
+
+Should show something like the following.
+
+<blockquote>
+[INFO] [whonixcheck] sys-whonix | {{gateway_product_name}} | whonix-gw-14 TemplateBased ProxyVM | Sat Sep 29 01:32:56 UTC 2018<br />
+[INFO] [whonixcheck] Input Detection: INPUT_AUTO=true CLI=true GUI=false<br />
+stdin connected to terminal. Using cli output. Not using gui output.<br />
+Alternatively, if want to run from command line, but still use the graphical user interface for input, you could add to command line: --gui<br />
+[INFO] [whonixcheck] Root Check Result: Ok, not running as root.<br />
+[INFO] [whonixcheck] Pin torproject.org certificate: disabled.<br />
+[INFO] [whonixcheck] whonix_build_version: 3:2.5-1<br />
+[INFO] [whonixcheck] whonix-gateway-packages-dependencies-cli: 7.9-1<br />
+[INFO] [whonixcheck] /etc/whonix_version: 14<br />
+</blockquote>
+
+= Security =
+The [https://packages.debian.org/source/stable/ca-certificates ca-certificates Debian package] is installed on {{project_name}}. curl will verify the SSL certificate for downloads from check.tpo -- SocksPort Test, TransPort Test, Tor Browser version check -- and abort if the certificate is not valid.
+
+The attack surface for this script includes at least curl, apt-get, gpg, grep, sed, bash, uwt, torsocks, zenity, and pgrep. {{project_name}} developers have assessed that the benefits of this check outweigh the potential risks. Users are free to change this default behavior <ref>By running <code>sudo chmod -x /usr/bin/whonixcheck</code></ref> and developers remain open to suggested improvements and reviews. Also see: [[SSL]].
+
+== SSL Certificate Pinning ==
+
+=== Introduction ===
+By default, {{project_name}} has not yet implemented direct SSL certificate pinning for check.torproject.org and torproject.org using curl. <ref>https://phabricator.whonix.org/T80</ref> The intent is to eventually provide users with an optional torproject.org certificate pinning option for the SocksPort Test, TransPort Test and Tor Browser Update Check. To manually configure this setting, see below.
+
+=== How-to ===
+These instructions have moved to: [[Next#whonixcheck_SSL_Certificate_Pinning|whonixcheck SSL Certificate Pinning]].
+
+=== Defaults Discussion ===
+Interested readers can learn more about why this feature is not enabled by default [[Dev/SSL Certificate Pinning#Defaults Discussion|here]].
+
+= Source Code Introduction =
+
+== whonixcheck Information Sources ==
+
+[https://github.com/{{project_name_short}}/whonixcheck/blob/master/usr/bin/whonixcheck /usr/bin/whonixcheck] {{Code2|source}}s:
+# [https://github.com/{{project_name_short}}/msgcollector/blob/master/usr/lib/msgcollector/error_handler /usr/lib/msgcollector/error_handler]
+# [https://github.com/{{project_name_short}}/helper-scripts/blob/master/usr/lib/helper-scripts/tor_enabled_check /usr/lib/helper-scripts/tor_enabled_check]
+# [https://github.com/{{project_name_short}}/helper-scripts/blob/master/usr/lib/helper-scripts/pkg_manager_running_check /usr/lib/helper-scripts/pkg_manager_running_check]
+# Followed by all files in [https://github.com/{{project_name_short}}/whonixcheck/tree/master/usr/lib/whonixcheck /usr/lib/whonixcheck/] in lexical order.
+
+== whonixcheck Operation ==
+
+After gathering the above information, whonixcheck runs functions in {{Code2|whonixcheck_main}} while passing command line arguments.
+
+Function {{Code2|whonixcheck_main}} then calls:
+
+# Function [https://github.com/{{project_name_short}}/whonixcheck/blob/master/usr/lib/whonixcheck/parse_cmd {{Code2|parse_cmd_options}}] while passing command line arguments.
+# Function [https://github.com/{{project_name_short}}/whonixcheck/blob/master/usr/lib/whonixcheck/preparation#L82 {{Code2|preparation}}].
+# Then uses function [https://github.com/{{project_name_short}}/whonixcheck/blob/master/usr/lib/whonixcheck/preparation#L17 {{Code2|whonixcheck_run_function}}] to run all other functions. <ref>The order differs for {{gateway_product_name}} (<code>sys-whonix</code>) and {{workstation_product_name}} (<code>anon-whonix</code>). For detailed information concerning differences, see {{Code2|/usr/bin/whonixcheck}}. The purpose of function {{Code2|whonixcheck_run_function}} is to allow users to add function names to configuration variable {{Code2|whonixcheck_skip_functions}}, which permits the skipping of certain functions. Also see: [[{{project name short}}check_Hardening|whonixcheck Hardening]].</ref>
+
+== Additional Functions ==
+
+The {{Code2|/usr/lib/whonixcheck/}} folder is not a real .d style plugin drop-in folder. The shell function for separate [{{project_name}}, unit] checks can be placed in separate files for better readability. The provided functions are then supposed to be run from {{Code2|/usr/bin/whonixcheck}} function {{Code2|whonixcheck_main}}.
+
+As a simple example, inspect the file [https://github.com/{{project_name_short}}/whonixcheck/blob/master/usr/lib/whonixcheck/check_entropy {{Code2|/usr/lib/whonixcheck/check_entropy}}] which contains function {{Code2|check_entropy}}. Users can gather as much information as they like for analysis via this function.
+
+<pre>
+entropy_file="/proc/sys/kernel/random/entropy_avail"
+entropy_size="$(cat "$entropy_file")"
+if [ "${entropy_size}" -lt "112" ]; then
+</pre>
+
+Now it is possible to use, copy and paste, or create a common boilerplate for making discoveries visible.
+<pre>
+local MSG="<p>Entropy Available Check Result: low. <code>$entropy_file</code>: <code>$entropy_size</code> Please report this issue!</p>"
+$output ${output_opts[@]} --messagex --typex "warning" --message "$MSG"
+$output ${output_opts[@]} --messagecli --typecli "warning" --message "$MSG"
+</pre>
+
+To limit the notifications to those running whonixcheck with the <code>--verbose</code> option, add.
+
+<pre>
+ if [ "$verbose" = "1" ]; then
+</pre>
+
+Other useful variables include:
+
+* $TEMP_DIR
+* $VM "{{gateway_product_name_short}}" or "{{workstation_product_name}}"
+* $vm_lower_case_short "gateway" or "workstation"
+* $GATEWAY_IP
+* $whonix_codename /etc/apt/sources.list.d/whonix.list codename
+* $whonix_codename_uppercase
+* $DAEMON = 1 run in daemon mode
+* $AUTOSTARTED = 1 run after boot
+* $manualrun = 1 manually run
+* $ARCH "$(uname --machine)"
+* $whonix_build_version
+* $whonix_deb_package_version
+
+For further examples, please inspect the behavior of other functions in folder {{Code2|/usr/lib/whonixcheck/}}
+
+= Silent Mode =
+'''Table:''' ''whonixcheck Default Operation''
+
+{| class="wikitable"
+|-
+! scope="col"| '''Category'''
+! scope="col"| '''{{gateway_product_name_short}}'''
+! scope="col"| '''{{workstation_product_name}}'''
+|-
+! scope="row"| Runs after boot (autostart mode)
+| {{Yes}} <ref>It is necessary to provide feedback if Tor bootstrapping is slow or there are other grave problems.</ref>
+| {{No}}  <ref>This is designed to reduce the number and duplication of popups, like when Tor bootstrapping has not  yet finished.</ref>
+|-
+! scope="row"| Runs regularly during {{project_name}} operation (daemon mode)
+| {{No}} <ref>Otherwise this could lead to a disruptive error popup while the user is doing something entirely different. One example is if the user has not used {{gateway_product_name}} (<code>sys-whonix</code>) / Tor for a while and Tor is no longer connected, this would be reported. If it is only a transient error, users are better off. If it is a permanent error that will be visible later, the user will hopefully run whonixcheck manually.</ref>
+| {{No}} <ref>For example, if five AppVMs were in operation that would cause five error popups.</ref>
+|}
+
+'''Table:''' ''whonixcheck Notification Matrix''
+
+{| class="wikitable"
+|-
+! scope="col"| '''Circumstance'''
+! scope="col"| '''Notification'''
+|-
+! scope="row"| Tor bootstrapping completes promptly <ref>Tor is connected when whonxicheck runs function {{Code2|check_tor_bootstrap}}</ref>
+| "Connected to Tor" passive popup only
+|-
+! scope="row"| Tor bootstrapping is incomplete
+| "Connecting to Tor" passive popup and successful "Connected to Tor" passive popup when finished, or an active error popup with advice when it fails
+|-
+! scope="row"| Grave issue <ref>For example, if unwanted packages are installed.</ref> <ref>Also see: [[#System_Checks|System Checks]].</ref> found
+| Active error popup with advice
+|-
+! scope="row"| No grave issue found
+| No GUI output
+|-
+! scope="row"| Manual run of whonixcheck
+| Then <code>silent</code> is set to <code>0</code>, resulting in a progress bar and run of all tests <ref>Verbose output still requires the <code>--verbose</code> option.</ref> and active popup with results when complete
+|}
+
+== Other Silent Mode Settings ==
+
+whonixcheck was specifically made more silent to suit the Qubes AppVM design:
+
+* When autostarted (after boot): <code>silent=3</code>
+* Daemon mode (planed iteration during run): <code>silent=3</code>
+* Silent only applies to autostart and daemon mode. When it is manually run, all messages are shown. <ref>The same as {{project_name}} 11.</ref>
+
+'''Table:''' ''Silent Level Overview''
+
+{|   class="wikitable"
+!| '''Silent Level'''
+!| '''Action'''
+|-
+| Silent <= 0
+| 
+* Show SocksPort and TransPort "Test Result: Connected to Tor. IP" messages
+|-
+| Silent >= 1 
+| 
+* No "whonixcheck was recently run, no need to run it again, you could still manually start it" message
+|-
+| Silent <= 2 
+| 
+* Complete a SocksPort and TransPort test, but only report errors <ref>Relating to no connectivity, Tor not being detected and false positives.</ref>
+|-
+| Silent >= 2  
+| 
+* No "Tor Bootstrap Result: Connected to Tor." message unless bootstrapping was slow and a progress bar was shown
+* Perform test stream isolation, but only report errors
+* No {{project_name}} News result if there is no news and the Debian and build version are up-to-date
+* Absent "No updates found via apt-get" message
+|-
+| Silent >= 3 
+| 
+* No Tor SocksPort / TransPort test is conducted
+* No stream isolation test at all
+* No {{project_name}} News check at all
+* No apt-get update check at all
+* Skip notification if {{project_name}} repository is enabled
+* No progress bar for the usual tests, except a progress bar if Tor has not bootstrapped yet
+* Skip the test for a concurrently running package manager
+|-
+| Silent >= 4 
+| 
+* Skip the test for whether {{project_name}} repository is enabled/disabled. <ref>In other words, do not notify about a disabled {{project_name}} repository.</ref>
+|}
+
+= Development =
+== Use Cases ==
+
+whonixcheck has specific use cases when it should be run either manually or automatically.
+
+=== Automated Tests ===
+
+Run after automatic boot by an automated test suite.
+
+=== Auto-start Following Boot ===
+
+# To provide connectivity progress information (Tor bootstrap check), with the familiar "in progress...", "done" (or failed) messages.
+# As a general sanity check, for instance: the gateway is a ProxyVM and not an AppVM, IP forwarding is disabled, the clock is sane, and much more.
+
+=== Manual User Start ===
+
+# Connection functionality test.
+# Connection leak test.
+# General sanity check.
+# General system security and anonymity check.
+# As an information gathering tool, for example reporting the {{project_name}} Debian package and build version (build version requires the <code>--verbose</code> option).
+# VPN / tunnel functionality test.
+# To educate users that stream isolation is broken when adding a VPN.
+
+== Planned Features ==
+
+When an error occurs, provide: <ref>Issues resolved in {{project_name}} 14 include:
+* Non-zero exit codes when at least one warning or error was detected [for automated test suite]; and
+* Check for failed systemd units (except perhaps apparmor) for automated test suite.</ref>
+* A short error message.
+* A separate help button which opens advice relating to the problem.
+* A separate technical details drop-down button which contains debugging information.
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]] [[Category:Design]]
