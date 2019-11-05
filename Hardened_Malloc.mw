@@ -1,0 +1,109 @@
+{{Header}}
+{{#seo:
+|description=Hardened Memory Allocator for many Applications to increase Security - installation from Whonix repository
+|image=https://www.whonix.org/w/images/0/06/Malloc423.jpg
+}}
+
+= Introduction =
+
+Hardened Malloc is a hardened memory allocator which can be used with many applications to increase security.
+
+According to the author's GitHub description: <ref>https://github.com/GrapheneOS/hardened_malloc</ref>
+
+<blockquote>
+This is a security-focused general purpose memory allocator providing the malloc API along with various extensions. It provides substantial hardening against heap corruption vulnerabilities. The security-focused design also leads to much less metadata overhead and memory waste from fragmentation than a more traditional allocator design. It aims to provide decent overall performance with a focus on long-term performance and memory usage rather than allocator micro-benchmarks. It offers scalability via a configurable number of entirely independently arenas, with the internal locking within arenas further divided up per size class.
+</blockquote>
+
+Readers who wish to discuss the integration of Hardened Malloc with Whonix should refer to [https://forums.whonix.org/t/hardened-malloc/7474 this forum thread].
+
+= Installation =
+
+Hardened Malloc is available from the Whonix and [[Kicksecure]] APT repository. <ref>https://github.com/Whonix/hardened_malloc</ref> Users of these Linux distributions can install it easily with the following instructions.
+
+Users of Debian (-based) Linux distributions other than Whonix or Kicksecure need to first add the Whonix APT repository, which is documented on the [[Whonix Packages for Debian Hosts]] wiki page. For other distributions, refer to the [[Hardened Malloc/Manual Installation|Hardened Malloc Manual Installation]] instructions.
+
+{{Install Package|
+package=hardened-malloc
+}}
+
+= How-to: Launch Applications with Hardened Malloc =
+== Systemd Services ==
+
+To launch individual systemd services with hardened malloc, add a drop-in systemd configuration snippet.
+
+{{CodeSelect|code=
+Environment="LD_PRELOAD='/usr/lib/libhardened_malloc.so/libhardened_malloc.so'"
+}}
+
+== Other Applications ==
+
+To launch other applications with Hardened Malloc, the <code>LD_PRELOAD</code> environment variable must be edited before starting the application. For example, to launch <code>application-name</code> in this way, run.
+
+{{CodeSelect|code=
+LD_PRELOAD='/usr/lib/libhardened_malloc.so/libhardened_malloc.so' application-name
+}}
+
+== All Applications by Default ==
+
+<u>Note</u>: This action may break numerous applications such as man, apt or Xorg.
+
+It is possible to make all applications use Hardened Malloc as the default memory allocator. To configure this option, the path to the <code>hardened_malloc.so</code> library must be added to the <code>/etc/ld.so.preload</code> file.
+{{Box|text=
+'''1.''' 
+{{Open with root rights|filename=
+/etc/ld.so.preload
+}}
+
+'''2.''' Add the <code>hardened_malloc.so</code> library.
+
+{{CodeSelect|code=
+/usr/lib/libhardened_malloc.so/libhardened_malloc.so
+}}
+
+'''3.''' Save the file.
+
+The procedure is complete.
+}}
+
+== Incompatible Applications ==
+=== Browsers ===
+
+Using Hardened Malloc with Tor Browser, Firefox or [[SecBrowser|SecBrowser ™]] is difficult and [[unsupported]]. <ref name=firefox-based>
+These browsers are all based on Firefox, therefore the following applies equally to each of them.
+
+<blockquote>
+LD_PRELOAD='/path/to/libhardened_malloc.so' /path/to/program will do nothing or approximately nothing.
+</blockquote>
+
+The reason is recompilation is necessary.
+
+<blockquote>
+To successfully replace Firefox memory allocator you should either use LD_PRELOAD _with_ a --disable-jemalloc build OR Firefox's replace_malloc functionality:
+https://searchfox.org/mozilla-central/source/memory/build/replace_malloc.h
+
+Sources:
+
+* https://lists.torproject.org/pipermail/tor-dev/2019-August/013982.html
+* https://lists.torproject.org/pipermail/tor-dev/2019-August/013990.html
+</blockquote>
+</ref>
+
+It is unknown whether other browsers can benefit from Hardened Malloc.
+
+=== Others ===
+Other applications might not easily benefit from Hardened Malloc for the same reasons outlined in the [[#Browsers|browsers]] section above.
+
+Whether an application can benefit from Hardened Malloc or not depends on technical implementation details of the application in question. Vendors of applications will probably know if their application is compatible with Hardened Malloc. Community wiki contributions are most welcome -- please post any additional vendor Q&As here.
+
+= Credits and Source Code =
+
+The [https://github.com/GrapheneOS/hardened_malloc original] source software is maintained by security researcher, Daniel Micay.
+
+[https://www.whonix.org/wiki/Hardened_Malloc This website] is the [https://en.wikipedia.org/wiki/Fork_(software_development) software fork] homepage for Hardened Malloc, with a focus on easy installation, added user documentation, and integration with [[Whonix]], [[Kicksecure]], Debian, and other distributions. The Whonix software fork source code can be found [https://github.com/Whonix/hardened_malloc here].
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
