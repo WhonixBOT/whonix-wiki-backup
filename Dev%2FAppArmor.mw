@@ -1,0 +1,206 @@
+{{Header}}
+
+= Introduction =
+
+We do enable AppArmor by default since {{project name}} 9. This is done by the [https://github.com/{{project_name_short}}/grub-enable-apparmor grub-enable-apparmor] package.
+
+A git branch to gather more information:
+* https://github.com/{{project_name_short}}/apparmor-profile-sdwdate/tree/debian-maintainer-scripts-debug-output
+* comes with two new files
+** https://github.com/{{project_name_short}}/apparmor-profile-sdwdate/blob/debian-maintainer-scripts-debug-output/debian/apparmor-profile-sdwdate.postrm
+** https://github.com/{{project_name_short}}/apparmor-profile-sdwdate/blob/debian-maintainer-scripts-debug-output/debian/apparmor-profile-sdwdate.postinst
+
+= postrm =
+This is the postrm script, that debhelper creates and adds to the package during package build.
+
+<pre>
+#!/bin/bash
+
+## This file is part of {{project_name}}.
+## Copyright (C) 2012 - 2019 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+if [ -f /usr/lib/pre.bsh ]; then
+   source /usr/lib/pre.bsh
+fi
+
+set -e
+
+true "
+#####################################################################
+## INFO: BEGIN: $DPKG_MAINTSCRIPT_PACKAGE $DPKG_MAINTSCRIPT_NAME ${1+"$@"}
+#####################################################################
+"
+
+true "INFO: debhelper beginning here."
+
+# Automatically added by dh_apparmor
+if [ "$1" = "purge" ]; then
+    rm -f "/etc/apparmor.d/disable/usr.bin.sdwdate" || true
+    rm -f "/etc/apparmor.d/force-complain/usr.bin.sdwdate" || true
+    rm -f "/etc/apparmor.d/local/usr.bin.sdwdate" || true
+    rmdir /etc/apparmor.d/local 2>/dev/null || true
+fi
+# End automatically added section
+
+
+true "INFO: Done with debhelper."
+
+true "
+#####################################################################
+## INFO: END  : $DPKG_MAINTSCRIPT_PACKAGE $DPKG_MAINTSCRIPT_NAME ${1+"$@"}
+#####################################################################
+"
+
+## Explicitly "exit 0", so eventually trapped errors can be ignored.
+exit 0
+</pre>
+
+= postinst =
+This is the postinst script, that debhelper creates and adds to the package during package build.
+
+<pre>
+#!/bin/bash
+
+## This file is part of {{project_name}}.
+## Copyright (C) 2012 - 2019 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+if [ -f /usr/lib/pre.bsh ]; then
+   source /usr/lib/pre.bsh
+fi
+
+set -e
+
+true "
+#####################################################################
+## INFO: BEGIN: $DPKG_MAINTSCRIPT_PACKAGE $DPKG_MAINTSCRIPT_NAME ${1+"$@"}
+#####################################################################
+"
+
+true "INFO: debhelper beginning here."
+
+# Automatically added by dh_apparmor
+if [ "$1" = "configure" ]; then
+    APP_PROFILE=/etc/apparmor.d/usr.bin.sdwdate
+    if [ -f "$APP_PROFILE" ]; then
+        # Add the local/ include
+        LOCAL_APP_PROFILE=/etc/apparmor.d/local/usr.bin.sdwdate
+
+        test -e "$LOCAL_APP_PROFILE" || {
+            tmp=`mktemp`
+        cat <<EOM > "$tmp"
+# Site-specific additions and overrides for usr.bin.sdwdate.
+# For more details, please see /etc/apparmor.d/local/README.
+EOM
+            mkdir `dirname $LOCAL_APP_PROFILE` 2>/dev/null || true
+            mv -f "$tmp" "$LOCAL_APP_PROFILE"
+            chmod 644 "$LOCAL_APP_PROFILE"
+        }
+
+        # Reload the profile, including any abstraction updates
+        if [ -x /usr/sbin/aa-status ] && aa-status --enabled 2>/dev/null; then
+            apparmor_parser -r -T -W "$APP_PROFILE" || true
+        fi
+    fi
+fi
+# End automatically added section
+
+
+true "INFO: Done with debhelper."
+
+true "
+#####################################################################
+## INFO: END  : $DPKG_MAINTSCRIPT_PACKAGE $DPKG_MAINTSCRIPT_NAME ${1+"$@"}
+#####################################################################
+"
+
+## Explicitly "exit 0", so eventually trapped errors can be ignored.
+exit 0
+</pre>
+
+= How to get the Debug Output =
+<pre>
+make deb-pkg
+export DEBDEBUG=1
+sudo -E dpkg -i ../apparmor-profile-sdwdate_2.0-1_all.deb
+</pre>
+
+= Full xtrace during package reinstall =
+Package was already installed. Installed it again.
+<pre>
+sudo -E dpkg -i ../apparmor-profile-sdwdate_2.0-1_all.deb 
+dpkg: warning: downgrading apparmor-profile-sdwdate from 3:2.1-1 to 3:2.0-1
+(Reading database ... 152310 files and directories currently installed.)
+Preparing to replace apparmor-profile-sdwdate 3:2.1-1 (using .../apparmor-profile-sdwdate_2.0-1_all.deb) ...
+Unpacking replacement apparmor-profile-sdwdate ...
++++ type -t errorhandlergeneral
+++ '[' '' = function ']'
+++ trap error_handler_pre ERR
+++ bash -n /usr/lib/pre.bsh
+++ bash -n /var/lib/dpkg/info/apparmor-profile-sdwdate.postrm
+++ own_filename=apparmor-profile-sdwdate.postrm
+++ unset skip_script
++ set -e
++ true '
+#####################################################################
+## INFO: BEGIN: apparmor-profile-sdwdate postrm upgrade' '3:2.0-1
+#####################################################################
+'
++ true 'INFO: debhelper beginning here.'
++ '[' upgrade = purge ']'
++ true 'INFO: Done with debhelper.'
++ true '
+#####################################################################
+## INFO: END  : apparmor-profile-sdwdate postrm upgrade' '3:2.0-1
+#####################################################################
+'
++ exit 0
+Setting up apparmor-profile-sdwdate (3:2.0-1) ...
++++ type -t errorhandlergeneral
+++ '[' '' = function ']'
+++ trap error_handler_pre ERR
+++ bash -n /usr/lib/pre.bsh
+++ bash -n /var/lib/dpkg/info/apparmor-profile-sdwdate.postinst
+++ own_filename=apparmor-profile-sdwdate.postinst
+++ unset skip_script
++ set -e
++ true '
+#####################################################################
+## INFO: BEGIN: apparmor-profile-sdwdate postinst configure' '3:2.1-1
+#####################################################################
+'
++ true 'INFO: debhelper beginning here.'
++ '[' configure = configure ']'
++ APP_PROFILE=/etc/apparmor.d/usr.bin.sdwdate
++ '[' -f /etc/apparmor.d/usr.bin.sdwdate ']'
++ LOCAL_APP_PROFILE=/etc/apparmor.d/local/usr.bin.sdwdate
++ test -e /etc/apparmor.d/local/usr.bin.sdwdate
++ '[' -x /usr/sbin/aa-status ']'
++ aa-status --enabled
++ apparmor_parser -r -T -W /etc/apparmor.d/usr.bin.sdwdate
++ true 'INFO: Done with debhelper.'
++ true '
+#####################################################################
+## INFO: END  : apparmor-profile-sdwdate postinst configure' '3:2.1-1
+#####################################################################
+'
++ exit 0
+</pre>
+
+= Relevant xtrace during package reinstall =
+Package was already installed. Installed it again.
+<pre>
++ '[' configure = configure ']'
++ APP_PROFILE=/etc/apparmor.d/usr.bin.sdwdate
++ '[' -f /etc/apparmor.d/usr.bin.sdwdate ']'
++ LOCAL_APP_PROFILE=/etc/apparmor.d/local/usr.bin.sdwdate
++ test -e /etc/apparmor.d/local/usr.bin.sdwdate
++ '[' -x /usr/sbin/aa-status ']'
++ aa-status --enabled
++ apparmor_parser -r -T -W /etc/apparmor.d/usr.bin.sdwdate
++ exit 0
+</pre>
+
+{{Footer}}
+[[Category:Development]]
