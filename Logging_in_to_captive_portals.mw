@@ -1,0 +1,135 @@
+<!--
+Copyright:
+
+ {{project name}} Warning wiki page Copyright (C) Amnesia <amnesia at boum dot org>
+ {{project name}} Warning wiki page Copyright (C) 2012 - 2019 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+         
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+      
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to:
+
+  Free Software Foundation, Inc. 
+    51 Franklin St, Fifth Floor
+    Boston, MA 02110-1301, USA.
+
+On Debian GNU/Linux systems, the complete text of the GNU General Public
+License can be found in the /usr/share/common-licenses' directory.
+
+The complete text of the GNU General Public License can also be found online on gnu.org <https://www.gnu.org/licenses/gpl.html>, in {{project name}} virtual machine images in /usr/share/common-licenses/GPL-3 file or on Github <https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/GPLv3>.
+-->
+<!--
+This wiki page is a fork of the Unsafe Browser page, from this exact source <http://git.immerda.ch/?p=amnesia.git;a=blob;f=wiki/src/doc/anonymous_internet/unsafe_browser.mdwn;hb=21aa4cc26d72a02adf3f9818d6beca1a6a03fcd1>.
+-->
+{{Header}}
+{{#seo:
+|description=Captive Portals Login. {{project name}} in WiFi Hotspots.
+|image=https://www.whonix.org/w/images/7/7d/Wireless-lan-152413640.png
+}}
+= Logging in to captive portals =
+== When Using VMs ==
+Many publicly accessible Internet connections (usually available through a wireless network connection) require its users to register and login in order to get access to the Internet. This include both free and paid for services that may be found at Internet cafes, libraries, airports, hotels, universities etc. Normally in these situations, a so called ''captive portal'' intercepts any website request made and redirects the web browser to a login page. None of that works inside {{workstation_product_name}}, so a browser with unrestricted network access is necessary. The browser on the host operating system must be used for this purpose. Note that this means that '''the browser on the host is NOT anonymous''', so use it carefully.
+
+== When Using Physical Isolation ==
+There is no unsafe browser on {{gateway_product_name}} installed by default. You could use a third machine, which has access to clearnet or boot the hardware which runs {{gateway_product_name}} with another operating system (from USB), which is not torified.
+
+== Security recommendations ==
+* While this browser can be used unrestrictively for anything, it is ''highly'' recommended to only use it for the purpose stated above, i.e. to access and login on captive portals.
+* Do not run this browser at the same time as the normal, anonymous web browser. This makes it easy to not mistake one browser for the other, which could have catastrophic consequences for your anonymity.
+* Run this browser from a dedicated VM and lock it down with NoScript and isolation programs like FireJail (Linux only).
+
+== Unsafe Browser ==
+=== Installation ===
+Discouraged!
+
+This has to be done while you already/still have an internet connection. It cannot be done on the go when you need an internet connection since no unsafe browser is installed by default.
+
+The following instructions are to be applied on {{gateway_product_name}}.
+
+Configure user home of user <code>clearnet</code> to <code>/home/clearnet</code> as it is not set by Whonix default.
+
+{{CodeSelect|code=
+sudo usermod -m -d /home/clearnet clearnet
+}}
+
+Create folder <code>/home/clearnet</code>.
+
+{{CodeSelect|code=
+sudo mkdir -p /home/clearnet
+}}
+
+Set owner of folder <code>/home/clearnet</code> to be user <code>clearnet</code>.
+
+{{CodeSelect|code=
+sudo chown -R clearnet:clearnet /home/clearnet
+}}
+
+Install a browser.
+
+{{Install_Package|
+package=firefox-esr
+}}
+
+=== Usage ===
+Start <code>bash</code> as user <code>clearnet</code>. <ref>
+The <code>sudo</code> <code>--set-home</code> parameter is important to prevent file permission issues since a GUI application is to be started under a different user account. Similar to [[Install_Software#GUI_Applications_with_Root_Rights|GUI Applications with Root Rights]].
+
+Quote <code>sudo</code> man page:
+
+<blockquote>
+-H, --set-home<br />
+    Request that the security policy set the HOME environment variable to the home directory specified by the target user's password database entry. Depending on the policy, this may be the default behavior.
+</blockquote>
+</ref>
+
+{{CodeSelect|code=
+sudo --set-home -u clearnet bash
+}}
+
+Change directory into user <code>clearnet</code> home folder.
+
+{{CodeSelect|code=
+cd ~ 
+}}
+
+Start a browser.
+
+{{CodeSelect|code=
+firefox
+}}
+
+=== Uninstallation ===
+In case you like to remove the unsafe browser, apply the following instructions.
+
+Purge <code>firefox-esr</code>.
+
+{{CodeSelect|code=
+sudo apt-get purge firefox-esr
+}}
+
+Autoremove.
+
+{{CodeSelect|code=
+sudo apt-get autoremove
+}}
+
+Delete Firefox data directory. Optional!
+
+{{CodeSelect|code=
+rm -r /home/user/clearnet/.mozilla/firefox
+}}
+
+= License =
+{{License_Amnesia|{{FULLPAGENAME}}}}
+
+{{Footer}}
+
+[[Category:Documentation]]
