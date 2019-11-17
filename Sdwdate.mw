@@ -1,0 +1,127 @@
+{{Header}}
+{{Title|
+title=sdwdate: Secure Distributed Web Date
+}}
+{{#seo:
+|description=sdwdate - Secure Distributed Web Date - Homepage
+|image=https://www.whonix.org/w/images/7/7e/Sunset-1331088640.jpg
+}}
+
+= Introduction =
+
+Time keeping is crucial for security, privacy, and anonymity. sdwdate is a Tor-friendly replacement for [https://en.wikipedia.org/wiki/Rdate rdate] and [https://en.wikipedia.org/wiki/ntpdate ntpdate] that sets the system's clock by communicating via end-to-end encrypted TCP with Tor onion webservers. Chosen time providers are exclusively reputable sources (whistle-blowing and privacy-friendly onion sites) that are highly likely to be hosted on different hardware.
+
+At random intervals, sdwdate connects to a variety of webservers and extracts the time stamps from http headers (see: [https://tools.ietf.org/html/rfc2616 RFC 2616]).
+
+= sdwdate vs ntp =
+
+'''Table:''' ''sdwdate vs ntp Comparison''
+{| class="wikitable" style="background-color:#fff;text-align:center"
+|- style="background-color: #f9f9f9"
+| style="height:30px"| || style="width:125px"| '''[https://github.com/{{project_name_short}}/sdwdate sdwdate] || style="width:125px"| '''ntp''' 
+|-
+| style="height:35px;width:250px;background-color: #f9f9f9"| Written in memory-safe language
+| {{Yes}}
+| {{No}}
+|-
+| style="height:35px;width:250px;background-color: #f9f9f9"| Distributed trust
+| {{Yes}}
+| {{No}}
+|-
+| style="height:35px;width:250px;background-color: #f9f9f9"| Secure connection by default (authentication and encryption)
+| {{Yes}}
+| {{No}}
+|-
+| style="height:35px;width:250px;background-color: #f9f9f9"| Gradual clock adjustments
+| {{Yes}}
+| {{Yes}}
+|-
+| style="height:35px;width:250px;background-color: #f9f9f9"| Daemon
+| {{Yes}}
+| {{Yes}}
+|-
+| style="height:35px;width:250px;background-color: #f9f9f9"| Functional over [https://www.torproject.org Tor]
+| {{Yes}}
+| {{No}} <ref>Requires UDP which is unsupported by Tor, see [[Tor#UDP]].</ref>
+|-
+| style="height:35px;width:250px;background-color: #f9f9f9"| Tor not required
+| {{No}}
+| {{Yes}}
+|-
+| style="height:35px;width:250px;background-color: #f9f9f9"| Client, time fetcher
+| {{Yes}}
+| {{Yes}}
+|-
+| style="height:35px;width:250px;background-color: #f9f9f9"| Server, time provider
+| {{No}}, not yet
+| {{Yes}}
+|-
+| style="height:35px;width:250px;background-color: #f9f9f9"| Apparmor profile
+| {{Yes}}
+| {{Yes}}
+|-
+| style="height:35px;width:250px;background-color: #f9f9f9"| Drop-in config folder
+| {{Yes}}
+| {{No}}
+|-
+| style="height:35px;width:250px;background-color: #f9f9f9"| Proxy support
+| {{Yes}}
+| {{No}} <ref>http://lists.ntp.org/pipermail/questions/2007-October/015754.html</ref> <ref>http://linux.derkeiler.com/Mailing-Lists/Debian/2003-07/0361.html</ref>
+|-
+| style="height:35px;width:250px;background-color: #f9f9f9"| Possible to secure by default on GNU/Linux distribution level
+| {{Yes}}
+| {{No}} <ref>[https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=%23687166 NTP security vulnerability because not using authentication by default]</ref>
+|-
+| style="height:35px;width:250px;background-color: #f9f9f9"| Secure
+| {{Yes}}
+| {{No}} <ref>See [[Dev/TimeSync#NTP]].</ref>
+|-
+| style="height:35px;width:250px;background-color: #f9f9f9"| Optional GUI
+| {{Yes}}, [[sdwdate-gui]] (a systray icon)
+| {{No}}
+|}
+
+See also:
+
+* Installation on headless systems; see footnote. <ref>If replacing ntp with sdwdate, run the following command to avoid the installation of 160+ recommended packages: {{CodeSelect|code=
+sudo apt --no-install-recommends install sdwdate
+}} </ref> <ref>https://forums.whonix.org/t/sdwdate-and-headless-system/8491</ref>
+* [[Time_Attacks|Time Attacks]]
+* [[Dev/TimeSync|Dev/TimeSync]]
+* [[sdwdate-gui]]
+
+TODO:
+
+* Server, time provider
+* sdwdate issue tracker: https://phabricator.whonix.org/project/view/6/
+
+= sdwdate Design =
+
+== Server Authentication ==
+[https://github.com/{{project_name_short}}/sdwdate sdwdate] only connects to Tor onion services, which are encrypted by default and do not rely on SSL certificate authorities (CAs). Three different pools are used for time sources so that if too many connections fail for any given pool, <ref>For example, due to being unreachable or replying with invalid data.</ref> the pool is considered as potentially compromised and sdwdate aborts.
+
+== sdwdate Source Pools ==
+Determining what sources should be trusted is an important issue; this is also a problem with NTP.
+
+The sdwdate pools used by {{project name}} are based on stable and reliable Tor onion service web servers. The pools are listed in [https://github.com/{{project_name_short}}/sdwdate/blob/master/etc/sdwdate.d/30_default.conf /etc/sdwdate.d/30_default.conf].
+
+The various onion services are categorized into three different pools according to their members' relationship to the members in other pools. For instance, any member in one pool should be unlikely to share logs (or other identifying data), or agree to send fake time information, with a member from the other pools. In basic terms, sdwdate picks three random servers - one from each pool - and then builds the mediate (middle position) of the three advertised dates.
+
+sdwdate is only using 'pal' pools and not relying on 'neutral' and 'foe' pools as per tails_htp, because a good rationale for that approach has not yet been provided. <ref>https://github.com/{{project_name_short}}/{{project_name_short}}/issues/310</ref> <ref>
+https://labs.riseup.net/code/issues/8283</ref>
+
+== Trusted Time Sources ==
+The links below are listed to keep track of pool candidates:
+
+* https://en.wikipedia.org/wiki/SecureDrop
+* https://freedom.press/securedrop/directory
+* https://www.riseup.net/en/tor#riseups-tor-hidden-services
+* https://en.wikipedia.org/wiki/GlobaLeaks#GlobaLeaks_uses
+* site:http://leakdirectory.org onion
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
