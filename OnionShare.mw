@@ -1,0 +1,113 @@
+{{Header}}
+{{#seo:
+|description=Using OnionShare in {{project_name}}.
+|image=https://www.whonix.org/w/images/d/de/Onionshare_logo.png
+}}
+[[Image:Onionshare_logo.png|<code>OnionShare Logo</code>|thumb|128px]]
+{{Maintainer|
+|status=stable
+|about=About this {{Code2|{{PAGENAME}}}} Page
+|difficulty=easy
+|maintainer=[https://forums.whonix.org/users/mig5 mig5]
+|support=[[Support]]
+}}
+
+== Introduction ==
+
+OnionShare is an open source program that allows a file of any size to be shared securely and anonymously using the Tor network. <ref>https://onionshare.org/</ref> OnionShare is installed by default as of {{project_name}} 15. The OnionShare wiki succinctly describes the design: <ref>https://github.com/micahflee/onionshare/wiki</ref>
+
+<blockquote>It works by starting a web server, making it accessible as a Tor Onion Service, and generating an unguessable URL to access and download the files. It does not require setting up a separate server or using a third party file-sharing service. You host the files on your own computer and use a Tor Onion Service to make it temporarily accessible over the internet. The receiving user just needs to open the URL in Tor Browser to download the file.</blockquote>
+
+As of OnionShare 2 it is also possible to run the program in Receive mode. This means you can receive files via OnionShare after they are uploaded by Tor Browser users; this is a sort of 'SecureDrop Lite' or personal dropbox. v2.2 of OnionShare also permits the [https://micahflee.com/2019/10/new-version-of-onionshare-makes-it-easy-for-anyone-to-publish-anonymous-uncensorable-websites/ easy hosting of anonymous websites]: 
+
+<blockquote>In addition to the “Share Files” and “Receive Files” tabs, OnionShare 2.2 introduces the “Publish Website” tab. You drag all of the files that make up your website into the OnionShare window and click “Start sharing.” It will start a web server to host your static website and give you a .onion URL. This website is only accessible from the Tor network, so people will need Tor Browser to visit it. People who visit your website will have no idea who you are – they won’t have access to your IP address, and they won’t know your identity or your location. And, so long as your website visitors are able to access the Tor network, the website can’t be censored.</blockquote>
+
+{{onion-grater-warning}}
+
+== Whonix VM Configuration ==
+{{Box|text=
+{{Anchor|onion-grater}}
+'''1.''' Extend the onion-grater whitelist in {{gateway_product_name}} (<code>sys-whonix</code>).
+
+{{Control_Port_Filter_Python_Profile_Add
+|filename_new=/usr/share/doc/onion-grater-merger/examples/40_onionshare.yml
+}}
+
+'''2.''' Modify the {{workstation_product_name}} (<code>anon-onionshare</code>) user firewall settings and reload them.
+
+{{Firewall Settings Workstation}}
+
+Add. <ref>As per https://labs.riseup.net/code/issues/7870#note-15 OnionShare uses ports 17600 to 17659.</ref>
+
+{{CodeSelect|code=
+EXTERNAL_OPEN_PORTS+=" $(seq 17600 17659) "
+}}
+
+Save.
+
+{{Reload_Firewall_ws}}
+}}
+
+== Start OnionShare ==
+
+Launch OnionShare in {{workstation_product_name}} by either running the command line interface or GUI version.
+
+{{CodeSelect|code=
+onionshare
+}}
+
+{{CodeSelect|code=
+onionshare-gui
+}}
+
+Advanced users can also build an OnionShare package to install. <ref>https://github.com/micahflee/onionshare/blob/master/BUILD.md#gnulinux</ref> <ref>To create a .deb on Debian, run: <code>./installbuild_deb.sh</code>
+</ref>
+
+=== OnionShare Configuration ===
+
+On the first run of OnionShare:
+
+# Ignore the initial "Cannot connect to Tor" error which may or may not be shown. <ref>
+Will be fixed after upgrades: https://forums.whonix.org/t/feature-request-onionshare-support/300/20
+</ref>
+# Select the settings button/icon (cog symbol) in the GUI.
+# Under “How should OnionShare connect to Tor?” choose “Connect using socket file”, and set the socket file to <code>/var/run/tor/control</code>
+# Under “Tor authentication options” choose “No authentication, or cookie authentication”.
+
+To test OnionShare is running correctly:
+
+* Click the “Test Settings” button. If all steps were completed correctly, Tor will successfully connect.
+* The GUI should say it supports both ephemeral onion services and stealth onion services.
+* You can check “Create stealth onion services” (Client Auth) to make OnionShare operations more secure - however, this currently only works with legacy 'v2' (shorter) style onions. Support for Client Auth with v3/prop224/next-gen onions will be possible in a future release. 
+** Note: Using Stealth mode makes it harder for the end user to connect to the share, because they must first edit their torrc file. Please see the [https://github.com/micahflee/onionshare/wiki/Stealth-Onion-Services official documentation] for further information.
+* By default, if the version of Tor in use is 0.3.5.7 or higher (as it is in {{project name}}), OnionShare will use next-gen or 'v3' (sometimes referred to as prop224) onion addresses by default. These are recognizable by their longer address. You can enable Legacy Mode in the settings if for some reason you want to use the shorter (but less secure) v2 onion addresses.
+
+=== How to Use OnionShare ===
+
+Once OnionShare has been installed correctly and the Tor check is successful, sharing files anonymously is easy: <ref>https://github.com/micahflee/onionshare/wiki</ref>
+
+<blockquote>Open OnionShare, drag and drop files and folders you wish to share into it, and click Start Sharing. After a moment, it will show you a .onion URL such as http://asxmi4q6i7pajg2b.onion/egg-cain. This is the secret URL that can be used to download the file you're sharing.<br />
+<br />
+Send this URL to the person you're sending the files to. If the files you're sending aren't secret, you can use normal means of sending the URL, like by emailing it, or sending it in a Facebook or Twitter private message. If you're sending secret files then it's important to send this URL securely.<br />
+<br />
+The person who is receiving the files doesn't need OnionShare. All they need is to open the URL you send them in Tor Browser to be able to download the file.
+</blockquote>
+
+As of OnionShare 2, a new feature exists called 'Receive Mode'. With this mode, you can start an onion service and allow other users to upload files to ''you'' via Tor Browser (rather than Share Mode, in which you share files from your OnionShare to others). To learn more about Receive Mode, refer to [https://github.com/micahflee/onionshare/wiki/Receive-Mode this OnionShare wiki entry].
+
+A complete user guide, along with advanced topics, hardening options <ref>Such as setting a Shutdown Timer to self-destruct shares if they are not downloaded within an acceptable time window. These topics are beyond the scope of this documentation.</ref> and development documentation is available on the [https://github.com/micahflee/onionshare/wiki official website]. Do not change settings without fully understanding their function, otherwise onion addresses might be re-used, shares might be left open even after multiple downloads are performed, and so on.
+
+== OnionShare AppArmor Profiles ==
+
+AppArmor profiles are available to better contain OnionShare, but they have not yet been tested in {{project_name}}. <ref>https://github.com/micahflee/onionshare/tree/develop/apparmor</ref> Profile development is reported to be lagging behind the master and development branches of the OnionShare git repository. Therefore, willing testers should be knowledgeable about AppArmor profiles before attempting this procedure. 
+
+Advanced users are encouraged to help progress the [https://github.com/micahflee/onionshare/issues/686 open OnionShare AppArmor ticket] and help complete this wiki section. Successes or failures can also be reported in the [http://forums.{{project_onion}}/c/apparmor {{project name}} AppArmor forum].
+
+TODO: Test profiles and expand this section.
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
