@@ -1,0 +1,432 @@
+{{Header}}
+{{#seo:
+|description=Authenticated/Encrypted DNS over Tor, DNSSEC over Tor, DNSCrypt by OpenDNS, httpsdnsd by JonDos
+|image=https://www.whonix.org/w/images/b/ba/Connect-20333640.jpg
+}}
+
+= Introduction =
+By {{project name}} default, Tor is used for DNS resolution. If you suspect a Tor exit relay to tamper with DNS, you can get a second opinion from another non-Tor DNS server. This may also be useful, in special cases if you want to resolve types of DNS over Tor, which are unsupported by Tor itself, such as MX <ref>Required for some [[Mixmaster]] servers over Tor</ref>, SRV or DNSSEC.
+
+It is recommended against to use non-Tor DNS resolvers for an extended amount of time. Although it is technically possible to completely replace DNS resolution (not using Tor for DNS resolution anymore), it is recommended against. That would add too much power to a single DNS server. Using a permanent DNS server is recommended against just as using a permanent Tor exit relay is recommended against.
+
+Note, that even if you correctly set up all settings, it might happen that this won't work. Sometimes Tor or the DNS server causes a timeout. This gets even worse, when you additionally tunnel the DNS request through an additional proxy (for example: Tor &rarr; JonDonym &rarr; DNS server).
+
+Read first: [[Stream Isolation]].
+
+Required knowledge:
+
+* Difference between encryption and authentication.
+* {{TorifiedGateway}} (<-- read the footnotes)
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    =
+Note that most applications, such as [[Tor Browser]], will '''not''' ''automatically'' profit from setting up an alternative DNS resolver.
+
+* This is because applications in {{project name}} are configured to use <code>SocksPort</code> instead of <code>Trans</code>- or <code>DnsPort</code>, see [[Stream Isolation]] for details.
+* Another reason is, that most applications do not yet make use of authenticated DNS (DNSSEC).
+
+However, you could use alternative DNS revolvers with these applications when [[Stream_Isolation/Disable_Easy|deconfiguring]] socks proxy settings.
+}}
+
+{{Anchor|Encrypted DNS over Tor}}
+{{Anchor|Authenticated DNS over Tor}}
+{{Anchor|DNSSEC over Tor}}
+
+= DNSCrypt =
+=== Introduction ===
+DNSCrypt supports encryption and DNSSEC (authentication).
+
+These instructions completely replace Tor's DNS resolver with a dnscrypt-enabled resolver for all users and the whole system. Not recommended for a longer amount of time, see warning above. Some hints are included how to do it only for a specific user account.
+
+=== Installation ===
+Apply all instructions inside your {{workstation_product_name}}.
+
+1) Install the <code>dnscrypt-proxy</code> package.
+
+{{Box|text=
+{{Install Package|package=
+dnscrypt-proxy 
+}}
+}}
+
+2) {{Open with root rights|filename=
+/etc/dnscrypt-proxy/dnscrypt-proxy.toml
+}}
+
+Add the following text <u>at the very top of the file</u>. Note: The default server did not work for the author of this page. Therefore the following instructions advice to comment that server out and add a random alternative server was chosen which worked. <ref>Test was done using:
+{{CodeSelect|code=
+dig +dnssec google.com
+}}
+</ref> This is not an endorsement or non-endorsement of any server. Pick your own server. DNSCrypt publishes a list of servers [https://dnscrypt.info/public-servers/ here].
+
+{{CodeSelect|code=
+force_tcp = true
+
+#proxy = "socks5://127.0.0.1:9050"
+
+server_names = ['arvind-io']
+}}
+
+Comment out:
+
+{{CodeSelect|code=
+server_names = ['cloudflare']
+}}
+
+In other words, rewrite <code>server_names = ['cloudflare']</code> to <code>#server_names = ['cloudflare']</code> by adding a hash <code>#</code> in front of it. So it would look like this.
+
+{{CodeSelect|code=
+#server_names = ['cloudflare']
+}}
+
+Save.
+
+Restart dnscrypt-proxy.service.
+
+{{CodeSelect|code=
+sudo systemctl restart dnscrypt-proxy.service
+}}
+
+Restart dnscrypt-proxy.socket.
+
+{{CodeSelect|code=
+sudo systemctl restart dnscrypt-proxy.socket
+}}
+
+3) {{Open with root rights|filename=
+/etc/resolv.conf
+}}
+
+4) Comment out everything and add <ref>
+<code>options use-vc</code> is optional as in it also works without it.
+</ref> (It is <u>not</u> <code>127.0.0.1</code>. It really is <code>127.0.'''2'''.1</code>.):
+
+{{CodeSelect|code=
+options use-vc
+nameserver 127.0.2.1
+}}
+
+Save.
+
+=== Testing ===
+==== Obstacles ====
+* Test websites might be dysfunctional, show false-positives.
+* Tor Browser does not use system DNS but uses Tor to resolv DNS.
+* Firefox might due to a bug disable DNSSEC.
+* Firefox might not use system DNS but use its own DNS.
+* SecBrowser security slider setting is breaking test websites.
+* Noscript disabling script will break test websites.
+* VirtualBox users: <code>VBoxManage modifyvm "$VMNAME" --natdnsproxy1 on</code> breaks DNS.
+
+==== DNSCrypt In Use ====
+Stop dnscrypt-proxy systemd socket.
+
+{{CodeSelect|code=
+sudo systemctl stop dnscrypt-proxy.socket
+}}
+
+Test again. Now it is expected to fail.
+
+Restart dnscrypt-proxy systemd socket.
+
+{{CodeSelect|code=
+sudo systemctl restart dnscrypt-proxy.socket
+}}
+
+Test again. Now it is expected to work.
+
+==== DNSSec ====
+{{CodeSelect|code=
+dig +multiline . DNSKEY
+}}
+
+Expected output using Whonix default (using Tor's <code>SocksPort</code> DNS resolver.
+
+<pre>
+; <<>> DiG 9.11.5-P4-5.1-Debian <<>> +multiline . DNSKEY
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOTIMP, id: 42982
+;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 0
+
+;; WARNING: EDNS query returned status NOTIMP - retry with '+noedns'
+
+;; QUESTION SECTION:
+;.			IN DNSKEY
+
+;; Query time: 0 msec
+;; SERVER: 10.139.1.1#53(10.139.1.1)
+;; WHEN: Wed Jul 17 17:41:33 UTC 2019
+;; MSG SIZE  rcvd: 17
+</pre>
+
+Expected output using DNSCrypt.
+
+<pre>
+; <<>> DiG 9.11.5-P4-5.1-Debian <<>> +multiline . DNSKEY
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 63055
+;; flags: qr rd ra ad; QUERY: 1, ANSWER: 2, AUTHORITY: 0, ADDITIONAL: 1
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 1252
+;; QUESTION SECTION:
+;.			IN DNSKEY
+
+;; ANSWER SECTION:
+.			8461 IN	DNSKEY 256 3 8 (
+				AwEAAcTQyaIe6nt3xSPOG2L/YfwBkOVTJN6mlnZ249O5
+				Rtt3ZSRQHxQSW61AODYw6bvgxrrGq8eeOuenFjcSYgNA
+				McBYoEYYmKDW6e9EryW4ZaT/MCq+8Am06oR40xAA3fCl
+				OM6QjRcT85tP41Go946AicBGP8XOP/Aj1aI/oPRGzRnb
+				oUPUok/AzTNnW5npBU69+BuiIwYE7mQOiNBFePyvjQBd
+				oiuYbmuD3Py0IyjlBxzZUXbqLsRL9gYFkCqeTY29Ik7u
+				suzMTa+JRSLz6KGS5RSJ7CTSMjZg8aNaUbN2dvGhakJP
+				h92HnLvMA3TefFgbKJphFNPA3BWSKLZ02cRWXqM=
+				) ; ZSK; alg = RSASHA256 ; key id = 59944
+.			8461 IN	DNSKEY 257 3 8 (
+				AwEAAaz/tAm8yTn4Mfeh5eyI96WSVexTBAvkMgJzkKTO
+				iW1vkIbzxeF3+/4RgWOq7HrxRixHlFlExOLAJr5emLvN
+				7SWXgnLh4+B5xQlNVz8Og8kvArMtNROxVQuCaSnIDdD5
+				LKyWbRd2n9WGe2R8PzgCmr3EgVLrjyBxWezF0jLHwVN8
+				efS3rCj/EWgvIWgb9tarpVUDK/b58Da+sqqls3eNbuv7
+				pr+eoZG+SrDK6nWeL3c6H5Apxz7LjVc1uTIdsIXxuOLY
+				A4/ilBmSVIzuDWfdRUfhHdY6+cn8HFRm+2hM8AnXGXws
+				9555KrUB5qihylGa8subX2Nn6UwNR1AkUTV74bU=
+				) ; KSK; alg = RSASHA256 ; key id = 20326
+
+;; Query time: 0 msec
+;; SERVER: 127.0.2.1#53(127.0.2.1)
+;; WHEN: Wed Jul 17 17:43:09 UTC 2019
+;; MSG SIZE  rcvd: 578
+</pre>
+
+==== Browser Tests ====
+* https://dnssec.vs.uni-due.de
+* https://www.cloudflare.com/ssl/encrypted-sni/
+* See also [[Browser Tests]].
+
+=== FAQ ===
+==== Why not Use DNSCrypt by Default in {{project_name}}? ====
+
+[http://dnscrypt.org/ DNSCrypt] may have good use cases for clearnet activities. However, it is not useful in {{project name}} and therefore should not be installed and activated by default for everyone. Although some users may have high expectations, DNSCrypt does not magically solve all DNS-related security issues, nor does it implement end-to-end DNS encryption to the destination server. <ref>Conceptually, end-end DNS encryption is illogical. If the IP address of the destination server was known in advance, then DNS would not be required in the first place.</ref> Most important of all, the server will still see all DNS requests in cleartext. <ref>https://security.stackexchange.com/questions/162601/what-are-the-privacy-advantages-of-a-dns-encryption-service-such-as-dnscrypt</ref> 
+
+There are several other reasons why DNSCrypt is not activated by default. Firstly, Tor distributes trust because the DNS server changes as circuits are rotated. For pre-installed applications, circuits are also stream-isolated and change every ten minutes by default. Notably, in early 2018 there are [https://github.com/DNSCrypt/dnscrypt-resolvers/blob/0449410030b784334c53006cf043ccba911fb88b/v1/dnscrypt-resolvers.csv 78 open resolvers] that support the protocol.
+
+Public resolvers supporting DNSCrypt have not yet acted in a way to cause mistrust. However, even if the operators were absolutely trustworthy, complete confidence is also needed in their servers - it is unwise to let the DNS security for all {{project name}} users depend on a few servers. Another consideration is load balancing. If {{project name}} relied upon a DNSCrypt supporting server by default, DNS would break for all users if that server ever decided to forbid connections from the Tor network <ref>Due to the Tor network abuse such as DDOS attacks on their servers.</ref> or if the servers went down for maintenance.
+
+Would result in a unique [[Fingerprint#Visited_Websites|web fingerprint]], i.e. visited websites can distinguish Whonix users using DNSCrypt from other Tor users using Tor to resolve DNS.
+
+For more detailed information about DNSCrypt, refer to these related [https://sourceforge.net/p/whonix/discussion/general/thread/3c99944b/ forum] [https://sourceforge.net/p/whonix/discussion/general/thread/e659f3ad/#bff5 posts].
+
+==== Can I Use DNSCrypt on the Host or Router for Clearnet? ====
+
+This configuration is possible; read the next section before proceeding.
+
+==== Does DNSCrypt on the Host or Router Harm Anonymity when Using Tor / {{project_name}}? ====
+
+The short answer to this question is no. The longer answer is DNSCrypt on the host or in the router only affects clearnet activities. Tor assumes in advance that a user's local network and ISP are completely unsafe and untrustworthy. Tor and {{project name}} are unaffected by DNS settings that are made on the host or in the router.
+
+It is debatable whether DNSCrypt is useful or not for clearnet activities since there are various pros and cons. It is useful when using foreign or untrusted Wi-Fi networks that are shared with others, since DNS requests could potentially be modified or read. That said, trust is just shifted from the ISP to a DNSCrypt-supporting DNS server, such as OpenDNS. If the DNS server supporting DNSCrypt leaks a user's network address and/or logs queries as part of their business model, then it might actually be worse than using the ISP! It is hard to mount an argument for which party is more trustworthy, the ISP or a third party provider.
+
+= Alternatives =
+== DNS with DNSSEC over TCP using Unbound ==
+===== Introduction =====
+{{Anchor|Example with CZ.NIC Labs DNS resolver}}
+<font size="-3"> [https://labs.nic.cz/page/993/dnssec-validation-over-tor--linux-/ source for this chapter: CZ NIC LABS] </font>
+
+The ''CZ.NIC Labs DNS resolver'' has been chosen as an example. Feel free to use and other DNS resolver at your own choice.
+
+These instructions have not been tested for years. There might be no reasons to use these instructions. Above DNSCrypt might do everything that is required.
+
+===== Installation =====
+Everything inside your {{workstation_product_name}}. 
+
+Install [https://unbound.net/ unbound] and [http://www.dest-unreach.org/socat/ socat].
+
+{{CodeSelect|code=
+sudo apt-get install unbound socat
+}}
+
+Open ''/etc/unbound/unbound.conf''.
+
+{{CodeSelect|code=
+sudoedit /etc/unbound/unbound.conf
+}}
+
+''Add'' the following lines.
+
+{{CodeSelect|code=
+#tcp-upstream goes under "server:" section
+    tcp-upstream: yes
+
+#put forward-zone somewhere at the end of file
+forward-zone:
+    name: "."
+    forward-addr: 0.0.0.0@5353
+}}
+
+===== Starting =====
+
+Open a terminal and start socat.
+
+{{CodeSelect|code=
+socat TCP4-LISTEN:5353,bind=localhost,reuseaddr,fork SOCKS4A:10.152.152.10:217.31.204.130:53,socksport=9150
+}}
+
+Open another terminal tab and restart unbound.
+
+{{CodeSelect|code=
+sudo service unbound restart
+}}
+
+===== Using =====
+
+Test with dig.
+
+{{CodeSelect|code=
+dig +dnssec nic.cz @localhost
+}}
+
+Please refer to upstream documentation on how to interpret the DNSSEC test results.
+
+== httpsdnsd by JonDos ==
+==== Introduction ====
+Source: [https://anonymous-proxy-servers.net/en/help/transocks.html anonymous-proxy-servers.net] and also use it as a more verbose tutorial, but keep in mind that their tutorial is JonDonym specific, while this tutorial is Tor specific.
+
+These instructions have not been tested for years. There might be no reasons to use these instructions. Above DNSCrypt might do everything that is required.
+
+==== Installation ====
+Everything inside your {{workstation_product_name}}.
+
+Install dependencies.
+
+{{CodeSelect|code=
+sudo apt-get install libnet-ssleay-perl libnet-server-perl libnet-dns-perl libxml-simple-perl liblog-log4perl-perl
+}}
+
+Download httpsdnsd. (See source above in case download link changed.)
+
+{{scurl|https://anonymous-proxy-servers.net/downloads/httpsdnsd.tar.bz2}}
+
+Unpack.
+
+<pre>.    </pre>
+
+Go into the httpsdnsd folder.
+
+{{CodeSelect|code=
+cd httpsdnsd
+}}
+
+Install httpsdnsd. <ref>It contains also a uninstall.sh, if you want to uninstall it later.</ref>
+
+{{CodeSelect|code=
+sudo install.sh
+}}
+
+Add a new user for httpsdnsd.
+
+{{CodeSelect|code=
+sudo adduser --system --disabled-password --group httpsdns_daemon
+}}
+
+Editing /etc/resolv.conf is not required. (You still could out comment everything against DNS leaks.)
+
+Create a firewall script.
+
+{{CodeSelect|code=
+nano dns-fw.sh
+}}
+
+Insert these firewall rules.
+
+{{CodeSelect|code=
+# Flush old rules
+iptables -F
+iptables -t nat -F
+iptables -X
+
+# Redirect DNS traffic to httpdnsd.
+iptables -t nat -A OUTPUT -p udp -m owner --uid-owner anonuser --dport 53 -j REDIRECT --to-ports 4053
+
+# Accept connections to the httpdnsd.
+iptables -t filter -A OUTPUT -p udp -m owner --uid-owner anonuser --dport 4053 -j ACCEPT
+
+# Reject all other traffic for anonuser.
+iptables -t filter -A OUTPUT ! -o lo -m owner --uid-owner anonuser -j REJECT
+}}
+
+Install Privoxy. <ref>[https://trac.torproject.org/projects/tor/wiki/doc/TorBOX/OptionalConfigurations?version=95#httpsdnsdbyJonDos torproject.org Wiki Version 95] of this site contains a working example using Polipo. Changed later to Privoxy, because Privoxy can be useful for other tasks as well. (Incoming: TransPort, http proxy; forwarding: http and socks.)</ref>
+
+{{CodeSelect|code=
+sudo apt-get install privoxy
+}}
+
+Open the privoxy configuration file.
+
+{{CodeSelect|code=
+nano /etc/privoxy/config
+}}
+
+Add the following to your privoxy configuration file.
+
+{{CodeSelect|code=
+# Theoretically you can tunnel through any
+# http or socks proxy. Local or remote proxy.
+# Inside {{workstation_product_name}}, due to design,
+# everything will be tunneled through Tor first.
+
+# Using Tor's socks5 proxy, running on {{gateway_product_name}}. 
+# Change the port, see above...
+forward-socks5 / 10.152.152.10:9112 .
+
+# Another example using a http proxy.
+# (In this case, JonDo running on localhost.)
+# forward / 127.0.0.1:4001
+}}
+
+Restart privoxy to enable the changes.
+
+{{CodeSelect|code=
+sudo /etc/init.d/privoxy restart
+}}
+
+Privoxy is now listening on 127.0.0.1:8118. <ref>For debugging you can enter this IP/port into Tor Browser as http proxy and try if you can still reach check.torproject.org. Deactivate after testing.</ref>
+
+==== Starting ====
+
+Run httpsdnsd. <ref>For debugging, kill httpsdnsd and drop the ''--runasdaemon''.</ref> <ref>Run ''httpsdnsd --help'' or ''man httpsdnsd'' for help.</ref> <ref>Httpsdnsd will by default listen on localhost port 4053 for DNS queries.</ref> <ref>''--https_proxy_port=8118'' will redirect traffic to port 8118, where Privoxy is listening. This is necessary because Tor offers a socks proxy and httpsdnsd requires a http proxy. Privoxy translates from http to socks.</ref>
+
+{{CodeSelect|code=
+sudo httpsdnsd --https_proxy_port=8118 --runasdaemon
+}}
+
+Activate the firewall. Shouldn't show any errors.
+
+{{CodeSelect|code=
+sudo ./dns-fw.sh
+}}
+
+==== Using ====
+
+Open a console and switch to anonuser.
+
+{{CodeSelect|code=
+su anonuser
+}}
+
+Resolve DNS.
+
+{{CodeSelect|code=
+nslookup check.torproject.org
+}}
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
