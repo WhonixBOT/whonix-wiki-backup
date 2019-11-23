@@ -1,0 +1,216 @@
+{{Header}}
+{{#seo:
+|description=Which {{project_name}} Debian packages are safe to remove? What is a meta package? What other packages do {{project_name}} meta packages install? Which packages should never be removed? Why is package X installed?
+|image=https://www.whonix.org/w/images/a/aa/Box-158523640.png
+}}
+
+= When is it safe to run sudo apt-get autoremove? =
+<code>sudo apt-get autoremove</code> is safe to run, if one of the following packages is being kept. That means if one of the following packages is not in the list of to be autoremoved packages.
+
+[[{{non q project name short}}|{{non q project name}}]] XFCE:
+
+* {{gateway_product_name}}: <code>non-qubes-whonix-gateway-xfce</code>
+* {{workstation_product_name}}: <code>non-qubes-whonix-workstation-xfce</code>
+
+[[{{q project name short}}|{{q project name}}]]:
+
+* {{gateway_product_name}}: <code>qubes-whonix-gateway</code>
+* {{workstation_product_name}}: <code>qubes-whonix-workstation</code>
+
+<ref>
+Ok:
+<pre>
+The following packages will be REMOVED:
+  anon-shared-applications-kde anon-shared-desktop anon-shared-desktop-kde anon-shared-packages-dependencies anon-shared-packages-recommended anon-torchat anon-workstation-default-applications anon-workstation-packages-dependencies libcdio13 libdirectfb-1.2-9
+  libgles1-mesa libiso9660-8 libjsoncpp1 libvcdinfo0 libvlccore8 non-qubes-vm-enhancements non-qubes-whonix-workstation thunderbird whonix-shared-packages-dependencies whonix-shared-packages-recommended whonix-workstation-packages-dependencies
+  whonix-workstation-packages-recommended xul-ext-torbirdy
+0 upgraded, 0 newly installed, 23 to remove and 0 not upgraded.
+After this operation, 151 MB disk space will be freed.
+Do you want to continue? [Y/n]
+</pre>
+</ref>
+
+<ref>
+Temp:
+<pre>
+sudo apt-get install enigmail
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+Some packages could not be installed. This may mean that you have
+requested an impossible situation or if you are using the unstable
+distribution that some required packages have not yet been created
+or been moved out of Incoming.
+The following information may help to resolve the situation:
+
+The following packages have unmet dependencies:
+ enigmail : Depends: thunderbird (>= 1:52.0) but it is not going to be installed or
+                     icedove (>= 1:52.0)
+E: Unable to correct problems, you have held broken packages.
+</pre>
+</ref>
+
+= Non-Issues =
+The following are expected and ok.
+
+<pre>
+The following packages were automatically installed and are no longer required:
+  whonix-workstation-default-applications-gui whonix-ws-desktop-shortcuts
+</pre>
+
+<pre>
+The following packages were automatically installed and are no longer required:
+  whonix-gw-desktop-shortcuts
+</pre>
+
+Autoremoving those is safe.
+
+= Advanced Topics =
+{{Anchor|Disadvantage}}
+
+{{mbox
+| type    = critical
+| image   = [[File:Ambox_warning_pn.svg.png|40px|alt={{project_name}} first time users warning]]
+| text    =  Warning:<br />
+Advanced users only!
+}}
+== What is the disadvantage of removing a meta package? ==
+Then changes in package dependencies will not be automatically processed by your system when you [[Security_Guide#Updates|upgrade your system]].
+
+For example the {{Code2|anon-workstation-packages-recommended}} meta package depends <ref>{{Code2|Depends:}} field in {{Code2|debian/control}}</ref> on {{Code2|[https://github.com/{{project_name_short}}/tb-updater tb-updater]}}. When you do not have the {{Code2|anon-workstation-packages-recommended}} package installed, you would not notice if we [https://phabricator.whonix.org/T18 replace] {{Code2|tb-updater}} with [https://github.com/micahflee/torbrowser-launcher {{Code2|torbrowser-launcher}}]. {{Code2|tb-updater}} might become unmaintained, broken or even have unfixed security issues. We'll try to [[Stay Tuned|keep you up to date]] should we deprecate (security relevant) packages. If we do that, you could simply {{Code2|sudo apt-get purge tb-updater}} and consider installing what our meta package recommends as replacement.
+
+See also [[#Technical_Stuff]].
+
+{{Anchor|Which ones are safe to remove?}}
+== Which meta packages are safe to remove? ==
+Use apt-cache to see the package description.
+
+* Replace <code>package-name</code> with the package you actually want to install.
+
+{{CodeSelect|code=
+apt-cache package-name
+}}
+
+It will include either:
+
+* <code>Safe to remove, if you know what you are doing.</code>, or
+* <code>Do not remove.</code>
+
+Note the [[#Removal Instructions]] below! When you understood those, feel free to remove the following desktop specific meta packages.
+
+== Which packages do {{project_name}} meta packages install? ==
+See {{Code2|debian/control}} in {{project_name}} [https://github.com/{{project_name_short}}/anon-meta-packages anon-meta-packages] source code folder or [https://github.com/{{project_name_short}}/anon-meta-packages/blob/master/debian/control on github] (choose the correct branch!).
+
+Or use for example.
+
+{{CodeSelect|code=
+apt-cache show whonix-workstation-default-applications-gui
+}}
+
+{{Anchor|Which packages should never be removed?}}
+== Which meta packages should never be removed? ==
+Do not remove {{Code2|...-dependencies}} packages, unless you really know what you are doing.
+
+TODO: document
+
+== Why is package X installed? ==
+Look up the package in question in developer documentation, packages documentation:
+
+* https://github.com/{{project_name_short}}/whonix-developer-meta-files/blob/master/package_documentation/{{project_name_short}}-Shared_packages
+* https://github.com/{{project_name_short}}/whonix-developer-meta-files/blob/master/package_documentation/{{gateway_product_name_short}}_packages
+* https://github.com/{{project_name_short}}/whonix-developer-meta-files/blob/master/package_documentation/{{workstation_product_name_short}}_packages
+
+== Removal Instructions ==
+'''1. Upgrade'''<br />
+[[Security_Guide#Updates|Upgrade your system.]]
+
+'''2. Cleanup'''<br />
+When you installed and uninstalled some custom packages or dependencies changed in meanwhile, get rid of unneeded dependencies first.
+
+{{CodeSelect|code=
+sudo apt-get autoremove
+}}
+
+'''3. Uninstall'''<br />
+Let's see how for example the [https://github.com/{{project_name_short}}/uwt {{Code2|uwt}}] package could be uninstalled.
+
+{{CodeSelect|code=
+sudo apt-get purge uwt
+}}
+
+You will see something like this.
+
+<pre>
+Reading package lists... Done
+Building dependency tree       
+Reading state information... Done
+The following packages were automatically installed and are no longer required:
+  anon-banned-packages anon-iceweasel-warning gpl-sources-download knetattach-hide power-savings-disable-in-vms poweroff-passwordless rads scurl shared-folder-help swap-file-creator swappiness-lowest tor-ctrl
+Use 'apt-get autoremove' to remove them.
+The following packages will be REMOVED:
+  anon-shared-packages-recommended* uwt* whonix-shared-packages-recommended*
+0 upgraded, 0 newly installed, 3 to remove and 2 not upgraded.
+After this operation, 152 kB disk space will be freed.
+Do you want to continue [Y/n]? 
+</pre>
+
+'''4. Keep'''<br />
+Now, there is a small issue. Next time you were to run {{Code2|sudo apt-get autoremove}}, you would also uninstall all packages listed under "{{Code2|The following packages were automatically installed and are no longer required:}}". (Such as {{Code2|[https://github.com/{{project_name_short}}/rads rads]}} and others.) Since you most likely want to keep the other packages which were installed by the {{Code2|anon-shared-packages-recommended}} and the {{Code2|whonix-shared-packages-recommended}} meta packages, mark them as manually installed, so they do not get removed. You can conveniently do this using {{Code2|aptitude}}. <ref>https://unix.stackexchange.com/questions/166590/what-is-the-apt-get-equvalent-of-aptitude-keep-all</ref> <ref>
+Can we safely mix {{Code2|apt-get}} and {{Code2|aptitude}}? Yes, Raphaël Hertzog, dpkg and Debian Developer said already in 2011 that this is no problem anymore.
+
+<blockquote>
+First I want to make it clear that you can use both and mix them without problems. It used to be annoying when apt-get did not track which packages were automatically installed while aptitude did, but now that both packages share this list, there’s no reason to avoid switching back and forth.
+</blockquote>
+
+Source: [http://raphaelhertzog.com/2011/06/20/apt-get-aptitude-%E2%80%A6-pick-the-right-debian-package-manager-for-you/ apt-get, aptitude, … pick the right Debian package manager for you]
+</ref>
+
+{{CodeSelect|code=
+sudo aptitude keep-all
+}}
+
+'''5. Done'''<br />
+Make sure you understood the [[#Disadvantage]].
+
+-----
+
+Alternatively, there might be a very crude workaround which can be seen and discussed here:<br />
+https://forums.whonix.org/t/issues-with-removal-of-specific-packages-by-users-builders/653/9
+
+== Technical Stuff ==
+Technical explanations why stuff is as is. Users can skip this chapter.
+
+The underlying technical issues with meta packages are not caused by {{project_name}}, are general issues {{project_name}} inherited from Debian. Those are also described here:
+
+* http://administratosphere.wordpress.com/2011/11/29/the-metapackage-problem-and-apt-get-autoremove/
+* http://tanguy.ortolo.eu/blog/article8/uninstall-meta-package
+
+About meta packages:
+
+* https://www.debian.org/doc/manuals/developers-reference/best-pkging-practices.html#bpp-meta
+
+{{project name}} build script installs all packages using <code>apt-get --no-install-recommends</code>. <ref>
+Function {{Code2|pkg-install-maybe}} in https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/build-steps.d/1700_install-packages#L97.
+</ref> The <code>--no-install-recommends</code> option is being used to prevent installation of lots of packages we do not want to install. For example, {{Code2|anon-workstation-default-applications}} {{Code2|Depends: gwenview}}, which {{Code2|Recommends: kamera}}. Without using <code>--no-install-recommends</code>, we would also install {{Code2|kamera}}, which would then pull its own {{Code2|Depends:}} as well. {{Code2|kamera}} [+ dependencies] would not be useful to have installed by default on {{workstation_product_name}}. Would cost unnecessary disk space. And there are more examples. We might even end up installing packages by default we do not recommend privacy reasons.
+
+Since we do use the <code>--no-install-recommends</code> option, meta packages such as {{Code2|anon-workstation-default-applications}} must use the {{Code2|Depends:}} field and cannot use the {{Code2|Recommends:}} field. (Since no packages would be installed then.)
+
+Even if we could use and did use {{Code2|Recommends:}} field, new packages added to the {{Code2|Recommends:}} field would not be installed when the meta package that {{Code2|Recommends:}} them gets upgraded. This is because packages listed after the {{Code2|Recommends:}} field only get installed during their initial {{Code2|sudo apt-get install package-name}} installation.
+
+You might notice that even though having said this, {{Code2|anon-meta-packages}}'s {{Code2|debian/control}} file uses the {{Code2|Recommends:}} field anyway. This is not a contradiction. It may be useful for a later [[Dev/Installation_from_Repository|{{project_name}} installation from {{project_name}} repository]] use case.
+
+Forum discussion:<br />
+[https://forums.whonix.org/t/issues-with-removal-of-specific-packages-by-users-builders issues with removal of specific packages by users / builders]
+
+= See Also =
+* [[{{project name short}} Packages for Debian Hosts]]
+* [[{{project name short}}-APT-Repository|{{project name}} APT Repository, how to enable/disable it?]]
+* [[Dev/BuildDocumentation|Building/upgrading {{project name}} debian packages from source code]]
+* [[Dev/Installation_from_Repository|Development Discussion - Installing {{project_name}} from repository]]
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
