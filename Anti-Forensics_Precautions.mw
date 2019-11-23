@@ -1,0 +1,124 @@
+{{Header}}
+{{Title|
+title=Anti-Forensics Precautions when using {{project_name}} VMs in Live Mode
+}}
+{{#seo:
+|description=Minimize what is written to the hard drive when using {{project_name}} VMs in Live Mode.
+|image=https://www.whonix.org/w/images/0/08/Fornesic324234.jpg
+}}
+
+== Introduction ==
+[[{{non q project name short}}|{{non q project name}}]] users have the option of booting into [[Whonix Live|live mode]]. When using this feature in {{project_name}} VMs, precautions should still be taken on trusted systems (like GNU/Linux hosts) to prevent leaving traces -- proprietary operating systems such as [[Windows_Hosts|Windows]] and [[Host_Operating_System_Selection#macOS_Hosts|macOS]] are a lost cause.
+
+At the moment there is only one advantage of this configuration compared to running [[Grub-live|grub-live]] on the host -- achieving selective amnesia for some virtual machines (VMs) while others remain persistent. This section is a work in progress and not exhaustive.
+
+When {{project_name}} is run as a live system, all changes are written to non-persistent memory (RAM) by default. However, it is possible for this design to be bypassed by [[malware|malware]], swap files, core dumps and other relevant configurations that are in effect. Fortunately, most of these can be disabled. <ref>[[Dev/Technical_Introduction#Is_there_a_Whonix_.E2.84.A2_Amnesic_Feature_.2F_Live_CD_.2F_Live_DVD.3F_What_about_Forensics.3F|Is there a {{project_name}} Amnesic Feature / Live CD / Live DVD? What about Forensics?]]</ref> <ref>[[Warning#{{project_name}}_is_not_Amnesic|{{project_name}} is not Amnesic]]</ref>  <ref>[[Encrypted_Images#Other_Security_Considerations|Encrypted Guest Images: Other Security Considerations]]</ref> <ref>[[Core Dumps]]</ref> 
+
+To prevent malware from remounting the hard drive as read-write it is highly recommended to use [[Whonix_Live/Read_Only_Mode_Hard_Drive|read-only hard drive mode]]. This raises the bar because malware would need to break out of the VM to gain persistence. In order to stymie disk forensics, it is suggested to apply [[Full Disk Encryption|full disk encryption]] on the host and the computer should be powered off when not in use.
+
+Alternatively or in addition to full disk encryption, the entire host operating system could be run in live mode. In this configuration, all writes are redirected to the non-persistent memory (RAM). Running the host operating system in live mode also mandates a correctly implemented write protection switch; this is not required but highly recommended.
+
+To make memory forensics harder, the machine should be removed from any power source by pulling the power plug. In the case of notebooks, the battery should be removed. <ref>
+And/or the memory should be wiped upon shutdown. This is a theoretical mechanism at present because it is [[undocumented]].
+
+https://forums.whonix.org/t/is-ram-wipe-possible-inside-whonix/5596
+</ref>
+
+== Swap ==
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Tails documentation notes that host swapping may be the biggest threat to anti-forensics on Linux when running in a VM; see [https://tails.boum.org/doc/advanced_topics/virtualization/index.en.html#security Security Considerations]. <ref>Linux also uses swapping despite having apparent "free" memory. The kernel tends to swap out long-inactive and memory-consuming processes. This frees up RAM for caches and therefore improves responsiveness.</ref>
+}}
+
+=== Disabling Swap for an Entire System ===
+
+Turning off swap for the whole system may cause system instability or crashes if the RAM hard limit is reached. However the ample RAM in new systems makes this unlikely and it is worth the tradeoff. <ref>https://superuser.com/questions/243357/how-to-prevent-a-specific-program-from-swapping</ref> Disabling swap also disables the hibernation functionality.
+
+=== Host ===
+<u>On the host</u>
+{{Box|text=
+'''1.''' Disable swap either temporarily or persistently.
+
+The following command will disable swap and delete the file during the life of this session.
+
+{{CodeSelect|code=
+sudo swapoff -a
+}}
+
+To disable swap in a persistent way, edit the <code>fstab</code> file and comment out the line (using <code>#</code>) with the swap partition.
+
+{{CodeSelect|code=
+sudoedit /etc/fstab
+}}
+
+'''2.''' Save and reboot.
+
+'''3.''' Confirm swap is disabled. 
+
+To check it is off, run the <code>free</code> command. The swap line should show zeros.
+
+{{CodeSelect|code=
+free -h
+}}
+}}
+TODO: the existing swap partition should be securely wiped since sensitive information like encryption keys might have already leaked there.
+
+=== KVM ===
+<u>Disabling swapping selectively for KVM VMs</u>
+
+An alternative KVM-only solution is to set guest memory pages as 'locked'. <ref>https://serverfault.com/questions/561446/how-can-i-keep-important-vms-in-memory-without-disabling-swap</ref> <ref>https://libvirt.org/formatdomain.html#elementsMemoryBacking</ref>
+
+<pre>
+<memoryBacking><locked/></memoryBacking>
+</pre>
+
+This option is not without disadvantages - it can be abused by malicious guests DoSing the host through RAM exhaustion. <ref>
+When set and supported by the hypervisor, memory pages belonging to the domain will be locked in the host's memory and the host will not be allowed to swap them out, which might be required for some workloads such as real-time. For QEMU/KVM guests, the memory used by the QEMU process itself will be locked too: unlike guest memory, this is an amount libvirt has no way of figuring out in advance, so it has to remove the limit on locked memory altogether. Thus, enabling this option opens up to a potential security risk: the host will be unable to reclaim the locked memory back from the guest when it is running out of memory. This means a malicious guest allocating large amounts of locked memory could cause a denial-of-service attack on the host. Due to the risk, this option is discouraged unless your workload demands it. Even then, to mitigate these risks it is strongly recommended to set a `hard_limit` (see [https://libvirt.org/formatdomain.html#elementsMemoryTuning memory tuning]) on memory allocation suitable for the specific environment at the same time.
+</ref>
+
+Note: Setting <code>vm.swappiness = 0</code> does not completely prevent swapping. <ref>
+https://superuser.com/questions/760102/why-do-i-get-swapping-even-if-i-set-vm-swappiness-to-0
+</ref>
+
+== Disabling Program Crash Dumps ==
+Besides swap there is the problem of disabling process memory dumping to disk.
+
+<u>Kernel</u>
+
+A user must go out of their way to enable kernel memory dumps since it is not enabled by default; kdump-tools is utilized in Debian. <ref>https://www.bentasker.co.uk/documentation/linux/312-installing-and-configuring-kdump-on-debian-jessie</ref>
+
+<u>Userspace</u>
+
+The default core dump file size is <code>0</code> on Debian Linux: <ref>https://nanxiao.me/en/enable-generating-core-dump-file-on-debian-linux/</ref>
+
+{{CodeSelect|code=
+ulimit -c
+0
+}}
+
+This setting is enforced for systemd-coredump too and can be verified by inspecting the lack of core files in <code>/var/spool</code> or <code>/var/lib/systemd/coredump</code> when an intentional crash is induced (<code>/var/crash</code> does not exist in Debian but it may be available in other Linux distributions). <ref>https://linux-audit.com/understand-and-configure-core-dumps-work-on-linux/#linux-and-core-dumps</ref>
+
+<u>Disable setuid processes dumping their memory</u>
+
+Processes with elevated permissions (or the setuid bit) might still be able to perform a core dump, depending on your other settings. These processes usually have more access and might contain more sensitive data segments in memory, so they should be changed as well. The behavior can be altered with a sysctl key, or directly via the <code>/proc</code> file system. For permanent settings, the sysctl command and configuration is typically used. A setting is called a ‘key’, which has a related value attached to it (also known as a key-value pair).
+
+To disable programs with the setuid bit to dump, set the fs.suid_dumpable to zero:
+
+{{CodeSelect|code=
+sudo su
+}}
+
+{{CodeSelect|code=
+echo "fs.suid_dumpable=0" >> /etc/sysctl.conf
+}}
+
+Reload the sysctl configuration with the -p flag to activate any changes you made.
+{{CodeSelect|code=
+sysctl -p
+}}
+
+= Footnotes =
+{{reflist|close=1}}
+[[Category:Documentation]]
+{{Footer}}
