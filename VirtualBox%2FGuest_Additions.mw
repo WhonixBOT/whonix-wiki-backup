@@ -1,0 +1,163 @@
+{{Header}}
+{{#seo:
+|description=Instructions for installing VirtualBox Guest Additions in {{project_name}}. Shared Folders, Mouse Integration, etc.
+|image=https://www.whonix.org/w/images/d/de/Cd-699786640.jpg
+}}
+
+== Clipboard Sharing ==
+Bidirectional clipboard sharing is enabled default in the VirtualBox VMs. There are {{Code2|security reasons}}<ref> to disable clipboard sharing, such as preventing accidentally copying something (non-)anonymous and pasting it in its (non-)anonymous counter part (browser etc.), which would lead to identity correlation.
+</ref>. For {{gateway_product_name}}, one directional clipboard sharing from host to {{gateway_product_name}} is not {{Code2|insecure}}<ref>
+Since {{gateway_product_name}} is not supposed to be used as a workstation. No internet facing client application are being used there. Whatever "leaked" to {{gateway_product_name}} stays there and since conceptually users do not use browsers or similar on {{gateway_product_name}}, it cannot leak anywhere.
+</ref>.
+
+To change clipboard sharing:
+
+1) Power off the virtual machine.<ref name=poweroff>Because otherwise you cannot change VirtualBox VM settings.</ref>
+
+2) Go to {{Code2|VirtualBox machine settings &rarr; General &rarr; Advanced &rarr; Shared Clipboard &rarr; }}.
+
+3) Power on the virtual machine again.
+
+4) Done.
+
+== Shared Folder ==
+=== {{custom workstation product name}} ===
+{{Anchor|For {{project_name}} versions below 14:}}
+<div class="toccolours mw-collapsible mw-collapsed">
+<u>If you are using a [[Other Operating Systems|{{custom workstation product name}}]]</u> you need to do this manually, please click on expand on the right.
+<div class="mw-collapsible-content">
+Two options. Automatic mounting or manual mounting. Automatic mounting is described below. For automatic mounting see https://www.virtualbox.org/manual/ch04.html#sharedfolders - This is VirtualBox question, unspecific to Whonix as per [[Free Support Principle]].
+
+1) Install VirtualBox guest additions inside the VM. <ref>Required. Quote https://www.virtualbox.org/manual/ch04.html#sharedfolders
+
+<blockquote>
+With the shared folders feature of Oracle VM VirtualBox, you can access files of your host system from within the guest system. This is similar to how you would use network shares in Windows networks, except that shared folders do not require networking, only the Guest Additions.
+</blockquote>
+</ref>
+
+2) Add the user supposed to use shared folders from inside the VM to group <code>vboxsf</code>.
+
+{{CodeSelect|code=
+sudo addgroup user vboxsf
+}}
+
+3) Reboot required to make group changes take effect.
+
+4) Follow instructions below.
+</div>
+</div>
+
+{{Anchor|For {{project_name}} 14 and above}}
+
+=== {{project_name}}-Default ===
+<ref>
+* Power off the virtual machine is no longer required since VirtualBox version 6 and above.
+* Package [https://github.com/Whonix/shared-folder-help shared-folder-help] already added user <code>user</code> to group <code>vboxsf</code> using [https://github.com/Whonix/shared-folder-help/blob/master/lib/systemd/system/mnt-shared-vbox.service /lib/systemd/system/mnt-shared-vbox.service] for better usability.
+</ref>
+
+1) Go to the shared folder settings of your virtual machine.
+
+<code>VirtualBox</code> &rarr; right click your virtual machine &rarr; <code>Settings</code> &rarr; <code>Shared Folder</code>
+
+2) Click the icon that looks like a folder with a <code>+</code> in the upper right.
+
+3) <code>Folder Path</code> &rarr; Navigate to the folder you want to share.
+
+4) <code>Folder Name</code> &rarr; Type: <code>shared</code>
+
+You could also use a folder name other than <code>shared</code> but using <code>shared</code> is recommended so you have the same name and can use the example documented below.
+
+Do not use <code>share</code> (without the trailing <code>d</code>)!
+
+5) Check <code>Read-only</code> if you don't want to write to that folder from within the guest.
+
+6) Check <code>Auto-mount</code>. <ref name=vboxversiondependent>
+If not available, upgrade VirtualBox.
+</ref>
+
+7) <code>Mount Point</code> &rarr; Leave as is. No changes. Leave empty. <ref>
+Alternatively you could also chose folder <code>/home/user/shared</code>. That folder by VirtualBox default would be owned by owner <code>root</code> and group <code>vboxsf</code>.
+</ref>
+
+8) Check <code>Make Permanent</code> (if that option exists). <ref>
+VirtualBox version specific. Newer versions do not have this anymore.
+
+Check <code>Make Permanent</code> if you want this setting to persist after restart of the virtual machine. Otherwise this setting be temporary.
+</ref>
+
+10) Press <code>OK</code> to close shared folder dialog.
+
+11) Press <code>OK</code> to VirtualBox settings.
+
+12) The process is now complete.
+
+13) You can now start using the shared folder.
+
+VirtualBox shared folders can be found inside the virtual machine in folder <code>/media/</code>.
+
+By default VirtualBox uses the prefix <code>sf_</code>.
+
+For example if you named your folder <code>shared</code> the shared folder will become <code>/media/sf_shared</code>. You can open it using a file manager such as Thunar. Or using the the command line.
+
+{{CodeSelect|code=
+cd /media/sf_shared
+}}
+
+----
+
+== Security ==
+The article [http://www.phoronix.com/scan.php?page=news_item&px=OTk5Mw The VirtualBox Kernel Driver Is Tainted Crap] <ref>http://www.webcitation.org/6HqJVN0br</ref> is talking about the kernel driven (on the host), not guest additions. Opposite statements: [http://lists.debian.org/debian-devel/2013/08/msg00112.html one] / [http://lists.debian.org/debian-devel/2013/08/msg00116.html two].
+
+== Installed by Default ==
+Beginning from {{project_name}} 10 and above, VirtualBox Guest Additions are already installed by default. (Package [https://packages.debian.org/jessie/virtualbox-guest-x11 virtualbox-guest-x11] from Debian's apt repository.)
+
+<font size=-3>
+For technical information:<br />
+See blog post, [https://forums.whonix.org/t/installing-virtualbox-guest-addition-by-default/700 Installing VirtualBox Guest Addition by Default?]
+</font>
+
+== Old instructions for Ubuntu Precise ==
+Moved to [[Ubuntu Tips]].
+
+== Installation from VirtualBox CD ==
+Discouraged? <s>until [https://phabricator.whonix.org/T378 make vbox-disable-timesync compatible with guest additions from virtualbox CD] gets implemented.</s>
+
+== Alternatives ==
+* For file exchange with {{project_name}} without installing guest additions, see [[File Transfer]].
+* To get a higher screen resolution without installing guest additions, see [[VirtualBox/Higher Screen Resolution without installing VirtualBox Guest Additions]]
+* To get mouse integration without installing guest additions, use USB tablet in VirtualBox settings. Recommended against, because it requires adding USB controller to VirtualBox. (VirtualBox &rarr; Right click on Virtual Machine &rarr; Settings &rarr; System &rarr; Enable absolute pointing device)
+
+== Temporary disable Guest Additions ==
+'''This solution is incomplete!''' In case you want to temporarily disable VirtualBox guest additions, you can try this. A safer solution would be to uninstall them.
+
+Find out which VirtualBox kernel modules are load.
+
+{{CodeSelect|code=
+cat /proc/modules | grep vbox
+}}
+
+Create a new config file for module blacklisting.
+
+{{CodeSelect|code=
+sudoedit /etc/modprobe.d/vbox.conf
+}}
+
+And add:
+
+{{CodeSelect|code=
+blacklist vboxvideo
+blacklist vboxsf
+blacklist vboxguest
+}}
+
+Safe and reboot. Done.
+
+== See Also ==
+[[Dev/Virtualization_Platform#VirtualBox]]
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
