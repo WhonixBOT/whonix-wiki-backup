@@ -1,0 +1,165 @@
+{{Header}}
+__FORCETOC__
+
+= Existing Ports of {{project name}} =
+* [https://forums.whonix.org/t/sudo-apt-get-install-whonix-part-i-distro-morphing/2346/3 Whonix reported to be running on POWER9] using [[Dev/Installation_from_Repository|distro-morphing]].
+* [https://forums.whonix.org/t/whonix-for-arm64-raspberry-pi-rpi/1788 Whonix for arm64 / Raspberry Pi ( RPi )] ([[Dev/Build_Documentation/Physical_Isolation#How_To_Install_Whonix-Gateway_.E2.84.A2_on_the_Raspberry_Pi_3_B_.28RPI3.29|wiki]])
+
+= Packages =
+== NOTE ==
+<code>amd64</code> might imply AMD only. This is wrong.
+
+<code>amd64</code> means '''<u>Intel</u> and <u>AMD</u>'''.
+
+For technical reasons, Debian both, Intel and AMD, is called <code>amd64</code>.
+
+== bindp ==
+* maintained by third party: yes
+* compiled: yes
+* no upstream version number
+* documentation: none
+* upstream: https://github.com/yongboy/bindp
+* package source code: https://github.com/Whonix/bindp
+* kernel module: no
+
+== lkrg ==
+* maintained by third party: yes
+* compiled: yes
+* version number by upstream: yes
+* upstream architecture support: <code>amd64</code> only
+* documentation: [[Linux_Kernel_Runtime_Guard_LKRG|Linux Kernel Runtime Guard (LKRG)]]
+* upstream: https://www.openwall.com/lkrg/
+* Debian package source code: https://github.com/Whonix/lkrg
+* kernel module: yes
+* [https://forums.whonix.org/t/linux-kernel-runtime-guard-lkrg-linux-kernel-runtime-integrity-checking-and-exploit-detection/8477 LKRG Development Discussion]
+
+== kloak ==
+* maintained by third party: yes
+* compiled: yes
+* version number by upstream: yes
+* architecture support: ?
+** https://github.com/vmonaco/kloak/issues/24
+** https://github.com/vmonaco/kloak/issues/25
+* documentation: [[Keystroke_Deanonymization#Kloak|kloak]]
+* upstream: https://github.com/vmonaco/kloak
+* Debian package source code: https://github.com/Whonix/kloak
+* kernel module: no
+* [https://forums.whonix.org/t/kloak-keystroke-anonymization-tool/7089 Kloak Forum Discussion]
+
+== corridor ==
+* maintained by third party: yes
+* compiled: no
+* version number by upstream: yes
+* upstream architecture support: any
+** bash scripts
+* documentation: [[Corridor]]
+* upstream: https://github.com/rustybird/corridor
+* Debian pacakge source code: https://github.com/Whonix/corridor
+* kernel module: no
+* [https://forums.whonix.org/t/corridor-a-tor-traffic-whitelisting-gateway-a-clearnet-leak-tester/2765 corridor Development Discussion]
+
+== Hardened Malloc ==
+Hardened Memory Allocator
+
+* maintained by third party: yes
+* compiled: yes
+* version number by upstream: yes
+* upstream architecture support: <code>amd64</code> only
+* documentation: [[Hardened Malloc]]
+* upstream: https://github.com/GrapheneOS/hardened_malloc
+* Debian package source code: https://github.com/Whonix/hardened_malloc
+* kernel module: no
+* [https://forums.whonix.org/t/hardened-malloc-hardened-memory-allocator/7474 Hardened Malloc Development Discussion]
+
+== tb-updater ==
+* maintained by third party: no
+* compiled: no
+* version number by upstream: no
+* architecture support: <code>i386</code> and <code>amd64</code>
+** For the Linux platform The Tor Project is only providing <code>i386</code> and <code>amd64</code> downloads. See https://dist.torproject.org/torbrowser/.
+* Debian package source code: https://github.com/Whonix/tb-updater
+* kernel module: no
+
+== tirdad ==
+* maintained by third party: yes
+* compiled: yes
+* version number by upstream: upstream does not (yet) provide version numbers
+* architecture support: <code>amd64</code> only
+* documentation: TODO
+* upstream: https://github.com/0xsirus/tirdad
+* Debian package source code: https://github.com/Whonix/tirdad
+* kernel module: yes
+* [https://forums.whonix.org/t/tcp-secure-sn-generation-in-linux-and-its-privacy-issues-tirdad-kernel-module-for-random-isn-generation/8552 tirdad Development Discussion]
+
+== binaries-freedom ==
+* package maintained by third party: no
+* package contains software maintained by third party: yes
+* compiled during package build process: no
+* contains binaries: yes
+* version number by upstream: no
+* architecture support: <code>amd64</code> only
+* documentation: not needed, application specific such as [[electrum]]
+* Debian package source code: https://github.com/Whonix/binaries-freedom
+* [https://forums.whonix.org/t/policy-for-inclusion-of-compiled-software/6635 Policy for Inclusion of Compiled Software] / [[Dev/Default_Application_Policy|Default Application Policy]]
+
+= Check Tor SocksPort Reachability =
+On {{workstation_product_name}}. Test.
+<pre>
+{{Curl_Plain}} 10.152.152.10:9100 ; echo $?
+</pre>
+
+Should show.
+<pre>
+<html>
+<head>
+<title>Tor is not an HTTP Proxy</title>
+</head>
+<body>
+<h1>Tor is not an HTTP Proxy</h1>
+<p>
+It appears you have configured your web browser to use Tor as an HTTP proxy.
+This is not correct: Tor is a SOCKS proxy, not an HTTP proxy.
+Please configure your client accordingly.
+</p>
+<p>
+See <a href="https://www.torproject.org/documentation.html">https://www.torproject.org/documentation.html</a> for more information.
+<!-- Plus this comment, to make the body response more than 512 bytes, so      IE will be willing to display it. Comment comment comment comment      comment comment comment comment comment comment comment comment.-&rarr;
+</p>
+</body>
+</html>
+0
+</pre>
+
+Otherwise, it would be a grave error (Tor SocksPort not reachable).
+
+= Check CPFP Reachability =
+On {{workstation_product_name}}. Test.
+<pre>
+{{Curl_Plain}} 10.152.152.10:9052
+</pre>
+
+Should show.
+
+<pre>
+510 Prohibited command "GET / HTTP/1.1"
+510 Prohibited command "User-Agent: curl/7.26.0"
+510 Prohibited command "Host: 10.152.152.10:9052"
+510 Prohibited command "Accept: */*"
+510 Unrecognized command ""
+</pre>
+
+Otherwise, it would be a grave error ([[Dev/CPFP|CPFP]] not reachable).
+
+= Forum Discussion =
+https://forums.whonix.org/t/architecture-specific-compiled-third-party-special-packages-porting-whonix/8562
+
+= Footnotes =
+{{#seo:
+|description=Architecture specific packages in {{project name}}. "Special packages". Software maintained by third parties. Compiled software. Kernel modules. Shared objects. Tips on porting {{project name}} to other platforms. "amd64" means Intel and AMD.
+}}
+{{title|title=
+Porting {{project name}} to other Platforms
+}}
+{{Footer}}
+
+[[Category:Documentation]]
