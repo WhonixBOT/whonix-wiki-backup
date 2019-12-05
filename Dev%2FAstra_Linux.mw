@@ -1,0 +1,1227 @@
+'''UNFINISHED'''
+
+= Astra Linux Common Edition vs Astra Linux Special Edition =
+== Astra Linux Common Edition ==
+* Use hardened kernel.
+* Enable console lock.
+* Enable interpreter locks.
+* Enable ufw firewall.
+* Enable system limits.
+* Disable ptrace capability.
+* Disable non-execution bit setup.
+* Enable password entry for sudo.
+* System clock is set to local time.
+* Enable autologin X session.
+* Disable automatic network configuration.
+* Install 32-bit bootloader.
+
+== Astra Linux Special Edition ==
+* Enable ELF signature check.
+* Disable non-execution bit setup.
+* Use hardened kernel.
+* Disable bootloader menu show up.
+* Enable swap cleanup.
+* Enable freeing regions on cleanup on EXT-paritions.
+* Enable console lock.
+* Enable interpreter locks.
+* Enable ufw firewall.
+* Enable system limits.
+* Disable ptrace capability.
+* Disable automatic network configuration.
+* Install 32-bit bootloader.
+
+== Diff ==
+<pre>
+0a1,2
+> * Enable ELF signature check.
+> * Disable non-execution bit setup.
+1a4,6
+> * Disable bootloader menu show up.
+> * Enable swap cleanup.
+> * Enable freeing regions on cleanup on EXT-paritions.
+7,10d11
+< * Disable non-execution bit setup.
+< * Enable password entry for sudo.
+< * System clock is set to local time.
+< * Enable autologin X session
+</pre>
+
+= /etc/apt/sources.list.d drop-in folder =
+* Astra Common Edition: nothing there
+* Astra Special Edition: nothing there
+
+= Package Recompliation =
+Quote https://wiki.debian.org/Derivatives/Census/AstraLinux <ref>
+https://web.archive.org/web/20191204184227/https://wiki.debian.org/Derivatives/Census/AstraLinux
+</ref>
+
+<blockquote>
+rebuilds all Debian source packages, modifies some source packages and adds new packages 
+</blockquote>
+
+All packages? No, packages such as <code>magic-wormhole</code> are not installable.
+
+Recompile for what purpose? Haven't found referenced if recompiled for what purpose.
+
+= Compile Hardening Flags =
+Seems there is no difference.
+
+Astra Linux Special Edition.
+
+<pre>
+bash ./checksec --file=/bin/sed
+RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      Symbols         FORTIFY Fortified       Fortifiable  FILE
+Partial RELRO   Canary found      NX enabled    PIE enabled     No RPATH   No RUNPATH   No Symbols      Yes     4               11      /bin/sed
+</pre>
+
+Debian buster.
+
+<pre>
+checksec --file /bin/sed
+RELRO           STACK CANARY      NX            PIE             RPATH      RUNPATH      Symbols         FORTIFY Fortified       Fortifiable  FILE
+Partial RELRO   Canary found      NX enabled    PIE enabled     No RPATH   No RUNPATH   No Symbols       Yes    4               11      /bin/sed
+</pre>
+
+= Enable ELF signature check =
+Special Edition only.
+
+All binaries seem to be signed. Made a test. Copied <code>/bin/nano</code> to <code>/bin/nano-test</code>. Tried to execute <code>nano-test</code>. Success. Then edited a textual string inside <code>/bin/nano-test</code>. Tried to execute it again. <code>Segmentation fault</code>.
+
+References what ELF signatures are:
+
+* https://manpages.debian.org/testing/bsign/bsign.1.en.html
+* https://github.com/digsig-ng/bsign-mirror
+* http://disec.sourceforge.net/
+* https://tracker.debian.org/news/840861/removed-045-from-unstable/
+* https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=857626
+
+Another test. Install [https://github.com/schollz/croc croc].
+
+{{CodeSelect|code=
+wget https://getcroc.schollz.com
+}}
+
+{{CodeSelect|code=
+mv index.html croc-installer
+}}
+
+{{CodeSelect|code=
+bash ./croc-installer
+}}
+
+Installation was successful. Trying to execute it.
+
+{{CodeSelect|code=
+croc
+}}
+
+That failed.
+
+<pre>
+Segmentation fault
+</pre>
+
+Systemd journal log showing DIGSIG error.
+
+<pre>
+TODO
+</pre>
+
+Could try to sign it.
+
+{{CodeSelect|code=
+bsign --sign /usr/local/bin/croc
+}}
+
+But asks for passphrase which I don't know.
+
+= Disable =
+Can be disabled in <code>/etc/digsig/digsig_initramfs.conf</code>by setting <code>DIGSIG_ELF_MODE=0</code>.
+
+= APT Repository =
+== Number of Packages ==
+Astra Linux Common Edition is said be be based on Debian <code>stretch</code> but its repository seems to contain less packages than Debian <code>stretch</code> repository.
+
+Some packages found:
+
+* python-pip
+* git
+
+Some packages missing:
+
+* tor
+
+== Astra Linux Common Edition APT Repository with Debian APT Repository ==
+Possible. Test wise installed the <code>tor</code> package.
+
+== Mix Astra Linux Special Edition with Astra Linux Common Edition APT Repository ==
+Possible:
+
+* with <code>Enable ELF signature check.</code> in Astra Linux Special Edition installer: No.
+* otherwise: Yes.
+
+= Special Edition =
+== noexec ==
+Astra Special Edition:
+
+{{CodeSelect|code=
+touch scriptname
+}}
+
+{{CodeSelect|code=
+chmod +x scriptname
+}}
+
+{{CodeSelect|code=
+./scriptname
+}}
+
+Permission denied. Using some kind of noexec in home.
+
+But you can still use.
+
+{{CodeSelect|code=
+bash ./scriptname
+}}
+
+<pre>
+user@astra:~$ touch /tmp/a
+user@astra:~$ chmod +x /tmp/a
+</pre>
+chmod: changing permissions of '/tmp/a': Operation not permitted
+
+Functional:
+
+<pre>
+sudo chmod +x /tmp/a
+</pre>
+
+== root account ==
+Is locked by default.
+
+== recovery mode boot option ==
+Is broken by default due to locked root account.
+
+== tally ==
+Locks user accounts after 7 wrong password entry attempts similar to security-misc by Kicksecure.
+
+== mount options ==
+<pre>
+root@astra:~# mount
+</pre>
+
+<pre>
+sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime)
+proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
+udev on /dev type devtmpfs (rw,nosuid,relatime,size=1990036k,nr_inodes=497509,mode=755)
+devpts on /dev/pts type devpts (rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=000)
+tmpfs on /run type tmpfs (rw,nosuid,noexec,relatime,size=401328k,mode=755)
+/dev/xvda1 on / type ext4 (rw,relatime,errors=remount-ro,data=ordered)
+securityfs on /sys/kernel/security type securityfs (rw,nosuid,nodev,noexec,relatime)
+tmpfs on /dev/shm type tmpfs (rw,nosuid,nodev)
+tmpfs on /run/lock type tmpfs (rw,nosuid,nodev,noexec,relatime,size=5120k)
+tmpfs on /sys/fs/cgroup type tmpfs (ro,nosuid,nodev,noexec,mode=755)
+cgroup on /sys/fs/cgroup/systemd type cgroup (rw,nosuid,nodev,noexec,relatime,xattr,release_agent=/lib/systemd/systemd-cgroups-agent,name=systemd)
+pstore on /sys/fs/pstore type pstore (rw,nosuid,nodev,noexec,relatime)
+cgroup on /sys/fs/cgroup/rdma type cgroup (rw,nosuid,nodev,noexec,relatime,rdma)
+cgroup on /sys/fs/cgroup/devices type cgroup (rw,nosuid,nodev,noexec,relatime,devices)
+cgroup on /sys/fs/cgroup/cpu,cpuacct type cgroup (rw,nosuid,nodev,noexec,relatime,cpu,cpuacct)
+cgroup on /sys/fs/cgroup/hugetlb type cgroup (rw,nosuid,nodev,noexec,relatime,hugetlb)
+cgroup on /sys/fs/cgroup/net_cls,net_prio type cgroup (rw,nosuid,nodev,noexec,relatime,net_cls,net_prio)
+cgroup on /sys/fs/cgroup/blkio type cgroup (rw,nosuid,nodev,noexec,relatime,blkio)
+cgroup on /sys/fs/cgroup/cpuset type cgroup (rw,nosuid,nodev,noexec,relatime,cpuset)
+cgroup on /sys/fs/cgroup/pids type cgroup (rw,nosuid,nodev,noexec,relatime,pids)
+cgroup on /sys/fs/cgroup/memory type cgroup (rw,nosuid,nodev,noexec,relatime,memory)
+cgroup on /sys/fs/cgroup/perf_event type cgroup (rw,nosuid,nodev,noexec,relatime,perf_event)
+cgroup on /sys/fs/cgroup/freezer type cgroup (rw,nosuid,nodev,noexec,relatime,freezer)
+systemd-1 on /proc/sys/fs/binfmt_misc type autofs (rw,relatime,fd=29,pgrp=1,timeout=0,minproto=5,maxproto=5,direct)
+systemd-1 on /parsecfs type autofs (rw,relatime,fd=34,pgrp=1,timeout=0,minproto=5,maxproto=5,direct)
+mqueue on /dev/mqueue type mqueue (rw,relatime)
+/parsecfs on /parsecfs type parsecfs (rw,relatime,sync)
+debugfs on /sys/kernel/debug type debugfs (rw,relatime)
+binfmt_misc on /proc/sys/fs/binfmt_misc type binfmt_misc (rw,relatime)
+configfs on /sys/kernel/config type configfs (rw,relatime)
+fusectl on /sys/fs/fuse/connections type fusectl (rw,relatime)
+tmpfs on /run/user/1000 type tmpfs (rw,nosuid,nodev,relatime,size=401324k,mode=700,uid=1000,gid=1000)
+</pre>
+
+== checksec kernel ==
+[https://github.com/slimm609/checksec.sh checksec 2.1.0]
+
+=== Astra Linux Special Edition ===
+
+<pre>
+sudo bash checksec --kernel
+</pre>
+
+<pre>
+* Kernel protection information:
+
+  Description - List the status of kernel protection mechanisms. Rather than
+  inspect kernel mechanisms that may aid in the prevention of exploitation of
+  userspace processes, this option lists the status of kernel configuration
+  options that harden the kernel itself against attack.
+
+  Kernel config:
+NOT FOUND
+</pre>
+
+=== Kicksecure / Whonix ===
+<pre>
+sudo checksec --kernel
+</pre>
+
+Contains some false positives. Documented below.
+
+<pre>
+* Kernel protection information:
+
+  Description - List the status of kernel protection mechanisms. Rather than
+  inspect kernel mechanisms that may aid in the prevention of exploitation of
+  userspace processes, this option lists the status of kernel configuration
+  options that harden the kernel itself against attack.
+
+  Kernel config:
+/boot/config-4.19.0-6-amd64
+
+  Warning: The config on disk may not represent running kernel config!
+
+  Vanilla Kernel ASLR:                    Full
+  Protected symlinks:                     Enabled
+  Protected hardlinks:                    Enabled
+  Ipv4 reverse path filtering:            Disabled
+  Ipv6 reverse path filtering:            Disabled
+  Kernel heap randomization:              Enabled
+  GCC stack protector support:            Enabled
+  SLAB freelist randomization:            Enabled
+  Virtually-mapped kernel stack:          Enabled
+  Enforce read-only kernel data:          Enabled
+  Enforce read-only module data:          Enabled
+  Exec Shield:                            Disabled
+
+  Hardened Usercopy:                      Enabled
+  Hardened Usercopy Pagespan:             Disabled
+  Harden str/mem functions:               Enabled
+  Restrict /dev/mem access:               Enabled
+  Restrict I/O access to /dev/mem:        Enabled
+  Restrict /dev/kmem access:              Enabled
+
+* X86 only:            
+  Address space layout randomization:     Enabled
+
+* SELinux:                                Disabled
+
+  SELinux infomation available here: 
+    http://selinuxproject.org/
+
+* grsecurity / PaX:                       No GRKERNSEC
+
+  The grsecurity / PaX patchset is available here:
+    http://grsecurity.net/
+</pre>
+
+
+False-positives:
+
+* Ipv4 reverse path filtering: Disabled
+* Ipv6 reverse path filtering: Disabled
+* Exec Shield: Disabled
+* checksec bug report: https://github.com/slimm609/checksec.sh/issues/117
+
+CONFIG_HARDENED_USERCOPY_PAGESPAN:
+
+* Hardened Usercopy Pagespan: Disabled
+* possibly false positive, created https://github.com/slimm609/checksec.sh/issues/122 for it
+
+== /boot ==
+<pre>
+root@astra:~# ls -la /boot
+</pre>
+
+<pre>
+total 112388
+drwxr-xr-x  3 root root     4096 Dec  5 09:35 .
+drwxr-xr-x 24 root root     4096 Dec  3 16:47 ..
+-rw-r--r--  1 root root   215474 Oct 24  2018 config-4.15.3-1-generic
+drwxr-xr-x  5 root root     4096 Dec  3 16:47 grub
+-rw-r--r--  1 root root 46648441 Dec  3 16:48 initrd.img-4.15.3-1-generic
+-rw-r--r--  1 root root 45729880 Dec  5 09:34 initrd.img-4.15.3-1-hardened
+-rw-------  1 root root  3976127 Oct 24  2018 System.map-4.15.3-1-generic
+-rw-------  1 root root  3193521 Oct 24  2018 System.map-4.15.3-1-hardened
+-rw-------  1 root root  8058736 Oct 24  2018 vmlinuz-4.15.3-1-generic
+-rw-------  1 root root  7235440 Oct 24  2018 vmlinuz-4.15.3-1-hardened
+</pre>
+
+== cat /proc/cmdline ==
+<pre>
+cat /proc/cmdline 
+</pre>
+
+<pre>
+BOOT_IMAGE=/boot/vmlinuz-4.15.3-1-hardened root=UUID=6c536f99-734f-4e8f-a683-71b52e7df7d3 ro parsec.max_ilev=63 quiet net.ifnames=0 ipv6.disable=1 slub_debug=P page_poison=1 slab_nomerge pti=on user.max_user_namespaces=0 kernel.kptr_restrict=1 vsyscall=none ipv6.disable=1
+</pre>
+
+== dpkg -l | grep astra- ==
+<pre>
+dpkg -l | grep astra-
+</pre>
+
+----
+
+<pre>
+ii  astra-extra                                   1.0-0.0                               all          Configuration Astra linux
+ii  astra-safepolicy                              1.0.62                                all          Global security policy checker
+ii  astra-version                                 1.6                                   amd64        Update Astra version
+ii  linux-astra-modules                           4.15.3-1astra4                        amd64        Non-free Astra Linux kernel modules
+ii  linux-astra-modules-4.15.3-1-generic          4.15.3-1.astra25                      amd64        Non-free Astra Linux kernel modules for version 4.15.3 on x86/x86_64
+ii  linux-astra-modules-4.15.3-1-hardened         4.15.3-1.astra25                      amd64        Non-free Astra Linux kernel modules for version 4.15.3 on x86/x86_64
+ii  linux-astra-modules-common                    4.15.3-1.astra25                      all          Common stuff 4 non-free Astra Linux kernel modules
+ii  linux-astra-modules-generic                   4.15.3-1astra4                        amd64        Non-free Astra Linux kernel modules
+ii  linux-astra-modules-hardened                  4.15.3-1astra4                        amd64        Non-free Astra Linux kernel modules
+</pre>
+
+== dpkg -l | grep smolensk- ==
+<pre>
+dpkg -l | grep smolensk-
+ii  smolensk-security                             2.0.11                                amd64        metapackage for security management console
+</pre>
+
+== dpkg -l | grep fly- ==
+<pre>
+root@astra:~# dpkg -l | grep fly-
+</pre>
+
+<pre>
+ii  fly-admin-ald-client                          0.2.4                                 amd64        ALD client GUI configution tool
+ii  fly-admin-alternatives                        1.1.5                                 amd64        Manage Debian alternatives
+ii  fly-admin-autostart                           0.2.8                                 amd64        Fly Autostart
+ii  fly-admin-center                              1.2.6                                 amd64        Control center
+ii  fly-admin-cron                                1.2.5                                 amd64        Cron management
+ii  fly-admin-date                                2.3.8                                 amd64        Date and time tool (for Desktop)
+ii  fly-admin-date-helper                         2.3.8                                 amd64        System DBus helper for Date and time tool
+ii  fly-admin-device-manager                      1.1.5                                 amd64        FLY admin device manager
+ii  fly-admin-digsig                              0.2.12                                amd64        Digital signature manager
+ii  fly-admin-dm                                  1.1.10                                amd64        Configure fly-dm
+ii  fly-admin-env                                 1.1.2                                 amd64        Fly Environment Variables Editor
+ii  fly-admin-fonts                               2.1.7                                 amd64        System fonts manager
+ii  fly-admin-gmc                                 0.1.42                                amd64        management console
+ii  fly-admin-grub2                               1.0.0                                 all          GRUB2 editor
+ii  fly-admin-int-check                           1.4.4                                 amd64        tool for check system integrity for Fly Desktop
+ii  fly-admin-iso                                 0.2.2                                 amd64        Utility for writing iso image to removable drive
+ii  fly-admin-kiosk                               1.3.3                                 amd64        System kiosk management application
+ii  fly-admin-local                               0.1.48                                amd64        management console
+ii  fly-admin-local-se                            0.1.46                                amd64        management console
+ii  fly-admin-marker                              2.1.5                                 amd64        Marker template editor for secure CUPS version
+ii  fly-admin-mic                                 0.1.14                                amd64        management console
+ii  fly-admin-mouse                               1.0.0                                 all          Mouse settings
+ii  fly-admin-policykit-1                         1.2.3                                 amd64        PolicyKit-1 policies manager
+ii  fly-admin-power                               2.0.1                                 all          Power settings
+ii  fly-admin-printer                             1.9.15                                amd64        FlyDE printing system management
+ii  fly-admin-printer-mac                         1.7.6                                 amd64        FlyDE printing system management MAC support
+ii  fly-admin-reflex                              1.3.7                                 amd64        Fly hotplug event processing setup util
+ii  fly-admin-screen                              1.0.1                                 all          Screen settings
+ii  fly-admin-security-monitor                    0.1.6                                 amd64        management console
+ii  fly-admin-service                             0.1.31                                amd64        management console
+ii  fly-admin-service-se                          0.1.37                                amd64        management console
+ii  fly-admin-viewaudit                           3.5.6                                 amd64        Parsec view audit control
+ii  fly-admin-winprops                            1.2.5                                 amd64        Configure window properties
+ii  fly-admin-wm                                  2.4.16                                amd64        fly-admin-wm - admin utils for Fly window manager
+ii  fly-all-games                                 2.6.37se                              amd64        Dummy package to have all FLY games packages
+ii  fly-all-main                                  2.6.37se                              amd64        Dummy package to have all FLY main packages
+ii  fly-all-optional                              2.6.37se                              amd64        Dummy package to have all FLY optional packages
+ii  fly-all-qml                                   2.6.37se                              amd64        Dummy package to have all FLY qml packages
+ii  fly-brightness                                0.2.6                                 amd64        Fly brightness control
+ii  fly-calc                                      2.0.9                                 amd64        Fly Calculator
+ii  fly-camera                                    1.2.3                                 amd64        Fly Camera
+ii  fly-contacts                                  2.0.9                                 amd64        Fly Contacts
+ii  fly-data                                      2.4.44se                              all          Data files (cursors, icon themes, etc.) for Fly desktop
+ii  fly-data-mobile                               1.0.4                                 amd64        Data files for Fly mobile session
+ii  fly-date                                      1.0.8                                 amd64        Fly Date
+ii  fly-dm                                        2.6.14se                              amd64        Fly Display Manager (service part)
+ii  fly-fm                                        1.6.5.7                               amd64        Fly desktop environment file manager
+ii  fly-fm-audit                                  1.0.6                                 amd64        fly-fm audit plugin
+ii  fly-fm-bsign                                  1.0.5                                 amd64        fly-fm bsign plugin
+ii  fly-fm-crypt                                  1.2.0                                 amd64        fly-fm crypt plugin
+ii  fly-fm-libs                                   1.6.5.7                               amd64        Libraries for the Fly desktop environment file mananger
+ii  fly-fm-mac                                    0.4.9                                 amd64        Parsec mac plugin
+ii  fly-fm-searchfilters                          1.6.5.7                               all          Search filters for the Fly desktop environment file mananger
+ii  fly-fontconfig-settings                       0.0.5                                 all          fontconfig local settings for Fly Desktop
+ii  fly-gallery                                   0.7.2                                 amd64        Fly Gallery
+ii  fly-gps                                       1.0.9                                 amd64        Fly GPS
+ii  fly-jobviewer                                 1.9.15                                amd64        FlyDE printer queue viewer
+ii  fly-launcher                                  1.5.2                                 amd64        Fly Launcher
+ii  fly-launcher-libs                             0.1.1                                 amd64        Fly Launcher Libraries
+ii  fly-mac-dialog                                0.12.15                               amd64        MAClabel selecting dialog for Fly desktop
+ii  fly-mail                                      2.0.12                                amd64        Fly Mail
+ii  fly-music                                     0.5.5                                 amd64        Fly Music
+ii  fly-notes                                     2.0.11                                amd64        Fly Notes
+ii  fly-orientation                               0.1.6                                 amd64        Application for controlling the orientation of the screen
+ii  fly-pdfview                                   0.3.1                                 amd64        Fly PDF Viewer
+ii  fly-phone-db-client                           1.0.3                                 amd64        Fly Phone Database lib
+ii  fly-phone-dbus                                1.0.7                                 amd64        Fly Phone Dbus Notifier lib
+ii  fly-phone-widgets                             1.0.7                                 amd64        Fly Phone Desktop Widgets
+ii  fly-plastique-style                           1.1.4                                 amd64        FlyPlastique style for Qt4
+ii  fly-print-monitor                             1.9.15                                amd64        FlyDE printer monitor for system tray
+ii  fly-qdm                                       2.4.22                                amd64        Fly Display Manager (GUI part)
+ii  fly-qml-components                            1.1.3                                 amd64        Fly QML Components
+ii  fly-qml-dialer                                1.0.8                                 amd64        Fly Dialer
+ii  fly-record                                    2.0.11                                amd64        Fly Record
+ii  fly-reflex                                    1.3.7                                 amd64        Fly hotplug event processing service
+ii  fly-reflex-service                            1.3.7                                 amd64        Fly hotplug event processing service
+ii  fly-run                                       0.5.5                                 amd64        Fly Command Runner
+ii  fly-run-sumac                                 1.1.6                                 amd64        sumac plugin for fly-run
+ii  fly-scan                                      1.3.4                                 amd64        Fly Scanner Dialog
+ii  fly-shutdown-dialog                           1.0.23                                amd64        fly-shutdown-dialog - shutdown dialog for Fly desktop
+ii  fly-sms                                       1.0.9                                 amd64        Fly SMS
+ii  fly-start-panel                               2.4.5                                 amd64        Fly start panel and menu
+ii  fly-su                                        0.2.9                                 amd64        Graphical su
+ii  fly-system-monitor-widget                     0.1.2                                 amd64        CPU load display widget
+ii  fly-term                                      1.4.5                                 amd64        Fly Terminal Emulation
+ii  fly-videocamera                               1.2.3                                 amd64        Fly Webcam
+ii  fly-vkbd                                      1.1.5                                 amd64        Virtual keyboard
+ii  fly-weather                                   0.1.4                                 amd64        Fly Weather
+ii  fly-winprops-service                          1.2.5                                 amd64        Windows properties service
+ii  fly-wm                                        2.17.51se1c                           amd64        fly-wm - Window Manager for Fly Desktop
+ii  fly-wm-decor                                  2.17.51se1c                           amd64        fly-wm-decor - additional themes for for Fly Desktop
+ii  fly-xkbmap                                    1.1.5                                 amd64        Keyboard layout setup
+ii  libfly-admin-printer                          1.9.15                                amd64        FlyDE printing system management
+</pre>
+
+== Packages ==
+=== astra-extra ===
+Description: Configuration Astra linux
+ This deb-package configurate Astra linux after updates
+
+apt-file list astra-extra
+
+<pre>
+astra-extra: /boot/grub/splash.xpm.gz
+astra-extra: /usr/share/astra-extra/debian-logo.png
+astra-extra: /usr/share/astra-extra/star.png
+astra-extra: /usr/share/doc/astra-extra/changelog.Debian.gz
+astra-extra: /usr/share/doc/astra-extra/copyright
+</pre>
+
+=== astra-safepolicy ===
+Description: Global security policy checker
+ Package checks and sets security settings of the computer.
+
+<pre>
+Conffiles:
+ /etc/astra-safepolicy.conf
+ /etc/modprobe.d/blacklist-astra.conf
+ /etc/sysctl.d/999-astra.conf
+</pre>
+
+Next.
+
+<pre>
+cat /etc/astra-safepolicy.conf
+</pre>
+
+output:
+
+<pre>
+CFG_GRUBPASS=''
+CFG_QUOTAS=''
+CFG_ULIMITS=''
+CFG_CRACKLEN='8'
+CFG_SECRM=''
+CFG_NCX=''
+CFG_IPT=''
+CFG_SWAPS=''
+CFG_TALLY='8'
+</pre>
+
+Next.
+
+<pre>
+ cat /etc/modprobe.d/blacklist-astra.conf
+</pre>
+
+output:
+
+<pre>
+# Astra blacklist
+
+blacklist ast
+blacklist mgag200
+</pre>
+
+Next.
+
+<pre>
+cat /etc/sysctl.d/999-astra.conf
+</pre>
+
+output:
+
+<pre>
+# Astra sysctl config
+
+kernel.sysrq = 0
+fs.suid_dumpable = 0
+kernel.randomize_va_space = 2
+net.ipv6.conf.all.disable_ipv6 = 1
+kernel.yama.ptrace_scope=3
+</pre>
+
+=== astra-version ===
+Description: Update Astra version
+
+<pre>
+apt-file list astra-version
+</pre>
+
+output:
+
+<pre>
+astra-version: /usr/share/base-files/update/astra_version
+astra-version: /usr/share/base-files/update/lsb-release
+astra-version: /usr/share/base-files/update/os-release
+astra-version: /usr/share/doc/astra-version/changelog.gz
+astra-version: /usr/share/doc/astra-version/copyright
+</pre>
+
+Next.
+
+<pre>
+root@astra:~# cat /usr/share/base-files/update/astra_version
+SE 1.6 (smolensk)
+root@astra:~# cat /usr/share/base-files/update/lsb-release
+DISTRIB_ID="AstraLinux"
+DISTRIB_DESCRIPTION="Astra Linux  1.6 (Smolensk)"
+DISTRIB_RELEASE=1.6
+DISTRIB_CODENAME=smolensk
+root@astra:~# cat /usr/share/base-files/update/os-release
+PRETTY_NAME="Astra Linux (Smolensk 1.6)"
+NAME="Astra Linux (Smolensk)"
+ID=astra
+ID_LIKE=debian
+ANSI_COLOR="1;31"
+HOME_URL="http://astralinux.ru"
+SUPPORT_URL="http://astralinux.ru/support"
+VARIANT_ID=smolensk
+VARIANT=Smolensk
+VERSION_ID=1.6
+root@astra:~# 
+</pre>
+
+=== linux-astra-modules ===
+Description: Non-free Astra Linux kernel modules
+ This package will always depend on the latest complete Astra Linux modules.
+
+meta package
+
+=== linux-astra-modules-generic ===
+Description: Non-free Astra Linux kernel modules
+ This package will always depend on the latest complete Astra Linux modules.
+
+meta package
+
+=== linux-astra-modules-4.15.3-1-generic ===
+<pre>
+apt-cache show linux-astra-modules-4.15.3-1-generic
+</pre>
+
+snip
+
+<pre>
+Description: Non-free Astra Linux kernel modules for version 4.15.3 on x86/x86_64
+ This package provides restricted modules for Linux version 4.15.3 on
+ x86/x86_64.
+ .
+ These modules are "restricted" because they are not available under a
+ completely Free licence.
+</pre>
+
+next
+
+<pre>
+root@astra:~# apt-file list linux-astra-modules-4.15.3-1-generic
+root@astra:~# 
+</pre>
+
+=== astra-nochmodx-module-4.15.3-1-hardened ===
+<pre>
+Description: nochmodx kernel modules for version 4.15.3 on x86/x86_64
+ This package provides nochmodx modules for Linux version 4.15.3 on
+ x86/x86_64.
+ .
+ These modules are "restricted" because they are not available under a
+ completely Free licence.
+</pre>
+
+=== astra-nochmodx-module-common ===
+apt-cache show astra-nochmodx-module-common
+<pre>
+Description: Common stuff for nochmodx kernel modules
+ This package provides common stuff for nochmodx modules for Astra Linux CE.
+ .
+ These modules are "restricted" because they are not available under a
+ completely Free licence.
+</pre>
+
+=== parsec ===
+<pre>
+Package: parsec
+Depends: libparsec-base2, libpdp, parsec-mac, parsec-aud, parsec-cap, parsec-log, parsec-tools, dpkg (>= 1.16.16astra.se0)
+Description: metapackage for PARSEC system
+ This metapackage depends on all base PARSEC components.
+
+Package: parsec-tools
+Description: additional PARSEC system utilities
+ This package contains additional PARSEC utilities. These utilities
+ deal with several PARSEC subsystems simultaneously and so cannot be included to
+ subsystem specific utilities package.
+
+Package: parsec-mac
+Conffiles:
+ /etc/parsec/mac_categories bc1a3c7f33d982d8683336ca3d67c53c
+ /etc/parsec/mac_levels 7aa5c6b6acf877a966c170ff7de44d85
+ /etc/parsec/mlinks d6dc284d34815fa61550996fc281e04c
+Description: mandate labels base utils for PARSEC security system
+ This package contains the utilities to control PARSEC mandate labels.
+ These utilities can set or get mandate labels for processes and files.
+ It's a component of PARSEC security system.
+
+Package: parsec-aud
+Conffiles:
+ /etc/parsec/audit 33a04c4633bc97d625e9fde1e28cb017
+Description: audit base utils for PARSEC security system
+ This package contains the
+ utilities to control PARSEC security events audit. These utilities
+ can set or get audit events for processes and files.
+ It's a component of PARSEC security system.
+
+Package: parsec-log
+Conffiles:
+ /etc/logrotate.d/parlogd.logrotate b4b35dbcb595c736ec27d70bd02f0f0e
+ /etc/parsec/mlog/events_custom.conf 4bd7a4a18fe84c93698436c74de3fa42
+ /etc/parsec/mlog/events_user.conf f97aa3b797aa5250b7c86187e5df29b5
+Description: audit log base utils for PARSEC security system
+ This package contains PARSEC audit log files parser, system daemon for
+ reliable audit message delivery. It creates kernel and user log files.
+ It's a component of PARSEC security system.
+
+Package: parsec-cap
+Conffiles:
+ /etc/parsec/privsock.conf 28745f9d4b6a46382ebed7183f579671
+ /etc/sudoers.d/zzz-parsec 2097e99bdf29360bf54bfc11a6167fa5
+Description: capabilities base utils for PARSEC security system
+ This package contains the utilities to control system capabilities
+ (standard Linux capabilities and special PARSEC capabilities).
+ It's a component of PARSEC security system.
+</pre>
+
+=== smolensk-security ===
+<pre>
+smolensk-security
+Depends: gmc-common, gmc-miscellaneous, fly-admin-gmc, fly-admin-local, gmc-miscellaneous-se, fly-admin-local-se, fly-admin-int-check, fly-admin-viewaudit, fly-admin-marker, fly-admin-mic, fly-admin-service, fly-admin-service-se, fly-admin-digsig, fly-admin-security-monitor
+Description: metapackage for security management console
+ Metapackage for security management console.
+</pre>
+
+=== ksysguard-mac ===
+<pre>
+root@astra:~# apt-cache show ksysguard-mac
+Maintainer: Alexander Volkov <support@rusbitech.ru>
+Description: MAC plugin for ksysguard
+ This package contains a plugin for a modified ksysguard
+ that allows to show an additional info about processes,
+ such as mandatory level and category, and integrity level.
+</pre>
+
+=== kcm-grub2 ===
+<pre>
+root@astra:~# apt-cache show kcm-grub2
+Package: kcm-grub2
+Description: KDE Control Module for configuring the GRUB2 bootloader
+ Smoothly integrated in KDE System Settings, it is the central place
+ for managing your GRUB2 configuration. Supports many GRUB2 configuration
+ options.
+</pre>
+
+=== afick ===
+<pre>
+Conffiles:
+ /etc/afick.conf 6daf827d6d70c8e2be08b81338b8586b
+ /etc/cron.daily/afick_cron 419fd1ca81d8ef852a2df1220db73c5b
+ /etc/logrotate.d/afick 54a30fdfeb75ff39db1cd01aeea4fd03
+Description: Another file integrity checker
+ It allows to monitor the changes on your files systems,
+ and so can detect intrusions.
+Description-md5: d9fe3b435153ac5a4a78c3c84a291ca0
+Homepage: http://afick.sourceforge.net/
+</pre>
+
+== tasksel --list-tasks ==
+<pre>
+u Base  Base packages
+u Fly   Fly desktop
+u Fly-qml       Fly apps for working on devices with touchscreen
+u Internet      Internet suite
+u Office        Office suite
+u Features      Astra Linux features
+u Database      Databases
+u Fly-ssh       SSH server
+u Fly-web       Secure WEB server
+u Fly-virtualization    Virtualization tools
+u Multimedia    Multimedia
+</pre>
+
+== Files ==
+empty
+
+* /usr/lib/modules-load.d
+* /etc/apt/sources.list.d
+* /etc/apt/preferences.d
+
+standard + trust CD ROM setting
+
+* /etc/apt/apt.conf.d
+
+== kernel modules ==
+=== grep /lib/modules ===
+<pre>
+sudo grep -r -i rusbitech /lib/modules
+</pre>
+
+output:
+
+<pre>
+Binary file /lib/modules/4.15.3-1-generic/misc/parsec.ko matches
+Binary file /lib/modules/4.15.3-1-generic/misc/digsig_verif.ko matches
+Binary file /lib/modules/4.15.3-1-hardened/misc/parsec.ko matches
+Binary file /lib/modules/4.15.3-1-hardened/misc/digsig_verif.ko matches
+</pre>
+
+Next.
+
+<pre>
+sudo grep -r -i astra /lib/modules
+</pre>
+
+output:
+
+<pre>
+Binary file /lib/modules/4.15.3-1-generic/kernel/ubuntu/xr-usb-serial/xr_usb_serial_common.ko matches
+Binary file /lib/modules/4.15.3-1-generic/kernel/drivers/isdn/hardware/eicon/diva_mnt.ko matches
+Binary file /lib/modules/4.15.3-1-generic/kernel/drivers/usb/class/cdc-acm.ko matches
+Binary file /lib/modules/4.15.3-1-generic/misc/parsec-cifs.ko matches
+Binary file /lib/modules/4.15.3-1-hardened/kernel/ubuntu/xr-usb-serial/xr_usb_serial_common.ko matches
+Binary file /lib/modules/4.15.3-1-hardened/kernel/drivers/isdn/hardware/eicon/diva_mnt.ko matches
+Binary file /lib/modules/4.15.3-1-hardened/kernel/drivers/usb/class/cdc-acm.ko matches
+Binary file /lib/modules/4.15.3-1-hardened/misc/parsec-cifs.ko matches
+</pre>
+
+=== parsec ===
+<pre>
+sudo modinfo parsec
+</pre>
+
+output:
+
+<pre>
+filename:       /lib/modules/4.15.3-1-hardened/misc/parsec.ko
+license:        RusBiTech (c)
+srcversion:     B52B5902B8DE1A3B73F51E0
+depends:        
+retpoline:      Y
+name:           parsec
+vermagic:       4.15.3-1-hardened SMP mod_unload modversions 
+parm:           max_ilev:Maximal integrity level (uint)
+parm:           reset_ilev_on_chroot:Reset Label on chroot()/pivot_root() (bool)
+parm:           noload_files:Reject load modules at low integrity level (bool)
+parm:           ccnr_reject:Disallow root to set CCNR* flags (bool)
+parm:           ccnr_relax:CCNR relax (bool)
+parm:           enable_exec_on_fuse:Enable to execute files from FUSE (bool)
+</pre>
+
+=== parsec-cifs ===
+<pre>
+sudo modinfo parsec-cifs
+</pre>
+
+output
+
+<pre>
+filename:       /lib/modules/4.15.3-1-hardened/misc/parsec-cifs.ko
+softdep:        pre: ccm
+softdep:        pre: aead2
+softdep:        pre: sha256
+softdep:        pre: cmac
+softdep:        pre: aes
+softdep:        pre: nls
+softdep:        pre: md5
+softdep:        pre: md4
+softdep:        pre: hmac
+softdep:        pre: ecb
+softdep:        pre: des
+softdep:        pre: arc4
+softdep:        pre: parsec
+version:        2.10
+description:    VFS to access servers complying with the SNIA CIFS Specification e.g. Samba and Windows
+license:        GPL
+author:         Steve French <sfrench@us.ibm.com>
+alias:          fs-cifs
+srcversion:     013CF28D0310D01121F08C9
+depends:        fscache,parsec
+retpoline:      Y
+name:           parsec_cifs
+vermagic:       4.15.3-1-hardened SMP mod_unload modversions 
+parm:           CIFSMaxBufSize:Network buffer size (not including header). Default: 16384 Range: 8192 to 130048 (uint)
+parm:           cifs_min_rcv:Network buffers in pool. Default: 4 Range: 1 to 64 (uint)
+parm:           cifs_min_small:Small network buffers in pool. Default: 30 Range: 2 to 256 (uint)
+parm:           cifs_max_pending:Simultaneous requests to server. Default: 32767 Range: 2 to 32767. (uint)
+parm:           enable_oplocks:Enable or disable oplocks. Default: y/Y/1 (bool)
+</pre>
+
+=== digsig_verif ===
+<pre>
+sudo modinfo digsig_verif
+</pre>
+
+output:
+
+<pre>
+filename:       /lib/modules/4.15.3-1-hardened/misc/digsig_verif.ko
+author:         DIGSIG Team. Rusbitech support@rusbitech.ru
+description:    Distributed Security Infrastructure Module
+license:        GPL
+srcversion:     CCFE23AF0D192900B8313F3
+depends:        
+retpoline:      Y
+name:           digsig_verif
+vermagic:       4.15.3-1-hardened SMP mod_unload modversions 
+parm:           dsi_cache_buckets:Number of cache buckets for signatures validations.
+ (int)
+parm:           elf_mode:Enforce Digsig restriction for elf (2=debug).
+ (int)
+parm:           xattr_mode:Enforce Digsig restriction for xattr (2=debug).
+ (int)
+parm:           ignore_xattr_keys:Ignore XATTR user keys.
+ (int)
+parm:           ignore_i_mode:Ignore files if (inode i_mode & ignore_i_mode).
+ (int)
+parm:           ignore_gost2001:Ignore obsolete GOST R34.10-2001 signatures
+ (int)
+</pre>
+
+== lsmod ==
+<pre>
+root@astra:~# lsmod
+</pre>
+
+<pre>
+Module                  Size  Used by
+bluetooth             360448  2
+ecdh_generic           24576  1 bluetooth
+intel_rapl             20480  0
+crct10dif_pclmul       16384  0
+crc32_pclmul           16384  0
+ghash_clmulni_intel    16384  0
+pcbc                   16384  0
+aesni_intel           188416  0
+aes_x86_64             20480  1 aesni_intel
+crypto_simd            16384  1 aesni_intel
+glue_helper            16384  1 aesni_intel
+cryptd                 24576  3 crypto_simd,ghash_clmulni_intel,aesni_intel
+intel_rapl_perf        16384  0
+joydev                 20480  0
+input_leds             16384  0
+serio_raw              16384  0
+mac_hid                16384  0
+parport_pc             32768  0
+binfmt_misc            16384  1
+ppdev                  20480  0
+lp                     20480  0
+parport                49152  3 parport_pc,lp,ppdev
+ip_tables              28672  0
+x_tables               40960  1 ip_tables
+autofs4                36864  3
+hid_generic            16384  0
+usbhid                 49152  0
+hid                   118784  2 usbhid,hid_generic
+psmouse               131072  0
+floppy                 77824  0
+i2c_piix4              20480  0
+pata_acpi              16384  0
+parsec                159744  2
+digsig_verif          491520  0
+</pre>
+
+== systemctl list-units ==
+<pre>
+root@astra:~# systemctl --no-pager list-units
+</pre>
+
+<pre>
+UNIT                                              LOAD   ACTIVE SUB       DESCRIPTION                                                       
+parsecfs.automount                                loaded active running   Automount PARSEC File System                                      
+proc-sys-fs-binfmt_misc.automount                 loaded active running   Arbitrary Executable File Formats File System Automount Point     
+sys-devices-platform-serial8250-tty-ttyS0.device  loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS0                        
+sys-devices-platform-serial8250-tty-ttyS1.device  loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS1                        
+sys-devices-platform-serial8250-tty-ttyS10.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS10                       
+sys-devices-platform-serial8250-tty-ttyS11.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS11                       
+sys-devices-platform-serial8250-tty-ttyS12.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS12                       
+sys-devices-platform-serial8250-tty-ttyS13.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS13                       
+sys-devices-platform-serial8250-tty-ttyS14.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS14                       
+sys-devices-platform-serial8250-tty-ttyS15.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS15                       
+sys-devices-platform-serial8250-tty-ttyS16.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS16                       
+sys-devices-platform-serial8250-tty-ttyS17.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS17                       
+sys-devices-platform-serial8250-tty-ttyS18.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS18                       
+sys-devices-platform-serial8250-tty-ttyS19.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS19                       
+sys-devices-platform-serial8250-tty-ttyS2.device  loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS2                        
+sys-devices-platform-serial8250-tty-ttyS20.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS20                       
+sys-devices-platform-serial8250-tty-ttyS21.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS21                       
+sys-devices-platform-serial8250-tty-ttyS22.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS22                       
+sys-devices-platform-serial8250-tty-ttyS23.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS23                       
+sys-devices-platform-serial8250-tty-ttyS24.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS24                       
+sys-devices-platform-serial8250-tty-ttyS25.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS25                       
+sys-devices-platform-serial8250-tty-ttyS26.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS26                       
+sys-devices-platform-serial8250-tty-ttyS27.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS27                       
+sys-devices-platform-serial8250-tty-ttyS28.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS28                       
+sys-devices-platform-serial8250-tty-ttyS29.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS29                       
+sys-devices-platform-serial8250-tty-ttyS3.device  loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS3                        
+sys-devices-platform-serial8250-tty-ttyS30.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS30                       
+sys-devices-platform-serial8250-tty-ttyS31.device loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS31                       
+sys-devices-platform-serial8250-tty-ttyS4.device  loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS4                        
+sys-devices-platform-serial8250-tty-ttyS5.device  loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS5                        
+sys-devices-platform-serial8250-tty-ttyS6.device  loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS6                        
+sys-devices-platform-serial8250-tty-ttyS7.device  loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS7                        
+sys-devices-platform-serial8250-tty-ttyS8.device  loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS8                        
+sys-devices-platform-serial8250-tty-ttyS9.device  loaded active plugged   /sys/devices/platform/serial8250/tty/ttyS9                        
+sys-devices-vbd\x2d51712-block-xvda-xvda1.device  loaded active plugged   /sys/devices/vbd-51712/block/xvda/xvda1                           
+sys-devices-vbd\x2d51712-block-xvda-xvda2.device  loaded active plugged   /sys/devices/vbd-51712/block/xvda/xvda2                           
+sys-devices-vbd\x2d51712-block-xvda-xvda5.device  loaded active plugged   /sys/devices/vbd-51712/block/xvda/xvda5                           
+sys-devices-vbd\x2d51712-block-xvda.device        loaded active plugged   /sys/devices/vbd-51712/block/xvda                                 
+sys-devices-vbd\x2d51728-block-xvdb.device        loaded active plugged   /sys/devices/vbd-51728/block/xvdb                                 
+sys-devices-vbd\x2d51744-block-xvdc.device        loaded active plugged   /sys/devices/vbd-51744/block/xvdc                                 
+sys-devices-vif\x2d0-net-eth0.device              loaded active plugged   /sys/devices/vif-0/net/eth0                                       
+sys-devices-virtual-misc-rfkill.device            loaded active plugged   /sys/devices/virtual/misc/rfkill                                  
+sys-devices-virtual-tty-hvc0.device               loaded active plugged   /sys/devices/virtual/tty/hvc0                                     
+sys-devices-virtual-tty-hvc1.device               loaded active plugged   /sys/devices/virtual/tty/hvc1                                     
+sys-devices-virtual-tty-hvc2.device               loaded active plugged   /sys/devices/virtual/tty/hvc2                                     
+sys-devices-virtual-tty-hvc3.device               loaded active plugged   /sys/devices/virtual/tty/hvc3                                     
+sys-devices-virtual-tty-hvc4.device               loaded active plugged   /sys/devices/virtual/tty/hvc4                                     
+sys-devices-virtual-tty-hvc5.device               loaded active plugged   /sys/devices/virtual/tty/hvc5                                     
+sys-devices-virtual-tty-hvc6.device               loaded active plugged   /sys/devices/virtual/tty/hvc6                                     
+sys-devices-virtual-tty-hvc7.device               loaded active plugged   /sys/devices/virtual/tty/hvc7                                     
+sys-devices-virtual-tty-ttyprintk.device          loaded active plugged   /sys/devices/virtual/tty/ttyprintk                                
+sys-module-configfs.device                        loaded active plugged   /sys/module/configfs                                              
+sys-module-fuse.device                            loaded active plugged   /sys/module/fuse                                                  
+sys-subsystem-net-devices-eth0.device             loaded active plugged   /sys/subsystem/net/devices/eth0                                   
+-.mount                                           loaded active mounted   Root Mount                                                        
+dev-mqueue.mount                                  loaded active mounted   POSIX Message Queue File System                                   
+parsecfs.mount                                    loaded active mounted   PARSEC File System                                                
+proc-sys-fs-binfmt_misc.mount                     loaded active mounted   Arbitrary Executable File Formats File System                     
+run-user-1000.mount                               loaded active mounted   /run/user/1000                                                    
+sys-fs-fuse-connections.mount                     loaded active mounted   FUSE Control File System                                          
+sys-kernel-config.mount                           loaded active mounted   Configuration File System                                         
+sys-kernel-debug.mount                            loaded active mounted   Debug File System                                                 
+acpid.path                                        loaded active running   ACPI Events Check                                                 
+cups.path                                         loaded active running   CUPS Scheduler                                                    
+systemd-ask-password-plymouth.path                loaded active waiting   Forward Password Requests to Plymouth Directory Watch             
+systemd-ask-password-wall.path                    loaded active waiting   Forward Password Requests to Wall Directory Watch                 
+init.scope                                        loaded active running   System and Service Manager                                        
+session-2.scope                                   loaded active running   Session 2 of user user                                            
+session-5.scope                                   loaded active running   Session 5 of user user                                            
+acpi-support.service                              loaded active exited    LSB: Start some power management scripts                          
+acpid.service                                     loaded active running   ACPI event daemon                                                 
+avahi-daemon.service                              loaded active running   Avahi mDNS/DNS-SD Stack                                           
+console-setup.service                             loaded active exited    Set console font and keymap                                       
+cron.service                                      loaded active running   Regular background program processing daemon                      
+cups.service                                      loaded active running   CUPS Scheduler                                                    
+dbus.service                                      loaded active running   D-Bus System Message Bus                                          
+fly-dm.service                                    loaded active running   The FLY login manager                                             
+getty@tty1.service                                loaded active running   Getty on tty1                                                     
+keyboard-setup.service                            loaded active exited    Set the console keyboard layout                                   
+kmod-static-nodes.service                         loaded active exited    Create list of required static device nodes for the current kernel
+libflygetexe-bin.service                          loaded active running   The FLY get exec service                                          
+networking.service                                loaded active exited    Raise network interfaces                                          
+NetworkManager-wait-online.service                loaded active exited    Network Manager Wait Online                                       
+NetworkManager.service                            loaded active running   Network Manager                                                   
+nscd.service                                      loaded active running   Name Service Cache Daemon                                         
+nslcd.service                                     loaded active running   LSB: LDAP connection daemon                                       
+ofono.service                                     loaded active running   oFono Mobile telephony stack                                      
+parlogd.service                                   loaded active running   PARSec events logging daemon                                      
+parsec.service                                    loaded active exited    Intitialize Parsec Subsystem                                      
+polkit.service                                    loaded active running   Authorization Manager                                             
+quota.service                                     loaded active exited    Initial Check File System Quotas                                  
+rpcbind.service                                   loaded active running   RPC bind portmap service                                          
+rsyslog.service                                   loaded active running   System Logging Service                                            
+serial-getty@hvc0.service                         loaded active running   Serial Getty on hvc0                                              
+ssh.service                                       loaded active running   OpenBSD Secure Shell server                                       
+swap-wiper.service                                loaded active exited    Swap Wiper                                                        
+systemd-binfmt.service                            loaded active exited    Set Up Additional Binary Formats                                  
+systemd-journal-flush.service                     loaded active exited    Flush Journal to Persistent Storage                               
+systemd-journald.service                          loaded active running   Journal Service                                                   
+systemd-logind.service                            loaded active running   Login Service                                                     
+systemd-modules-load.service                      loaded active exited    Load Kernel Modules                                               
+systemd-random-seed.service                       loaded active exited    Load/Save Random Seed                                             
+systemd-remount-fs.service                        loaded active exited    Remount Root and Kernel File Systems                              
+systemd-sysctl.service                            loaded active exited    Apply Kernel Variables                                            
+systemd-tmpfiles-setup-dev.service                loaded active exited    Create Static Device Nodes in /dev                                
+systemd-tmpfiles-setup.service                    loaded active exited    Create Volatile Files and Directories                             
+systemd-udev-trigger.service                      loaded active exited    udev Coldplug all Devices                                         
+systemd-udevd.service                             loaded active running   udev Kernel Device Manager                                        
+systemd-update-utmp.service                       loaded active exited    Update UTMP about System Boot/Shutdown                            
+systemd-user-sessions.service                     loaded active exited    Permit User Sessions                                              
+udisks2.service                                   loaded active running   Disk Manager                                                      
+ufw.service                                       loaded active exited    Uncomplicated firewall                                            
+upower.service                                    loaded active running   Daemon for power management                                       
+user@1000.service                                 loaded active running   User Manager for UID 1000                                         
+-.slice                                           loaded active active    Root Slice                                                        
+system-getty.slice                                loaded active active    system-getty.slice                                                
+system-serial\x2dgetty.slice                      loaded active active    system-serial\x2dgetty.slice                                      
+system.slice                                      loaded active active    System Slice                                                      
+user-1000.slice                                   loaded active active    User Slice of user                                                
+user.slice                                        loaded active active    User and Session Slice                                            
+acpid.socket                                      loaded active running   ACPID Listen Socket                                               
+avahi-daemon.socket                               loaded active running   Avahi mDNS/DNS-SD Stack Activation Socket                         
+cups.socket                                       loaded active running   CUPS Scheduler                                                    
+dbus.socket                                       loaded active running   D-Bus System Message Bus Socket                                   
+gpsd.socket                                       loaded active listening GPS (Global Positioning System) Daemon Sockets                    
+rpcbind.socket                                    loaded active running   RPCbind Server Activation Socket                                  
+syslog.socket                                     loaded active running   Syslog Socket                                                     
+systemd-fsckd.socket                              loaded active listening fsck to fsckd communication Socket                                
+systemd-initctl.socket                            loaded active listening /dev/initctl Compatibility Named Pipe                             
+systemd-journald-audit.socket                     loaded active running   Journal Audit Socket                                              
+systemd-journald-dev-log.socket                   loaded active running   Journal Socket (/dev/log)                                         
+systemd-journald.socket                           loaded active running   Journal Socket                                                    
+systemd-rfkill.socket                             loaded active listening Load/Save RF Kill Switch Status /dev/rfkill Watch                 
+systemd-udevd-control.socket                      loaded active running   udev Control Socket                                               
+systemd-udevd-kernel.socket                       loaded active running   udev Kernel Socket                                                
+basic.target                                      loaded active active    Basic System                                                      
+cryptsetup.target                                 loaded active active    Encrypted Volumes                                                 
+getty.target                                      loaded active active    Login Prompts                                                     
+graphical.target                                  loaded active active    Graphical Interface                                               
+local-fs-pre.target                               loaded active active    Local File Systems (Pre)                                          
+local-fs.target                                   loaded active active    Local File Systems                                                
+multi-user.target                                 loaded active active    Multi-User System                                                 
+network-online.target                             loaded active active    Network is Online                                                 
+network.target                                    loaded active active    Network                                                           
+paths.target                                      loaded active active    Paths                                                             
+remote-fs-pre.target                              loaded active active    Remote File Systems (Pre)                                         
+remote-fs.target                                  loaded active active    Remote File Systems                                               
+rpcbind.target                                    loaded active active    RPC Port Mapper                                                   
+slices.target                                     loaded active active    Slices                                                            
+sockets.target                                    loaded active active    Sockets                                                           
+sysinit.target                                    loaded active active    System Initialization                                             
+time-sync.target                                  loaded active active    System Time Synchronized                                          
+timers.target                                     loaded active active    Timers                                                            
+anacron.timer                                     loaded active waiting   Trigger anacron every hour                                        
+apt-daily-upgrade.timer                           loaded active waiting   Daily apt upgrade and clean activities                            
+apt-daily.timer                                   loaded active waiting   Daily apt download activities                                     
+systemd-tmpfiles-clean.timer                      loaded active waiting   Daily Cleanup of Temporary Directories                            
+
+LOAD   = Reflects whether the unit definition was properly loaded.
+ACTIVE = The high-level unit activation state, i.e. generalization of SUB.
+SUB    = The low-level unit activation state, values depend on unit type.
+
+157 loaded units listed. Pass --all to see loaded but inactive units, too.
+To show all installed unit files use 'systemctl list-unit-files'.
+</pre>
+
+== Mandatory Access Control MAC ==
+=== AppArmor ===
+AppArmor apparently not installed.
+
+<pre>
+root@astra:~# aa-status
+bash: aa-status: command not found
+
+root@astra:~# which aa-status
+root@astra:~# 
+
+root@astra:~# dpkg -l | grep apparmor
+ii  libapparmor1:amd64                            2.11.0-3+deb9u2                       amd64        changehat AppArmor library
+root@astra:~# 
+</pre>
+
+=== SELinux ===
+SELinux apparently not installed.
+
+<pre>
+root@astra:~# semanage
+bash: semanage: command not found
+root@astra:~# 
+</pre>
+
+Next.
+
+<pre>
+root@astra:~# dpkg -l | grep selinux
+ii  libselinux1:amd64                             2.6-3                                 amd64        SELinux runtime shared libraries
+</pre>
+
+=== Smack ===
+Smack apparently not installed.
+
+<pre>
+user@astra:~$ dpkg -l | grep -i smack
+user@astra:~$ 
+</pre>
+
+<pre>
+root@astra:~# smackload 
+bash: smackload: command not found
+</pre>
+
+=== tomoyo ===
+Tomoyo apparently not installed.
+
+<pre>
+root@astra:~# dpkg -l | grep tomoyo
+root@astra:~# 
+</pre>
+
+<pre>
+root@astra:~# /usr/sbin/tomoyo-auditd
+bash: /usr/sbin/tomoyo-auditd: No such file or directory
+root@astra:~# 
+</pre>
+
+=== firejail ===
+Installed.
+
+<pre>
+dpkg -l | grep firejail
+ii  firejail                                      0.9.44.8-2                            amd64        sandbox to restrict the application environment
+</pre>
+
+=== bubblewrap ===
+Not installed.
+
+<pre>
+root@astra:~# dpkg -l | grep bubblewrap
+root@astra:~# 
+</pre>
+
+=== Other Mandatory Access Control MAC installed? ===
+?
+
+== sudoers ==
+It edits /etc/sudoers instead of dropping snippets into /etc/sudoers.d for enabling passwordless sudo. This is not following practices. When sudo package is updated and /etc/sudoers changed by upstream, it will show an dpkg interactive conflict resolution dialog. And even if astra linux forked the package and prevents this, this results in them carrying the maintenance load of that diff.
+
+= wormhole installation hint =
+sudo apt install python-pip
+
+sudo pip install magic-wormhole
+
+wormhole send /path/to/filename
+
+= Number of Developers =
+Unknown. Trying to guess. Looking at <code>cat /var/lib/dpkg/status | grep @rusbitech | sort --unique</code> showing 20 different full names.
+
+= Questions =
+* How can I ELF sign binaries?
+* Can Astra Special Edition be updated through an online APT repository?
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Design]]
