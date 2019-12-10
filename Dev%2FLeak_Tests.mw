@@ -1,0 +1,302 @@
+{{Header}}
+{{#seo:
+|description=Testing for IP/DNS Leaks
+}}
+
+= Introduction =
+
+In past {{project name}} documentation stated "in your own interest you should do the leak tests". That was from a time, where {{project name}} was only useful for very advanced end users, because only textual instructions existed; there were no scripts, no source code and the {{project name}} concept was brand new. It is unrealistic, that all download users do and understand the leak tests. That's why it was removed from the Readme.
+
+You are still invited and encouraged to do the leak tests, in fact, at the moment, there are probably not many people auditing {{project name}} security.
+
+Unfortunately, leak testing is as complicated as programming. You can not learn it overnight and you won't find someone online, willing to teach you for free. That's really something you have to do on your own. We continue to list and document all leak tests we are aware of, but we can not educate everyone in the depths of networking.
+
+= Knowledge assumed =
+
+* [https://trac.torproject.org/projects/tor/wiki/doc/build/BuildSignoff#Expectedissueswithpopulartestpages Expected issues with popular test pages]
+* Search for previous discussions before reporting.
+
+= Leak Testing Websites =
+Read first! &rarr; [[Browser Tests]]
+
+There are too many websites for leak testing. (Some are offline.)
+
+* [https://trac.torproject.org/projects/tor/wiki/doc/build/BuildSignoff#TestPagestoUse List 1]
+* [https://trac.torproject.org/projects/tor/wiki/doc/Testing/Tools#Sites List 2]
+
+None of the Leak Testing Websites running inside {{workstation_product_name}} is able to find out the real external clearnet IP address, no matter if plugins, flash and/or java are activated.
+
+= DNS Leak Tests =
+
+== Online ==
+{{DNS Leak Tests Online}}
+* https://anonymster.com/dns-leak-test/
+
+== Deactivate host DNS ==
+Deactivating the DNS on your host should result in not being be able to nslookup anymore, but {{workstation_product_name}} nslookup should still be functional.
+
+Theoretical background: {{workstation_product_name}} requests should always be resolved by {{gateway_product_name}}. In the case of a DNS leak, the host operating system is resolving DNS queries for the {{workstation_product_name}}. Deactivating the host's DNS would make {{workstation_product_name}} DNS queries non-functional, breaking functionality. This is confirmation of a DNS leak.
+
+== Deactivate {{gateway_product_name}} DNS ==
+On the {{gateway_product_name}}. 
+
+{{Open with root rights|filename=
+/etc/resolv.conf
+}}
+
+comment out everything (# before every line so everything is ignored).
+
+<pre>
+#nameserver 127.0.0.1
+</pre>
+
+As a test's result the DNS requests in the {{workstation_product_name}} should still work while the DNS requests in the {{gateway_product_name}} no longer work.
+
+== Using dig ==
+
+Another very poor manish leak test: Because Tor's DNS resolver does not handle AAAA records this will not return any google hostnames if run on {{workstation_product_name}} and DNS requests aren't leaking. Running.
+
+<pre>dig AAAA check.torproject.org</pre>
+
+Should reply.
+
+<pre>
+; <<>> DiG 9.8.1-P1 <<>> AAAA check.torproject.org
+;; global options: +cmd
+;; Got answer:
+;; &rarr;>HEADER<<- opcode: QUERY, status: NOTIMP, id: 42383
+;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 0
+
+;; QUESTION SECTION:
+;check.torproject.org.          IN      AAAA
+
+;; Query time: 0 msec
+;; SERVER: 10.152.152.10#53(10.152.152.10)
+;; WHEN: [date]
+;; MSG SIZE  rcvd: 38
+</pre>
+
+Tor also does not support DNSSEC yet. Running.
+
+<pre>
+dig +multiline . DNSKEY
+</pre>
+
+It should now show DNS cryptographic keys. [[Alternative_DNS_Resolver#DNSSec|See example output from here]].
+
+== Using nslookup ==
+
+Running.
+
+<pre>nslookup -type=mx check.torproject.org</pre>
+
+Should reply.
+
+<pre>
+Server:         10.152.152.10
+Address:        10.152.152.10#53
+
+** server can't find check.torproject.org: NOTIMP
+</pre>
+
+Running
+
+<pre>nslookup -type=AAAA check.torproject.org</pre>
+
+Should reply.
+
+<pre>
+Server:         10.152.152.10
+Address:        10.152.152.10#53
+
+** server can't find check.torproject.org: NOTIMP
+</pre>
+
+= Leaks through the host or VM =
+
+Shut down the {{gateway_product_name}} and start the {{workstation_product_name}}. The {{workstation_product_name}} shouldn't be able to exchange data with any outside target.
+
+= Ping Test =
+
+First, make sure both VMs are online. Since ICMP is not supported by Tor and filtered by {{project name}} firewall, you should not be able to ping any servers.
+
+= FIN ACK / RST ACK - Leak Test=
+<font size="-3">Credit for FIN ACK / RST ACK - Leak Test (coined by {{project_name}}): Originally written by Mike Perry on the tor-talk mailing list, he found a transparent proxy leak without references to {{project_name}}. ([https://lists.torproject.org/pipermail/tor-talk/2014-March/032503.html source]) The test has been adapted for {{project_name}}.</font>
+
+Note, the following IP 74.125.28.104 points to www.google.com and should be seen as an example.
+
+On the host.
+
+Close your browser and cease all other non-{{project_name}} online activity to avoid contaminating the following test.
+
+Install tcpdump.
+
+<pre>
+sudo apt-get update
+sudo apt-get install tcpdump
+</pre>
+
+Run tcpdump. Replace <code>-i wlan0</code> with your network interface. If you use <code>-i any</code>, you will also see transproxied packets (which are not normally leaked).
+
+<pre>
+sudo tcpdump -n -i wlan0 host 74.125.28.104 and tcp port 80
+</pre>
+
+For testing/learning, connect to 74.125.28.104 (ping, open in a browser, use curl, scurl or similar) and see how it looks like when a connection to that IP is being made.
+
+Close the connection. Stop tcpdump. Start tcpdump again.
+
+In {{workstation_product_name}}.
+
+Create a socket connection.
+
+<pre>
+python
+
+import socket
+
+s = socket.create_connection(("74.125.28.104", 80))
+</pre>
+
+On {{gateway_product_name}}.
+
+Stop Tor.
+
+<pre>
+sudo service tor@default stop
+</pre>
+
+In {{workstation_product_name}}.
+
+Close the socket connection.
+
+<pre>
+s.close()
+</pre>
+
+On the host.
+
+Check, that you can not see any connections to 74.125.28.104 in tcpdump.
+
+Variations of this test:
+
+* You could also run tcpdump in {{workstation_product_name}} or on {{gateway_product_name}}.
+* You could also [[{{gateway product name short}}s_Own_Traffic_Transparent_Proxy|enable transparent proxying for {{gateway_product_name}} own traffic]] and create the socket connection on {{gateway_product_name}}.
+
+<font size=-3>
+Forum discussion:
+
+* [https://forums.whonix.org/t/testers-wanted-new-fin-ack-rst-ack-leak-test/229 Part 1]
+* [https://forums.whonix.org/t/testers-wanted-new-fin-ack-rst-ack-leak-test-part-2/313 Part 2]
+</font>
+
+= Integrated tshark leaktest =
+
+On {{gateway_product_name}} start looking for leaks.
+
+You need to install the anon-gw-leaktest package.
+
+<pre>
+## Login as user, open a shell as user or su user.
+## /usr/bin/leaktest
+sudo leaktest
+</pre>
+
+On {{workstation_product_name}} try to produce a leak.
+
+You need to install the anon-ws-leaktest package.
+
+<pre>
+## Login as user, open a shell as user or su user.
+## /usr/bin/leaktest
+sudo leaktest
+</pre>
+
+If you are wondering, how this works and what that does, the old article, [[Dev/Leak Tests Old]] is still being kept.
+
+* Original article.
+* As copy and paste tutorial.
+* For better understanding with more comments.
+* Perhaps useful for similar projects.
+* Optional additional tests.
+
+= Integreated whonixcheck leaktest =
+Please also run [[whonixcheck]] on {{gateway_product_name}} and {{workstation_product_name}}. whonixcheck's Tor SocksPort and Tor TransPort test (the latter only on {{workstation_product_name}} <ref>Because {{gateway_product_name}} does not have a TransPort by default.</ref>) are also doing leak testing. If <code>whonixcheck</code> would report a big warning, if check.torproject.org couldn't detect Tor.
+
+{{CodeSelect|code=
+whonixcheck --leak-tests
+}}
+
+= Torrent Leak Tests =
+* https://www.doileak.com
+* Please add more to the list if you know other tests.
+
+= UDP Leak Tests =
+* Same as above.
+* Please add more to the list if you know other tests.
+
+= Other Leak Tests =
+* [https://forums.whonix.org/t/corridor-a-tor-traffic-whitelisting-gateway-a-clearnet-leak-tester/2765 corridor, a Tor traffic whitelisting gateway, a clearnet leak tester]
+* [https://forums.whonix.org/t/using-corridor-a-tor-traffic-whitelisting-gateway-with-qubes-whonix/2761 Using corridor, a Tor traffic whitelisting gateway with {{q_project_name}}]
+* A similar project published another leak test. Read [https://github.com/ra--/Tor-gateway/wiki/Faq How can I test if there is a leak in the setup respectively all traffic goes through Tor?]. Has not been tested with {{project name}} yet. If you do it, please share your results.
+
+= Qubes specific =
+== TemplateVM Update Proxy Leak Test ==
+Start a your {{gateway_product_name}} TemplateVM (commonly called <code>{{whonix-gw}}</code>). <ref>
+Those are assumed to be torified, i.e. having their NetVM set to sys-whonix.
+</ref>
+
+In your TempalteVM.
+
+Start downloading some big<ref>With a small package you would not have a chance to easily and quickly disable Tor while it is downloading.</ref> package. <ref>
+Alternatively, you could also run <code>sudo apt-get update</code> instead of downloading a big package and interrupt that. However, it would be less conclusive, because then apt-get updating may only break due to broken DNS. A long running transfer that no longer depends on functional DNS resolution would be far easier to spot. (If the download was non-torified, it should not matter if we stop Tor during the transfer.)
+</ref> Example.
+
+{{CodeSelect|code=
+apt-get download firefox-esr
+}}
+
+Now switch to your {{gateway_product_name}} ProxyVM (commonly called <code>sys-whonix</code>) and stop Tor. <ref>
+Alternately, although with less conclusive, instead of stopping Tor, you could also stop qubes-updates-proxy during the transfer.
+
+{{CodeSelect|code=
+sudo service qubes-updates-proxy stop
+}}
+
+This should lead to the same ''expected result''.
+</ref>
+
+{{CodeSelect|code=
+sudo service tor@default stop
+}}
+
+The ''expected result'' in the TemplateVM a functional download, that stops as soon as Tor is stopped.
+
+<pre>
+Get:1 http://security.debian.org/ jessie/updates/main firefox-esr amd64 52.5.2esr-1~deb8u1 [44.7 MB]
+Err http://security.debian.org/ jessie/updates/main firefox-esr amd64 52.5.2esr-1~deb8u1
+  500  Unable to connect
+E: Failed to fetch http://security.debian.org/pool/updates/main/i/firefox/firefox-esr amd64 52.5.2esr-1~deb8u1_amd64.deb  500  Unable to connect
+</pre>
+
+You can now start Tor in your {{gateway_product_name}} ProxyVM again. 
+
+{{CodeSelect|code=
+sudo service tor@default start
+}}
+
+Repeat this test with your {{workstation_product_name}} TemplateVM (commonly called <code>{{whonix-ws}}</code>).
+
+= See Also =
+
+* [[Browser Tests]]
+* [[Test]]
+* https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO/BridgeFirewall
+* https://github.com/rustybird/corridor
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Development]] [[Category:Design]]
