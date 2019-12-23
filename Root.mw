@@ -1,0 +1,357 @@
+{{Header}}
+{{Title|
+title=Safely Use Root Commands
+}}
+{{#seo:
+|description=Tips on using sudo / root (privileged) commands safely
+|image=https://www.whonix.org/w/images/e/e2/Root123123.jpg
+}}
+
+= Rationale =
+
+This wiki entry is intended to make attacks harder by denying root access: <ref>Also see: [[Dev/Permissions|Permissions]].</ref>
+
+* <u>Prevent root compromise</u>: these steps help to protect the virtualizer to avoid host compromise, and similarly the hardware to avoid hardware compromise. <ref>
+https://github.com/QubesOS/qubes-issues/issues/2695#issuecomment-301316132
+</ref>
+* <u>Protect against compromised non-root users</u>: it is harder for any future, non-root users (such as <code>www-data</code>) to access user <code>user</code> or other parts of the system.
+* <u>Usability</u>: if the advanced advice to [[#Prevent Malware from Sniffing the Root Password|Prevent Malware from Sniffing the Root Password]] is not followed, then users will only require a single, secure root password for the user <code>user</code> account. It is no longer necessary to have two secure passwords for the user <code>user</code> and root accounts. <ref>On the flip-side, if the [[#Prevent Malware from Sniffing the Root Password|Prevent Malware from Sniffing the Root Password]] steps are followed, two secure passwords are required for the user <code>user</code> and user <code>admin</code> accounts.</ref>
+
+= Default Passwords =
+{{Default Passwords}}
+
+The default root account is locked (or should be locked). <ref>
+In new builds of Whonix version <code>15.0.0.3.6</code>. Earlier Whonix builds did not lock the root account by default and should be locked.
+</ref> This is a purposeful security feature -- see below for further details.
+
+= General Security Advice =
+
+Commands that require root permissions should be run individually using <code>sudo</code>. In all cases:
+
+* Do not login as root.
+* Do not run <code>sudo su</code>.
+
+= Graphical Applications with Root Rights =
+It is discouraged to run [https://www.computerhope.com/jargon/g/gui.htm graphical user interface (GUI)] applications with <code>sudo application</code>:
+
+* Never login as <code>root</code> as explained above.
+* That is, never use <code>sudo su</code> and then start GUI applications.
+
+This will fail and is a limitation inherited from Debian. If this action is attempted, error messages like those below will appear. <ref>
+* https://help.ubuntu.com/community/RootSudo#Graphical_sudo
+* http://www.psychocats.net/ubuntu/graphicalsudo
+</ref>
+
+<pre>
+No protocol specified
+</pre>
+
+<pre>
+cannot connect to X server :0
+</pre>
+
+As an XFCE user ({{non_q_project_name_short}} default) use <code>lxsudo</code> instead. For example, to launch the keyboard GUI safely, run.
+
+{{Open with root rights|filename=
+/etc/default/keyboard
+}}
+
+= Root Account =
+
+== Enable Root Account ==
+
+For [[#Rationale|security reasons]] the root account is locked and expired by default in {{project_name}} <code>15.0.0.3.6</code> and above. For most users there should be no need to use the root account. If it must be enabled for some reason, run the following commands.
+
+([[{{q project name short}}|{{q project name}}]]: {{gateway_product_name}} and {{workstation_product_name}} TemplateVMs)
+
+If you can use <code>sudo</code>, you can skip the following box.
+
+{{box|text=
+If you cannot use <code>sudo</code>:
+
+* [[{{Non q project name short}}|{{Non q project name}}]]: Boot into [[Recovery#Recovery_Mode|recovery mode]].
+* [[{{q project name short}}|{{q project name}}]]: Open a [[#qubes root console|Qubes Root Console]].
+}}
+
+Unexpire the root account.
+
+{{CodeSelect|code=
+sudo chage --expiredate -1 root
+}}
+
+Set a root password.
+
+{{CodeSelect|code=
+sudo passwd
+}}
+
+== Disable Root Account ==
+
+The current {{project_name}} [[Whonix_Stable_Release|stable release]] and [[Whonix_Old_Stable_and_Earlier_Releases|earlier versions]] come with the root account by default. Most users should disable it by running the following commands ([[{{q project name short}}|{{q project name}}]]: {{gateway_product_name}} and {{workstation_product_name}} TemplateVMs).
+
+Lock the account.
+
+{{CodeSelect|code=
+sudo passwd --lock root
+}}
+
+<ref>
+No longer expiring the root account since this broke adduser, see: https://forums.whonix.org/t/restrict-root-access/7658/59
+
+(To prevent SSH login, see: [https://www.cyberciti.biz/faq/linux-locking-an-account/ Linux Locking An Account]. This might prevent other login methods but this requires further investigation.)
+
+{{CodeSelect|code=
+sudo chage --expiredate 0 root
+}}
+</ref>
+
+In the future, [[#General Security Advice|use <code>sudo</code> instead]] when it is necessary.
+
+{{Anchor|unlock}}
+= Unlock User Account: Excessive Wrong Password Entry Attempts =
+{{Box|text=
+'''1.''' Launch a root terminal.
+
+* [[{{Non q project name short}}|{{Non q project name}}]]: Boot into [[Recovery#Recovery_Mode|recovery mode]].
+* [[{{q project name short}}|{{q project name}}]]: Open a [[#qubes root console|Qubes Root Console]].
+
+'''2.''' Run the following command.
+
+{{CodeSelect|code=
+sudo pam_tally2 -u user -r --quiet
+}}
+}}
+{{Anchor|console}}
+
+= Console Unlock =
+{{Box|text=
+'''1.''' Launch a root terminal.
+
+* [[{{Non q project name short}}|{{Non q project name}}]]: Boot into [[Recovery#Recovery_Mode|recovery mode]].
+* [[{{q project name short}}|{{q project name}}]]: Open a [[#qubes root console|Qubes Root Console]].
+
+'''2.''' Run the following command. Replace <code>user</code> with the linux user account name which should be allowed to login on the console.
+
+{{CodeSelect|code=
+sudo addgroup user console
+}}
+}}
+
+= Advanced Users =
+
+== Prevent Malware from Sniffing the Root Password ==
+Any graphical application can see what is typed in another graphical application, for any user. <ref>
+[https://blog.invisiblethings.org/2011/04/23/linux-security-circus-on-gui-isolation.html Quote] Joanna Rutkowska, security researcher, founder and advisor (formerly architecture, security, and development) of Qubes OS: <blockquote>One application can sniff or inject keystrokes to another one, can take snapshots of the screen occupied by windows belonging to another one, etc.</blockquote></ref> <ref>If an application is compromised with an exploit due to a security vulnerability, it can be used as malware by the attacker. Once/if the application is not effectively confined by a mandatory access control (MAC) framework like AppArmor or firejail, it can compromise the user account where it is running and then proceed from there.</ref> Therefore it is [[#Rationale|safer]] to create a special, new user account that is less likely to have been compromised, since this reduces the chances of malware sniffing the password to gain root access.
+
+To more securely perform administrative tasks that require root access:
+# These instructions are ideally applied after installing the host / VM when it is still considered free of [[Malware]].
+# Create a new user account <code>admin</code>.
+# Add it to the group <code>sudo</code>.
+# Login as user <code>admin</code>.
+# Remove user <code>user</code> from group <code>sudo</code>.
+# Only then perform administrative tasks according to the instructions below.
+
+This setup only needs to be completed once ([[{{q project name short}}|{{q project name}}]]: {{gateway_product_name}} and {{workstation_product_name}} TemplateVMs). 
+{{Box|text=
+'''1.''' Create a new user account <code>admin</code>.
+
+{{CodeSelect|code=
+sudo adduser admin
+}}
+
+'''2.''' Add user <code>admin</code> to group <code>sudo</code>.
+
+{{CodeSelect|code=
+sudo addgroup admin sudo
+}}
+}}
+
+Perform the following steps securely using <code>sudo</code>. Use <u>one</u> of the methods below.
+
+=== Non-GUI Environment Method === 
+
+This method is preferable until the limitation in the next section is documented.
+
+{{Box|text=
+'''1.''' Make sure keyboard gets disconnected from X Window System. (un<code>r</code>aw) <ref>
+Broken X Window System can block switching to virtual console. If X Window System is capable of that it logically follows that also malware that compromised X Window System could do that. "SysRq + r" can take away control from X Window System. After that, switching to another virtual console is possible.
+</ref>
+
+[[SysRq]] + <code>r</code>
+
+'''2.''' Login as user <code>admin</code> from a non-graphical environment ([[Desktop#Virtual_Consoles|virtual console]]). <ref>A GUI non-root user cannot sniff key strokes of different (non-)root users utilizing a virtual console.</ref>
+
+'''3.''' Perform any necessary administrative tasks.
+
+'''4.''' Remove user <code>user</code> from group <code>sudo</code>.
+
+<u>Note</u>: This only needs to be performed once.
+
+{{CodeSelect|code=
+sudo delgroup user sudo
+}}
+
+'''5.''' Logout user <code>admin</code> and continue usual work as user <code>user</code>.
+}}
+
+=== Logout Method ===
+
+{{Box|text=
+'''1.''' Login as user <code>admin</code>.
+
+'''2.''' Logout user <code>user</code> first, then login as user <code>admin</code>. 
+
+Ensure that user <code>user</code> was really logged out and this process was not just simulated. TODO: research and document this procedure. [[SysRq]] + <code>r</code>?
+
+'''3.''' Perform any necessary administrative tasks.
+
+'''4.''' Remove user <code>user</code> from group <code>sudo</code>.
+
+<u>Note</u>: This step only needs to be performed once.
+
+{{CodeSelect|code=
+sudo delgroup user sudo
+}}
+
+'''5.''' Logout user <code>admin</code> and continue usual work as user <code>user</code>.
+}}
+
+{{Anchor|su}}
+== Substitute User (su) Command ==
+
+The majority of users do not need to utilize the <code>su</code> command. <ref>
+<code>su</code> is sometimes incorrectly referred to as the ''superuser'' command. [http://www.linfo.org/su.html It allows]:
+
+<blockquote>
+... a change to a login session's owner (i.e., the user who originally created that session by logging on to the system) without the owner having to first log out of that session.
+
+Although su can be used to change the ownership of a session to any user, it is most commonly employed to change the ownership from an ordinary user to the root (i.e., administrative) user, thereby providing access to all parts of and all commands on the computer or system.
+</blockquote>
+
+By comparison, <code>sudo</code> makes it possible to execute system commands without the root password.
+</ref>.
+
+[https://github.com/Whonix/security-misc/blob/master/usr/share/pam-configs/wheel-security-misc Group <code>sudo</code> membership is required to use <code>su</code>] (by package [https://github.com/Whonix/security-misc security-misc]).
+{{Box|text=
+To permit the <code>su</code> command from user <code>user</code>, complete the following steps.
+
+([[{{q project name short}}|{{q project name}}]]: perform these steps in {{gateway_product_name}} and {{workstation_product_name}} TemplateVMs.)
+
+'''1.''' [[#Enable Root Account|Enable the root account]].<br />
+'''2.''' Add user <code>user</code> to group <code>root</code>.
+{{CodeSelect|code=
+sudo adduser user root
+}}
+
+'''3.''' Re-enable [[Security-misc#suid|SUID]].
+
+Set suid. Note it is okay if the second command fails.
+
+{{CodeSelect|code=
+sudo chmod 4755 /bin/su
+sudo chmod 4755 /usr/bin/su
+}}
+
+'''4.''' Add [[Security-misc#suid|SUID]] whitelisting. <ref>This command will be unnecessary once <code>/etc/permission-hardening.d</code> has been deployed everywhere.</ref>
+
+{{CodeSelect|code=
+sudo mkdir -p /etc/permission-hardening.d
+}}
+
+{{Open with root rights|filename=
+/etc/permission-hardening.d/20_user.conf
+}}
+
+Add.
+
+{{CodeSelect|code=
+/bin/su exactwhitelist
+/usr/bin/su exactwhitelist
+}}
+
+Save.
+}}
+{{Anchor|login}}
+
+== Root Login ==
+Root login within a [[Desktop#Virtual_Consoles|virtual console]] will be disabled by default after upgrades. <ref>security-misc <code>[https://github.com/Whonix/security-misc/blob/master/etc/securetty.security-misc /etc/securetty]</code> is empty by default.</ref> <ref>When trying to login as root in a [[Desktop#Virtual_Consoles|virtual console]] it will reply: <blockquote>
+Login incorrect.</blockquote> Without previously asking for a password. This is not the worst case for usability and is better than asking for password and then failing.
+</ref>
+
+To enable login from a [[Desktop#Virtual Console|virtual console]], first apply the [[#Enable Root Account|Enable Root Account]] instructions further above, then complete the steps below.
+{{Box|text=
+'''1.''' To allow root login, <code>/etc/securetty</code> must be configured. <ref>
+<code>sudoedit</code> will not follow symlinks, therefore <code>realpath</code> is used.
+</ref>
+
+{{Open with root rights|filename=
+$(realpath /etc/securetty)
+}}
+
+'''2.''' Add the following content.
+
+<u>Note</u>: Add one or more tty depending on your circumstances; see file <code>/etc/securetty.security-misc-orig</code>.
+
+* [[{{Non q project name short}}|{{Non q project name}}]]:
+{{CodeSelect|code=
+tty1
+tty2
+tty3
+tty4
+tty5
+tty6
+tty7
+tty8
+tty9
+tty10
+}}
+
+* [[{{q project name short}}|{{q project name}}]]:
+{{CodeSelect|code=
+hvc0
+}}
+
+'''3.''' Save the file.
+}}
+
+== Recovery Mode ==
+Root login is possible using [[Recovery#Recovery_Mode|recovery mode]]. <ref>https://forums.whonix.org/t/restrict-root-access/7658/46</ref>
+
+When the root account is disabled, passwordless root login using recovery mode is possible; see below for the security impact.
+
+{{anchor|qubes root console}}
+== Qubes Root Console ==
+{{Box|text=
+'''1.''' Open a dom0 terminal.
+
+<code>Qubes App Launcher (blue/grey "Q")</code> &rarr; <code>System Tools</code> &rarr; <code>Xfce Terminal
+</code>
+
+'''2.''' Run the following command. 
+
+Replace <code>vm-name</code> with the name of the actual VM where you want to open a root console.
+
+{{CodeSelect|code=
+qvm-run -u root vm-name xfce4-terminal
+}}
+}}
+
+== Passwordless Recovery Mode Security Discussion ==
+This is only relevant on the host and not inside virtual machines.
+
+Passwordless recovery mode is allowed because a locked root password would break the rescue and emergency shell. Therefore the [https://github.com/Whonix/security-misc security-misc] package enables a passwordless rescue and emergency shell. This is the same solution that Debian will likely adapt for Debian installer. <ref>
+* https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=802211
+* /etc/systemd/system/emergency.service.d/override.conf
+* /etc/systemd/system/rescue.service.d/override.conf
+</ref>
+
+With passwordless root login, using recovery mode is allowed (through use of the security-misc package) on the host. To prevent adverse security effects posed by lesser adversaries with physical access to the machine, set up BIOS password protection, bootloader grub password protection and/or [[Full_Disk_Encryption|full disk encryption]].
+
+= Development =
+
+* Whonix code: [https://github.com/Whonix/security-misc/pull/22 Restrict access to the root account].
+
+= Footnotes =
+{{reflist|close=1}}
+[[Category:Documentation]]
+{{Footer}}
