@@ -1,0 +1,159 @@
+{{Title|title=SSHFS into Whonix-Workstation}}
+{{Header}}
+{{#seo:
+|description=Mount {{workstation_product_name}} files on your Host using sshfs
+|image=https://www.whonix.org/w/images/b/be/Sshfs.jpg
+}}
+= Do Once =
+'''Developers / experts only! Only for debugging!'''
+
+On the host.
+
+If you are not already a member of the fuse group, add yourself.
+
+{{CodeSelect|code=
+sudo adduser `whoami` fuse
+}}
+
+If you were not already a member, you will see.
+
+<pre>
+Adding user `user' to group `fuse' ...
+Adding user user to group fuse
+Done.
+</pre>
+
+And should reboot. <ref>Restart X may do the trick as well.</ref>
+
+If you see.
+
+<pre>
+The user `user' is already a member of `fuse'.
+</pre>
+
+Then you are already a member of the fuse group and do not have to reboot.
+
+On the host.
+
+Import {{gateway_product_name}}
+
+Import {{workstation_product_name}}
+
+On the host.
+
+Caution if you did not name your VM "{{gateway_product_name_short}}"!
+
+{{CodeSelect|code=
+VBoxManage modifyvm "{{gateway_product_name_short}}" --natpf1 "ssh",tcp,127.0.0.1,2200,,22 ; echo $?
+}}
+
+When there is an error, you will see this.
+
+<pre>
+VBoxManage: error: The machine '{{gateway_product_name_short}}8.1' is already locked for a session (or being unlocked)
+VBoxManage: error: Details: code VBOX_E_INVALID_OBJECT_STATE (0x80bb0007), component Machine, interface IMachine, callee nsISupports
+Context: "LockMachine(a&rarr;session, LockType_Write)" at line 377 of file VBoxManageModifyVM.cpp
+1
+</pre>
+
+When it succeeded, you will see this.
+
+<pre>
+0
+</pre>
+
+{{gateway_product_name}} AND {{workstation_product_name}}.
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+{{CodeSelect|code=
+sudo apt-get install openssh-server
+}}
+
+On {{gateway_product_name}}.
+
+{{CodeSelect|code=
+echo "GATEWAY_ALLOW_INCOMING_SSH=1" | sudo tee -a "/etc/whonix_firewall.d/50_user.conf"
+}}
+
+{{CodeSelect|code=
+sudo whonix_firewall
+}}
+
+On {{gateway_product_name}}.
+
+{{CodeSelect|code=
+ssh.anondist-orig 10.152.152.11
+}}
+
+Yes (accept fingerprint).
+
+Terminate ssh connection.
+
+{{CodeSelect|code=
+exit
+}}
+
+On the host.
+If you are using ssh on the host for other purposes, it might be better to switch to an extra user.
+
+On the host.
+Try this if you are having problems. This might not be neccessary.
+
+THINK FIRST!
+
+{{CodeSelect|code=
+killall ssh
+}}
+
+{{CodeSelect|code=
+killall sshfs
+}}
+
+On the host. Try this if you are having problems. This might not be neccessary. There seems to be a bug with existing ssh known_hosts files.
+
+THINK FIRST!
+
+Or "rm" if you know what you are doing
+
+{{CodeSelect|code=
+trash-put ~/.ssh/known_hosts
+}}
+
+{{CodeSelect|code=
+trash-put ~/.ssh/known_hosts.old
+}}
+
+{{CodeSelect|code=
+#rm ~/.ssh/known_hosts
+}}
+
+{{CodeSelect|code=
+#rm ~/.ssh/known_hosts.old
+}}
+
+On the host.
+
+{{CodeSelect|code=
+mkdir ~/mountworkstation
+}}
+
+= Run =
+On the host.
+
+{{CodeSelect|code=
+ssh -f user@127.0.0.1 -p 2200 -L 2222:10.152.152.11 :22 -N
+}}
+
+{{CodeSelect|code=
+sshfs -p 2222 user@127.0.0.1:/ ~/mountworkstation
+}}
+
+== Footnotes ==
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
