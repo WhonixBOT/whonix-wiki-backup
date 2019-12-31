@@ -1,0 +1,238 @@
+{{Header}}
+__FORCETOC__
+{{#seo:
+|description=Recovery Mode, Emergency, Chroot, Debugging, Capturing Diagnostic Output from Serial Console
+}}
+
+= Recovery Mode =
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = Non-Qubes-Whonix only.
+}}
+
+If an error occurs that prevents {{project_name}} from booting, it is possible to try and boot {{project_name}} in recovery mode to fix the problem. It is advisable to learn how to use recovery mode while everything is still functional in case of future issues.
+{{Box|text=
+# After powering on a Non-Qubes-Whonix VM, you will see the virtual BIOS for a second, then the grub boot menu. The grub boot menu is easily identified by the first line of text which begins with <code>GNU GRUB</code>.
+# Use the arrow keys to navigate and select <code>Advanced Options for Whonix GNU/Linux</code>.
+# Press <code>Enter</code>.
+# Choose the second option which at the end displays <code>(recovery mode)</code>.
+# Press <code>Enter</code>.
+# Somewhere in the output, a message similar to the following will appear (it might be entangled with other debug output): <blockquote>Give root password for maintenance (Or press control + d to continue):</blockquote>
+# Enter the root password.
+# While typing, no asterisk symbols (<code>*</code>) will appear; the password must be typed "blind". <ref>See also: [[Default_Passwords|Whonix Default Passwords]].</ref>
+# Press <code>Enter</code>.
+# The default keyboard layout will be <code>en-US</code>. To change this setting, see: [[Keyboard Layout]].
+# Enter <code>exit</code> to continue booting or <code>poweroff</code> or <code>reboot</code>.
+}}
+TODO: Explore whether networking is possible and how to transfer files out of the VM.
+
+= Unlock User Account: Excessive Wrong Password Entry Attempts =
+
+See: [[Root#Unlock_User_Account:_Excessive_Wrong_Password_Entry_Attempts|Unlock User Account: Excessive Wrong Password Entry Attempts]].
+
+= Chroot =
+
+If an error occurs that prevents {{project_name}} from booting, it is possible to [https://www.computerhope.com/unix/chroot.htm chroot] into {{project_name}} from a live CD to fix the problem.
+
+A disk image must be downloaded for this purpose -- [https://www.debian.org/CD/live/ Debian Live images] or [https://www.archlinux.org/download/ Archiso] are useful options for this procedure.
+
+== Virtualbox ==
+
+In Virtualbox, navigate to the VM storage settings. At the second controller, click the optical disk icon and add the disk image.
+
+In the Motherboard settings, move the Optical disk component to the top of the boot order, press <code>OK</code> and start the VM.
+
+== KVM ==
+
+In virt-manager, click on the VM, click the settings icon at the top and click "Add Hardware". In "Storage", change the device type to "CDROM device" and add the disk image. Click "Finish" and at the boot options setting, move the CDROM to the top of the boot order.
+
+== Qubes-Whonix ==
+
+This procedure is undocumented.
+
+== Booting into the Live CD ==
+
+After booting into the Live CD, follow these steps.
+
+{{Box|text=
+'''1.''' List the available drives and partitions.
+
+{{CodeSelect|code=
+fdisk -l
+}}
+
+'''2.''' Mount the partition.
+
+{{CodeSelect|code=
+mount /dev/sda1 /mnt
+}}
+
+Replace "/dev/sda1" with the drive partition name.
+
+'''3.''' Chroot into the partition.
+
+{{CodeSelect|code=
+chroot /mnt /bin/bash
+}}
+
+'''4.''' ''Optional:'' If the PATH variable is incorrect, it can be fixed with the following command.
+
+{{CodeSelect|code=
+source /etc/profile
+}}
+}}
+
+= Serial Console =
+== VirtualBox ==
+=== Preparation ===
+==== Host Preparation ====
+Install <code>socat</code> on the host operating system. The following steps apply to Linux distributions.
+
+{{Install Package|package=
+socat
+}}
+
+Windows and macOS hosts are currently [[undocumented]], but should also work in theory.
+
+==== VM Preparation ====
+Inside the {{project name}} virtual machine where you want to enable the serial console, install the <code>serial-console-enable</code> package.
+
+{{Install Package|package=
+serial-console-enable
+}}
+
+From {{project name}} <code>15.0.0.6.6</code> onward (unreleased at the time of writing) this VM preparation step will no longer be required since the <code>serial-console-enable</code> package will be installed by default.
+
+=== Read Only Serial Console ===
+This option is very useful for capturing diagnostic output from a virtual machine. It allows a log of everything written to the kernel console to be obtained -- all console output is written to a plain text file from boot until shutdown. The logfile persists after VM shutdown, but is overwritten after the VM is shutdown and powered on again.
+
+{{Box|text=
+'''1.''' Enable the serial ports option.
+
+<code>Whonix-Workstation VM settings</code> &rarr; <code>Serial Ports</code> &rarr; <code>Tick enable</code> 
+
+Configure the following settings:
+* <u>Port Number</u>: <code>COM1</code> (default)
+* <u>Port Mode</u>: <code>Raw File</code>
+* <u>Path/Address</u>: <code>/home/user/vbox-raw-file</code>
+
+'''2.''' View the file with a text editor. 
+
+Any text editor can be used for this purpose. For example to view the file with mousepad, run.
+
+{{CodeSelect|code=
+mousepad /home/user/vbox-raw-file
+}}
+
+'''3.''' ''Optional:'' View the file as it is being appended to from a terminal emulator.
+
+The logfile is also compatible with other standard linux utlitites such as <code>tail</code>. To view it as it is being written, run.
+
+{{CodeSelect|code=
+tail -f /home/user/vbox-raw-file
+}}
+
+'''4.''' Retain the file contents.
+
+After VM shutdown it may be useful to retain its contents by copying the <code>vbox-raw-file</code> elsewhere to make it a persistent log file. If this is desirable, run.
+
+{{CodeSelect|code=
+cp /home/user/vbox-raw-file /home/user/vbox-console-log
+}}
+}}
+
+=== Interactive Serial Console ===
+This procedure does not yet work during the grub boot menu.
+
+{{Box|text=
+'''1.''' Enable serial ports on the host.
+
+<code>Whonix-Workstation VM settings</code> &rarr; <code>Serial Ports</code> &rarr; <code>Tick enable</code> 
+
+Configure the following settings:
+* <u>Port Number</u>: <code>COM1</code> (default)
+* <u>Port Mode</u>: <code>Host Pipe</code>
+* <u>Option</u>: '''un'''check <code>Connect to existing pipe/socket</code>
+* <u>Path/Address</u>: <code>/home/user/vbox-socket-file</code>
+
+<ref>
+If an error like the following appears.
+
+<pre>
+Failed to open a session for the virtual machine Whonix-Gateway-XFCE_15.0.0.4.9.
+</pre>
+
+<pre>
+NamedPipe#0 failed to connect to local socket /home/user/vbox-socket-file (VERR_FILE_NOT_FOUND).
+</pre>
+
+<pre>
+Result Code: NS_ERROR_FAILURE (0x80004005)
+Component: ConsoleWrap
+Interface: IConsole {872da645-4a9b-1727-bee2-5585105b9eed}
+</pre>
+
+Then you must <u>un</u>check <code>Connect to existing pipe/socket</code>.
+</ref> <ref>
+{{CodeSelect|code=
+vboxmanage modifyvm Whonix-Gateway-XFCE --uart1 0x3F8 4 --uartmode1=server /home/user/vbox-socket-file-gw
+}}
+
+{{CodeSelect|code=
+vboxmanage modifyvm Whonix-Workstation-XFCE --uart1 0x3F8 4 --uartmode1=server /home/user/vbox-socket-file-ws
+}}
+</ref>
+
+'''2.''' Connect to the relevant unix domain socket file.
+
+On the host, run the following socat command to connect to the unix domain socket file which is connected to the operating system running inside the virtual machine. <ref>
+{{CodeSelect|code=
+socat - UNIX-CONNECT:/home/user/vbox-socket-file-gw
+}}
+
+{{CodeSelect|code=
+socat - UNIX-CONNECT:/home/user/vbox-socket-file-ws
+}}
+</ref>
+
+{{CodeSelect|code=
+socat - UNIX-CONNECT:/home/user/vbox-socket-file
+}}
+
+Depending on when the above command is run, nothing might appear. The reason is an interactive serial console will only show messages once connected to the serial console; old messages cannot be viewed that way. If the above command is run during early boot, then verbose messages will appear during boot. However, if you press <code>Enter</code> that should result in the virtual console asking for authentication.
+
+'''3.''' Log in to the {{project_name}} session.
+
+Press <code>Enter</code>. The following prompt will appear.
+
+<pre>
+host login:
+</pre>
+
+Do not enter your host login username! Enter your Whonix user login name, which is most likely <code>user</code>. Press <code>Enter</code>. The following prompt will appear.
+
+<pre>
+Password:
+</pre>
+
+Enter the password for that user account; see [[Default Passwords]]. Press <code>Enter</code>.
+
+<u>Warning</u>: the password will not be hidden by asterisk ("<code>*</code>") symbols. In other words, the password will be written in cleartext and could be read by anyone looking over your shoulder.
+
+Also note that [[Root|root logins]] are not possible by default.
+}}
+
+=== Forum Discussion ===
+https://forums.whonix.org/t/serial-console-in-virtualbox/8021
+
+== KVM ==
+See [[KVM]], [[KVM#Command_Line_Interface_.28CLI.29|serial console]].
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
