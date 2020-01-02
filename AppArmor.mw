@@ -1,0 +1,342 @@
+{{Header}}
+{{#seo:
+|description=AppArmor profiles (Security Hardening) for {{project name}} and other Linux distributions.
+|image=https://www.whonix.org/w/images/f/f1/Coat-of-mail-948960640.jpg
+}}
+[[File:2000px-AppArmor logo.svg.png ‎|AppArmor Icon|thumb]]
+
+__FORCETOC__
+
+= Introduction =
+
+According to debian.org: <ref>https://wiki.debian.org/AppArmor</ref>
+
+<blockquote>AppArmor is a Mandatory Access Control framework. When enabled, AppArmor confines programs according to a set of rules that specify what files a given program can access. This proactive approach helps protect the system against both known and unknown vulnerabilities.</blockquote>
+
+AppArmor provides a number of advantages: <ref>http://wiki.apparmor.net/index.php/Main_Page</ref>
+
+* It protects the operating system and applications from external or internal threats, including zero-day attacks.
+* "Good behavior" is enforced and it mitigates exploits via unknown application flaws.
+* AppArmor security policies define the system resources that individual applications can access, and with what privileges. For instance:
+** Network access.
+** Raw socket access.
+** Read, write or execute file permissions on specific paths.
+
+= Installation =
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px|alt=Experimental AppArmor Profile Warning]]
+| text    = Testers only!
+}}
+
+It is recommended to use the {{project_name}} [https://en.wikipedia.org/wiki/AppArmor AppArmor] profiles which are available for various programs that run in both {{gateway_product_name}} and {{workstation_product_name}}, such as Tor, Tor Browser, Thunderbird and more. The profiles are easy to apply and provide a considerable security benefit.
+
+== Qubes Users Note ==
+{{mbox
+| image   = [[File:Ambox_notice.png|40px|alt={{q_project_name}} Note]]
+| text    =
+[[{{q project name short}}|{{q project name}}]] users require some extra steps to set up AppArmor. [[{{non q project name short}}|{{non q project name}}]] users can skip this section. <ref>{{non-q-project}}</ref>
+}}
+
+<div class="toccolours mw-collapsible mw-collapsed">
+If you are interested, click on Expand on the right.
+<div class="mw-collapsible-content">
+Note:
+* Complete these instructions in dom0 for <u>both</u> <code>{{whonix-gw}}</code> and <code>{{whonix-ws}}</code> TemplateVMs. 
+* After changes are made to the {{project name}} templates, the <code>sys-whonix</code> (ProxyVM) and <code>anon-whonix</code> (AppVM) will inherit the AppArmor kernel settings. 
+** The <code>sys-whonix</code> and <code>anon-whonix</code> TemplateBasedVMs do not need to be recreated to benefit from the new kernel parameters. <ref>[https://github.com/QubesOS/qubes-issues/issues/1091 Since Qubes R3.0, TemplateBasedVMs inherit the kernelopts setting of their TemplateVM].</ref> 
+* Verify AppArmor is active in both <code>sys-whonix</code> and <code>anon-whonix</code> after changes are made.
+
+=== {{gateway_product_name}} ===
+{{Box|text=
+'''1.''' Open a dom0 terminal.
+
+<code>Qubes App Launcher (blue/grey "Q")</code> &rarr; <code>System Tools</code> &rarr; <code>Xfce Terminal
+</code>
+
+'''2.''' List the current kernel parameters.
+
+{{CodeSelect|code=
+qvm-prefs -g {{whonix-gw}} kernelopts
+}}
+
+Qubes R4.0 and later releases will show.<br />
+
+{{Code2|nopat}}
+
+'''3.''' Keep the existing kernel parameters and add 'apparmor=1 security=apparmor'.
+
+For example.
+
+{{CodeSelect|code=
+qvm-prefs -s {{whonix-gw}} kernelopts "nopat apparmor=1 security=apparmor"
+}}
+{{CodeSelect|code=
+qvm-prefs -s sys-whonix kernelopts "nopat apparmor=1 security=apparmor"
+}}
+
+'''4.''' List the kernel parameters again. <ref name=arrow_key>Hit the up arrow key twice; it is unnecessary to type the command again.</ref>
+
+{{CodeSelect|code=
+qvm-prefs -g {{whonix-gw}} kernelopts
+}}
+
+The output should show AppArmor is part of the new kernel parameters. For example.<br />
+
+''nopat apparmor=1 security=apparmor''
+
+'''5.''' Start <code>sys-whonix</code> ProxyVM and confirm AppArmor is active.
+
+{{CodeSelect|code=
+sudo aa-status --enabled ; echo $?
+}}
+
+The output should show.<br />
+
+{{Code2|0}}
+}}
+
+=== {{workstation_product_name}} ===
+{{Box|text=
+'''1.''' Open a dom0 terminal.
+
+<code>Qubes App Launcher (blue/grey "Q")</code> &rarr; <code>System Tools</code> &rarr; <code>Xfce Terminal
+</code>
+
+'''2.''' List the current kernel parameters.
+
+{{CodeSelect|code=
+qvm-prefs -g {{whonix-ws}} kernelopts
+}}
+
+Qubes R4.0 and later releases will show.<br />
+
+{{Code2|nopat}}
+
+'''3.''' Keep the existing kernel parameters and add 'apparmor=1 security=apparmor'. 
+
+For example.
+
+{{CodeSelect|code=
+qvm-prefs -s {{whonix-ws}} kernelopts "nopat apparmor=1 security=apparmor"
+}}
+{{CodeSelect|code=
+qvm-prefs -s anon-whonix kernelopts "nopat apparmor=1 security=apparmor"
+}}
+
+'''4.''' List the current kernel parameters again. <ref name=arrow_key />
+
+{{CodeSelect|code=
+qvm-prefs -g {{whonix-ws}} kernelopts
+}}
+
+The output should show AppArmor is part of the new kernel parameters. For example.<br />
+
+''nopat apparmor=1 security=apparmor''
+
+'''5.''' Start <code>anon-whonix</code> AppVM and confirm AppArmor is active.
+
+{{CodeSelect|code=
+sudo aa-status --enabled ; echo $?
+}}
+
+The output should show.<br />
+
+{{Code2|0}}
+}}
+</div>
+</div>
+
+== Install all AppArmor Profiles ==
+The easiest method is to install all available AppArmor profiles. This can result in a few profiles being enforced for software that is not installed, but this will not have any adverse impacts.
+
+{{CodeSelect|code=
+sudo apt-get install apparmor-profiles apparmor-profiles-extra apparmor-profiles-kicksecure
+}}
+
+Some profiles in the <code>apparmor-profiles</code> and <code>apparmor-profiles-extra</code> packages are not enforced by default because the Debian maintainers do not believe they are mature enough. <ref>https://packages.debian.org/buster/apparmor-profiles</ref> You can manually enforce all profiles by running.
+
+{{CodeSelect|code=
+sudo aa-enforce /etc/apparmor.d/*
+}}
+
+More AppArmor profiles can be found in <code>/usr/share/apparmor/extra-profiles/</code> although these  profiles are experimental and may not work.
+
+== Install Select AppArmor Profiles ==
+<div class="toccolours mw-collapsible mw-collapsed">
+Click on Expand on the right side.
+<div class="mw-collapsible-content">
+Profile for [[Tor Browser]]. Useful in {{workstation_product_name}}. <ref>Tor Browser is installed by [[Tor Browser#Update Tor Browser|tb-updater]]; the latter is a default {{project name}} application.</ref>
+{{CodeSelect|code=
+sudo apt-get install apparmor-profile-torbrowser
+}}
+
+Profile for the [[HexChat]] client. Useful in {{workstation_product_name}}.
+{{CodeSelect|code=
+sudo apt-get install apparmor-profile-xchat
+}}
+
+Profile for the [[E-Mail#Mozilla_Thunderbird_with_TorBirdy|Mozilla Thunderbird]] [[E-Mail]] client. Useful in {{workstation_product_name}}.
+{{CodeSelect|code=
+sudo apt-get install apparmor-profile-icedove
+}}
+
+Profile for [[VirtualBox]]. This is useful on the host, but instructions are not available for this procedure. It is also useful if running VirtualBox inside VirtualBox.
+{{CodeSelect|code=
+sudo apt-get install apparmor-profile-virtualbox
+}}
+</div>
+</div>
+
+== Profile Unloading ==
+
+The name of the specific profile to unload must be known in advance; refer to the [[#Install_Select_AppArmor_Profiles|list]] above.
+
+If it is necessary to disable an AppArmor profile, first list those which are available.
+{{CodeSelect|code=
+ls /etc/apparmor.d/
+}}
+
+Once a profile is loaded in the kernel, it can be easily removed.
+
+{{CodeSelect|code=
+sudo aa-disable /etc/apparmor.d/profile-name
+}}
+
+This command expects the profile file to exist, so if it has been manually deleted or removed via apt-get purge, it can only be unloaded by rebooting.
+
+= Common Operations =
+
+== Maintain Tor Browser Functionality ==
+
+Tor Browser upgrades frequently break the {{project name}} AppArmor profile used to contain it. Even when AppArmor-related fixes are confirmed in Phabricator, most often the packages are not made available to {{project name}} stable or even the developer version. This means manual profile fixes are often required until the [[About#{{project_name}}_Version|next {{project name}} version is released]].
+
+If Tor Browser is non-functional with the available AppArmor profile, follow these steps to rectify the problem.
+{{Box|text=
+'''1.''' Open a terminal in {{workstation_product_name}} (<code>{{whonix-ws}}</code>).
+
+<code>{{whonix-ws}}</code> &rarr; <code>Xfce Terminal</code>
+
+'''2.''' List the available AppArmor profiles.
+
+{{CodeSelect|code=
+ls /etc/apparmor.d/
+}}
+
+'''3.''' Edit the Tor Browser AppArmor profile.
+
+Note: change the name of the file to match whatever version is installed on the system.
+
+{{CodeSelect|code=
+sudoedit /etc/apparmor.d/home.tor-browser.firefox
+}}
+
+'''4.''' Navigate to the {{project name}} Github resource for AppArmor.
+
+The latest git commits can be found [https://github.com/{{project_name_short}}/apparmor-profile-torbrowser here].
+
+Select <code>Code</code> &rarr; <code>etc/apparmor.d</code> &rarr; <code>home.tor-browser.firefox</code>
+
+Select the <code>Raw</code> button on the right-hand side. <ref>Otherwise essential profile formatting might break or unwanted content (such as line numbers) might be copied inadvertently, leading to a non-functional profile.</ref>
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = It is recommended to check the profile does not contain any unexpected content. For greater security, utilize a different viewer and/or retrieve the profile using git and perform git commit gpg verification.
+}}
+
+Cut and paste the profile text into the old Tor Browser profile which is open in nano. Save and exit.
+
+'''5.''' Enforce the new Tor Browser profile.
+
+In the command below, change the name of the file to match whatever version is installed on the system. 
+
+In {{workstation_product_name}} (<code>{{whonix-ws}}</code>), run.
+
+{{CodeSelect|code=
+sudo aa-enforce /etc/apparmor.d/home.tor-browser.firefox
+}}
+
+'''6.''' Shutdown {{workstation_product_name}} (<code>{{whonix-ws}}</code>).
+
+'''7.''' Restart {{workstation_product_name}} (<code>anon-whonix</code>).
+
+Launch Tor Browser. If everything has been applied correctly, Tor Browser will have full functionality. If the following AppArmor warning appears, it can be safely ignored.
+
+<pre>Profile: /etc/apparmor.d/home.tor-browser.firefox Operation: open Name: /dev/ Denied: r Logfile: /var/log/kern.log For more information, please see: https://wiki.ubuntu.com/DebuggingApparmor</pre>
+
+'''8.''' Manually check AppArmor is correctly running and enforced.
+
+In a terminal, run.
+
+{{CodeSelect|code=
+sudo aa-status
+}}
+
+The output should show the Tor Browser profile is loaded and in enforce mode.
+}}
+
+== Correcting Other {{project name}} AppArmor Profiles ==
+
+The same method can be used to resolve other AppArmor problems impacting full functionality of applications in {{project_name}}. For instance, the <code>whonixcheck</code> AppArmor profile previously caused continuous "denied" messages in [[{{q project name short}}|{{q project name}}]]. <ref>In {{project name}} 13.</ref> Correcting this issue was quite simple: <ref>This issue was fixed in the {{project name}} 14 release.</ref>
+
+# Navigate to the [https://raw.githubusercontent.com/{{project_name_short}}/whonixcheck/master/etc/apparmor.d/usr.bin.whonixcheck raw, updated whonixcheck profile].
+# Replace the existing content in ''/etc/apparmor.d/usr.bin.whonixcheck'' with the updated github content, in both TemplateVMs <code>{{whonix-gw}}</code> and <code>{{whonix-ws}}</code>.
+# Shut down both TemplateVMs and any running instances of <code>sys-whonix</code> and <code>anon-whonix</code>.
+# Restart <code>sys-whonix</code> and <code>anon-whonix</code>.
+
+== Inspecting and Disabling AppArmor Notifications ==
+
+[https://packages.debian.org/stretch/apparmor-notify apparmor-notify] is no longer installed by default. This means desktop notifications will not appear concerning AppArmor denied messages, which are stored in <code>/var/log/audit/audit.log</code>. <ref>To install it, run: <code>sudo apt-get update && sudo apt-get install apparmor-notify</code>.</ref> <ref>https://forums.whonix.org/t/whonix-14-debian-stretch-apparmor-related-changes/3563</ref> <ref>The Debian default location is <code>/var/log/kern.log</code>.</ref> 
+
+=== Inspect Notifications ===
+
+To inspect relevant logs, run.
+
+{{Open with root rights|filename=
+/var/log/audit/audit.log
+}}
+
+To show denied AppArmor messages of any age, run.
+
+{{CodeSelect|code=
+sudo cat /var/log/audit/audit.log {{!}} grep -i DENIED
+}}
+
+It is possible to keep watching the file as it is appended. This is useful for reproducing AppArmor denied messages and testing amended profiles.
+
+{{CodeSelect|code=
+sudo tail -f /var/log/audit/audit.log {{!}} grep --line-buffered DENIED
+}}
+
+=== Disable Notifications ===
+
+If <code>apparmor-notify</code> is manually installed, then on occasion an application may be functional but AppArmor "denied" messages constantly appear. Rather than updating the relevant AppArmor profile(s), it is possible to disable notifications instead.
+
+In the offending {{project name}} (App)VM, launch Xfce Terminal and run.
+
+{{CodeSelect|code=
+sudo killall aa-notify
+}}
+
+To revert this change, reboot the VM.
+
+== More Profiles ==
+It is possible to utilize profiles by other vendors, but this is unsupported by {{project name}} developers. As a reminder, it is not necessary to install AppArmor profiles for any applications that are unlikely to be used (such as dovecot). Additional options include:
+
+* Debian has packages that can be [https://wiki.debian.org/AppArmor/HowToUse#Enable_.2F_install_more_profiles easily installed via the APT package manager]. 
+* Ubuntu also [https://bazaar.launchpad.net/~apparmor-dev/apparmor-profiles/master/files/head:/ubuntu/16.10/ provides profiles]. It is not easy to download these as a package to be installed in Debian. Further, the profiles may or may not differ from (or complement) profiles listed earlier.
+
+= Support =
+* Need help? Visit the [https://forums.whonix.org/c/apparmor {{project name}} AppArmor Forum]
+* [https://forums.whonix.org/t/profile-creation-advice/1127 Profile Creation Advice]
+
+= Development =
+* [https://forums.whonix.org/t/whonix-apparmor-profiles-development-discussion/108 {{project name}} AppArmor Profiles Development Discussion]
+* [https://phabricator.whonix.org/tag/apparmor/ Open Tasks]
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
