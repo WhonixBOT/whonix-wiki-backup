@@ -1,0 +1,156 @@
+{{#seo:
+|description=Varnish 4 Cheat Sheet
+}}
+{{Header}}
+{{forkme}}
+.
+= Varnish Cheat Sheet =
+For Varnish 4.
+
+== Show most requested URLs from backend ==
+<pre>
+varnishtop -i BereqURL
+</pre>
+
+== Show specific requested URLs from backend ==
+<pre>
+varnishlog -q 'BereqURL ~ "^/forum/Themes/default/scripts/"
+</pre>
+
+== Show requests for single URL ==
+<pre>
+varnishlog -q 'ReqURL ~ "^/wiki/Translatetest"'
+</pre>
+
+== Show backend responses ==
+<pre>
+varnishlog -g request -q "RespStatus eq 503"
+</pre>
+
+<pre>
+varnishlog -g request -q "BerespStatus eq 503"
+</pre>
+
+== HTTP Purges ==
+
+<code>curl -X "PURGE / HTTP/1.0" 127.0.0.1:6081/adrelanos.asc</code><br />
+or: <code>curl --head -X "PURGE / HTTP/1.0" 127.0.0.1:6081/adrelanos.asc</code><br />
+check (Resets Age in http header to 0.): <code>curl --head https://www.whonix.org/adrelanos.asc</code>
+
+== Show HTTP requests ==
+<pre>
+varnishlog -q "ReqMethod eq PURGE"
+</pre>
+
+== Show HTTP purges ==
+<pre>
+varnishlog -q "VCL_return eq purge"
+</pre>
+
+== Ban single URL ==
+<pre>
+varnishadm 'ban req.url ~ "/adrelanos.asc"'
+</pre>
+<pre>
+varnishadm 'ban req.url ~ "/wiki/Translatetest"'
+</pre>
+
+== Ban all URLs ==
+<pre>
+varnishadm 'ban req.url ~ "."'
+</pre>
+
+== Show how many connections are currently open ==
+<pre>
+netstat -anp | grep :443 | grep ESTABLISHED | wc -l
+</pre>
+
+== wordpress Total Cache varnish setup ==
+wordpress &rarr; Performance (on the side) &rarr; General Settings &rarr; Reverse Proxy<br />
+<code>127.0.0.1:6081</code>
+run in shell: <code>varnishlog -q "VCL_return eq purge"</code><br />
+test: wordpress &rarr; Performance (at the top) &rarr; empty all cache
+
+== list of all variables such as client.ip ==
+https://www.varnish-cache.org/docs/trunk/reference/vcl.html
+
+== default built-in vcl ==
+https://www.varnish-cache.org/trac/browser/bin/varnishd/builtin.vcl?rev=4.0
+
+== Show nuked items ==
+Elements that have been removed from cache due to lack of memory.
+<pre>
+varnishstat -1 -f MAIN.n_lru_nuked
+</pre>
+
+= whonix.org =
+/etc/default/varnish
+<pre>
+## Patrick: changed from
+## -s malloc,256m
+## to
+## -s malloc,8G
+</pre>
+
+= varnish advantages =
+* [https://github.com/varnishcache/varnish-devicedetect/blob/master/devicedetect.vcl devicedetect.vcl] for mobile devices for [[Dev/mediawiki|mediawiki]]
+
+= Feature Requests =
+* [https://secure.phabricator.com/T7559 phabricator - integration with reverse caching proxies such as squid, varnish]
+
+= Debugging =
+* https://www.whonix.org/wiki/Main_Page?action=purge
+* see if purge request is registered
+* https://www.mediawiki.org/wiki/Manual:Purge
+
+= Benchmark =
+* https://gtmetrix.com/reports/www.whonix.org/7OE81nGW
+* https://gtmetrix.com/reports/www.whonix.org/RaRIRVI7
+
+<pre>
+https://www.whonix.org/wiki/Main_Page
+(89%)
+YSlow Score
+(69%)
+Page Details
+Fully Loaded Time
+2.5s
+Total Page Size
+445KB
+Requests
+60
+</pre>
+
+x
+
+<pre>
+69
+https://www.whonix.org/wiki/Main_Page
+1.8 s
+48%
+43%
+9%
+First Input Delay (FID)
+251 ms
+82%
+17%
+1%
+Lab Data
+
+First Contentful Paint
+1.3 s
+Speed Index
+5.7 s
+Time to Interactive
+7.5 s
+First Meaningful Paint
+1.3 s
+First CPU Idle
+3.5 s
+Max Potential First Input Delay
+150 ms
+</pre>
+
+[[Category:Design]]
+
+{{Footer}}
