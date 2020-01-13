@@ -1,0 +1,116 @@
+{{Header}}
+{{#seo:
+|description=HowTo: Use SysRq for System Recovery and to prevent Malware from Sniffing the Root Password.
+|image=https://www.whonix.org/w/images/d/d2/Rsysr32.cleaned.jpg
+}}
+{{Title|
+title=System Recovery using SysRq Key
+}}
+
+= Use Cases =
+
+The SysRq or "Security Keys" ([https://en.wikipedia.org/wiki/Secure_attention_key SAK] key) function in Linux is equivalent to the well known Control-Alt-Delete (<code>Ctrl+Alt+Del</code>) function in Windows, otherwise referred to as the "three-finger salute". Debian documentation notes that SysRq combinations are useful for bypassing bad situations and gaining usable keyboard access, without stopping the system. <ref>https://www.debian.org/doc/manuals/debian-reference/ch09.en.html#_alt_sysrq_key</ref> In effect this provides insurance against system malfunctions due to support compiled in the Linux kernel -- pressing SysRq followed by the required key for a specific command "rescues" the system.
+
+== System Recovery ==
+
+[https://en.wikipedia.org/wiki/Magic_SysRq_key Wikipedia] notes:
+<blockquote>The magic SysRq key is a key combination understood by the [https://en.wikipedia.org/wiki/Linux_kernel Linux kernel], which allows the user to perform various low-level commands regardless of the system's state. It is often used to recover from [https://en.wikipedia.org/wiki/Freeze_(computing) freezes], or to [https://en.wikipedia.org/wiki/Booting reboot] a computer without corrupting the [https://en.wikipedia.org/wiki/Filesystem filesystem]. Its effect is similar to the computer's hardware [https://en.wikipedia.org/wiki/Reset_button reset button] (or power switch) but with many more options and much more control.
+
+This key combination provides access to powerful features for software development and disaster recovery. In this sense, it can be considered a form of [https://en.wikipedia.org/wiki/Escape_sequence escape sequence]. Principal among the offered commands are means to forcibly unmount file systems, kill processes, recover keyboard state, and write unwritten data to disk. With respect to these tasks, this feature serves as a tool of last resort.
+
+The magic SysRq key cannot work under certain conditions, such as a [https://en.wikipedia.org/wiki/Kernel_panic kernel panic] or a hardware failure preventing the kernel from running properly.</blockquote>
+
+In the {{project name}} case, magic SysRq keys are useful when the guest is unresponsive, especially in cases where VMs are running headless and a GUI console is not available for forcing them to shut off on the host.
+
+== Malware ==
+This supposes an advanced threat model; for instance a system where a limited user ("<code>user</code>") is utilizing a graphical X Window System session that is different from the user with root/sudo permissions. The limited user account may be compromised by [[malware]]. Under many threat models this is already considered catastrophic, since running malware: 
+* has full access to all user-accessible files
+* can view all keyboard inputs and take over login sessions
+* may present false information on the screen
+* can perform other malicious actions - see: [[Malware#The_Importance_of_a_Malware_Free_System|The Importance of a Malware Free System]]
+
+However, when using multiple (virtual) machines for compartmentalization the harmful impact of malware might not be catastrophic. In that case another goal is to prevent root compromise to help to protect the virtualizer and avoid host compromise, and similarly to avoid hardware compromise. See also: [[Root#Prevent_Malware_from_Sniffing_the_Root_Password|Prevent Malware from Sniffing the Root Password]].
+
+A broken X Window System can block switching to a virtual console. It logically follows that malware which  compromised the X Window System could similarly do that. In this case the <code>SysRq</code> + <code>r</code> combination can take away control from the X Window System. This is a safer procedure, otherwise a compromised X Window System could just be simulating a virtual console login prompt in order to sniff the root password ([https://en.wikipedia.org/wiki/Login_spoofing login spoofing]).
+
+<code>SysRq</code> + <code>r</code> (un<code>r</code>aw) can be used in this case to make sure the keyboard is disconnected from the X Window System.
+
+= Enable SysRq = 
+
+SysRq can be enabled temporarily or permanently.
+
+For temporary functionality, run.
+
+{{CodeSelect|code=
+echo "1" {{!}} sudo tee /proc/sys/kernel/sysrq
+}}
+
+To permanently enable SysRq, run.
+
+{{CodeSelect|code=
+echo "kernel.sysrq = 1" {{!}} sudo tee -a /etc/sysctl.d/50_sysrq.conf
+}}
+
+After completing the temporary or permanent change, check that SysRq has been properly set.
+
+{{CodeSelect|code=
+cat /proc/sys/kernel/sysrq
+}}
+
+The output should show.
+
+<pre>
+1
+</pre>
+
+= Overview of Commands =
+
+<blockquote>
+SysRq : HELP : loglevel(0-9) reboot(b) crash(c) terminate-all-tasks(e) memory-full-oom-kill(f) kill-all-tasks(i) thaw-filesystems(j) sak(k) show-backtrace-all-active-cpus(l) show-memory-usage(m) nice-all-RT-tasks(n) poweroff(o) show-registers(p) show-all-timers(q) unraw(r) sync(s) show-task-states(t) unmount(u) force-fb(V) show-blocked-tasks(w) dump-ftrace-buffer(z)
+</blockquote>
+
+* <code>loglevel(0-9)</code>s
+* <code>reboot(b)</code>
+* <code>crash(c)</code>
+* <code>terminate-all-tasks(e)</code>
+* <code>memory-full-oom-kill(f)</code>
+* <code>kill-all-tasks(i)</code>
+* <code>thaw-filesystems(j)</code>
+* <code>sak(k)</code>
+* <code>show-backtrace-all-active-cpus(l)</code>
+* <code>show-memory-usage(m)</code>
+* <code>nice-all-RT-tasks(n)</code>
+* <code>poweroff(o)</code>
+* <code>show-registers(p)</code>
+* <code>show-all-timers(q)</code>
+* <code>unraw(r)</code>
+* <code>sync(s)</code>
+* <code>show-task-states(t)</code>
+* <code>unmount(u)</code>
+* <code>force-fb(V)</code>
+* <code>show-blocked-tasks(w)</code>
+* <code>dump-ftrace-buffer(z)</code>
+
+= Usage =
+
+SysRq can also be used by writing to <code>/proc/sysrq-trigger</code>.
+
+{{CodeSelect|code=
+sudo -u root bash
+}}
+
+{{CodeSelect|code=
+echo h > /proc/sysrq-trigger
+}}
+
+= Development Discussion =
+https://forums.whonix.org/t/sysrq-magic-sysrq-key/8079
+
+= See Also =
+* [[KVM#Magic_SysRq_Keys|Whonix KVM SysRq]]
+* [https://en.wikipedia.org/wiki/Magic_SysRq_key Wikipedia Magic SysRq key]
+
+= Footnotes =
+{{reflist|close=1}}
+[[Category:Documentation]]
+{{Footer}}
