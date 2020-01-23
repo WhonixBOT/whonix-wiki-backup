@@ -1,0 +1,228 @@
+{{Header}}
+{{#seo:
+|description=Disabling TCP and ICMP Timestamps for Better Security and Privacy
+|image=https://www.whonix.org/w/images/9/9c/Timestamps.jpg
+}}
+
+= Disable TCP Timestamps =
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = [https://tools.ietf.org/html/rfc1323 TCP timestamps] provide protection against [https://en.wikipedia.org/wiki/Protection_Against_Wrapped_Sequence_Numbers#TCP_timestamps wrapped sequence numbers]. 
+}}
+
+The downside of TCP timestamps is adversaries can remotely calculate the system uptime and boot time of the machine and the host's clock down to millisecond precision. These calculated uptimes and boot times can also help to detect hidden network-enabled operating systems, as well as link spoofed IP and MAC addresses together and more. <ref>https://forensicswiki.org/wiki/TCP_timestamps</ref> 
+
+To prevent this information leaking to an adversary, it is recommended to disable TCP timestamps on any operating systems in use. The less information available to attackers, the better the security.
+
+{{Anchor|Linux or Qubes}}
+== Linux ==
+To temporarily disable TCP timestamps for testing purposes (rather than permanently), see the footnote. <ref>
+Note: If a permanent solution is desired, skip this temporary option and apply the chapter's main instructions instead.
+
+To dynamically disable TCP timestamping on Linux (Qubes: in the NetVM).
+
+Become root.
+
+{{CodeSelect|code=
+sudo su
+}}
+
+Disable TCP timestamps.
+
+{{CodeSelect|code=
+echo 0 > /proc/sys/net/ipv4/tcp_timestamps
+}}
+</ref>
+{{Box|text=
+'''1.''' Open a terminal (Konsole).
+
+Become root.
+
+{{CodeSelect|code=
+sudo su
+}}
+
+'''2.''' Add the following line to {{Code2|/etc/sysctl.d/tcp_timestamps.conf}}
+
+{{CodeSelect|code=
+net.ipv4.tcp_timestamps = 0
+}}
+
+To do that, use the following command.
+
+{{CodeSelect|code=
+echo "net.ipv4.tcp_timestamps = 0" > /etc/sysctl.d/tcp_timestamps.conf
+}}
+
+'''3.''' To apply the sysctl settings without a reboot, run the following command.
+
+{{CodeSelect|code=
+sysctl -p /etc/sysctl.d/tcp_timestamps.conf
+}}
+
+'''4.''' Check if the changes have been properly set.
+
+{{CodeSelect|code=
+sysctl -a | grep net.ipv4.tcp_timestamps
+}}
+
+If it worked correctly, the system should provide the following output.
+
+<pre>
+net.ipv4.tcp_timestamps = 0
+</pre>
+}}
+
+== macOS ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = This procedure is untested. It should also work for BSD-like operating systems.
+}}
+
+Disable the rfc1323 protocol which handles TCP timestamps. 
+{{Box|text=
+'''1.''' To check system-set TCP values, run. <ref>https://serverfault.com/questions/216956/how-to-check-tcp-timeout-in-linux-macos</ref>
+
+{{CodeSelect|code=
+sysctl net.inet.tcp
+}}
+
+A value of 1 against <code>net.inet.tcp.rfc1323</code> indicates it is enabled, while 0 indicates it is disabled.
+
+'''2.''' Disable TCP timestamps permanently or temporarily.
+
+To permanently disable TCP timestamps, run. <ref>https://macosx.com/threads/slow-tcp-ip-smc-router.9132/</ref> <ref>https://seconfig.sytes.net/blog/p/9201755583327191420/office-where-mac-computers-couldn-t-browse-https-sites</ref>
+
+{{CodeSelect|code=
+sudo su
+}}
+
+{{CodeSelect|code=
+echo net.inet.tcp.rfc1323=0 > /etc/sysctl.conf
+}}
+
+To temporarily disable TCP timestamps (until reboot) for testing purposes, run. 
+
+{{CodeSelect|code=
+sudo sysctl -w net.inet.tcp.rfc1323=0
+}}
+}}
+== Qubes ==
+
+TCP timestamps are disabled by default in Qubes R3.1 and above. <ref>https://github.com/QubesOS/qubes-issues/issues/1344</ref>
+
+== Windows ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = Administrator privileges are required.
+}}
+
+To disable (outgoing <ref>https://social.technet.microsoft.com/Forums/en-US/e3867359-15d4-4b41-b453-2fe55a951bb2/how-to-disable-tcp-synack-time-stamps-on-windows-2012-r2-in-2018</ref>) TCP timestamps on Windows, run the following root command. <ref>https://hackertarget.com/sample-vulnerability-report/openvas-report-win7.html</ref>
+
+{{CodeSelect|code=
+netsh int tcp set global timestamps=disabled
+}}
+
+= Disable ICMP Timestamps =
+
+The Internet Control Message Protocol (ICMP) is used by network devices, including routers, to send operational information and error messages such as whether a service is available or if a host/router cannot be reached. Unlike TCP and UDP, it is a network level, not transport layer protocol. Commonly network utilities are based on ICMP messages, such as ''traceroute'' and ''ping''. <ref>https://en.wikipedia.org/wiki/ICMP_Timestamp</ref> 
+
+The ICMP protocol includes timestamps for time synchronization, with the originating timestamp being set to the time (in milliseconds since midnight) since the sender last touched the packet. A timestamp reply is also generated, consisting of the originating timestamp (sent by the sender) as well as a "receive timestamp", which captures when the timestamp was received and a reply sent. <ref>https://en.wikipedia.org/wiki/ICMP_Timestamp#Timestamp</ref>
+
+== Linux ==
+
+ICMP timestamps need to be blocked with the [[Host_Firewall|firewall]]. <ref>Advanced users can of course use IP tables. For example in [https://lists.debian.org/debian-firewall/1999/12/msg00010.html Debian]: <code>ipchains -p icmp -s $INTIP/0 13 -i $INTIF -j DENY</code> and <code>ipchains -p icmp -s 0.0.0.0/0 14 -i $EXTIF -j DENY</code></ref> This is distribution dependent and varies widely as does having a firewall enabled on your specific OS. Be aware that some distributions do not turn on the firewall by default. 
+
+There are various ways to block ICMP timestamps on the command line, therefore it is recommended to consult your specific distribution's documentation. <ref>For instance, [http://www.thegeekstuff.com/2010/07/how-to-disable-ping-replies-in-linux/ Debian users] can edit the <i>/etc/systcl.conf</i> file manually and add <code>net.ipv4.icmp_echo_ignore_all = 1</code>.</ref> The easiest method is to download a GUI front-end (like [https://gufw.org/ gufw]), then configure the firewall to silently drop all incoming connections by default, and only allow outgoing traffic from the machine.
+
+== macOS ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = This is untested.
+}}
+
+MacOS systems should have ICMP timestamps disabled by default. This means if the firewall is enabled and "Stealth Mode" is set, the system should not respond to any ICMP requests. Follow these steps to check the system is properly secured: <ref>http://osxdaily.com/2015/11/18/enable-stealth-mode-mac-os-x-firewall/</ref>
+
+# Click <code>Menu</code>
+# Select <code>System Preferences</code>
+# Select <code>Security & Privacy</code>
+# Click the <code>Firewall</code> tab
+# Check the firewall is <code>On</code>
+# Click <code>Firewall Options</code>
+# Enable <code>Stealth Mode</code>
+# Click <code>OK</code>
+
+The "Block all incoming connections" option should also be checked for greater security. 
+
+It is also possible to manually change / check the ICMP timestamp status -- refer to the system variable  <code>net.inet.icmp.timestamp</code> in the <i>/etc/sysctl.conf</i> file. <ref>https://security.stackexchange.com/questions/46090/why-is-icmp-timestamping-disabled-on-os-x</ref> 
+
+To permanently disable ICMP timestamps, run. <ref>https://superuser.com/questions/680200/os-x-how-to-make-it-reply-to-icmp-time-stamp-query</ref>
+
+{{CodeSelect|code=
+sudo sh -c "echo net.inet.icmp.timestamp=0 >> /etc/sysctl.conf"
+}}
+
+== OpenBSD ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = This is untested.
+}}
+
+The easiest solution is to configure the firewall to block incoming and outgoing ICMP packets with ICMP types 13 (timestamp request) and 14 (timestamp response). <ref>https://beyondsecurity.zendesk.com/hc/en-us/articles/203609549--How-can-I-mitigate-ICMP-Timestamp-</ref>
+
+Alternatively, set <code>net.inet.icmp.tstamprepl</code> to <code>0</code> (it is enabled by default). In a terminal, run.
+
+{{CodeSelect|code=
+sysctl -w net.inet.icmp.tstamprepl=0
+}}
+
+== Qubes ==
+
+ICMP timestamps are disabled by default in Qubes R3.1 and above. <ref>https://github.com/QubesOS/qubes-issues/issues/1346</ref>
+
+== Windows ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = This is untested. After performing these steps, explicitly check this setting is disabled.
+}}
+
+The firewall in recent Windows operating systems (Win 10, Win 8/8.1, Win 7) should have ICMP disabled by default. <ref>https://www.sysprobs.com/enable-ping-reply-and-ftp-traffic-in-windows-10-and-server</ref> 
+
+=== From the Menu ===
+
+The status of ICMP timestamps can be manually checked and changed on Windows systems via the Firewall settings. <ref>https://answers.microsoft.com/en-us/windows/forum/windows_7-security/check-icmp-timestamp-response/062ffa99-ffae-4ab0-a328-84371ed46ed8?tab=question&status=AllReplies#tabs</ref>
+
+<code>Right-click on Start button</code> &rarr; <code>Select Control Panel</code> &rarr; <code>Select Windows Firewall</code> &rarr; <code>Select Advanced Settings tab</code>
+
+The ICMP Settings dialog box should show the ICMP timestamp is disabled: <code>Allow incoming timestamp request</code> is unchecked. <ref>https://msdn.microsoft.com/en-us/library/ms912869%28v=winembedded.5%29.aspx</ref>
+
+=== From the Command Line ===
+
+ICMP timestamp responses can be disabled via the netsh command line utility. This is necessary for Vista and earlier Windows versions. <ref>https://social.technet.microsoft.com/Forums/windows/en-US/219f3dcc-3e5b-4d9b-88ae-137215575c7f/icmp-timestamp-response?forum=w7itprosecurity</ref>
+
+Open a terminal and run this command as root (administrator).
+
+{{CodeSelect|code=
+netsh firewall set icmpsetting 13 disable
+}}
+
+Outgoing ICMP timestamp responses are now blocked.
+
+= References =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
