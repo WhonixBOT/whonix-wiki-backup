@@ -1,0 +1,631 @@
+{{Header}}
+{{#seo:
+|title=Stream Isolation
+|description=Prevent Identity Correlation through Circuit Sharing by using Tor Stream Isolation
+|image=https://www.whonix.org/w/images/e/eb/Streamisolationme.jpg
+}}
+
+{| class="wikitable" style="background-color:#fff;text-align:center"
+|- style="background-color: #f9f9f9"
+| [[Stream_Isolation/Easy|short stream isolation summary]]
+| all information below
+|}
+
+__TOC__
+
+== Introduction ==
+If you install custom applications and do not explicitly take precaution against {{Code2|identity correlation through Tor circuit sharing}}, you risk that different activities, let's say Web (Chromium or similar) or IRC (mIRC or similar) go through the same Tor circuit and exit relay. Even though you would still be anonymous, i.e. the Tor exit relay would still not know your real IP/location, they can easily correlate those activities issued by different applications to the same pseudonym.
+
+The following graphic illustrates the difference of using Tor SocksPort's compared to using Tor's TransPort. Using dedicated Tor SocksPort's per application results in taking different routes through the Tor network per application. Not necessarily all nodes (first, second, third) get replaced by Tor. Sometimes just the first, sometimes just the second, sometimes just the third, and sometimes multiple nodes change.
+
+[[Image:stream_isolation.1.0.jpg|frame|none|alt=|Stream Isolation Graphic]]
+
+{{project_name}} implements protection against {{Code2|identity correlation through Tor circuit sharing}} for preinstalled applications, however, for better privacy, you are still advised to understand a bit of the technical background. Since Tor version 0.2.3, different Socks,- Dns-, or TransPorts go through different Tor circuits, therefore preventing {{Code2|identity correlation}}. {{project_name}} configures most applications that come preinstalled with {{project_name}} to use different SocksPort, thus no {{Code2|identity correlation}} is at risk. {{project_name}} uses either socks proxy settings to direct various applications to different SocksPorts or [https://github.com/{{project_name_short}}/uwt uwt] (more information below).
+
+Any other traffic (i.e. custom installed applications, misc applications, such as {{Code2|nslookup}}, go through Tor's Dns-, and/or TransPort (can be optionally disabled, see below).
+
+== List ==
+Applications in {{project_name}} that are either prepared or fully pre-configured to prevent {{Code2|identity correlation through Tor circuit sharing}}:
+
+=== By Settings ===
+{| class="wikitable" style="text-align: center; background-color: #fff"
+!style="height:27px"|application
+!pre-installed
+!pre-configured
+!stream isolation by method
+!port
+!comments
+|-
+
+|style="background-color:#f9f9f9;height:27px"|[[Tor Browser]]
+|style="background-color:{{Green}}"|yes
+|style="background-color:{{Green}}"|yes
+|[[Tor_Browser#{{project_name}}_Proxy_Settings|socks proxy settings]]
+|9150 <ref>{{workstation_product_name}} 127.0.0.1:9150 gets redirected to 10.152.152.10:9150 by [https://github.com/Whonix/anon-ws-disable-stacked-tor anon-ws-disable-stacked-tor]. Changing proxy settings in Tor Browser has proven to be unreliable. At some point Tor Button may change its internals and therefore break something again. Keeping the default settings and not requiring any changes in Tor Browser seems like the best way to support compatibility in long run and also is simplest in case {{Code|update-torbrowser}} breaks and [[Manually_Downloading_Tor_Browser|manually updating Tor Browser]] is required again in future.</ref>
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|[[HexChat]] (and see [[Chat#General Safety Advice]])
+|style="background-color:{{Green}}"|yes
+|style="background-color:{{Green}}"|yes
+|socks proxy settings
+|9101
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|[[E-Mail|Mozilla Thunderbird with TorBirdy]]
+|style="background-color:{{Red}}"|no
+|style="background-color:{{Green}}"|yes
+|socks proxy settings
+| -
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"| [[Tor Messenger]]
+|style="background-color:{{Red}}"|no
+|style="background-color:{{Green}}"|yes
+|socks proxy settings
+| 9152
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|Instant Messenger (see [[Chat]])
+|style="background-color:{{Red}}"|no
+|style="background-color:{{Red}}"|no ([https://github.com/{{project_name_short}}/pidgin-improved-privacy TODO])
+|socks proxy settings
+|port prepared, IP 10.152.152.10, port 9103
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|[[Dev/TimeSync|sdwdate]]
+|style="background-color:{{Green}}"|yes
+|style="background-color:{{Green}}"|yes
+|[https://github.com/{{project_name_short}}/sdwdate-plugin-anon-shared-streamiso socks proxy settings]<ref>https://github.com/{{project_name_short}}/sdwdate-plugin-anon-shared-streamiso/blob/master/etc/sdwdate.d/31_anon_dist_stream_isolation_plugin</ref>
+| -
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|[[whonixcheck]]
+|style="background-color:{{Green}}"|yes
+|style="background-color:{{Green}}"|yes
+|socks proxy settings
+| 9110
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|BitCoin (see [[Money]])
+|style="background-color:{{Red}}"|no
+|style="background-color:{{Red}}"|no
+|socks proxy settings
+|port prepared, IP 10.152.152.10, port 9111
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|[https://en.wikipedia.org/wiki/Privoxy privoxy]
+|style="background-color:{{Red}}"|no
+|style="background-color:{{Red}}"|no
+|socks proxy settings
+|port prepared, IP 10.152.152.10, port 9112
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|[https://en.wikipedia.org/wiki/Polipo polipo]
+|style="background-color:{{Red}}"|no
+|style="background-color:{{Red}}"|no
+|socks proxy settings
+|port prepared, IP 10.152.152.10, port 9113
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|[[Tor_Browser#Tor_Browser_Downloader_by_{{project_name}}Tor Browser Downloader by {{project_name}}]]
+|style="background-color:{{Green}}"|yes
+|style="background-color:{{Green}}"|yes
+|socks proxy settings
+| -
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|[[Chat#Ricochet IM]]
+|style="background-color:{{Red}}"|no
+|style="background-color:{{Green}}"|yes
+|socks proxy settings
+| -
+| connects only to onion services
+|- 
+
+|style="background-color:#f9f9f9;height:27px"|[[Mixmaster]]
+|style="background-color:{{Green}}"|yes
+|style="background-color:{{Green}}"|yes
+|[https://github.com/{{project_name_short}}/anon-mixmaster/blob/master/etc/skel/.Mix/mix.cfg settings] <ref>(see also [[Dev/Mixmaster]])</ref>
+| -
+| connects only to onion services
+|-
+
+|style="background-color:#f9f9f9;height:27px"|KDE application wide proxy settings
+|style="background-color:{{Red}}"|no
+|style="background-color:{{Green}}"|yes
+|socks proxy settings
+|9122 no KDE applications with network activity pre-installed
+| -
+|-
+
+|}
+
+=== By uwt wrapper ===
+{| class="wikitable" style="text-align: center; background-color: #fff"
+!style="height:27px"|application
+!pre-installed
+!pre-configured
+!stream isolation by method
+!port
+!comments
+|-
+
+|style="background-color:#f9f9f9;height:27px"|apt-get (see [[Update]])
+|style="background-color:{{Green}}"|yes
+|style="background-color:{{Green}}"|yes
+|uwt wrapper
+| -
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|aptitude
+|style="background-color:{{Green}}"|yes
+|style="background-color:{{Green}}"|yes
+|uwt wrapper
+| -
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|gpg
+|style="background-color:{{Green}}"|yes
+|style="background-color:{{Green}}"|yes
+|uwt wrapper
+| -
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|ssh
+|style="background-color:{{Green}}"|yes
+|style="background-color:{{Green}}"|yes
+|uwt wrapper
+| -
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|git
+|style="background-color:{{Red}}"|no
+|style="background-color:{{Green}}"|yes
+|uwt wrapper
+| -
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|wget
+|style="background-color:{{Green}}"|yes
+|style="background-color:{{Green}}"|yes
+|uwt wrapper
+| -
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|curl
+|style="background-color:{{Green}}"|yes
+|style="background-color:{{Green}}"|yes
+|uwt wrapper
+| -
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|scurl
+|style="background-color:{{Green}}"|yes
+|style="background-color:{{Green}}"|yes
+|Uses curl, therefore same as curl.
+| -
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|mixmaster-update (see [[Mixmaster]])
+|style="background-color:{{Green}}"|yes
+|style="background-color:{{Green}}"|yes
+|uwt wrapper
+| -
+| -
+|-
+
+|}
+
+=== none ===
+{| class="wikitable" style="text-align: center; background-color: #fff"
+!style="height:27px"|application
+!pre-installed
+!pre-configured
+!stream isolation by method
+!port
+!instructions
+|-
+
+|style="background-color:#f9f9f9;height:27px"|GNOME application wide proxy settings
+|style="background-color:{{Red}}"|no
+|style="background-color:{{Red}}"|[[Dev/GNOME|no]]
+|style="background-color:{{Red}}"|none
+|no GNOME applications with network activity pre-installed
+| -
+|-
+
+|style="background-color:#f9f9f9;height:27px"|<code>[[whonixcheck]] --leak-tests</code>
+|style="background-color:{{Green}}"|yes
+|style="background-color:{{Red}}"|no <ref>Not possible and unnecessary. <code>whonixcheck --leak-tests</code> runs only on user request and never by its own by chance.</ref>
+|style="background-color:{{Red}}"|none
+|none
+| -
+|-
+
+|}
+
+== Details ==
+The required socks proxy settings are setup by various {{project_name}} configuration packages or uwt wrappers, which are set up on {{gateway_product_name}} and on {{workstation_product_name}}. [https://trac.torproject.org/projects/tor/wiki/doc/torsocks uwt] is a wrapper around torsocks, which is also already installed to {{Code|/usr/bin/uwt}}.
+
+* Example, each time you run a uwt wrapped application, i.e. simply type {{Code2|apt-get}} in console, the uwt wrapper {{Code|/usr/bin/apt-get}} will run. It adds uwt before apt-get. For curiosity check {{Code|nano /usr/bin/apt-get}}. Essentially, the uwt wrapper then runs {{Code|/usr/bin/uwt /usr/bin/apt-get.anondist-orig}}. That is also the case for all other uwt wrapped applications.
+* If you ever want or must run a uwt wrapped application without uwt, do not run for example {{Code|apt-get}} in console, do run {{Code|apt-get.anondist-orig}}. Use cases could be if you want to connect to localhost. If you know what you are doing, you should also be able to deactivate any uwt wrappers you dislike, see [[#Deactivate_uwt_Stream_Isolation_Wrapper]].
+* When running {{Code2|/usr/bin/apt-get.anondist-orig}} it directly goes through Tor's DnsPort and through Tor's TransPort and not through its own SocksPort.
+* uwt looks if the command contains the words {{Code2|localhost}} or {{Code2|127.0.0.1}}, if that is the case, uwt will not be used. The command will be run without uwt. Thus, if a localhost connection is falsely detected it will leak, but only through Tor's DnsPort and through Tor's TransPort, which should be acceptable.
+
+Isolate by destination address: Let's assume SSH goes over port 22 and you want to connect to different SSH servers and do not want an observer to be able to correlate that activity to the same pseudonym. If the SSH servers run on different IP's isolate by destination address might help.
+
+Isolate by destination port: This doesn't seem to be useful for anything in {{project_name}}, applications using different protocols (and therefore different ports) are already isolated through using different SOCKSPorts.
+
+Isolate by destination port doesn't really achieve anything for web browsing: [https://lists.torproject.org/pipermail/tor-talk/2012-May/024403.html tor-talk Tor's stream isolation features defaults].
+
+For more information about stream isolation refer to the Tor manual.
+
+* [https://www.torproject.org/docs/tor-manual.html.en Tor stable manual]
+* [https://www.torproject.org/docs/tor-manual-dev.html.en Tor alpha manual]
+
+Different tabs and websites in Tor Browser are isolated by since Tor Browser version {{Code2|4.5-alpha-1}}. <ref>https://trac.torproject.org/projects/tor/ticket/3455</ref>
+
+Connections to different Tor [[Onion Services]] are automatically stream isolated. <ref>https://lists.torproject.org/pipermail/tor-talk/2012-September/025432.html</ref>
+
+== Footnotes ==
+{{reflist|close=1}}
+
+== How to mitigate identity correlation ==
+
+=== Basic Protection ===
+If you install custom software on {{workstation_product_name}}, that uses the internet, and want to prevent {{Code2|identity correlation through Tor circuit sharing}} (which you should do), you have to manually configure them. This is not a {{project_name}} specific problem. <ref>If you used to use only one SocksPort with the [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO common torification methods], the [https://lists.torproject.org/pipermail/tor-talk/2012-March/023535.html same thing happened].</ref> Read also [[Install Software|Software installation on {{workstation_product_name}}]].
+
+A [[#list]] of applications which come pre-installed with {{project_name}} are pre-configured to prevent {{Code2|identity correlation through circuit sharing}}.
+
+Traffic going through TransPort by default is [[whonixcheck]] when testing the TransPort. If that is of concern to you, it can be disabled in whonixcheck, see [[Advanced Security Guide#Prevent polluting TransPort]].
+
+All custom installed application's TCP traffic is routed through Tor's TransPort and all their DNS requests through Tor's DnsPort. This means different activities or "identities" in different applications (say browser, IRC, email) end up being routed through the same circuit, thus {{Code2|identity correlation}} is at risk. <ref>What about UDP? See [[Tor#UDP]].</ref>
+
+To protect against this, you have to set up per-application SOCKS ports in {{gateway_product_name}}.
+
+On {{gateway_product_name}} in {{Code2|/usr/share/tor/tor-service-defaults-torrc}} are already a lot custom socks ports prepared for custom installed applications:
+
+* Without {{Code2|IsolateDestAddr}} and without {{Code2|IsolateDestPort}}: SocksPort 10.152.152.10:9153 to 9159
+* With {{Code2|IsolateDestAddr}}, but without {{Code2|IsolateDestPort}}: SocksPort 10.152.152.10:9160 to 9169
+* Without {{Code2|IsolateDestAddr}}, but with {{Code2|IsolateDestPort}}: SocksPort: 10.152.152.10:9170 to 9179
+* With {{Code2|IsolateDestAddr}} and with {{Code2|IsolateDestPort}}: SocksPort: 10.152.152.10:9180 to 9189
+* If those are not enough, you can add your own.
+
+What are {{Code2|IsolateDestAddr}} and {{Code2|IsolateDestPort}}? You can learn about them in the [https://www.torproject.org/docs/tor-manual.html.en Tor manual]. See also [https://lists.torproject.org/pipermail/tor-talk/2012-May/024403.html tor-talk mailing list: Tor's stream isolation features defaults]. Usually, unless you know better, you are better off not using {{Code2|IsolateDestAddr}} or {{Code2|IsolateDestPort}}.
+
+You can point your applications, where you want to prevent {{Code2|identity correlation though circuit sharing}}, to those SocksPorts. Each custom installed application has to be torified, for directions how to do that use the [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO Torify HOWTO].
+
+Additional comments regarding the Torify HOWTO:
+
+* Warnings about protocol related warnings you must honor. You are still better off with {{project_name}}, as it offers best possible [[Protocol-Leak-Protection and Fingerprinting-Protection]].
+* {{project name}} setup provides protection against IP leaks through [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Protocolleaks protocol leaks].
+* If you do not correctly torify either no connections will be possible or traffic will either continue going through Tor's TransPort (unless you disable that, as explained below).
+* If you redirect more than one application to the same SocksPort, {{Code2|identity correlation}} is at risk.
+* DNS related [https://trac.torproject.org/projects/tor/wiki/doc/TorFAQ#IkeepseeingthesewarningsaboutSOCKSandDNSandinformationleaks.ShouldIworry warnings] still apply, though to a lesser extent - an attack could only make correlations but still couldn't figure out your IP. You can prevent that by commenting out (<code>#</code> in front) DnsPort in {{Code2|/usr/local/etc/torrc.d/50_user.conf}} on the {{gateway_product_name}} and by removing the DNS redirection firewall rule from {{W_Firewall}}.
+** Do not use a [https://trac.torproject.org/projects/tor/wiki/doc/SupportPrograms#DNS local DNS resolver], as all DNS requests would be executed by the same circuit.
+* Other leaks, such as applications not honoring the proxy settings / wrapper, ICMP or UDP leaks do not apply to {{project_name}}.
+* The SafeSocks setting is for rejecting unsafe variants of socks that might cause DNS leaks. The {{project_name}} design model mitigates DNS leaks by redirecting all requests to Tor's DnsPort. Enabling this setting would give marginal benefit in this situation but would complicate debugging.
+
+=== Better Protection ===
+For best protection against {{Code2|identity correlation}}:
+
+Read the advice above and on {{gateway_product_name}}:
+
+Deactivate KDE / GNOME - application wide proxy settings...
+
+* Because those proxy settings are not application specific, but rather force all KDE / GNOME applications through the same SocksPort (no KDE / GNOME applications which use the internet preinstalled by default), deactivating those KDE / GNOME - wide proxy settings gives better control about stream isolation.
+
+To deactivate TransPort and DnsPort...
+
+{{Firewall_Settings}}
+
+Add.
+
+{{CodeSelect|code=
+WORKSTATION_TRANSPARENT_TCP=0
+WORKSTATION_TRANSPARENT_DNS=0
+}}
+
+Save.
+
+3) {{Reload Firewall}}
+
+<ref>
+Although not strictly required, you could alternatively/additionally add to {{Code2|/usr/local/etc/torrc.d/50_user.conf}}.
+
+{{Open /usr/local/etc/torrc.d/50_user.conf}}
+
+Add.
+
+{{CodeSelect|code=
+TransPort 0
+DnsPort 0
+}}
+
+Save.
+
+And then {{Reload Tor}}
+</ref>
+
+This will disable transparent proxying. All applications not configured to use a SocksPort by socks proxy settings or forced to use a SocksPort by a socksifier will not be able to establish connections. This is the only way to ensure that different SocksPorts are used and also that DNS is remotely resolved through that SocksPort.
+
+Total protection is only possible if you honor the advice above and only use one application per session and always revert to a fresh image or [[Multiple {{workstation_product_name_short}}|Multiple {{workstation_product_name}}]]. <ref>
+[[Multiple {{workstation_product_name_short}}|Multiple {{workstation_product_name}}]] using different internal IP's are automatically separated by Tor (IsolateClientAddr is Tor's default).
+</ref>
+
+== Deactivate Stream Isolation ==
+=== Easy ===
+[[Stream_Isolation/Disable_Easy|How to disable stream isolation. Most easy and common methods only.]] For more options, see below.
+
+=== Deactivate uwt Stream Isolation Wrapper ===
+'''OPTIONAL. Usually not required. Only for special setups and people who know what they are doing.'''
+
+==== Temporary ====
+===== anondist-orig Method =====
+Append {{Code2|.anondist-orig}} to the command you want to run. For example, instead of using.
+
+{{CodeSelect|code=
+curl 38.229.72.22
+}}
+
+Use.
+
+{{CodeSelect|code=
+curl.anondist-orig 38.229.72.22
+}}
+
+===== Environment Variable Method =====
+Use the {{Code2|UWT_DEV_PASSTHROUGH}} environment variable. <ref>https://github.com/{{project_name_short}}/uwt/blob/master/usr/bin/uwt#L49</ref>
+
+Example. Set the UWT_DEV_PASSTHROUGH environment variable. This will disable using <code>torsocks</code> for all following invocations.
+
+{{CodeSelect|code=
+export UWT_DEV_PASSTHROUGH="1"
+}}
+{{CodeSelect|code=
+curl 38.229.72.22
+}}
+
+When running as user and using <code>sudo</code>, do not forget <code>sudo</code> parameter <code>-E</code> which stands for preserve environment.
+
+{{CodeSelect|code=
+sudo -E apt-get update
+}}
+
+==== Permanently ====
+===== Introduction =====
+You can enable/disable all uwt stream isolation wrappers globally or enable/disable specific stream isolation wrappers, see uwt {{Code|/etc/uwt.d/30_uwt_default.conf}} configuration file.
+
+===== deactivate all uwt wrappers permanently =====
+{{Uwt_wrappers_deactivate_all_permanently}}
+
+=== Deactivate Misc Proxy Settings ===
+{{Deactivate Misc Proxy Settings}}
+
+=== Tor Browser Remove Proxy Settings ===
+If you would like to remove proxy settings from Tor Browser, see below.
+{{Tor_Browser_Remove_Proxy_Settings}}
+
+== Nested Execution ==
+uwt version <code>4.0-1</code> and above protects form endless nested execution which could likely lead to a locked up session by aborting after 10 times an uwt wrapped application calling another uwt wrapped application. In that case, you would see the following error message.
+
+<blockquote>
+uwtwrapper uwt wrapper ERROR: More than uwtwrapper_counter 10 nested executions (uwtwrapper_max: 10).
+</blockquote>
+
+This is most likely happening due to two symlinks pointing to each other resulting in endless execution. However, should there be any cases (none could be foreseen at development time) where this is legitimate, feel free to change the setting responsible for aborting execution. Please also consider reporting your use case in {{project_name}} forums so perhaps a better fix for this can be found.
+
+{{Open with root rights|filename=
+/etc/uwt.d/50_user.conf
+}}
+
+Set <code>uwtwrapper_max</code> to a value more suitable for you.
+
+{{CodeSelect|code=
+uwtwrapper_max=100
+}}
+
+Alternatively you could completely disable the nested execution protection.
+
+{{CodeSelect|code=
+nested_protection() {
+    true
+}
+}}
+
+Save and exit.
+
+Done.
+
+== Development ==
+=== Information ===
+See also the [https://www.torproject.org/docs/tor-manual.html.en Tor manual] on <code>SocksPort</code>, <code>HTTPTunnelPort</code>, <code>TransPort</code> and <code>DnsPort</code>.
+
+==== SocksPort ====
+A <code>SocksPort</code> is a listen port by Tor which accepts traffic using the [https://en.wikipedia.org/wiki/SOCKS socks] protocol.
+
+Using a <code>SocksPort</code> is possible by using either:
+
+* [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Classicalcommonway:usetheapplicationsproxysettings application specific socks proxy settings]
+* [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Uncommon:Useawrapper:forcetheapplicationtouseaproxytorsocks wrapper method] such as <code>torsocks</code> (which can be automatically prepended using [https://github.com/{{project_name_short}}/uwt <code>uwt</code>]
+
+Traffic on separate <code>SocksPort</code>s is stream isolated by Tor default.
+
+==== HTTPTunnelPort ====
+A <code>HTTPTunnelPort</code> is a listen port by Tor which accepts traffic using the [https://en.wikipedia.org/wiki/HTTP_tunnel HTTP CONNECT method].
+
+This is a new feature of Tor.
+
+Traffic on separate <code>HTTPTunnelPort</code>s is stream isolated by Tor default.
+
+Forum discussion:<br />
+https://forums.whonix.org/t/tor-can-now-serve-as-http-proxy
+
+==== TransPort ====
+<code>TransPort</code> is a feature where Tor accepts raw traffic on a listen port if redirected there using iptables. See also [https://trac.torproject.org/projects/tor/wiki/doc/TransparentProxy TransparentProxy].
+
+When using Transparent Proxying (default in {{project_name}}) (see this page for Transparent Proxying for more information), all applications that do not use a <code>SocksPort</code> or <code>HTTPTunnelPort</code> will fall back to be using Tor's <code>TransPort</code> for TCP. I.e. using system default networking. This is also called transparent proxying.
+
+There is no stream isolation for <code>TransPort</code> connections unless originating from a [[Multiple_{{workstation_product_name_short}}|separate {{workstation_product_name}}]].
+
+==== DnsPort ====
+Similar to above but for DNS. All applications that do not use a <code>SocksPort</code> or <code>HTTPTunnelPort</code> will fall back to be using Tor's <code>DnsPort</code> for DNS.
+
+==== torsocks ====
+{{project_name}} 14 and above:<br />
+All [[Stream_Isolation#By_uwt_wrapper|uwt wrapped applications]] will be stream isolated by [https://github.com/{{project_name_short}}/uwt/blob/master/etc/tor/torsocks.conf.anondist <code>torsocks</code>] <code>/etc/tor/torsocks.conf</code> setting <code>IsolatePID 1</code>.
+
+To test this, run multiple times the following command.
+
+<pre>
+scurl https://check.torproject.org | grep IP
+</pre>
+
+=== Tests ===
+1. Applications which internally use curl.
+
+{{CodeSelect|code=
+sudo update-command-not-found
+}}
+{{CodeSelect|code=
+sudo update-flashplugin-nonfree --install --verbose
+}}
+
+2. Applications which is uwt wrapped itself and internally uses ssh.
+
+{{CodeSelect|code=
+git push origin master
+}}
+
+3. Enigmail.
+
+=== Debugging / List of all uwt wrappers ===
+{{CodeSelect|code=
+sudo dpkg-divert --list
+}}
+{{CodeSelect|code=
+ls -la /usr/bin/ssh
+}}
+
+=== Deactivating an uwt wrapper ===
+Example:
+
+{{CodeSelect|code=
+sudo unlink /usr/bin/ssh
+}}
+{{CodeSelect|code=
+sudo dpkg-divert --rename --remove /usr/bin/ssh
+}}
+
+=== Check if Transparent DNS is disabled ===
+Test.
+{{CodeSelect|code=
+nslookup check.torproject.org ; echo $?
+}}
+
+Should show.
+<pre>
+;; connection timed out; no servers could be reached
+
+1
+</pre>
+
+If it shows something else, such as a resolved IP, the Transparent DNS is enabled.
+
+=== Check if Transparent TCP is disabled ===
+Test.
+{{CodeSelect|code=
+{{Curl_Plain}} {{Check.torproject.org IP}} ; echo $?
+}}
+
+Should show.
+<pre>
+curl: (7) couldn't connect to host
+7
+</pre>
+
+If it shows something else, such as the html source code, then Transparent TCP is enabled.
+
+=== Check if Transparent Proxying is disabled ===
+Test.
+{{CodeSelect|code=
+{{Curl_Plain}} https://check.torproject.org/ ; echo $?
+}}
+
+Should show.
+<pre>
+curl: (6) Couldn't resolve host 'check.torproject.org'
+6
+</pre>
+
+If it shows something else, such as the html source code, then Transparent Proxying is enabled.
+
+=== Check if an Application is properly using Stream Isolation ===
+* Same as <code>leak testing</code> as if {{project_name}} is not involved.
+
+* Also... A weaker test... The <code>transparent proxying disablement</code> test.
+
+Disable transparent proxying of DNS and TCP as per [[#Better Protection]].
+
+Check that worked as per:
+
+* [[#Check if Transparent DNS is disabled]]
+* [[#Check if Transparent TCP is disabled]]
+
+That is because it doesn't work without transparent proxying (system default networking), meaning application unable to use network normally, then there is a certain socks leak, meaning certainly some traffic which requires system default networking. In case of:
+
+* clearnet operating systems: a clearnet leak
+* Whonix: a stream isolation violation
+
+This is only weak test since an application could very likely try socks first and if socks fails, fall back to system default networking. Therefore, normal <code>leak testing</code> is required.
+
+* Internet research if application was specifically designed for use with Tor.
+* Internet research if application was specifically audited for clearnet leaks.
+* Discussion with software maintainer about this if these haven't already happened.
+* https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Howtoreviewanapplication
+* https://lists.torproject.org/pipermail/tor-talk/2012-April/024010.html
+* https://trac.torproject.org/projects/tor/ticket/5553
+* [https://github.com/rustybird/corridor corridor - Tor traffic whitelisting gateway]
+
+=== Add new uwt wrapper ===
+Emulate [https://github.com/{{project_name_short}}/uwt/commit/03cc4c8568564d5993fcc8ea975cf00e851f7052 this commit].
+
+== Sources ==
+
+* [https://gitweb.torproject.org/torspec.git/blob/HEAD:/proposals/171-separate-streams.txt Separate streams across circuits by connection metadata]
+* [https://lists.torproject.org/pipermail/tor-talk/2012-March/023496.html tor-talk Operating system updates / software installation behind Tor Transparent Proxy]
+* [https://lists.torproject.org/pipermail/tor-talk/2012-March/023536.html tor-talk Awareness for identity correlation through circuit sharing is almost zero.]
+* [https://lists.torproject.org/pipermail/tor-talk/2012-May/024401.html tor-talk Tor's stream isolation features defaults Question]
+* [https://lists.torproject.org/pipermail/tor-talk/2012-May/024403.html tor-talk Tor's stream isolation features defaults Answer]
+* [https://mailman.boum.org/pipermail/tails-dev/2012-August/001422.html Tails-dev separate Tor streams]
+* [https://tails.boum.org/todo/separate_Tor_streams/ Tails separate Tor streams]
+* [https://mailman.boum.org/pipermail/tails-dev/2012-August/001532.html Tails-dev Please review Tails stream isolation plans]
+* [https://tails.boum.org/contribute/design/stream_isolation/ Tails Design: Tor stream isolation]
+
+Stream Isolation Graphic has been contributed by: Cuan Knaggs – graphic and web design [http://revolver.za.net/ revlover] print media – web design – web development – cms – e-commerce
+
+== References ==
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]] [[Category:Design]]
