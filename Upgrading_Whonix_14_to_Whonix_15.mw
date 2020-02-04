@@ -1,0 +1,607 @@
+{{Header}}
+{{#seo:
+|description=How to Release Upgrade from {{project_name}} 14 to {{project_name}} 15
+|image=https://www.whonix.org/w/images/d/d3/Upgrade.jpg
+}}
+
+= Notices =
+
+'''Table:''' ''Upgrading Whonix Notices''
+
+{| class="wikitable"
+|-
+! scope="col"| '''Notice'''
+! scope="col"| '''Description'''
+|-
+
+! scope="row"| Difficulty
+| Downloading a new {{gateway_product_name}} / {{workstation_product_name}} is easier than applying the [[Release Upgrade|Release Upgrade]] instructions on this page, but this process is relatively smooth.
+|-
+! scope="row"| Release Upgrade vs Download
+| 
+To use [[{{project name short}}|{{project name}}]] 15, users can either:
+
+* '''A)''' Release upgrade existing {{project_name}} 14 images using the instructions on this page; <u>or</u>
+* '''B)''' Re-install {{project_name}} by downloading the new release, which is much simpler than upgrading
+** [[{{non q project name short}}|{{non q project name}}]] 15: [[Download|download the new release]].
+** [[{{q project name short}}|{{q project name}}]] 15: [[Qubes/Install|download the new release]].
+|-
+
+! scope="row"| Standard Upgrades
+| 
+* For standard ("everyday") upgrade instructions see [[Operating System Software and Updates]]. <br />
+* The instructions on this page describe how to perform a [[Release Upgrade]] from {{project_name}} 14 to {{project_name}} 15.
+|-
+
+! scope="row"| Qubes EOL
+| Qubes R4 and above only -- [https://www.qubes-os.org/news/2019/03/28/qubes-3-2-has-reached-eol/ Qubes OS 3.2 has reached End Of Life]. If you are using Qubes R3.2 / R3.2.1, [[{{q project name short}}|{{q project name}}]] upgrades are [[unsupported]].
+|}
+
+= High Level Overview =
+
+# Backup all data - ideally have a copy of the VM(s) so it is possible to try again (if necessary). <br />
+# Perform the usual [[Operating_System_Software_and_Updates#Standard_Upgrade_Steps|standard ("everyday") upgrade instructions]].
+# Consider running the optional [[#Sanity Tests|sanity tests]]. <br />
+# Release Upgrade {{workstation_product_name}} (<code>whonix-ws-14</code>). <br />
+# Power off {{workstation_product_name}} (<code>whonix-ws-14</code>). <br />
+# Release Upgrade {{gateway_product_name}} (<code>whonix-gw-14</code>). <br />
+# Restart {{gateway_product_name}} (<code>whonix-gw-14</code>). <br />
+# Restart {{workstation_product_name}} (<code>whonix-ws-14</code>). <br />
+
+= Sanity Tests =
+<div class="toccolours mw-collapsible mw-collapsed">
+These are optional, but recommended. To complete sanity tests, please press on expand on the right.
+<div class="mw-collapsible-content">
+{{CodeSelect|code=
+sudo dpkg --audit ; echo $?
+}}
+
+Expected output.
+
+{{CodeSelect|code=
+0
+}}
+
+{{CodeSelect|code=
+sudo dpkg --configure -a ; echo $?
+}}
+
+Expected output.
+
+{{CodeSelect|code=
+0
+}}
+
+[[Security_Guide#Updates|Get package upgrades.]]
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+{{CodeSelect|code=
+sudo apt-get dist-upgrade
+}}
+
+For testing purposes, install python-qt4.
+
+{{CodeSelect|code=
+sudo apt-get install python-qt4 ; echo $?
+}}
+
+{{CodeSelect|code=
+## ... successful installation of python-qt4 ...
+0
+}}
+</div>
+</div>
+
+= Upgrading =
+== Introduction ==
+First consider completing the [[#Sanity Tests|sanity tests]] described above; the system is checked for obvious and grave issues that must be fixed before attempting an upgrade. For example, if the package manager is broken due to the mixing of packages from both Debian stable and Debian testing, then the upgrade may fail part way through, leaving the system in an unstable state that is difficult to resolve.
+
+Consider retaining the full terminal log. Even if the upgrade appears successful, there might be issues following reboot. To properly report a bug in the {{project_name}} forums it is necessary to share the upgrade log so the issue can be investigated.
+
+<u>KDE vs XFCE note:</u> {{project_name}} KDE has been [https://forums.whonix.org/t/user-poll-xfce-vs-kde-kde-deprecation-considered/6235 deprecated], meaning {{project_name}} KDE is [[Unsupported|unsupported]] from {{project_name}} 15 -- all users should upgrade to {{project_name}} XFCE. These upgrade instructions replace the KDE desktop environment <ref>{{non_q_project_name_short}} only since {{q_project_name}} does not have a desktop environment installed - that is dependent on dom0.</ref> and default applications <ref>Users have the freedom to retain KDE applications and/or to reinstall those after the upgrade.</ref> with those associated with XFCE.
+
+== Update Package and Sources Lists ==
+
+First upgrade the system's packages by performing the [[Operating_System_Software_and_Updates#Standard_Upgrade_Steps|Standard Upgrade Steps]].
+
+=== All Platforms ===
+
+Update {{project_name}} apt sources list.
+
+{{CodeSelect|code=
+sudo whonix_repository --enable --codename buster
+}}
+
+Update Debian apt sources list.
+
+{{CodeSelect|code=
+sudo sed -i "s/stretch/buster/g" /etc/apt/sources.list.d/debian.list
+}}
+
+Delete the [[Install_Software#Backports|backports]], [[Install_Software#Install_from_Debian_testing|testing]] and [[Install_Software#Install_from_Debian_Unstable|unstable]] repositories, as well as the [[Install_Software#Install_from_Debian_testing|default release APT config]] snippet. <ref>
+This step is only required if they were previously enabled, but the command is harmless either way.
+</ref>
+
+{{CodeSelect|code=
+sudo rm -f /etc/apt/sources.list.d/backports.list /etc/apt/sources.list.d/testing.list /etc/apt/sources.list.d/unstable.list /etc/apt/apt.conf.d/70defaultrelease
+}}
+
+=== {{q_project_name}} Only ===
+Update Qubes' apt sources list.
+
+{{CodeSelect|code=
+sudo sed -i "s/stretch/buster/g" /etc/apt/sources.list.d/qubes*.list
+}}
+
+{{Anchor|Enable Debugging and Update Select Packages}}
+
+== Preparation ==
+Become root.
+
+{{CodeSelect|code=
+sudo su
+}}
+
+Enable extensive debugging so the reporting of any eventual bugs is easier.
+
+{{CodeSelect|code=
+export DEBDEBUG=1
+}}
+
+{{Update}}
+
+{{CodeSelect|code=
+apt-get update
+}}
+
+== Upgrade ==
+
+=== Distribution Upgrade ===
+
+To perform a distribution upgrade, it is recommended to run the following command which uses [https://github.com/{{project_name_short}}/usability-misc/blob/master/usr/bin/apt-get-noninteractive <code>apt-get-noninteractive</code>]; see the footnotes for technical reasons. <ref><code>apt-get-noninteractive</code> prevents the user from being asked difficult technical questions anytime during the upgrade, since the upgrade is stopped until the question is answered. <code>apt-get-noninteractive</code> uses <code>apt-get</code> with <code>-o Dpkg::Options::=--force-confnew</code>. This means <code>apt-get</code> will prefer config files shipped by the distribution in case there is an existing modified config file on the system. Old config files should be automatically moved to <code>configfile.dpkg-old</code>.</ref> <ref>Advanced users can use <code>apt-get</code> rather than <code>apt-get-noninteractive</code>. However, it is probably best to use <code>apt-get-noninteractive</code> and to re-apply custom configurations after the upgrade.</ref> <ref>Parameter <code>--no-install-recommends</code> prevents the installation of packages (from <code>debian/control</code> <code>Recommends:</code> packages by Debian) which are not useful, confusing or waste disk space inside of virtual machines, such as <code>xscreensaver</code>. For other reasons why {{project_name}} uses <code>--no-install-recommends</code>, see: [[{{project name short}}_Debian_Packages#Technical_Stuff|Technical Stuff]].
+</code>
+</ref>
+
+Ignore any eventual errors relating to <code>exim*</code> and/or <code>mailx</code> - these packages will be removed in the next step.
+
+{{CodeSelect|code=
+apt-get-noninteractive dist-upgrade --no-install-recommends
+}}
+
+Purge packages which are not required and broken. On some platforms these packages are not installed, but the step is completely harmless.
+
+{{CodeSelect|code=
+apt-get purge exim*
+}}
+
+=== Restart Necessary Services ===
+
+Restart whonix-legacy service. <ref>
+A manual restart is required because apt-get-noninteractive is being used. This step is not crucial since it would also run after reboot.
+</ref>
+
+{{CodeSelect|code=
+service whonix-legacy restart
+}}
+
+=== Metapackage Installation ===
+
+<u>Note:</u> It is possible that the following packages are already installed, but these steps are necessary to confirm it.
+
+==== Non-Qubes-Whonix ====
+
+# In <u>{{gateway_product_name}}</u>, install package <code>non-qubes-whonix-gateway-xfce</code>. {{CodeSelect|code=
+apt-get install non-qubes-whonix-gateway-xfce
+}}
+# In <u>{{workstation_product_name}}</u>, install package <code>non-qubes-whonix-workstation-xfce</code>. {{CodeSelect|code=
+apt-get install non-qubes-whonix-workstation-xfce
+}}
+
+==== Qubes-Whonix ====
+
+# In <u>{{gateway_product_name}}</u> (<code>whonix-gw-14</code>), install package <code>qubes-whonix-gateway</code>. {{CodeSelect|code=
+apt-get install qubes-whonix-gateway
+}}
+# In <u>{{workstation_product_name}}</u> (<code>whonix-ws-14</code>), install package <code>qubes-whonix-workstation</code>. {{CodeSelect|code=
+apt-get install qubes-whonix-workstation
+}}
+
+=== Remove Unneeded Packages ===
+<u>Note:</u> This step is not required for [[{{non q project name short}}|{{non q project name}}]] XFCE users.
+
+This long command will remove deprecated meta packages and KDE leftovers; simply cut and paste the entire command. <ref>In order to separately run the commands, it is necessary to remove the <code>;</code> and <code>\</code> characters at the end.
+</ref> <ref>Unfortunately, as of Debian buster apt-get no longer allows a single apt-get purge command  followed by a list of all packages. If one of the packages is not already installed, then it aborts the whole command and also refuses to uninstall those which are still present. Therefore, to run commands in succession the <code>;</code> parameter is used, while <code>\</code> allows a single long command to be split into multiple lines for better readability.</ref>
+
+Run the following command in <u>both</u> {{gateway_product_name}} and {{workstation_product_name}}.
+
+{{CodeSelect|code=
+apt-get purge --yes non-qubes-whonix-gateway ; \
+apt-get purge --yes non-qubes-whonix-gateway-kde ; \
+apt-get purge --yes non-qubes-whonix-workstation ; \
+apt-get purge --yes non-qubes-whonix-workstation-kde ; \
+apt-get purge --yes whonix-gw-kde-desktop-conf ; \
+apt-get purge --yes whonix-gw-desktop-shortcuts ; \
+apt-get purge --yes hardened-desktop-applications-kde ; \
+apt-get purge --yes hardened-desktop-environment-essential-kde ; \
+apt-get purge --yes sddm ; \
+apt-get purge --yes kde-* ; \
+apt-get purge --yes libkde* ; \
+apt-get purge --yes qml-module-org-kde-* ; \
+apt-get purge --yes polkit-kde-agent-1 ; \
+apt-get purge --yes kded5 ; \
+apt-get purge --yes *kdelibs* ; \
+apt-get purge --yes kdesudo ; \
+apt-get purge --yes ark ; \
+apt-get purge --yes konsole ; \
+apt-get purge --yes apt-cacher-ng  ; \
+apt-get purge --yes wpasupplicant
+}}
+
+The following packages should be purged on <u>{{gateway_product_name}} only</u>.
+
+{{CodeSelect|code=
+apt-get purge --yes vlc* ; \
+apt-get purge --yes libvlc* ; \
+apt-get purge --yes phonon*
+}}
+
+=== Autoremove ===
+
+Remove packages which are no longer required.
+
+{{CodeSelect|code=
+apt-get autoremove
+}}
+
+=== Revert to Regular Privileges ===
+
+If you are root already (previously became root using <code>sudo su</code>), then exit now.
+
+Open a terminal and run.
+
+{{CodeSelect|code=
+exit
+}}
+
+=== Remove Desktop Shortcuts ===
+* <u>[[{{q project name short}}|{{q project name}}]] users</u>: Please skip this step. <ref>Desktop shortcuts are not visible in Qubes, so this step is unnecessary. If you want to apply this anyhow, then it should be done in every AppVM.</ref>
+<div class="toccolours mw-collapsible mw-collapsed">
+* <u>[[{{non q project name short}}|{{non q project name}}]] users</u>: Please click on expand on the right.
+<div class="mw-collapsible-content">
+Desktop shortcuts are no longer supported by {{project_name}} developers. <ref>Due to issues with XFCE.</ref>
+
+Create folder <code>/home/user/desktop-backup</code>
+
+{{CodeSelect|code=
+mkdir -p /home/user/desktop-backup
+}}
+
+Move any obsolete <code>.desktop</code> files to a backup folder. Make sure no extra spaces are added to the following command!
+
+{{CodeSelect|code=
+mv /home/user/Desktop/*.desktop /home/user/desktop-backup/
+}}
+</div>
+</div>
+
+=== {{project_name}} XFCE Desktop Config ===
+* <u>[[{{q project name short}}|{{q project name}}]] users</u>: Please skip this step. <ref>VM XFCE is not being used in Qubes and package [https://github.com/{{project_name_short}}/whonix-xfce-desktop-config {{project_name}} XFCE Desktop Config] is also not installed, so this step is unnecessary. If you want to apply this anyhow, it should be done in every AppVM.
+</ref>
+<div class="toccolours mw-collapsible mw-collapsed">
+* <u>[[{{non q project name short}}|{{non q project name}}]] users:</u> Please click on expand on the right.
+<div class="mw-collapsible-content">
+Create folder <code>/home/user/desktop-backup</code>
+
+{{CodeSelect|code=
+mkdir -p /home/user/desktop-backup
+}}
+
+Reset the XFCE desktop configuration.
+
+{{CodeSelect|code=
+mv /home/user/.config/xfce4 /home/user/desktop-backup/
+}}
+
+Delete the first-boot-skel.done file. <ref>So it can be re-run.</ref>
+
+{{CodeSelect|code=
+sudo rm -f /var/cache/anon-base-files/first-boot-skel.done
+}}
+
+Execute [https://github.com/{{project_name_short}}/whonix-base-files/blob/master/usr/lib/anon-base-files/first-boot-skel <code>/usr/lib/anon-base-files/first-boot-skel</code>] to get [https://github.com/{{project_name_short}}/whonix-xfce-desktop-config {{project_name}} XFCE Desktop Config].
+
+{{CodeSelect|code=
+sudo /usr/lib/helper-scripts/first-boot-skel
+}}
+</div>
+</div>
+
+=== onion-grater ===
+
+Only complete the following steps if any applications were used that required an onion-grater whitelist extension, such as [[OnionShare]], [[ZeroNet]], [[Chat#Ricochet_IM|Ricochet IM]] and [[Bisq|Bisq]]:
+
+* <u>[[{{q project name short}}|{{q project name}}]] users</u>: Apply these steps in <code>sys-whonix</code>.
+* <u>[[{{non q project name short}}|{{non q project name}}]] users</u>: Apply these steps in {{gateway_product_name}}.
+
+First remove all existing onion-grater extension profiles.
+
+{{CodeSelect|code=
+sudo unlink /usr/local/etc/onion-grater-merger.d/* ; echo "$?"
+}}
+
+If it shows <code>unlink: cannot unlink '/usr/local/etc/onion-grater-merger.d/*': No such file or directory</code>, then no onion-grater profiles existed before -- move on to the next chapter.
+
+If it shows <code>0</code>, this means some onion-grater profiles were deactivated. It is necessary to reactivate them using updated instructions:
+* [[OnionShare]]: [[OnionShare#onion-grater|onion-grater instructions]]
+* [[ZeroNet]]: [[ZeroNet#onion-grater_Adjustments|onion-grater instructions]]
+* [[Chat#Ricochet_IM|Ricochet IM]]: [[Chat#Add_a_Ricochet_Python_Profile|onion-grater instructions]]
+
+Next, delete the eventual <code>/usr/local/etc/onion-grater-merger.d/40_bisq.yml</code> onion-grater extension profile.
+
+{{CodeSelect|code=
+sudo rm /usr/local/etc/onion-grater-merger.d/40_bisq.yml ; echo "$?"
+}}
+
+If it shows <code>rm: cannot remove '/usr/local/etc/onion-grater-merger.d/40_bisq.yml': No such file or directory</code>, then no Bisq onion-grater profile existed before -- move on to the next chapter.
+
+If it shows <code>0</code> this means that Bisq onion-grater profile was deactivated. It is necessary to reactivate it using updated instructions:
+* [[Bisq|Bisq]]: [[Bisq#onion-grater_profile|onion-grater instructions]]
+
+=== Fixes ===
+[[{{q_project_name_short}}|{{q_project_name}}]] {{gateway_product_name}} (<code>whonix-gw-14</code>) only!
+
+Fix tinyproxy path. <ref>
+https://github.com/QubesOS/qubes-issues/issues/4929
+</ref>
+
+{{CodeSelect|code=
+sudo sed -i "s#/usr/sbin/tinyproxy#/usr/bin/tinyproxy#g" /lib/systemd/system/qubes-updates-proxy.service
+}}
+
+=== Terminal Log ===
+
+Remember to retain the terminal log:
+
+<code>Edit</code> &rarr; <code>Select All</code> &rarr; <code>Edit</code> &rarr; <code>Copy</code> &rarr; <code>Open Editor</code> &rarr; <code>Paste</code> &rarr; <code>Save</code>
+
+=== APT Sources Lists ===
+Open a new terminal window. <ref>Because GUI application whonix-repository-wizard should not be run as root.
+</ref>
+
+Run [[{{project name short}}-APT-Repository|{{project_name}} APT Repository Tool]]. <ref>To select the correct APT repository for use.
+</ref>
+
+{{CodeSelect|code=
+lxsudo whonix-repository-wizard
+}}
+
+As explained in step [[#Distribution Upgrade|Distribution Upgrade]], all system configuration files in <code>/etc</code> were reset to the distributor default. If modifications were previously made to any files in folder <code>/etc/apt/sources.list.d</code>, they should be re-added at this step (if desired).
+
+Review all files in folder <code>/etc/apt/sources.list.d</code>
+
+{{CodeSelect|code=
+lxsudo mousepad /etc/apt/sources.list.d/*
+}}
+
+If changes were made, follow the [[Operating System Software and Updates|standard ("everyday") upgrade instructions]].
+
+=== Reboot ===
+
+A reboot is required.
+
+{{CodeSelect|code=
+sudo reboot
+}}
+
+=== Start Menu  ===
+* <u>[[{{non q project name short}}|{{non q project name}}]] users</u>: Please skip this step. 
+<div class="toccolours mw-collapsible mw-collapsed">
+* <u>[[{{q project name short}}|{{q project name}}]] users:</u> Please click on expand on the right.
+<div class="mw-collapsible-content">
+The upgrade process does not upgrade the Qubes appmenus (start menu) entries and these must be manually updated. The reason is many applications that were installed by default in {{q_project_name}} 14 are no longer present in {{q_project_name}} 15, due to the change from KDEish to XFCEish default applications. <ref>
+https://groups.google.com/d/topic/qubes-devel/pkvvm1WNznY
+</ref>
+	 
+# <code>Qubes appmenu</code> &rarr; <code>anon-whonix</code> &rarr; <code>Add more shortcuts</code>
+# <code>Qubes appmenu</code> &rarr; <code>sys-whonix</code> &rarr; <code>Add more shortcuts</code>
+# <code>Qubes appmenu</code> &rarr; <code>whonix-gw-14</code> &rarr; <code>Add more shortcuts</code>
+# <code>Qubes appmenu</code> &rarr; <code>whonix-ws-14</code> &rarr; <code>Add more shortcuts</code>
+</div>
+</div>
+
+=== Done ===
+All necessary steps are now complete.
+
+As a final recommendation, it is advisable to run [[whonixcheck]] to check numerous, important system variables. <ref>The following message is not a concern. 
+<pre>
+The following packages were automatically installed and are no longer required:
+  hardened-packages-recommended-cli non-qubes-vm-enhancements-gui whonix-workstation-default-applications-gui whonix-ws-desktop-shortcuts
+</pre> </ref>
+
+= Automated =
+Testers only! Non-Qubes-Whonix only. XFCE only. [[Professional Support]] only.
+
+This would probably brick Qubes-Whonix!
+
+Create a file <code>/usr/lib/release-upgrade</code> with root rights.
+
+<pre>
+kdesudo mousepad /usr/lib/release-upgrade
+</pre>
+
+Paste the following contents. <ref>
+* https://github.com/Whonix/whonix-legacy/blob/master/usr/lib/release-upgrade
+* https://raw.githubusercontent.com/Whonix/whonix-legacy/master/usr/lib/release-upgrade
+</ref>
+
+<pre>
+#!/bin/bash
+
+## Copyright (C) 2020 - 2020 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+## See the file COPYING for copying conditions.
+
+set -x
+set -e
+set -o pipefail
+
+error_handler() {
+   local MSG="\
+###########################################################
+## Something went wrong. Please report this bug!
+##
+## BASH_COMMAND: $BASH_COMMAND
+###########################################################\
+"
+   echo "$MSG"
+   exit 1
+}
+
+trap "error_handler" ERR
+
+if [ "$(id -u)" != "0" ]; then
+   true "ERROR: Must run as root."
+   true "sudo $0"
+   exit 112
+fi
+
+if test -e /usr/share/anon-gw-base-files/gateway ; then
+   pkg="non-qubes-whonix-gateway-xfce"
+elif test -e /usr/share/anon-ws-base-files/workstation ; then
+   pkg="non-qubes-whonix-workstation-xfce"
+else
+   error "Could not detect gateway or workstation"
+fi
+
+export DEBDEBUG=1
+
+dpkg --audit
+
+dpkg --configure -a
+
+rm -f /etc/apt/sources.list.d/whonix.list
+
+sed -i 's/timeout_after="240"/timeout_after="600"/g' /usr/lib/security-misc/apt-get-update
+
+sed -i 's/update \&/update "$@" \&/g' /usr/lib/security-misc/apt-get-update
+
+/usr/lib/security-misc/apt-get-update -o Acquire::Languages=none -o Acquire::IndexTargets::deb::Contents-deb::DefaultEnabled=false
+
+apt-get-noninteractive --yes purge exim* || true
+
+apt-get-noninteractive --yes --no-install-recommends dist-upgrade
+
+apt-get-noninteractive --yes purge exim* || true
+
+apt-get-noninteractive --yes --no-install-recommends install python-qt4
+
+dpkg --audit
+
+dpkg --configure -a
+
+whonix_repository --enable --codename buster
+
+sed -i "s/stretch/buster/g" /etc/apt/sources.list.d/debian.list
+
+rm -f /etc/apt/sources.list.d/backports.list /etc/apt/sources.list.d/testing.list /etc/apt/sources.list.d/unstable.list /etc/apt/apt.conf.d/70defaultrelease
+
+sed -i "s/stretch/buster/g" /etc/apt/sources.list.d/qubes*.list &>/dev/null || true
+
+/usr/lib/security-misc/apt-get-update -o Acquire::Languages=none -o Acquire::IndexTargets::deb::Contents-deb::DefaultEnabled=false
+
+apt-get-noninteractive dist-upgrade --yes --no-install-recommends
+
+dpkg --audit
+
+dpkg --configure -a
+
+apt-get-noninteractive --yes purge exim* || true
+
+service whonix-legacy restart
+
+apt-get-noninteractive --yes --no-install-recommends install "$pkg"
+
+dpkg --audit
+
+dpkg --configure -a
+
+apt-get-noninteractive --yes purge exim* || true
+
+apt-get-noninteractive purge --yes non-qubes-whonix-gateway || true
+apt-get-noninteractive purge --yes non-qubes-whonix-gateway-kde || true
+apt-get-noninteractive purge --yes non-qubes-whonix-workstation || true
+apt-get-noninteractive purge --yes non-qubes-whonix-workstation-kde || true
+apt-get-noninteractive purge --yes whonix-gw-kde-desktop-conf || true
+apt-get-noninteractive purge --yes whonix-gw-desktop-shortcuts || true
+apt-get-noninteractive purge --yes hardened-desktop-applications-kde || true
+apt-get-noninteractive purge --yes hardened-desktop-environment-essential-kde || true
+apt-get-noninteractive purge --yes sddm || true
+apt-get-noninteractive purge --yes kde-* || true
+apt-get-noninteractive purge --yes libkde* || true
+apt-get-noninteractive purge --yes qml-module-org-kde-* || true
+apt-get-noninteractive purge --yes polkit-kde-agent-1 || true
+apt-get-noninteractive purge --yes kded5 || true
+apt-get-noninteractive purge --yes *kdelibs* || true
+apt-get-noninteractive purge --yes kdesudo || true
+apt-get-noninteractive purge --yes ark || true
+apt-get-noninteractive purge --yes konsole || true
+apt-get-noninteractive purge --yes apt-cacher-ng || true
+apt-get-noninteractive purge --yes wpasupplicant || true
+
+if test -e /usr/share/anon-gw-base-files/gateway ; then
+   apt-get-noninteractive purge --yes vlc* || true
+   apt-get-noninteractive purge --yes libvlc* || true
+   apt-get-noninteractive purge --yes phonon* || true
+fi
+
+dpkg --audit
+
+dpkg --configure -a
+
+apt-get-noninteractive --yes autoremove
+
+dpkg --audit
+
+dpkg --configure -a
+
+sudo -u user mkdir -p /home/user/desktop-backup || true
+sudo -u user mv /home/user/Desktop/*.desktop /home/user/desktop-backup/ || true
+sudo -u user mv /home/user/.config/xfce4 /home/user/desktop-backup/ || true
+
+rm -f /var/cache/anon-base-files/first-boot-skel.done || true
+/usr/lib/helper-scripts/first-boot-skel || true
+
+unlink /usr/local/etc/onion-grater-merger.d/* || true
+
+rm -f /usr/local/etc/onion-grater-merger.d/40_bisq.yml
+
+sudo sed -i "s#/usr/sbin/tinyproxy#/usr/bin/tinyproxy#g" /lib/systemd/system/qubes-updates-proxy.service &>/dev/null || true
+
+true "OK. Success."
+</pre>
+
+Safe.
+
+Make executable.
+
+<pre>
+sudo chmod +x /usr/lib/release-upgrade
+</pre>
+
+Run release upgrade script.
+
+<pre>
+sudo /usr/lib/release-upgrade
+</pre>
+
+If everything went well, at the end it will show <code>OK. Success.</code>.
+
+= Footnotes =
+
+{{reflist|close=1}}
+
+[[Category:Documentation]]
+
+{{Footer}}
