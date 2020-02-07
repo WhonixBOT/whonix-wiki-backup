@@ -1,0 +1,121 @@
+{{Header}}
+{{#seo:
+|description=This is a proposal to defend a permanent takedown attack. A mechanism to securely download project metadata, which includes censor resistance, defeating rollback and infinite freeze attacks.
+|image=https://www.whonix.org/w/images/6/67/Resistance-1832389640.jpg
+}}
+= Summary =
+This is a proposal to defend a '''<u>P</u>ermanent <u>T</u>akedown <u>A</u>ttack''' (<u>'''PTA'''</u>). A mechanism to securely download project metadata, which includes censor resistance, defeating rollback and infinite freeze attacks.
+
+Both, <code>TUF (The Update Framework)</code><ref>https://www.updateframework.com/</ref> <ref>https://github.com/theupdateframework/tuf</ref> and <code>PTAD (Permanent Takedown Attack Defender)</code>, do not require software to be running on a server and can be run on any (free) web space. <ref>
+https://github.com/theupdateframework/tuf/issues/78
+</ref>
+
+[https://github.com/theupdateframework/tuf/issues/127 TUF cannot defeat a PTA yet.]
+
+= Definitions =
+
+<font size="-3">Definition by this page:</font>
+
+<blockquote>
+'''Project metadata'''. Is defined as version information, news, update information, project homepage and so on.
+</blockquote>
+
+<font size="-3">Definition by this page:</font>
+
+<blockquote>
+'''Permanent takedown attack.''' An attacker takes down a mirror by taking over the domain or by taking down the server using DoS<ref>https://en.wikipedia.org/wiki/Denial-of-service_attack</ref> attack, cracking down the server with malware or by pressuring humans (the server administrator).
+</blockquote>
+
+<font size="-3">Quote: <code>TUF: Attacks and Weaknesses</code><ref name=tufaaw>https://github.com/theupdateframework/tuf/blob/develop/SECURITY.md http://www.webcitation.org/6F7Io2ncN</ref>:</font>
+
+<blockquote>
+'''Rollback attacks.''' An attacker presents a software update system with older files than those the client has already seen, causing the client to use files older than those the client knows about.
+</blockquote>
+
+<font size="-3">Quote: <code>TUF: Attacks and Weaknesses</code><ref name=tufaaw />:</font>
+
+<blockquote>
+'''Indefinite freeze attacks.''' An attacker continues to present a software update system with the same files the client has already seen. The result is that the client does not know that new files are available.
+</blockquote>
+
+= Motivation =
+
+What happens if an adversary ever manages to ban project websites such as Tails or {{project_name}}? Boum.org domain and server lost, {{project name}} kicked from whonix.org server not getting any other hosting platform.
+
+The project admins will lose the ability to inform their users about critical security updates and communications break down. Users will no longer be able to visit the original homepage, which could even get replaced with a malicious version.
+
+It would take some time to reorganize hosting, move to censor resistant hosting and to inform the existing user base.
+
+= Discussion =
+
+Using a single server, i.e. single domain/server for project metadata is recommended against, as it introduces a single point of failure. When the server goes offline, project metadata can no longer be distributed. The server could also serve either due to a bug or by malicious intent a gpg signed, but outdated project metadata.
+
+To prevent disclosing which software is fetching project metadata, the request must go through Tor. Identity correlation through circuit sharing must be circumvented by using a separate circuit for project metadata fetches.
+
+GPG signing of project metadata is a must, since it is independent from SSL certificate authorities.
+
+The public key of the signer must be included into the software project at build time. Distributed trust could be implemented by using X signing keys and defining, that project metadata has to be signed by at least Y of X signers to be accepted as valid.
+
+Apparently, there is not any distributed censor resistant data storage available over Tor. Freenet is a distributed censor resistant data storage, which can unfortunately not be accessed over Tor. <ref>Freenet could be accessed over Tor, by tunneling UDP over Tor using a VPN. This is too unsuitable for most users to be considered as a workaround. Most VPNs cost money, VPN over Tor is a hack alone and there are not as many VPN nodes as Tor exits, are there?</ref> Otherwise Freenet could be well suited for this purpose. This is likely not going to change anytime soon.<ref>https://emu.freenetproject.org/pipermail/devl/2016-December/039447.html</ref>
+
+Had a constructive discussion with GNUnet devs. Will wait for the next stable announcement.<ref>https://lists.gnu.org/archive/html/gnunet-developers/2016-12/msg00033.html</ref>
+
+= Implementation =
+
+There are web services run by different organizations, which allow (free) web hosting, which can be used for project metadata. Examples are github pages, sourceforge file release system and free onion hosting services. <ref>Such as [http://torhostg5s7pa2sn.onion/ torhost].</ref>
+
+Below is an example, how a project metadata file could look like.
+
+<pre>
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+projectversion: 9
+
+metadataversion: 536
+validuntil: 1369159330
+
+homepage: https://www.whonix.org
+
+news: No important news.
+
+mirror 1: http://whonix.sourceforge.net/whonix_news.asc
+mirror 2: http://su6ephfi7dtxnbtb.onion/whonix_news.asc
+mirror 3: https://adrelanos.pages.github.com/whonix_news.asc
+
+-----BEGIN PGP SIGNATURE-----
+
+xxxSIGNATURExxx
+-----END PGP SIGNATURE-----
+</pre>
+
+Such a project metadata file is supposed to be initially copied into the project's binary distribution at build time. The purpose is to initially equip the metadata fetcher with a list of mirrors.
+
+From all available mirrors, the metadata fetcher uses all <ref>Or if load balancing is required, using multiple and random mirrors.</ref> mirrors at each run time to download the current project metadata. If metadata mirrors are modified or expanded, the updated file will possibly be stored persistently and overrule the metadata file which was included at build time.
+
+The ''projectversion'' variable contains the version of the project and can be anything. The ''homepage'' variable contains the latest homepage of the project. It can be useful to inform users about the new homepage in case the old one has been taken down. The ''news'' variable contains a plain text string. Most of the times it shouldn't contain anything and should only be used to inform users about urgent things, such as when a takedown attack is in place.
+
+The ''metadataversion'' variable is a consecutive number, i.e. after 536 follow 537. Each update of the metadata file increases that number. The client may not accept lower metadata version numbers, than the client already knows about. This should defeat rollback attacks.
+
+Defeating indefinite freeze attacks is technically a bit more difficult. Each metadata fetch against a different mirror has to go through its own Tor circuit. Going through its own Tor circuit, most times a different Tor exit will be used (and connections to onion services are stream isolated so or so). This will result in using different ISP's to connect to the metadata mirror and as long as not all Tor exit relays or all Tor exit relays's ISPs or all metadata mirrors are compromised, no indefinite freeze attack can be successfully mounted. When fetching from onion services, there are no ISP's involved, who could tamper with the metadata.
+
+The ''validuntil'' variable represents how long the file is valid, until the mirror is considered outdated. The number represents the time in unixtime<ref>https://en.wikipedia.org/wiki/Unix_time</ref>. If a mirror is considered outdated, a new mirror will be tried.
+
+Distributed trust for the signers has not yet been considered. The signers gpg key is fully trusted. To implement this, one could look into the TUF project, since the TUF project already contains code to define a threshold of signers.
+
+Specifically for {{project_name}}, [[whonixcheck]] and the [[Dev/News|{{project_name}} News Format]] could be extended.
+
+= See Also =
+* [[Dev/project-news]]
+* [[Dev/apt-revoker|apt-revoker Check for Revocation Certificates before running apt-get]]
+* [https://www.whonix.org/pipermail/whonix-devel/2019-January/001293.html package manager update security on/off switch]
+* ticket: https://phabricator.whonix.org/T114
+* https://forums.whonix.org/t/permanent-takedown-ideas/8890/1
+
+= Footnotes =
+
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Design]] [[Category:Design Proposal]] [[Category:Development]]
