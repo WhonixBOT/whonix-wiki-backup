@@ -1,0 +1,176 @@
+{{Header}}
+{{Title|
+title={{Kicksecure}} for KVM with XFCE
+}}
+{{#seo:
+|description={{Kicksecure}} for KVM with XFCE Desktop Environment
+|image=image=https://www.whonix.org/w/images/b/be/234234234236kvm.png
+}}
+<u>{{kicksecure}}: A Security-hardened, Non-anonymous Linux Distribution.</u>
+
+=== Intro ===
+
+This is the KVM flavor of the {{Kicksecure}} project - a hardened and security centric version of Debian optimized for virtualized environments and <u>clearnet usage</u>. Much of the warnings and use case instructions from the {{Project name}} edition, such as running the OS [[KVM#Command_Line_Interface_.28CLI.29|headlessly]] or using [[KVM#Shared_Folders|shared folders]], are applicable.
+
+For more details about {{Kicksecure}}, check [[Kicksecure|these]] [[Kicksecure/About|pages]].
+
+Support tickets should be forwarded to the [https://forums.whonix.org/c/kvm KVM subforum].
+
+=== Build from Scratch ===
+
+Advanced users are encouraged to [[Dev/Build_Documentation|build]] {{Kicksecure}} images for high security assurance.
+
+
+
+=== Download {{Kicksecure}} ===
+
+'''{{free}} Download '''
+
+{{DownloadTableUnified
+|url=https://download.whonix.org
+|project=Kicksecure
+|flavor=XFCE
+|after_slash=libvirt
+|extension=libvirt.xz
+|version=15.0.0.8.7
+|appendix=
+|signing=Verify images using this [[Kicksecure/KVM#Verify_the_Kicksecure_.E2.84.A2_Image|Signing Key]]
+}}
+
+{{Anchor|Verify the {{Kicksecure}} Images}}
+
+=== Verify the {{Kicksecure}} Image ===
+{{Box|text=
+'''1.''' Download [https://www.whonix.org/hulahoop.asc HulaHoop]'s [[OpenPGP]] key from the website.
+
+{{CodeSelect|code=
+curl {{Curl Secure}} https://www.whonix.org/hulahoop.asc -o hulahoop.asc
+}}
+
+'''2.''' Check fingerprints/owners without importing anything. <ref>
+https://forums.whonix.org/t/gpg-show-key-warning-gpg-warning-no-command-supplied-trying-to-guess-what-you-mean/7859
+</ref>
+
+{{CodeSelect|code=
+gpg --keyid-format long --import --import-options show-only --with-fingerprint hulahoop.asc
+}}
+
+'''3.''' Verify the output.
+
+The output should be identical to the following. 
+
+<pre>
+pub   rsa4096/50C78B6F9FF2EC85 2018-11-26 [SCEA]
+      Key fingerprint = 04EF 2F66 6D36 C354 058B  9DD4 50C7 8B6F 9FF2 EC85
+uid                            HulaHoop
+sub   rsa4096/EB27D2F8CEE41ACC 2018-11-26 [SEA]
+</pre>
+
+'''4.''' Import the key.
+
+{{CodeSelect|code=
+gpg --import hulahoop.asc
+}}
+
+The output should confirm the key was imported.
+
+<pre>
+gpg: key 0x50C78B6F9FF2EC85: public key "HulaHoop" imported
+gpg: Total number processed: 1
+gpg:               imported: 1
+</pre>
+
+<u>If the {{project name}} signing key was already imported in the past</u>, the output should confirm the key is unchanged.
+
+<pre>
+gpg: key 0x50C78B6F9FF2EC85: "HulaHoop" not changed
+gpg: Total number processed: 1
+gpg:              unchanged: 1
+</pre>
+
+'''5.''' ''Optional:'' For extra assurance, verify the key was also signed by [[Patrick_Schleizer|Patrick Schleizer]].
+
+{{CodeSelect|code=
+gpg --check-sigs "04EF 2F66 6D36 C354 058B 9DD4 50C7 8B6F 9FF2 EC85"
+}}
+
+The output should be identical to the message below.
+
+<pre>
+pub   rsa4096/0x50C78B6F9FF2EC85 2018-11-26 [SCEA]
+      04EF2F666D36C354058B9DD450C78B6F9FF2EC85
+uid                   [ unknown] HulaHoop
+sig!         0x8D66066A2EEACCDA 2018-12-14  Patrick Schleizer <adrelanos@riseup.net>
+sig!3        0x50C78B6F9FF2EC85 2018-11-26  HulaHoop
+sub   rsa4096/0xEB27D2F8CEE41ACC 2018-11-26 [SEA]
+sig!         0x50C78B6F9FF2EC85 2018-11-26  HulaHoop
+
+gpg: 3 good signatures
+</pre>
+
+If the following message appears at the end of the output.
+
+<pre>
+gpg: no ultimately trusted keys found
+</pre>
+
+Analyze the other messages as usual. This extra message does not relate to the {{Kicksecure}} signing key itself, but instead usually means the user has not created an OpenPGP key yet, which is of no importance when verifying virtual machine images.
+
+'''6.''' Verify the archive with Hulahoop's key.
+
+{{CodeSelect|code=
+gpg --verify Kicksecure*.libvirt.xz.asc whonix*.libvirt.xz
+}}
+
+The output should include the following text.
+
+<pre>
+gpg: Good signature from "HulaHoop"
+</pre>
+}}
+
+=== Decompress ===
+
+Use {{Code2|tar}} to decompress the archive.
+
+{{CodeSelect|code=
+tar -xvf Kicksecure*.libvirt.xz
+}}
+
+Do not use {{Code2|unxz}}! Extract the images using {{Code2|tar}}.
+
+
+== Importing {{Kicksecure}} VM Template ==
+
+The supplied XML files serve as a description for libvirt and define the properties of a {{Kicksecure}} VM and the networking it should have.
+{{Box|text=
+'''1.''' {{Kicksecure}} works with the network named ''default'' out of the box.
+
+
+'''2.''' Import the {{Kicksecure}} image.
+
+{{CodeSelect|code=
+virsh -c qemu:///system define Kicksecure*.xml
+}}
+}}
+
+== Moving the {{Kicksecure}} Image File ==
+
+The XML files are configured to point to the default storage location of <code>/var/lib/libvirt/images</code>. The following steps move the images there so the machines can boot.
+
+<u>Note:</u> Changing the default location may cause conflicts with SELinux, which will prevent the machines from booting.
+
+It is recommended to move the image file instead of copying it.
+
+{{CodeSelect|code=
+sudo mv Kicksecure*.qcow2 /var/lib/libvirt/images/Kicksecure.qcow2
+}}
+
+{{Anchor|sparse files}}
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
