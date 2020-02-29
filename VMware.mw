@@ -1,0 +1,162 @@
+{{Header}}
+{{#seo:
+|description=Using {{project_name}} with VMware
+|image=https://www.whonix.org/w/images/a/a8/Vmware.jpeg
+}}
+
+= Status of Support for Running {{project_name}} in VMware =
+== Current state ==
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = '''VMware warning:''' 
+* This configuration is [[unsupported]].
+* Although it works, it is considered highly experimental and recommended against.
+* VMware is closed source, meaning it is a security through obscurity approach (unrecommended). <ref>https://en.wikipedia.org/wiki/Security_through_obscurity</ref>.
+* It is far safer to use a [[Download|supported platform]].
+}}
+
+== Goal ==
+'''{{project_name}} needs a contributor, maintainer, to support {{project_name}} in VMware!'''
+
+What does "maintainer" mean in this context?
+
+Important:
+* Someone who runs those [[Test]], [[LeakTests]] and tests from [[Protocol-Leak-Protection_and_Fingerprinting-Protection]].
+* Someone who otherwise looks around if everything is sane.
+* User support, answering questions in the forums.
+
+
+Ideal:
+* Someone who creates, signs, uploads .ova images for VMware.
+* Future development.
+* Describes best security practices
+
+= Unofficial Supported VMware Products =
+
+'''VMware Workstation''' was tested. It is currently in a ''it works'' state, but ''rarely tested''.
+
+'''VMware ESX(i)''' (up to version 6.0) is tested and ''it works''.
+
+'''VMware Server''' or other products are ''untested'', but most likely also in a ''it works'' state.
+
+'''VMware Player''' is tested by an anonymous user in the old forum <ref>https://sourceforge.net/p/whonix/discussion/general/thread/84452a10/?limit=25&page=1#8f27</ref> and works as well. This is unconfirmed. Setting up the internal network can sometimes be tricky, this [http://xmodulo.com/2013/02/how-to-create-multiple-networks-on-vmware-player.html article] contains instructions how to setup.
+
+= About VMware =
+Maybe I am spoiled by Free Software (see <ref>https://en.wikipedia.org/wiki/Free_software</ref> for definition). VMware is not very open, but in my opinion openness is important for security. I haven't found out how to submit a bug report. It looks like only buying customers may submit bug reports and there is only community support for products that are free in price. There is also no list with open bugs. Without a list of known bugs, I am unable to determine if VMware is suitable for {{project_name}}, i.e. does not compromise the user's anonymity. Since bug reports remained entirely unanswered, it is also demotivating to investigate, contribute and submit further report bugs.
+
+
+= HowTo =
+Do not forget to read the [[Documentation]].
+
+== VMware Workstation ==
+Newer third party video:<br />
+[https://www.youtube.com/watch?v=DzLxUr33A-M How to Install {{project_name}} 13 for Anonymous Web Browsing + Review on VMware Workstation [HD]]
+
+Existing instructions:
+
+Importing the appliances:
+* You can either import the [[Download]] version or manually build from source. 
+* Import {{gateway_product_name_short}}.ova and {{workstation_product_name_short}}.ova. 
+* Due to a VMware upstream bug, you may have to press ''retry'' when importing the .ova images (to relax the importing requirements).
+
+
+Setting up the network:
+* Connect the virtual network adapter to custom. This is important! No host-only, no NAT, no bridging! I used VMnet9 virtual network, as it wasn't used by anything else.
+* Adjust the adapters with the following settings:
+** {{gateway_product_name}} set ''network adapter'' '''2''' to custom, ''/dev/vmnet8'' (or on Windows probably: ''vmnet9'').
+** {{workstation_product_name}} set ''network adapter'' '''1''' to ''custom'', ''/dev/vmnet8'' (or on Windows probably: ''vmnet9'').
+* '''Note''': if ''vmnetX'', such as for example ''vmnet8'' is already used by the NAT adapter, do not re-use it for the custom adapter. In that case, use something else, such as ''vmnet9''.
+
+
+Tweaks:
+* Due to a VMware upstream bug, VM time is not set to UTC. Set VM time to UTC, otherwise Tor might not be able to connect.
+
+== VMware ESX(i) ==
+Importing the .ova templates will simply not work. ESX(i) will not recognize the hardware family.
+However, there are workarounds, either extracting the .ova and editing the .ovf files or using VMware Workstation.
+===Importing virtual disk files===
+One way {{project_name}} can be made to run on ESXi is by extracting the .vmdk (VM virtual disk) files.
+An example can be found here<ref>https://github.com/DartNecrON/{{project_name_short}}ESXi</ref>. 
+
+Importing the appliances:
+* Create two virtual machines in ESX(i) with default settings, do not create a virtual disk for them.
+* Import both ova templates in VirtualBox, yes, VirtualBox.
+* Once they are imported, grab the .vmdk disk files from their physical location on your disk (VirtualBox has extracted them from the .ova)
+* Upload both disk files to the datastore that you are using in ESX(i)
+* Attach the disk files to the appropriate virtual machines.
+
+Set the networking:
+* Make sure the {{gateway_product_name}} has '''two''' network adapters configured as a virtual machine, the {{workstation_product_name}} only '''one'''.
+* Attach the first {{gateway_product_name}} network adapter to your '''outside network vSwitch''' (this can be WAN, LAN, DMZ, ...)
+* Attach the second {{gateway_product_name}} network adapter to an '''isolated vSwitch'''. Preferably create a new vSwitch, which will be used only by {{gateway_product_name}} and {{workstation_product_name}}. '''Attach no physical NICs to this vSwitch!''' Make sure you create a new vSwitch, not simply a new portgroup. Promiscuous mode within a vSwitch might screw you over.
+* Attach the {{workstation_product_name}} network adapter to the isolated vSwitch from previous step.
+
+Once the machines boot, everything should come online nicely.
+'''Double check the vSwitch logic in your setup!'''
+
+
+===Unfinished: Alternate Workflow===
+If you prefer building from source, or the previous methods did not work, here is a method that was tested with 14.0.0.9.9, & ESXi 6.7. 
+====Build Images====
+Using a 64bit linux machine, build both gw & ws whonix flavors target raw 
+Example build phrase: <pre> sudo ./build_whonix --flavor whonix-gateway-cli --vmsize 20G --target raw --build etc </pre>
+Use qemu-img to convert the raw images to vmdk 
+Example: <pre> qemu-img convert image.raw image.vmdk etc etc </pre>
+Move or copy the .vmdk disks to a data store on ESXi 
+Example: <pre> scp </pre> 
+
+====Create VMs====
+* From ESXi, create a new virtual switch for internal traffic. IMPORTANT: Delete the uplink by  clicking the x! Create a new port group for internal traffic using the virtual switch you just created.
+* Create a new virtual machine named {{workstation_product_name}}: Guest linux Debian 9 64bit, one network interface (change network to internal switch/portgroup), delete disk, add existing disk, select vmdk created for workstation, expand dropdown and select IDE controller. Boot the machine.
+* Create a new virtual machine named {{gateway_product_name}}: Guest linux Debian 9 64bit, two network interfaces (leave first one default, add second and change to internal switch. Delete disk, add existing disk, select .vmdk created for gateway, expand dropdown and select IDE controller. Boot the machine. Note: This machine will have no WAN access unless one of the following actions is taken: addition of static route or modification of eth0 to DHCP.
+
+===Using VMWare Workstation as intermediary===
+If VMware Workstation is available, another option that works without manual extraction and repacking is to import both VMs to VMware Workstation, check that all settings are properly applied (as per the guide above) and then either export the VMs to ovf and import them on the ESXi server or, if the server is connected to the Workstation instance, migrate via VMware Workstation. This generally works out of the box, although the networking should be reviewed and isolated as per the guide above.
+
+= Harden VMware products =
+See also [[Security Guide]] and [[Advanced_Security_Guide]].
+
+== General ==
+* Remove printer
+* Disable 3D acceleration
+* Remove CD/DVD drive
+* Remove Floppy drive
+* Remove USB controller (at least disable automatically connect new devices)
+* Remove sound card
+* '''Do not install''' VMware Tools or open-vm-tools (comfort vs. security). VMware Tools leak information towards the Host OS or Hypervisor.
+
+
+== Additional Security ==
+One might wish to access the {{workstation_product_name}} through SSH. Therefore you could add a second network adapter with [http://www.vmware.com/support/ws55/doc/ws_net_configurations_hostonly.html Host-Only Networking]. Beware about this adapter! This can cause information leakage!
+
+<pre>
+If you install the proper routing or proxy software on your host computer, you can establish
+a connection between the host virtual Ethernet adapter and a physical network adapter on the
+host computer. This allows you, for example, to connect the virtual machine to a Token Ring
+or other non-Ethernet network.
+
+On a Windows 2000, Windows XP or Windows Server 2003 host computer, you can use host-only
+networking in combination with the Internet connection sharing feature in Windows to allow a
+virtual machine to use the host's dial-up networking adapter or other connection to the
+Internet. See your Windows documentation for details on configuring Internet connection
+sharing.
+</pre>
+
+= VMware upstream bug reports =
+* [http://communities.vmware.com/thread/423920 VMware bug report: failed to import .ova image]
+* [http://communities.vmware.com/thread/423924 VMware bug report: .ova image internal network becomes bridged network]
+* [https://www.virtualbox.org/ticket/11160 VirtualBox bug report Ticket #11160: .ova image created with VirtualBox, failed to import in VMware]
+
+= Troubleshooting =
+(Windows 8 specific forum help thread: <br />
+[[Special:AWCforum/st/id110/No_Tor/Internet_connection_on_VM....html|No Tor/Internet connection with Windows 8 on VMware - {{gateway_product_name}}]].)
+
+(Black screen forum help thread: <br />
+[[Special:AWCforum/st/id268/Gateway_7_issue_on_Vmware_workst....html]])
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
