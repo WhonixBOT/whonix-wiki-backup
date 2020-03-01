@@ -1,0 +1,510 @@
+{{Header}}
+{{#seo:
+|description=Introduction into {{project name}} source code.
+|image=https://www.whonix.org/w/images/f/fa/Accept-47587640.png
+}}
+{{forkme}}
+= Introduction =
+This chapter is dedicated to give an introduction into the {{project name}} source code. '''''If you prefer to read and understand the source code just by reading scripts you may skip this optional chapter.''''' It can be quite difficult to get started with hacking existing big complex projects.
+
+'''build-steps'''
+
+This is a high level overview. {{project_name}}-Example-Implementation can currently be build in nine steps. (There is also a whonix_build script, which automates these eight steps for your convenience.)
+
+* 1100_prepare-build-machine
+* 1150_export-libvirt-xml
+* 1200_create-debian-packages
+* 1300_create-raw-image
+* 1700_install-packages
+* 2300_run-chroot-scripts-post-d
+* 2400_convert-raw-to-qcow2
+* 2500_convert-raw-to-vdi
+* 2600_create-vbox-vm
+* 2700_export-vbox-vm
+* 2800_create-report
+
+'''help-steps'''
+
+Boring methods, which are required by the build-steps above.
+
+* delete-vbox-vm
+* mount-raw
+* mount-vdi
+* chroot-raw
+* unchroot-raw
+* unmount-raw
+* unmount-raw-force
+* unmount-vdi
+* unmount-vdi-force
+* pre gets sourced by all other scripts.
+* variables gets sourced by all other scripts.
+
+'''whonix_build'''
+
+Is a script, which simply runs all other build-steps. Actually it is "optional". It has very little functionality besides running all other steps. You are free to run all steps one by one. That is useful for learning and for debugging purposes. In case you want to fix a bug or in case you want to upgrade the distribution or in case you want to switch the operating system or whatever you are better off running the steps manually. Run it with --help to see available switches.
+
+'''''Overview''''':
+
+# prepare-build-machine: installs build dependencies and applies a few other required settings for building from source.
+# export-libvirt-xml: Copies files from {{Code2|libvirt}} folder to {{Code2|~/whonix_binary}} folder and adds version numbers to them.
+# create-debian-packages: Recursively works through {{Code2|packages}} folder, builds them one by one and adds them to a local APT repository.
+# create-raw-image: [http://grml.org/grml-debootstrap/ grml-debootstrap] creates virtual machine images in '''.raw''' image format. It keeps care of creating the image, the partition table, grub boot manager, minimal system debootstrap and apt-get installing all {{project name}} packages. This step requires most time in the build process.
+# install-packages: Installs meta .deb packages whonix-shared-packages-dependencies/recommended, desktop, desktop-kde, kde-accessibility and whonix-*-packages-dependencies/recommended and whonix-workstation-default-applications. Those only include dependencies and recommended packages which are pulled from Debian's apt repository.
+# run-chroot-scripts-post-d: Post Chroot Scripts are applied.
+# convert-raw-to-qcow2: Only having effect when using {{Code2|--qocw2}} switch. The '''.raw''' image gets converted to a '''.qcow2''' image. Actually not converted, a new file will be created and the old '''.raw''' remains available until cleanup is run or manually deleted or grml-debootstrap runs again. The '''.raw''' format is more "generic". VirtualBox does not support raw ('''.raw''') images, but '''.vdi''' and '''.vmdk''' (and others).
+# convert-raw-to-vdi: The '''.raw''' image gets converted to a '''.vdi''' image. (Actually not converted, as explained above.)
+# create-vbox-vm: A virtual machine (VirtualBox) will be created and the '''.vdi''' image will be attached.
+
+'''''Modularity:'''''
+
+All steps could be easily replaced to add support for additional virtualizers, operating systems and so on. The numbers before the script names (20_..., 25_..., 30..., ...) are honored by whonix_build (using [http://manpages.ubuntu.com/manpages/raring/man8/run-parts.8.html run-parts]), which runs these steps in lexical order. Therefore you can easily add steps to the beginning or the end or even wretch steps in between.
+
+'''''File sizes:'''''
+
+Do not get shocked by file sized. Initially the .raw is created with a size of 100 GB, but it will actually only take a fraction of that space on the harddrive. This is because .raw .vdi and .vmdk are all [[sparse files]], which means they do not take their maximum size, but only as much data as really is inside these images.
+
+'''Chroot Scripts'''
+
+* packages/anon-*-build-*/usr/lib/anon-dist/chroot-scripts-post.d/
+
+'''''Summary:'''''
+
+Thus, given the nature of the build step orientated scripts, you can easily work on the different aspects of {{project_name}}. For example, once you have created a clean virtual machine with the operating system only, you can make a copy, run either the gateway or the workstation copy routine or Chroot Scripts as often as you need to test your changes and if something goes wrong, go back to backup. You don't have to build everything from scratch again. <ref>If something would go wrong, you would have to reinstall the whole operating system every time again. That's why we use separate steps.</ref>
+
+'''''Another Introduction:'''''
+
+It is really not that difficult after all. If you like, you could read [[Manually_Creating_{{project_name_short}}|Manually Creating {{project_name}}]], which is a similar topic, which covers part of this in other words.
+
+= OpenPGP keys =
+OpenPGP public keys required for building {{project name}} are stored inside various packages. These include.
+
+* tb-updater: [https://github.com/{{project_name_short}}/tb-updater/tree/master/usr/share/torbrowser-updater-keys.d /usr/share/torbrowser-updater-keys.d]
+* anon-shared-build-apt-sources-tpo: [https://github.com/{{project_name_short}}/anon-shared-build-apt-sources-tpo/tree/master/usr/share/anon-shared-build-apt-sources-tpo/tpoarchive-keys.d /usr/share/anon-shared-build-apt-sources-tpo/tpoarchive-keys.d]
+** torprojectarchive.asc - Torproject's archive key https://www.torproject.org/docs/debian.html.en
+* whonix-repository:
+** [https://github.com/{{project_name_short}}/whonix-repository/tree/master/usr/share/whonix-repository/ /usr/share/whonix-repository/]
+*** <code>whonix.asc</code>
+* whonixcheck: [https://github.com/{{project_name_short}}/whonixcheck/tree/master/usr/share/whonix/whonix-news-keys.d /usr/share/whonix/whonix-news-keys.d]
+** <code>patrick.asc</code> - {{project name}} maintainer key - used for [[whonixcheck]]'s W[[Download#{{project_name}}_Version_Check_and_{{project_name_short}}_News|honix News]] v[https://github.com/{{project_name_short}}/whonixcheck/blob/master/usr/lib/whonixcheck/check_news#L84 erification]
+
+To find out what the keys are good for, simply [[Dev/git#grep_Whonix_source_code|grep the source code]].
+
+cd /home/user/{{project_name_short}}
+
+<pre>
+grep -r torbrowser-updater-keys.d *
+grep -r tpoarchive-keys.d *
+grep -r /usr/share/whonix-repository *
+</pre>
+
+If you are in luck, you never have to update the keys yourself and the {{project name}} maintainer will keep them updated. Otherwise and also as a good precaution you can verify these keys manually. Follow the instructions from torproject.org to obtain the key. Then simply check if the keys match or update the old key with the new one.
+
+Torproject's archive key expires on '''2022-08-05'''.
+
+<pre>
+gpg --fingerprint A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
+pub   rsa2048 2009-09-04 [SC] [expires: 2022-08-05]
+      A3C4 F0F9 79CA A22C DBA8  F512 EE8C BC9E 886D DD89
+uid           [ unknown] deb.torproject.org archive signing key
+sub   rsa2048 2009-09-04 [S] [expires: 2020-11-23]
+</pre>
+
+* https://github.com/QubesOS/qubes-template-configs/blob/master/R4.0/templates-community/whonix-15.conf
+
+= Chroot Scripts =
+== What are Chroot Scripts? ==
+Some operations for building {{project name}} cannot run as part Debian maintainer scripts (preinst, postinst, prerm, postrm). Those are installed by [https://github.com/{{project_name_short}}/whonix-initializer whonix-initializer] to {{Code2|/usr/lib/anon-dist/chroot-scripts-post.d}}. When those scripts are just installed, they do nothing. Those scripts are run in lexical order after package installation by a later build step of {{project name}} build script (see [[#Introduction]] for overview).
+
+== How many chroot-scripts are there and what are they used for? ==
+=== Introduction ===
+To get an always up to date list of packages that do ship chroot-scripts, you could run {{Code2|find}} from within {{project name}} source code folder.
+
+<pre>
+find . -type f -ipath *chroot-script* | sort
+</pre>
+
+Here is the result that has been written at time of {{project name}} git tag <code>13.0.0.1.1</code>.
+
+<pre>
+./build-steps.d/2300_run-chroot-scripts-post-d
+./packages/whonix-initializer/usr/lib/anon-dist/chroot-scripts-post.d/20_sanity_checks
+./packages/whonix-initializer/usr/lib/anon-dist/chroot-scripts-post.d/75_sources
+./packages/whonix-initializer/usr/lib/anon-dist/chroot-scripts-post.d/80_cleanup
+</pre>
+
+So let's go through them one by one.
+
+=== run-chroot-scripts-post-d ===
+
+<pre>
+./build-steps.d/2300_run-chroot-scripts-post-d
+</pre>
+
+This is actually not a chroot-script, it is the [https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/build-steps.d/2300_run-chroot-scripts-post-d build-steps.d/2300_run-chroot-scripts-post-d] build step, which is responsible of running all these chroot-scripts at {{project name}} build time.
+
+=== anon-shared-build-sanity-checks ===
+<pre>
+./packages/anon-shared-build-sanity-checks/usr/lib/anon-dist/chroot-scripts-post.d/20_sanity_checks_2
+./packages/anon-shared-build-sanity-checks/usr/lib/anon-dist/chroot-scripts-pre.d/20_sanity_checks
+</pre>
+
+* Details: Sanity tests that check the integrity of the build. See package description of the [https://github.com/{{project_name_short}}/anon-shared-build-sanity-checks anon-shared-build-sanity-checks] package for a more verbose explanation.
+* Used by default in {{project name}} build script: Yes.
+* Negligible for [[Dev/Installation_from_Repository|{{project_name}} installations from repository]]: Up to you.
+* Convertible into postinst script: Probably not, because some tests such as checking if apt-get/dpkg are in sane states cannot run inside a postinst script because apt-get/dpkg would be still working at that time.
+* package: https://github.com/{{project_name_short}}/anon-shared-build-sanity-checks
+* script:
+** https://github.com/{{project_name_short}}/anon-shared-build-sanity-checks/blob/master/usr/lib/anon-dist/chroot-scripts-pre.d/20_sanity_checks
+** https://github.com/{{project_name_short}}/anon-shared-build-sanity-checks/blob/master/usr/lib/anon-dist/chroot-scripts-post.d/20_sanity_checks_2
+
+=== anon-shared-build-remember-sources ===
+<pre>
+./packages/anon-shared-build-remember-sources/usr/lib/anon-dist/chroot-scripts-post.d/75_sources
+</pre>
+
+* Details: Logs GPL sources during build - for better obeying legal requirements.
+* Used by default in {{project name}} build script: Yes.
+* Negligible for {{project name}} installations from repository: Up to you.
+* Convertible into postinst script: Probably not, because for this script to have a chance of being effective, it must run after installation of all packages has finished.
+* package: https://github.com/{{project_name_short}}/anon-shared-build-remember-sources
+* script: https://github.com/{{project_name_short}}/anon-shared-build-remember-sources/blob/master/usr/lib/anon-dist/chroot-scripts-post.d/75_sources
+
+=== whonix-initializer ===
+<pre>
+./packages/whonix-initializer/usr/lib/anon-dist/chroot-scripts-post.d/80_cleanup
+</pre>
+
+* Details: Cleanup, and required for [[Verifiable Builds]], therefore only useful for vm image builds.
+* Used by default in {{project name}} build script: Yes.
+* Negligible for {{project name}} installations from repository: Yes.
+* Convertible into postinst script: Probably not and probably not required. If the image is not supposed to be redistributed, there is no need to clean up. If the image is supposed to be redistributed, it should be cleaned up beforehand.
+* package: https://github.com/{{project_name_short}}/whonix-initializer
+* script: https://github.com/{{project_name_short}}/whonix-initializer/blob/master/usr/lib/anon-dist/chroot-scripts-post.d/80_cleanup
+
+= Debugging =
+Stuff you may find helpful for debugging.
+
+== Build Configuration ==
+=== Build Configuration Folder ===
+You can drop configuration file either in:
+# {{Code|buildconfig.d}} or in
+# {{Code|/etc/whonix_buildconfig.d}}
+# {{Code|../buildconfig.d}} folder.
+
+Files should have the extension {{Code2|.conf}}.
+
+Method 2. is recommended for users.
+
+# Contains examples. It is more difficult to use, since you would have to git commit your build config files. Rather use.
+# {{Code|sudo mkdir --parents /etc/whonix_buildconfig.d}}
+# When {{Code|/home/user/{{project_name_short}}}} is your {{project name}} source folder, you could use {{Code|/home/user/buildconfig.d}} as your {{project name}} build configuration folder. It is easier to use, since you don't have to git commit your build config files.
+
+<ref>This is because {{Code|..}} means "one level below this folder".</ref>
+
+Below is an example how to use method 2.
+
+<pre>
+sudo mkdir /etc/whonix_buildconfig.d
+</pre>
+
+{{Open_with_root_rights|
+filename=/etc/whonix_buildconfig.d/50_user.conf
+}}
+
+Add. (Replace it with whatever build configuration variable you wish to set.)
+
+<pre>
+WHONIX_APT_REPOSITORY_OPTS='--enable --repository stable'
+export WHONIX_APT_REPOSITORY_OPTS
+</pre>
+
+Save.
+
+Done.
+
+=== Skipping Build Steps ===
+Rebuild the .ova images, while skipping the slow ''prepare-build-machine'' and ''create-debian-raw'' steps. (Of course, this assumes that these steps where run at least once previously.)
+
+The {{Code|sudo ./build-steps/1300_create-debian-raw -tX}} <ref>(replace X with g or w)</ref> step takes far most of the build creation time. As long as no packages have been added or removed, you can repeat all other steps from a backup, which has been automatically created for you, by using.
+
+<pre>
+sudo ./whonix_build --tor-gateway --build --fast1
+
+## or --tor-workstation
+</pre>
+
+There is also {{Code|--fast2}}, which skips all steps up to and including 1700_install-meta-packages.
+
+<pre>
+sudo ./whonix_build --tor-gateway --build --fast2
+## or --tor-workstation
+</pre>
+
+=== Skipping Chroot and Postinst Scripts ===
+Some chroot scripts, especially the 70_update_command_not_found and 70_torbrowser take very long, while they are non-critical. You can either run update-command-not-found and the Tor Browser Updater after {{project name}} has been build and booted, or if you don't wish to use them at all, just don't use it at all. Therefore you can conveniently disable them, to safe some time, which is useful for debug builds.
+
+Create your own build configuration, see {{Code|buildconfig.d}} folder. For see example {{Code|buildconfig.d/30_skip_torbrowser}}, which contains
+
+<pre>
+#export SKIP_SCRIPTS+=" 70_torbrowser "
+</pre>
+
+You could create a folder file {{Code|../buildconfig.d}} and a file {{Code|../buildconfig.d/50_skip_torbrowser}} and add.
+
+<pre>
+export SKIP_SCRIPTS+=" 70_torbrowser "
+</pre>
+
+This works for the following folders.
+
+* whonix_*/usr/share/whonix/postinst.d
+* whonix_*/usr/share/whonix/chroot-scripts-pre.d
+* whonix_*/usr/share/whonix/chroot-scripts-post.d
+
+Look at the file names and add them. ''export SKIP_SCRIPTS+=" another_file_name "''. Don't forget empty spaces ({{Code| }}) before and after {{Code|"}}. <ref name=bash-array>We are expanding a bash array.</ref>
+
+== Building without whonix_build main script ==
+=== most basic ===
+Example using an apt cache (apt-cacher-ng) and building qcow2 images.
+
+<pre>
+sudo apt-get install apt-cacher-ng
+</pre>
+
+<pre>
+cd Whonix
+</pre>
+
+<pre>
+sudo REPO_PROXY=http://127.0.0.1:3142 ./build-steps.d/1100_prepare-build-machine --build --target qcow2 --flavor whonix-gateway
+</pre>
+<pre>
+sudo REPO_PROXY=http://127.0.0.1:3142 ./build-steps.d/1150_export-libvirt-xml --build --target qcow2 --flavor whonix-gateway
+</pre>
+<pre>
+sudo REPO_PROXY=http://127.0.0.1:3142 ./build-steps.d/1200_create-debian-packages --build --target qcow2 --flavor whonix-gateway
+</pre>
+<pre>
+sudo REPO_PROXY=http://127.0.0.1:3142 ./build-steps.d/1300_create-raw-image --build --target qcow2 --flavor whonix-gateway
+</pre>
+<pre>
+sudo REPO_PROXY=http://127.0.0.1:3142 ./build-steps.d/1700_install-packages --build --target qcow2 --flavor whonix-gateway
+</pre>
+<pre>
+sudo REPO_PROXY=http://127.0.0.1:3142 ./build-steps.d/2300_run-chroot-scripts-post-d --build --target qcow2 --flavor whonix-gateway
+</pre>
+<pre>
+sudo REPO_PROXY=http://127.0.0.1:3142 ./build-steps.d/2400_convert-raw-to-qcow2 --build --target qcow2 --flavor whonix-gateway
+</pre>
+<pre>
+sudo REPO_PROXY=http://127.0.0.1:3142 ./build-steps.d/2500_convert-raw-to-vdi --build --target qcow2 --flavor whonix-gateway
+</pre>
+<pre>
+sudo REPO_PROXY=http://127.0.0.1:3142 ./build-steps.d/2600_create-vbox-vm --build --target qcow2 --flavor whonix-gateway
+</pre>
+<pre>
+sudo REPO_PROXY=http://127.0.0.1:3142 ./build-steps.d/2700_export-vbox-vm --build --target qcow2 --flavor whonix-gateway
+</pre>
+<pre>
+sudo REPO_PROXY=http://127.0.0.1:3142 ./build-steps.d/2800_create-report --build --target qcow2 --flavor whonix-gateway
+</pre>
+
+=== optional ===
+For example for a qcow2 build, the following steps can be safely skipped, since these would be doing nothing anyway.
+
+* 2500_convert-raw-to-vdi
+* 2700_export-vbox-vm
+* 2800_create-report (not in use currently)
+
+
+When first creating a gateway build and then building a workstation build (or vice versa) the following steps do not need to be repeated:
+
+* 1100_prepare-build-machine
+* 1200_create-debian-packages
+
+= SSH =
+
+* [[File_Transfer#SSH_into_{{gateway_product_name}}|SSH into {{gateway_product_name}}]]
+* [[File_Transfer#SSH_into_{{workstation_product_name}}|SSH into {{workstation_product_name}}]]
+
+= Mount and inspect images =
+
+[[File Transfer#mount-and-inspect-images|Mount and inspect images]]
+
+== Interactive Chroot ==
+https://github.com/{{project_name_short}}/whonix-developer-meta-files/
+
+* Interactively chroot {{gateway_product_name}}.
+
+Open a bash shell inside the {{gateway_product_name}} '''.raw''' image.
+
+<pre>
+sudo ./debug-steps/interactive-chroot-raw -tg
+</pre>
+
+* Interactively chroot {{workstation_product_name}}.
+
+Open a bash shell inside the {{workstation_product_name}} '''.raw''' image.
+
+<pre>
+sudo ./debug-steps/interactive-chroot-raw -tw
+</pre>
+
+* Check {{project name}} version number.
+
+Important before building builds for redistribution.
+
+Build config variable.
+
+<pre>
+anon_dist_build_version
+</pre>
+
+<pre>
+cat /usr/share/whonix/build_version
+</pre>
+
+= Less Important Goodies =
+
+== Unpacking '''.ova''' images ==
+
+If you want for some reason to unpack an '''.ova''', for example to get the '''.vdmk''' image, you can use tar.
+
+{{CodeSelect|code=
+tar -xvf {{gateway_product_name_short}}.ova
+}}
+
+Will show:
+
+{{CodeSelect|code=
+{{gateway_product_name_short}}.ovf
+{{gateway_product_name_short}}-disk1.vmdk
+}}
+
+== Converting '''.vmdk''' images to '''.raw''' images ==
+
+{{CodeSelect|code=
+#qemu-img info {{gateway_product_name_short}}-disk1.vmdk
+}}
+
+{{CodeSelect|code=
+qemu-img convert {{gateway_product_name_short}}-disk1.vmdk -O raw {{gateway_product_name_short}}.raw
+}}
+
+{{CodeSelect|code=
+#qemu-img info {{gateway_product_name_short}}.raw
+}}
+
+= Porting =
+
+These are some random notes about porting {{project name}} update debs to rpm.
+
+What would have to be done:
+
+* create rpm package
+* Find a replacement for config-package-dev, a package which allows third party packages ({{project_name}}) to own files which are owned by other packages. Such as {{Code2|/etc/tor/torrc}} is owned by tor, but anon-gw-anonymizer-config includes its own config file.
+* add init scripts (currently done by debhelper)
+* add man pages (currently done by debhelper and ronn, see debian/rules)
+* minor: replacement for dh_apparmor
+
+= Build Script Features =
+== Build Script Features - Implemented ==
+Each item in the following lists (essential, non-essential, undecided) is currently supported by the {{project name}} build script.
+
+-----
+
+essential:
+
+* does not use non-deterministic binary base boxes (VM images) (which if compromised would compromise the resulting {{project name}} image)
+* does not download anything that does not get gpg verified (apt-get, tb-updater do gpg verify everything)
+* prospective support to create deterministic images (once this is generally possible, {{project name}} build script can also learn this)
+* supports using APT Cache to speed up builds
+* exit code checking everywhere
+* apt-get unreliable exit code checking workaround
+* --target virtualbox build VirtualBox ova images
+** custom virtualbox VM settings (VBoxManage modifyvm "$VMNAME" --synthcpu on... etc.)
+* --target qcow2 build KVM images
+** xz archive creation
+** adding whonix-libvirt xml files to the xz
+* build {{gateway_product_name}}
+* build {{workstation_product_name}}
+* install Tor Browser by default inside {{workstation_product_name}}
+* default login user account creation, user "user" / password "changeme"
+
+-----
+
+non-essential:
+
+* step based, build steps case be run manually to speed up development
+* injection of custom build steps
+* building {{project name}} images that do not come with a desktop environment
+* building {{project name}} images that do not come with {{project name}} default applications
+
+-----
+
+undecided:
+
+* easy to implement creating other image types (raw images etc.)
+* creation of hash sum verification and gpg signatures
+* automatically installs all required build dependencies on the host system
+* cleanup command removing temporary files and/or images
+* --arch parameter support (--arch amd64 or --arch i386)
+* --kernel and --headers parameter support (--kernel linux-image-amd64 --headers linux-headers-amd64)
+* build from local apt repository rather than from deterministic remote repository
+* install {{project name}} packages from own custom remote repository
+* interactive error handler to repeat commands, open a shell or ignore them
+* optional build step skipping feature
+* --target root (for physical isolation)
+* --target raw build raw images
+* custom VM settings during build (these can of course be manually changed by the user anyhow), supported parameters with examples:
+** --vmram 128
+** --vram 12
+** --vmsize 200G
+* build image that never had {{project name}} repository enabled
+* build and install all {{project name}} packages during {{project name}} image build
+* protection from bad build surprises
+** break or do not break when uncommitted changes are found
+** break or do not break from non-tag
+* --confdir /path/to/config/dir
+* --tb none|closed|open
+** none: Do not install Tor Browser.
+** closed: Fail closed if Tor Browser cannot be installed.
+** open: Fail open if Tor Browser cannot and installed.
+* use onion apt sources for building
+* install different packages for virtualbox (virtualbox-guest-x11) and kvm (spice...)
+
+== Build Script Features - Missing ==
+* <s>separate VirtualBox / KVM builds during official builds - https://forums.whonix.org/t/non-qubes-whonix-13-0-0-1-0-x-issues/2443/4</s> (Fixed. Nowadays there is <code>--target virtualbox</code> or <code>--target qcow2</code>.)
+
+= Notes =
+<pre>
+sudo ~/Whonix/packages/whonix-developer-meta-files/debug-steps/interactive-chroot-raw --target raw --flavor whonix-host-xfce --build --freedom false
+</pre>
+
+= Why not Replace grml-debootstrap with 'X'? =
+
+{{project_name}} developers are not remotely close to exhausting grml-debootstrap's extensive feature-set yet. <ref>https://forums.whonix.org/t/replacing-grml-debootstrap-debos-build-platform/5582/3</ref>
+
+There are two sorts of VM image creation tools:
+
+    [A] Those that use virtualization, boot the image and perform actions.
+    [B] Those that use chroot (or maybe systemd-spawn).
+
+[A] is incompatible with {{project name}} design principles due to files being created during boot, such as entropy seeds. This is a less clean method and is not suitable for redistribution.
+
+In either case it would be necessary to diff:
+
+    The image created by grml-debootstrap versus the new tool.
+    Create an image twice using the new tool and inspect the diff.
+
+Related:
+
+    https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/help-steps/analyze_image
+    https://www.whonix.org/wiki/Verifiable_Builds
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Development]] [[Category:Design]]
