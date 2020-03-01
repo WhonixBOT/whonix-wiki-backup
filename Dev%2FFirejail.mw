@@ -1,0 +1,307 @@
+{{#seo:
+|description=development notes on Firejail and other security isolation frameworks in {{project_name}}
+}}
+{{Header}}
+
+== General Topics ==
+
+General notes about Firejail settings:
+
+* The master firejail.profile contains global settings.
+
+*  New profiles or tweaked ones that override the default ones go under ~/.config/firejail (path configurable if needed). The default ones exist under /etc/firejail
+
+* Arch guide: https://wiki.archlinux.org/index.php/Firejail#Using_Firejail_by_Default
+specifies the ways to set programs to automatically start contained.
+
+* Xpra is not a hard-coded dependency out of consideration for headless systems. TODO: Decide which anon-shared package to add it to.
+
+* Creating symlinks to start programs automatically under firejail is as simple as running <code>sudo firecfg</code>. This covers all software on the system that has a firejail profile.<ref>https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=822693</ref> To list all symlinks: <code>firecfg --list</code> and to reverse this action: <code>firecfg --clean</code>
+
+* Tor Browser
+** <s>To integrate with Firejail, the [https://git.schwanenlied.me/yawning/tor-firejail/src/master/start-tor-browser script] developed by Yawning is meant to replace the one in this path: /home/user/.tb/tor-browser/Browser/start-tor-browser</s> <ref>This script is no longer available.</ref>
+** While the profile can reside under ~/.config/firejail<ref>https://git.schwanenlied.me/yawning/tor-firejail</ref><ref>https://lists.torproject.org/pipermail/tor-dev/2016-May/010947.html</ref>
+*** [[{{non q project name short}}|{{non q project name}}]]: Would probably work. But why not use /etc/firejail? That way there can be cleanly packages. Packages writing to ~/ home anything is considered a grave packaging but (and really problematic indeed).
+*** [[{{q project name short}}|{{q project name}}]]: One ~/.config/firejail modification per AppVM would not be great. Also modifications to /etc/firejail in TemplateVM would be much better so these are shared among all AppVMs.
+
+* <s>A short term workaround until the proposed upstreaming of start-tor-browser <ref>https://trac.torproject.org/projects/tor/ticket/19055</ref> happens:  is to append Firejail to all launcher commands under: /usr/share/applications. Reasoning: Tor Browser folder not visible to users. For a user to accidentally execute Tor Browser without protection, they have to go out of their way to find and launch the start-tor-browser script in the hidden Tor Browser folder. In Tor Browser's use-model we don't have to worry about command line users because Tor Browser is a GUI app first and foremost. Visual indicators further help warn against accidental execution in the unlikely event it happens. If they use command line the might as well put Firejail before the script name. This solution is tested and working and survives Tor Browser upgrades.</s> (That solution however does not survive tb-updater upgrades.)
+
+
+=== Integration Roadmap ===
+
+* Firejail should probably get its own {{project name}} helper package to include custom profiles (Yawning's Tor Browser). Xpra dependency should be coded there.
+
+* Wait for version newer than 0.9.40 to hit Debian backport repos because it resolves Firefox-ESR profile problems. 
+
+* Decide if firecfg should be scripted to enable all profiles by default.
+
+== See Also ==
+
+* https://forums.whonix.org/t/firejail-seccomp-more-options-for-program-containment/1030
+
+== Comments ==
+
+Add discussion points here. 
+
+
+Deprecated ideas:
+
+* Changes to Tor Browser launchers required.
+
+* Decide on application launcher paths. Documentation in Arch is contradictory to Debian:
+
+"Some applications use non standard paths. For these you will want to copy the .desktop launchers from /usr/share/applications/*.desktop to ~/.local/share/applications/ and then proceed to include firejail (and possibly seccomp) on the EXEC line. Some applications use non standard paths. For these you will want to copy the .desktop launchers from /usr/share/applications/*.desktop to ~/.local/share/applications/ and then proceed to include firejail (and possibly seccomp) on the EXEC line." <ref>https://wiki.archlinux.org/index.php/Firejail</ref>
+
+There is no  ~/.local/share/applications/ folder in Debian AFAIK. What is the difference between both paths? Shouldn't bother if the workaround works equally well.
+
+'''tb-starter is the place where such changes belong. Playing with application launchers will break things.'''
+
+* Decide on whether to introduce pinned packages and sid repos by default to access the newer version ASAP. Firetools is in sid and stretch only but its dependencies will create a mess even with pinning. Firejail sid is standalone and installs well on stable.
+
+'''Won't work. Terrible idea as per Debian dev comments. Stick to version in Backports'''
+
+
+== Other Isolation Frameworks ==
+
+XDG-App sandboxing pioneered in the GNOME camp is renamed to Flatpak now. Its cross-DE and cross-distro compatible.<ref>https://phoronix.com/scan.php?page=news_item&px=KDE-XDG-App-Experimenting</ref> <ref>http://flatpak.org/faq.html</ref>
+
+<pre>
+"Is Flatpak tied to GNOME?
+
+No. While Flatpak has been developed by people with a long involvement in the GNOME community it is not tied to any desktop. In fact, it was designed with the explicit goal of allowing it to build applications using any library stack or programming language an application author might want."
+</pre>
+
+[https://github.com/flatpak/flatpak/wiki Dev wiki]
+[https://github.com/flatpak/flatpak Git]
+
+
+Asked if multiple frameworks stackable and the answer is no. You can't run a setuid binary containment app under an unprivileged sandbox. Shipping flatpak by default does not imply running every app as a flatpak. Flatpak can be turned off if we choose.<ref>https://github.com/flatpak/flatpak/issues/66#issuecomment-223213288</ref>
+
+'''Verdict:''' I like how Firejail can contain any program arbitrarily without changes needed to be made to it unlike Flatpak. It does not need any support from upstream software developers to support isolation - it remains the preferred framework for us IMO for that reason. Still, its good that DE developers are now going in the right direction to bring more security to users. 
+
+If flatpak is adopted and enabled by default in Debian upstream we can remove Firejail profiles that cover apps already supported by the former - might be complicated but increases protection coverage of system programs as its likely they will cover different sets of software with some overlap. Or we can disable Flatpak and stick with Firejail only.
+
+= Security =
+== Generally ==
+[https://github.com/netblue30/firejail/issues/3046#issuecomment-555244990 Vincent43]:
+<blockquote><blockquote>
+There are two distinct scenarios:
+
+* 1. app/service runs inside firejail sandbox
+* 2. app/service runs outside firejail sandbox
+
+Firejail significantly reduces attack surface for 1 (it may vary across different profiles) and increases attack surface for 2 (more or less). Everyone have to decide themselves what net attack surface impact is for them.
+</blockquote></blockquote>
+
+<blockquote><blockquote>
+Granting access to firejail for untrusted local unprivileged user may be not good idea (this is scenario for which most of past cve were applicable).
+</blockquote></blockquote>
+
+<blockquote><blockquote>
+The question is if today's desktop linux systems are multi-user focused (with some of them being untrusted). I heard many opinions from developers of projects like kernel or systemd stating that's not the case.
+</blockquote></blockquote>
+
+<blockquote><blockquote>
+Yes, bublewrap has less additional attack surface for scenario 2 but merely installing bubblewrap does nothing for scenario 1 unless someone write special wrapper for it with profiles for many specific apps. Something like that, let's call it Firewrap or Bubblejail would be interesting, perhaps more secure solution than firejail but for now it doesn't exist.
+</blockquote></blockquote>
+
+madaidan:
+<blockquote>
+If you want full priv esc, then the attacker could have exploited one of the sandbox escape vulnerabilities I listed above and then exploited another priv esc vulnerability in firejail once they're outside the sandbox.
+</blockquote>
+
+Patrick paraphrasing madaidan (posted only here):
+<blockquote>
+Care about scenario 2. Because an attacker could use a sandbox escape vulnerability. Then once outside the sandbox, follow-up with a privilege escalation vulnerability in firejail to gain root.
+</blockquote>
+
+Vincent43:
+<blockquote><blockquote>
+Yes, however I consider scenario when malware author writes script that will compromise some app and then go for firejail as rather unlikely. 95+ systems won't have firejail installed. The situation would be different when they have unlimited time and tries like local users have. Also when someone gets arbitrary code execution then they already won even without root access. Most things that matter will be available freely inside home.
+</blockquote></blockquote>
+
+[https://github.com/netblue30/firejail/issues/3046#issuecomment-555326127 netblue30]:
+<blockquote><blockquote>
+The attack surface visible to somebody outside the sandbox is large.
+</blockquote></blockquote>
+
+<blockquote><blockquote>
+Don't use this on enterprise servers, or any other multiuser system. Firejail was built for single-user desktops.
+</blockquote></blockquote>
+
+Patrick (posted only here):
+<blockquote>
+Would firejail have helped against [[Security_in_Real_World|past attacks against users in the wild]]? Is that a useful question to ask?
+
+How likely is it that firejail gets specifically targeted?
+</blockquote>
+
+[https://github.com/netblue30/firejail/issues/3046#issuecomment-555326127 netblue30]: '''recommends AppArmor over firejail''' for Whonix.
+
+== CVE Annotated ==
+[https://www.cvedetails.com/vulnerability-list.php?vendor_id=16191&product_id=0&version_id=0&page=1&hasexp=0&opdos=0&opec=0&opov=0&opcsrf=0&opgpriv=0&opsqli=0&opxss=0&opdirt=0&opmemc=0&ophttprs=0&opbyp=0&opfileinc=0&opginf=0&cvssscoremin=0&cvssscoremax=0&year=0&cweid=0&order=1&trc=14&sha=d244c5262e26dc2a9f709379c88db8695f3f5318 source cvedetails] / [https://github.com/netblue30/firejail/issues/3046#issuecomment-555266364 github discussion]
+
+<u>underline</u> added by {{project name}}.
+
+== CVE-2019-12589 ==
+
+cvedetails.com:
+<blockquote>
+In Firejail before 0.9.60, seccomp filters are writable inside the jail, leading to a lack of intended seccomp restrictions for a process that is joined to the jail after a filter has been modified by an attacker.
+</blockquote>
+
+Vincent43:
+<blockquote><blockquote>
+It makes seccomp ineffective in certain, rare circumstances. It doesn't add additional attack surface on system.
+</blockquote></blockquote>
+
+== CVE-2019-12499 ==
+
+cvedetails.com
+<blockquote>
+Firejail before 0.9.60 allows truncation (resizing to length 0) of the firejail binary on the host by running exploit code inside a firejail sandbox and having the sandbox terminated. To succeed, certain conditions need to be fulfilled: The jail (with the exploit code inside) needs to be started as root, and it also needs to be terminated as root from the host (either by stopping it ungracefully (e.g., SIGKILL), or by using the --shutdown control command). This is similar to CVE-2019-5736. 
+</blockquote>
+
+Vincent43:
+<blockquote><blockquote>
+It works only when firejail is run as root, again it doesn't add additional attack surface on system.
+</blockquote></blockquote>
+
+== CVE-2017-5940 ==
+
+cvedetails.com
+<blockquote>
+Firejail before 0.9.44.6 and 0.9.38.x LTS before 0.9.38.10 LTS does not comprehensively address dotfile cases during its attempt to prevent accessing user files with an euid of zero, which <u>allows local users to conduct sandbox-escape attacks</u> via vectors involving a symlink and the --private option. NOTE: this vulnerability exists because of an incomplete fix for CVE-2017-5180. 
+</blockquote>
+
+Vincent43:
+<blockquote><blockquote>
+Exploit need to be run outside sandbox
+</blockquote></blockquote>
+
+== CVE-2017-5206 ==
+
+cvedetails.com
+<blockquote>
+Firejail before 0.9.44.4, when running on a Linux kernel before 4.8, allows context-dependent attackers to bypass a seccomp-based sandbox protection mechanism via the --allow-debuggers argument.
+</blockquote>
+
+Vincent43:
+<blockquote><blockquote>
+It makes seccomp ineffective in certain, rare circumstances. It doesn't add additional attack surface on system.
+</blockquote></blockquote>
+
+== CVE-2017-5180 ==
+
+cvedetails.com
+<blockquote>
+Firejail before 0.9.44.4 and 0.9.38.x LTS before 0.9.38.8 LTS does not consider the .Xauthority case during its attempt to prevent accessing user files with an euid of zero, which <u>allows local users to conduct sandbox-escape</u> attacks via vectors involving a symlink and the --private option. 
+</blockquote>
+
+Vincent43:
+<blockquote><blockquote>
+Exploit need to be run outside sandbox
+</blockquote></blockquote>
+
+== CVE-2016-9016 ==
+
+cvedetails.com
+<blockquote>
+Firejail 0.9.38.4 allows local users to execute arbitrary commands outside of the sandbox via a crafted TIOCSTI ioctl call.
+</blockquote>
+
+Vincent43:
+<blockquote><blockquote>
+This is sandbox escape but It doesn't add additional attack surface on system. Bubblewrap was also affected and [https://github.com/containers/bubblewrap/commit/d7fc532c42f0e9bf427923bab85433282b3e5117 fixed it couple of months after firejail did].
+</blockquote></blockquote>
+
+== Misc ==
+
+[https://github.com/netblue30/firejail/issues/3046#issuecomment-555269503 smitsohu]:
+<blockquote><blockquote>
+The descriptions are misleading, unfortunately. You need to read the code and understand the vulnerabilities. There is no sandbox escape there (from the running sandbox), the primary problem is the privesc (edited).
+</blockquote></blockquote>
+
+<blockquote><blockquote>
+Anyway, the thing is that there is little point to discuss Firejail version 0.9.38 or 0.9.44.
+
+Firejail changes very fast, and what will be upcoming 0.9.62 has not so much to do with the early versions that were hit by these vulnerabilities. It would be very cool if we could discuss the present and not the past.
+</blockquote></blockquote>
+
+= Status of Firejail in Whonix =
+https://forums.whonix.org/t/tor-browser-hardening-hardened-malloc-firejail-apparmor-vs-web-fingerprint/7851/54
+
+Written by Whonix developer Patrick.
+
+'''summary'''
+
+* I am not fully convinced, that firejail is bad.
+* Decided to no longer install firejail by default in Whonix anyhow.
+
+-----
+
+'''firejail security'''
+
+Can’t rely too much on Daniel Micay as security export because he’s (often justified…) critical on “everything”… Could as well as give up and go home following that sentiment. Reference: https://forums.whonix.org/t/daniel-micay-quotes/8509
+
+<blockquote>Obviously asking on the firejail github repo will get biased responses.</blockquote>
+
+Firejail developers '''might''' be bias towards firejail.
+
+<blockquote>Simon McVittie (Debian, bubblewrap, dbus, flatpak maintainer):
+
+https://github.com/containers/bubblewrap/issues/266#issuecomment-386867656</blockquote>
+
+Bubblewrap developers '''might''' be bias towards bubblewrap.
+
+Under the bias thesis, both candidates aren’t ideal expert opinions here on judging the security of each tool vs each other. Their input is valued nonetheless.
+
+Tried to wrap my head around this issue. Made some notes here: https://www.whonix.org/wiki/Dev/Firejail#Security
+
+Trying to come up with essential questions.
+
+* Would firejail have helped against [https://www.whonix.org/wiki/Security_in_Real_World past attacks against users in the wild]? Is that a useful question to ask?
+* How likely is it that firejail gets specifically targeted?
+
+Please keep expert opinions pro/contra firejail / bubblewrap / apparmor / etc. coming.
+
+-----
+
+'''installation by default'''
+
+Whonix doesn’t enable any firejail / bubblewrap profiles for anything by default yet. All such profiles are opt-in.
+
+Whonix comes with some apparmor profiles by default. Those for its own software and those profiles maintained by Debian. Other profiles are opt-in.
+
+Decided to no longer install firejail by default due to
+
+* the controversy,
+* higher attack surface without other advantage by default (no profiles enabled by default).
+
+Currently Whonix has a by default a higher attack surface (due to firejail installed by default) but no security advantages (not making use by default of any firejail profiles).
+
+Firejail was only installed decided to become installed by default for better usability. To make writing firejail profiles easier. This could be undone since we did not get any new profiles anyhow.
+
+At the moment, major attack surface realistically is the browser, Tor Browser. If hypothetically upstream, The Tor Project maintained a firejail profile, then I would think that the security advantages outweight the security disadvantages of it. Until in-the-wild attacks proof otherwise. That would be a reason to keep firejail installed by default.
+
+[https://www.whonix.org/wiki/SecBrowser SecBrowser] depends on firejail and uses it by default. But SecBrowser isn’t Whonix. For SecBrowser I’ll keep firejail enabled by default until I am convinced that it does more harm than good against realistic attacks (what happened previously in-the-wild).
+
+-----
+
+'''future reconsideration for re-installation of firejail'''
+
+* Anyone maintaining firejail profiles in Whonix for software not developed by Whonix wouldn’t be installed by default - same as for apparmor profiles.
+* Anyone maintaining firejail profiles in Whonix for software developed by Whonix, and re-installation for firejail by default would be reconsidered.
+* Anyone maintaining firejail profiles in Debian, and re-installation for firejail by default would be reconsidered.
+
+= TODO =
+man firejail-users
+
+/etc/firejail/firejail.users
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Development]]
