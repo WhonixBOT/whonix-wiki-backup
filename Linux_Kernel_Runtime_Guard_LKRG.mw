@@ -1,0 +1,375 @@
+<div style="float:right;">__TOC__</div>
+{{title|title=Linux Kernel Runtime Guard (LKRG) for Debian, Whonix, Qubes, Kicksecure}}
+{{Header}}
+{{#seo:
+|title=Linux Kernel Runtime Guard (LKRG) for Debian, Whonix, Qubes, Kicksecure
+|description=LKRG performs runtime integrity checking of the Linux kernel and detection of security vulnerability exploits against the kernel.
+|image=https://www.whonix.org/w/images/thumb/a/a7/P_lkrg2.png/470px-P_lkrg2.png
+}}
+= Introduction =
+LKRG is Freedom Software / Open Source. <ref>
+* [https://bitbucket.org/Adam_pi3/lkrg-main Original LKRG Source Code git Repository]
+* [https://github.com/Whonix/lkrg LKRG Debian Package Lightweight Fork]
+</ref>
+
+The focus of this wiki page is to provide simplified user documentation and easy installation of LKRG in Debian, [[Kicksecure]], [[Qubes]], [[Whonix]], and perhaps Debian-based Linux distributions. Installable from from an APT repository.
+
+This is a lightweight [https://en.wikipedia.org/wiki/Fork_(software_development) software fork] and no changes will be made to the core of LKRG. Links to the [https://www.openwall.com/lkrg/ official LKRG homepage] and other original resources can be found [[#Upstream Resources|here]].
+
+= Download =
+
+[[File:P_lkrg2.png|LKRG logo|100px|link=https://www.openwall.com/lkrg/]] [[File:Debian.png|30px|link=#debian]] [[File:{{project_name_short}}_old_logo.png|30px|link=#non-qubes-whonix]] [[File:qubes-logo-blue.png|30px|link=#qubes]] [[File:Tux.png|30px|link=#linux]] '''{{free}}''' [[File:210px-Download_Button.svg.png|210px|link=#Installation|alt=Download LKRG]]
+
+= LKRG Overview =
+This is only a very brief introduction, since LKRG technical details are not the focus of this page. [https://www.openwall.com/lkrg/ Quote official LKRG homepage]:
+
+<blockquote>LKRG performs runtime integrity checking of the Linux kernel and detection of security vulnerability exploits against the kernel.</blockquote>
+
+<blockquote>As controversial as this concept is, LKRG attempts to post-detect and hopefully promptly respond to unauthorized modifications to the running Linux kernel (integrity checking) or to credentials such as user IDs of the running processes (exploit detection). For process credentials, LKRG attempts to detect the exploit and take action before the kernel would grant access (such as open a file) based on the unauthorized credentials.</blockquote>
+
+<blockquote>LKRG defeats many pre-existing exploits of Linux kernel vulnerabilities, and will likely defeat many future exploits (including of yet unknown vulnerabilities) that do not specifically attempt to bypass LKRG. While LKRG is bypassable by design, such bypasses tend to require more complicated and/or less reliable exploits.</blockquote>
+
+To learn more about LKRG, interested readers can:
+* review the [https://www.openwall.com/lkrg/ official LKRG homepage]
+* watch the [https://www.youtube.com/watch?v=tOiPM692DOM LKRG Presentation Video] or [https://www.openwall.com/presentations/CONFidence2018-LKRG-Under-The-Hood/ LKRG Presentation Slides] 
+* read the [https://openwall.info/wiki/p_lkrg/Main LKRG Wiki]
+* consult other [[#Upstream Resources|Upstream Resources]]
+
+== Performance Impact ==
+Quote LKRG upstream:
+
+<blockquote>No benchmarks have yet been performed, but it appears the performance penalty is around <code>2.5%</code> for fully enabled LKRG.</blockquote>
+
+Quote [https://www.phoronix.com Phoronix.com], [https://www.phoronix.com/scan.php?page=article&item=linux-lkrg-performance&num=1 Benchmarking The Performance Overhead To The Linux Kernel Runtime Guard] ([https://www.phoronix.com/scan.php?page=article&item=linux-lkrg-performance&num=5 page 5]), [https://www.michaellarabel.com Michael Larabel] (<code>code</code> added):
+
+<blockquote>Out of 90 benchmarks run comparing the performance hit on this Intel Core i9 9900KS from LKRG, having LKRG enabled led to around a <code>5%</code> hit based on the geometric mean of all tests carried out. Granted, some real-world workloads like code compilation speed were impacted much more dramatically while test cases not involving I/O or other kernel operations tended to see no measurable difference in run-time performance.</blockquote>
+
+See the full article [https://www.phoronix.com/scan.php?page=article&item=linux-lkrg-performance&num=1 Benchmarking The Performance Overhead To The Linux Kernel Runtime Guard] for a detailed benchmark.
+
+== LKRG Free vs LKRG Pro ==
+{{project name}} developer Patrick Schleizer [https://forums.whonix.org/t/linux-kernel-runtime-guard-lkrg-linux-kernel-runtime-integrity-checking-and-exploit-detection/8477/3?u=patrick said]:
+
+<blockquote>
+Contacted upstream LKRG developers privately. To paraphrase: "We don’t oppose you packaging it. As long as LKRG exists, there will always be a free and libre version. There is no pro version yet. A hypothetical future pro version would not change that." In my words: "there won’t be a grsecurity alike situation where everything gets closed down".
+</blockquote>
+
+Quote [https://openwall.info/wiki/p_lkrg/Main LKRG wiki]:
+
+<blockquote>
+We will likely use GPLv2 at least for LKRG free. We might or might not use a different license for LKRG Pro, if we ever make it.
+</blockquote>
+
+Users who benefit from LKRG Free are encouraged to support its further development. However, at the time of writing they are not accepting donations: <ref>https://openwall.info/wiki/p_lkrg/Main#Donation</ref>
+
+<blockquote>
+We used to accept donations for LKRG via Patreon, but we currently don't. Some of our former supporters are listed in the PATREON file in LKRG distribution tarballs. 
+</blockquote>
+
+= Installation =
+
+{{testers-only}}
+
+<u>Note</u>: Users who require better security can [[Linux_Kernel_Runtime_Guard_LKRG/Build_Debian_Package_from_Source_Code|Build the Linux Kernel Runtime Guard (LKRG) Debian Package from Source Code]] and verify software signatures before installation.
+
+{| class="wikitable"
+! '''Logo'''
+! '''Host Operating System'''
+! '''Installation Instructions'''
+! '''Note'''
+
+|- {{Anchor|debian}}
+| [[File:Debian.png|50px]] 
+| Debian hosts
+| Follow the instructions below to install from the {{project name}} repository. <ref>
+https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=944476
+</ref>
+| Do not install LKRG on a Debian host if intending to run VirtualBox (such as {{Project name}}) virtual machines (VMs) due to this [https://www.openwall.com/lists/lkrg-users/2019/11/18/1 known bug]. LKRG <u>can</u> be installed inside VirtualBox guest VMs.
+
+|- {{Anchor|non-qubes-whonix}}
+| [[File:{{project_name_short}}_old_logo.png|50px]]
+| [[{{non_q_project_name_short}}|{{non_q_project_name}}]]
+| Follow the installation instructions below.
+| In {{Project name}}, skip the following "Add {{Project name}} repository" step since it is already enabled by default.
+
+|- {{Anchor|qubes}}
+| [[File:qubes-logo-blue.png|50px]]
+| [https://www.qubes-os.org Qubes OS] Debian based VMs
+| Follow [[Linux_Kernel_Runtime_Guard_LKRG/Qubes|these LKRG Qubes instructions]].
+| See footnote. <ref name=qubes-lkrg>[https://github.com/QubesOS/qubes-issues/issues/5461 make Linux Kernel Runtime Guard (LKRG) easily available in Qubes]</ref>
+
+|-
+| [[File:qubes-logo-blue.png|50px]] [[File:{{project_name_short}}_old_logo.png|50px]]
+| [[{{Q project name short}}|{{Q project name}}]]
+| Follow [[Linux_Kernel_Runtime_Guard_LKRG/Qubes|these LKRG {{Q project name}} instructions]].
+| See footnote. <ref name=qubes-lkrg />
+
+|- {{Anchor|linux}}
+| [[File:Tux.png|50px]]
+| Other Linux distributions
+| LKRG is available for most Linux distributions.
+| Follow the installation instructions for non-Debian distributions on the [https://www.openwall.com/lkrg/ official LKRG homepage].
+|}
+
+Add {{Project name}} repository.
+
+{{Box|text=
+{{Project-APT-Repository-Add Easy}}
+}}
+
+Install LKRG.
+
+{{Box|text=
+'''1.''' Update the package lists.
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+'''2.''' Install LKRG. <ref>
+Only Intel and amd64 are supported at present, see: https://www.openwall.com/lists/lkrg-users/2018/07/31/3
+</ref>
+
+{{CodeSelect|code=
+sudo apt-get install lkrg linux-headers-amd64
+}}
+}}
+
+The LKRG installation is complete. <ref>
+Note that LKRG versioning is based on upstream's git master branch intention to remain in the "prerelease" stage. 
+
+Quote Adam Zabrocki https://www.openwall.com/lists/lkrg-users/2019/11/11/1
+
+We're trying to keep master branch stable and let's say in "prerelease" stage :)
+</ref>
+
+It is recommended to review optional hardening and other entries below, but this is not required.
+
+= Configuration =
+
+<u>Note</u>: All the possible configuration changes in this section are optional.
+
+Legend: <ref>https://www.openwall.com/lists/lkrg-users/2019/02/19/1</ref>
+
+* <code>CI</code> - Code Integrity
+* <code>ED</code> - Exploit Detection
+
+'''Table:''' ''LKRG Configuration Options''
+
+{| class="wikitable"
+|-
+! scope="col"| '''Category'''
+! scope="col"| '''Instructions'''
+|-
+! scope="row"| Basics
+| All sysctl configuration options can be found [https://bitbucket.org/Adam_pi3/lkrg-main/raw/17ae51c73bba84dc697fd13be5941d4709a87a08/INSTALL here].
+|-
+! scope="row"| Block Module Loading
+| Advanced users can block module functionality (<code>lkrg.block_modules</code>) with one of the following settings: <br />
+* <code>0</code> - do NOT lock the kernel and allow to load kernel module <br />
+* <code>1</code> - lock the kernel and do NOT allow to load kernel module <br />
+See also: [[Operating_System_Hardening#Module_Loading|module loading]].
+|-
+! scope="row"| Current Configuration
+| To view the current configuration, run. 
+{{CodeSelect|code=
+sudo sysctl -a {{!}} grep lkrg
+}}
+|-
+! scope="row"| Hardening - CI Panic - Crash Kernel when Code Integrity Violation
+| It is possible to further improve the security provided by LKRG, but this can potentially lead to decreased system stability. Users that are willing to make this trade-off can opt-in to the following setting. LKRG developers have not enabled the following sysctl option by default since it can result in kernel panics and system crashes, or occasional false positives (integrity violations and/or exploits are detected when they don't really exist). See the [https://www.openwall.com/lkrg/ LKRG homepage]. This might be the reason why LKRG developers did not yet enable kernel panic on CI failure by default. 
+
+Kernel panic on code integrity <code>CI</code> failure (<code>lkrg.ci_panic</code>) - two options are available:
+
+* <code>0</code> - do NOT crash the kernel on CI failure (default)
+* <code>1</code> - crash the kernel (call <code>panic()</code>) on CI failure
+
+The following command enables kernel panic on CI failure non-persistently until reboot.
+
+{{CodeSelect|code=
+sudo sysctl -w lkrg.force_run=1
+}}
+
+The following procedure enables this feature persistently after reboot.
+
+{{Open_with_root_rights|filename=
+/etc/sysctl.d/50_user.conf
+}}
+
+Paste.
+
+{{CodeSelect|code=
+lkrg.ci_panic=1
+}}
+
+Save.
+
+The procedure of enabling CI panic is complete.
+|-
+! scope="row"| Hardening - UMH Lock
+| Better do not use for now. Breaks Whonix Firewall. <ref>
+Full lock down of the kernel's usermodehelper interface (<code>lkrg.umh_lock</code>). This might break things if your distro uses UMH to invoke any programs. Two options are available:
+
+* <code>0</code> - do NOT lock down the UMH interface fully, but allow to execute only LKRG's whitelisted programs (default)
+* <code>1</code> - lock down the UMH interface fully
+</ref>
+|-
+! scope="row"| Hide LKRG
+| Attempts to hide LKRG will not work because this feature is not yet functional; LKRG will still be detected. <ref name=metasploit-code>
+https://github.com/rapid7/metasploit-framework/blob/master/lib/msf/core/post/linux/kernel.rb#L235
+
+<pre>
+cmd_exec('test -d /proc/sys/lkrg && echo true').to_s.strip.include? 'true'
+</pre>
+</ref> <ref>
+<pre>
+sudo sysctl -w lkrg.hide=1
+lkrg.hide = 1
+
+user@debian-buster-standalone:~$ ls -la /proc/sys/lkrg
+total 0
+dr-xr-xr-x 1 root root 0 Nov 15 03:05 .
+dr-xr-xr-x 1 root root 0 Nov 15 03:04 ..
+-rw------- 1 root root 0 Nov 15 03:48 block_modules
+-rw------- 1 root root 0 Nov 15 03:48 ci_panic
+-rw------- 1 root root 0 Nov 15 04:18 clean_message
+-rw------- 1 root root 0 Nov 15 04:19 force_run
+-rw------- 1 root root 0 Nov 15 04:21 hide
+-rw------- 1 root root 0 Nov 15 03:48 log_level
+-rw------- 1 root root 0 Nov 15 03:48 random_events
+-rw------- 1 root root 0 Nov 15 04:02 smep_panic
+-rw------- 1 root root 0 Nov 15 03:48 timestamp
+-rw------- 1 root root 0 Nov 15 04:04 umh_lock
+
+user@debian-buster-standalone:~$ lsmod | grep lkrg
+usbcore               294912  1 p_lkrg
+
+user@debian-buster-standalone:~$ sudo sysctl -w  lkrg.hide=0
+lkrg.hide = 0
+
+user@debian-buster-standalone:~$ lsmod | grep lkrg
+p_lkrg                217088  -2
+usbcore               294912  1 p_lkrg
+</pre>
+</ref> <ref>
+Hiding (<code>lkrg.hide</code>) - if built with this optional feature included, LKRG can (un)hide itself from the module list (<u>but it can be detected regardless</u>):
+
+* <code>1</code> - hide LKRG (if it is not already hidden)
+* <code>0</code> - unhide LKRG (if it is not already unhidden)
+</ref>
+|}
+
+= Usage =
+Once LKRG has been installed, little effort is required since it will protect the kernel without the user's knowledge and/or interaction. However, it is sensible to check that LKRG is running correctly and to monitor system logs for any suspicious entries. Check this entry at a later date for any additional recommendations.
+
+To check systemd journal log for kernel messages by LKRG, run.
+
+{{CodeSelect|code=
+sudo journalctl -b {{!}} grep lkrg
+}}
+
+To keep watching systemd journal log for new LKRG messages, run.
+
+{{CodeSelect|code=
+sudo journalctl -b -f {{!}} grep lkrg
+}}
+
+While performing the commands above, it may be useful to open another console tab and manually run a LKRG integrity check.
+
+{{CodeSelect|code=
+sudo sysctl -w lkrg.force_run=1
+}}
+
+At this stage a graphical user interface (GUI) is not provided that can proactively inform users who fail to analyze the systemd journal log for relevant LKRG messages. A GUI or popup notification might be developed  later on -- [[Contribute|help is most welcome]].
+
+= Debugging =
+== linux-image ==
+{{CodeSelect|code=
+dpkg -l {{!}} grep linux-image
+}}
+
+Should include:
+
+<pre>
+ii  linux-image-4.19.0-6-amd64                    4.19.67-2+deb10u2               amd64        Linux 4.19 for 64-bit PCs (signed)
+ii  linux-image-amd64
+</pre>
+
+== linux-headers ==
+{{CodeSelect|code=
+dpkg -l {{!}} grep linux-head
+}}
+
+Should include:
+
+<pre>
+ii  linux-headers-4.19.0-6-amd64                  4.19.67-2+deb10u2               amd64        Header files for Linux 4.19.0-6-amd64
+ii  linux-headers-4.19.0-6-common                 4.19.67-2+deb10u2               all          Common header files for Linux 4.19.0-6
+ii  linux-headers-amd64 
+</pre>
+
+== modinfo ==
+{{CodeSelect|code=
+sudo modinfo p_lkrg
+}}
+
+<pre>
+filename:       /lib/modules/4.19.0-6-amd64/updates/dkms/p_lkrg.ko
+license:        GPL v2
+description:    pi3's Linux kernel Runtime Guard
+author:         Adam 'pi3' Zabrocki (http://pi3.com.pl)
+depends:        usbcore
+retpoline:      Y
+name:           p_lkrg
+vermagic:       4.19.0-6-amd64 SMP mod_unload modversions 
+parm:           p_init_log_level:Logging level init value [1 (alive) is default] (uint)
+</pre>
+
+== dkms status ==
+{{CodeSelect|code=
+sudo dkms status
+}}
+
+Should include:
+
+<pre>
+lkrg, 0.7, 4.19.0-6-amd64, x86_64: installed
+</pre>
+
+= Additional Resources =
+
+== Forum Discussion ==
+* [https://forums.whonix.org/t/linux-kernel-runtime-guard-lkrg-linux-kernel-runtime-integrity-checking-and-exploit-detection/8477/1 Linux Kernel Runtime Guard (LKRG) - Linux Kernel Runtime Integrity Checking and Exploit Detection]
+
+== Upstream Resources ==
+* [https://www.openwall.com/lkrg/ LKRG Website]
+* [https://bitbucket.org/Adam_pi3/lkrg-main LKRG Source Code git Repository]
+* [https://www.youtube.com/watch?v=tOiPM692DOM LKRG Presentation Video]
+* [https://www.openwall.com/presentations/CONFidence2018-LKRG-Under-The-Hood/ LKRG Presentation Slides]
+* [https://openwall.info/wiki/p_lkrg/Threat_model LKRG Threat Model]
+* [https://www.openwall.com/lists/lkrg-users/ LKRG Mailing List]
+* [https://openwall.info/wiki/p_lkrg/Main LKRG Wiki]
+* https://www.openwall.com/lists/lkrg-users/2020/02/28/1
+
+== Upstream Mailing List Discussions ==
+* [https://www.openwall.com/lists/lkrg-users/2019/11/18/3 LKRG compilation hardening flags, checksec, hardening-check]
+* [https://www.openwall.com/lists/lkrg-users/2019/11/13/5 LKRG packagers / downstream wishlist] (signed git commits, signed git tags, version numbers, logo)
+* [https://www.openwall.com/lists/lkrg-users/2019/11/10/2 module loading / systemd bug report / suggestion]
+* [https://www.openwall.com/lists/lkrg-users/2019/11/18/1 LKRG kills VirtualBox host VMs]
+* [https://www.openwall.com/lists/lkrg-users/2019/11/18/2 announcement of this LKRG Debian package on upstream LKRG mailing list]
+* [https://www.openwall.com/lists/lkrg-users/2020/01/25/2 LKRG module parameters]
+* [https://www.openwall.com/lists/lkrg-users/2020/02/01/2 Compiling LKRG static into the Kernel / Loading LKRG kernel module as early as possible or after other modules?]
+
+== See Also ==
+* [https://github.com/Whonix/security-misc security-misc]: Inspired by the Kernel Self Protection Project ([https://kernsec.org/wiki/index.php/Kernel_Self_Protection_Project KSPP]). This package implements most if not all recommended Linux kernel settings (sysctl) and kernel parameters set by the KSPP.
+* [https://www.whonix.org/wiki/Hardened_Malloc Hardened Malloc]: A hardened memory allocator which can be used with many applications to increase security. 
+* [https://www.whonix.org/wiki/Grub-live grub-live]: Boot your existing, installed Debian Host into Live Mode.
+* [https://github.com/madaidan/hardened-vm-kernel Hardened VM Kernel] (in development): A hardened kernel configuration optimized for virtual machines, see: [https://forums.whonix.org/t/kernel-recompilation-for-better-hardening/7598 development discussion].
+* [[System Hardening Checklist]]
+* [[SecBrowser|SecBrowser ™]]: A Security-hardened, Non-anonymous Browser
+
+= References =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
