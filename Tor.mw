@@ -1,0 +1,521 @@
+{{Header}}
+{{#seo:
+|description=Notes about Tor (The Onion Router) on Log Analysis, Non-Persistent Entry Guards, Blacklist Certain Onion Services from Connecting, Additional SocksPorts, UDP and more.
+|image=https://www.whonix.org/w/images/3/32/Menger-702837640.jpg
+}}
+[[File:Iconfinder_tor_386502.svg|Tor Icon|thumb]]
+= Configuration =
+== Introduction ==
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = <u>All</u> unique Tor configurations should be stored in <code>/usr/local/etc/torrc.d/50_user.conf</code> and nowhere else. <ref>
+Folder <code>/usr/local/etc/torrc.d</code> is not a real drop-in folder yet due to an [https://trac.torproject.org/projects/tor/ticket/25140 upstream issue].
+</ref> <ref>
+<code>/usr/local/etc/torrc.d/40_tor_control_panel.conf</code> is auto generated. It can be examined but changes should only be made to <code>/usr/local/etc/torrc.d/50_user.conf</code>.
+</ref> Note that Whonix will <u>not</u> modify <code>/usr/local/etc/torrc.d/50_user.conf</code> once it is created, therefore the user is responsible for adding or removing specific configurations in this file.
+}}
+
+== Edit Tor Configuration ==
+{{Open /usr/local/etc/torrc.d/50 user.conf}}
+
+== Configuration Check ==
+To discover if there are any Tor configuration syntax errors and to see which Tor configuration files are processed in which order, run the following command inside {{gateway_product_name}} ([[{{q project name short}}|{{q project name}}]]: <code>sys-whonix</code>).
+
+{{CodeSelect|code=
+anon-verify
+}}
+
+The output should be similar to the following.
+
+<pre>
+/===================================================================\
+|                      Report Summary                               |
+\===================================================================/
+No error detected in your Tor configuration.
+Tor verify exit code: 0
+/===================================================================\
+|                      Tor Full Report                              |
+\===================================================================/
+Aug 09 19:29:56.669 [notice] Tor 0.3.3.9 (git-ca1a436fa8e53a32) running on Linux with Libevent 2.0.21-stable, OpenSSL 1.1.0f, Zlib 1.2.8, Liblzma 5.2.2, and Libzstd 1.1.2.
+Aug 09 19:29:56.669 [notice] Tor can't help you if you use it wrong! Learn how to be safe at https://www.torproject.org/download/download#warning
+Aug 09 19:29:56.669 [notice] Read configuration file "/usr/share/tor/tor-service-defaults-torrc".
+Aug 09 19:29:56.669 [notice] Read configuration file "/etc/tor/torrc".
+Aug 09 19:29:56.672 [notice] You configured a non-loopback address '10.137.8.1:5300' for DNSPort. This allows everybody on your local network to use your machine as a proxy. Make sure this is what you wanted.
+Aug 09 19:29:56.672 [notice] You configured a non-loopback address '10.137.8.1:9040' for TransPort. This allows everybody on your local network to use your machine as a proxy. Make sure this is what you wanted.
+Configuration was valid
+/===================================================================\
+|                 Used Tor Configuration Files                      |
+\===================================================================/
+5 files are used as Tor configuration files: 
+/usr/share/tor/tor-service-defaults-torrc /etc/tor/torrc /etc/torrc.d/95_whonix.conf /usr/local/etc/torrc.d/40_tor_control_panel.conf /usr/local/etc/torrc.d/50_user.conf
+=====================================================================
+</pre>
+
+= Log Analysis =
+
+== Introduction ==
+
+Analysis of Tor's log can be useful if connectivity issues emerge.
+
+== Open Tor Log ==
+
+Users can inspect two logs:
+
+* The persistent Tor log: ''/var/log/tor/log''; and/or
+* The Tor log since last boot: ''/var/run/tor/log'' <ref>
+{{Code2|/var/run/tor/log}} is a Tor configuration file specific to {{project_name}} and an alternative to {{Code2|/var/log/tor/log}}. The former only contains Tor's output since {{gateway_product_name}} (<code>sys-whonix</code>) last booted. The latter is a permanent log that persists across reboots. The former has a small usability advantage because it is shorter and should therefore contain more relevant information.
+</ref>
+
+{{open with root rights|filename=
+/var/run/tor/log
+}}
+
+== Watch Tor Log ==
+
+Users can also watch Tor's log as it is written.
+
+{{CodeSelect|code=
+sudo tail -f /var/run/tor/log
+}}
+
+This command is especially useful when Tor is reloaded or restarted simultaneously in another terminal window. 
+
+To [[#Reload Tor|reload Tor]], run the following command.
+
+{{CodeSelect|code=
+sudo service tor@default reload
+}}
+
+To [[#Restart Tor|restart Tor]], run the following command.
+
+{{CodeSelect|code=
+sudo service tor@default restart
+}}
+
+= Permissions Fix =
+If error messages like the following appear.
+
+<pre>
+Oct 24 07:22:15.693 [warn] Directory /var/lib/tor/.tor cannot be read: Permission denied
+</pre>
+
+<pre>
+Oct 25 12:35:07.460 [warn] Directory /var/lib/tor cannot be read: Permission denied
+</pre>
+
+<pre>
+Oct 25 12:35:07.460 [warn] Failed to parse/validate config: Couldn't access private data directory "/var/lib/tor"
+</pre>
+
+Then apply the following steps.
+{{Box|text=
+'''1.''' {{Open_a _product_gw_terminal}}
+
+'''2.''' Apply a permissions fix for the Tor data folder.
+
+{{CodeSelect|code=
+sudo chown --recursive debian-tor:debian-tor /var/lib/tor
+}}
+
+'''3.''' {{Restart_Tor}}
+
+Error messages should no longer appear after completing these steps. <ref>[https://phabricator.whonix.org/T855 whonixcheck check /var/lib/tor folder permission]</ref>
+}}
+
+= Non-Issues =
+
+{| class="wikitable" style="background-color: #fff;text-align: left"
+
+! '''Message / Question'''
+! '''Answer'''
+
+|-
+| <u>{{Code2|Am I compromised? Does Tor's log report leaks?}}
+| Tor's output is an ineffective tool for discovering serious issues such as a compromise or leaks.</u>
+
+|-
+| {{Code2|[WARN] Socks version 71 not recognized. (Tor is not an http proxy.)}}
+| 
+This warning is caused by [[whonixcheck]], specifically the function {{Code2|check_tor_socks_port_reachability}} which checks if a Tor SocksPort is reachable by trying to fetch it using curl. <ref>
+{{CodeSelect|code=
+{{Curl_Plain}} 10.152.152.10:9100
+}}
+</ref> No warnings appear if the function works correctly.
+
+|-
+| {{Code2|[warn] Socks version 71 not recognized. (This port is not an HTTP proxy; did you want to use HTTPTunnelPort?)}}
+| Similar to above.
+
+|-
+| {{Code2|[NOTICE] You configured a non-loopback address '10.152.152.10:9179' for SocksPort. This allows everybody on your local network to use your machine as a proxy. Make sure this is what you wanted. [1 duplicate hidden]}} This notice may reference other port numbers, or the DnsPort or TransPort.
+| This notice is not a concern because Tor really listens on that IP/port - it is the internal network interface for {{gateway_product_name}} (<code>sys-whonix</code>) that is only available to {{workstation_product_name}}s because {{gateway_product_name}} (<code>sys-whonix</code>) is firewalled. See ''{{W_Firewall}}'' or the {{project_name}} source code for further information.
+
+|-
+| {{Code2|[NOTICE] New control connection opened. [2 duplicates hidden]}} A higher number of duplicate messages may also appear.
+| This notice is not a concern because it is caused by [[whonixcheck]]'s Tor Bootstrap Status Test, which uses Tor's ControlPort or [[Dev/CPFP|CPFP]].
+
+|}
+
+= Version Number =
+To discover what Tor version is currently in use, run the following command inside {{gateway_product_name}} ([[{{q project name short}}|{{q project name}}]]: <code>sys-whonix</code>).
+
+{{CodeSelect|code=
+anon-info
+}}
+
+The output should be similar to the following.
+
+<pre>
+INFO: version of the 'tor' package: 0.4.2.6-1~d10.buster+1
+</pre>
+
+= Advanced Topics =
+
+== Additional SocksPorts ==
+
+Adding additional Tor SocksPorts to ''/usr/local/etc/torrc.d/50_user.conf'' is non-intuitive. <ref>https://trac.torproject.org/projects/tor/ticket/15261</ref>
+
+As noted in the Tor man page (<code>man tor</code>):
+
+<blockquote>
+By default, an option on the command line overrides an option found in the configuration file, and an option in a configuration file overrides one in the defaults file. <br />
+<br />
+This rule is simple for options that take a single value, but it can become complicated for options that are allowed to occur more than once: if you specify four SOCKSPorts in your configuration file, and one more SOCKSPort on the command line, the option on the command line will replace <u>all</u> of the SOCKSPorts in the configuration file.  If this is not what you want, prefix the option name with a plus sign, and it will be appended to the previous set of options instead.
+</blockquote>
+
+Nick Mathewson from The Tor Project has also noted: <ref>https://trac.torproject.org/projects/tor/ticket/15261#comment:1</ref>
+
+<blockquote>
+So to make sure that the SocksPort in the torrc does what you want, write it as <code>+SocksPort</code>.
+</blockquote>
+
+After adding custom ports, a user would also have to edit the {{project_name}} firewall unless they were lucky. For example, various custom ports for such use cases have already been added. Those are documented [[Stream_Isolation#How_to_mitigate_identity_correlation|here]].
+
+== Blacklist Certain Onion Services from Connecting ==
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = This procedure is experimental. Testers only.
+}}
+
+{{Open /usr/local/etc/torrc.d/50_user.conf}}
+
+The following is an example onion service that is added to {{Code2|/usr/local/etc/torrc.d/50_user.conf}}. Replace {{Code2|bbbbbb6qtmqg65g6.onion}} with the actual onion service that should be blacklisted.
+
+{{CodeSelect|code=
+MapAddress bbbbbb6qtmqg65g6.onion 127.0.0.1
+}}
+
+{{Reload_Tor}}
+
+== Entry Guards ==
+{{Anchor|Manual Rotation of Tor Guards}}
+{{Anchor|Security and Performance Related Issues}}
+{{Anchor|Mitigate the Threat of Guard Fingerprinting}}
+{{Anchor|Clone {{gateway_product_name}} (sys-whonix) with New Entry Guards}}
+{{Anchor|Regenerate the Tor State After Saving the Tor State Folder}}
+{{Anchor|Alternating Bridges}}
+{{Anchor|Copy Tor State Files to Another sys-whonix Instance}}
+{{Anchor|Fresh Tor Entry Guards by Regenerating the Tor State File}}
+{{Anchor|Notes}}
+
+This entry has been moved [[Tor_Entry_Guards|here]].
+
+== Manual Bridge Configuration ==
+It is recommended to first read the main [[Bridges]] article.
+
+For the majority of users, the [[Anon_Connection_Wizard|Anon Connection Wizard]] GUI application is suitable for bridge configuration. The manual bridge configuration steps below are only recommended for advanced users.
+
+=== Step 1: Access Tor Configuration to Add Bridges ===
+
+{{Open_/usr/local/etc/torrc.d/50_user.conf}}
+
+=== Step 2: Edit Tor Configuration ===
+
+==== Use obfs4 Bridges ====
+
+<div class="toccolours mw-collapsible mw-collapsed">
+<div class="mw-collapsible-content">
+{{Box|text=
+'''1.''' Open {{Code2|/usr/local/etc/torrc.d/50_user.conf}} in an editor.
+
+Copy and paste the following text to enable the use of {{Code2|obfs4}} bridges. <ref>obfs3 bridges have been deprecated.</ref> <ref>
+{{CodeSelect|code=
+ClientTransportPlugin fte exec /usr/bin/fteproxy --managed
+}}
+</ref>
+
+{{CodeSelect|code=
+UseBridges 1
+ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy
+}}
+
+'''2.''' Add the bridge IP addresses that were sourced in the [[Bridges#Finding_a_Bridge_and_Choosing_the_Right_Protocol|Finding a Bridge and Choosing the Right Protocol]] section. 
+
+Copy and paste the IP addresses to the very bottom of {{Code2|/usr/local/etc/torrc.d/50_user.conf}}, <u>after the ClientTransportPlugin entries</u>. Users must ensure that "bridge" appears at the beginning of each line.
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = In the <i>obfs4</i> example below: <br />
+* <u>Do not copy and paste this list of bridge entries to the {{Code2|50_user.conf}} file.</u> They will not work.
+* Retrieve [https://bridges.torproject.org/bridges?transport=obfs4 obfs4 bridges] from The Tor Project <u>before</u> editing this file.
+* <u>Capitalization in the {{Code2|50_user.conf}} file matters.</u> For example, bridges will not connect if users type "Bridge" instead of "bridge".
+}}
+
+{{Code2|Obfs4}} example text to add to {{Code2|/usr/local/etc/torrc.d/50_user.conf}}.
+
+{{CodeSelect|code=
+bridge obfs4 192.235.207.85:42086 0EEB10BF4B4FAF56D46E cert=oue8sYYw5wi4n3mf2WDOg iat-mode=0
+bridge obfs4 34.218.26.20:43263 DD21A551767816A0C9495 cert=7qzS6KASquPvJU82Fm7qoJw iat-mode=0
+bridge obfs4 161.217.177.95:10703 B3B8009D01BB7E5FDFAEC cert=4RaIqGiOytEXm6Hw iat-mode=0
+}}
+
+The sample text for a complete {{Code2|obfs4}} torrc file is below. Check your file is similar, except for the specific bridge entries.
+<pre>
+# This file is part of Whonix
+# Copyright (C) 2012 - 2013 adrelanos
+# See the file COPYING for copying conditions.
+
+# Use this file for your user customizations.
+# Please see /usr/local/etc/torrc.d/50_user.conf.examples for help, options, comments etc.
+
+# Anything here will override {{project name}} own Tor config customizations in /usr/share/tor/tor-service-defaults-torrc
+
+# Enable Tor through whonixsetup or manually uncomment "DisableNetwork 0" by
+# removing the # in front of it.
+DisableNetwork 0
+UseBridges 1
+ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy
+
+bridge obfs4 192.235.207.85:42086 0EEB10BF4B4FAF56D46E cert=oue8sYYw5wi4n3mf2WDOg iat-mode=0
+bridge obfs4 34.218.26.20:43263 DD21A551767816A0C9495 cert=7qzS6KASquPvJU82Fm7qoJw iat-mode=0
+bridge obfs4 161.217.177.95:10703 B3B8009D01BB7E5FDFAEC cert=4RaIqGiOytEXm6Hw iat-mode=0
+</pre>
+
+<ref>
+{{Code2|fte}} example text to add to {{Code2|/usr/local/etc/torrc.d/50_user.conf}}. 
+
+fte is supported in {{project_name}} 15, but further testing is required; see: https://phabricator.whonix.org/T520
+{{CodeSelect|code=
+ClientTransportPlugin fte exec /usr/bin/fteproxy --managed
+bridge fte 10.200.100.60:95128 4352e58420e68f5e40bf7c74faddccd9d1349413
+bridge fte 300.100.300.80:23521 4352e58420e68f5e40bf7c74faddccd9d1349413
+}}
+</ref>
+
+'''3.''' After {{Code2|/usr/local/etc/torrc.d/50_user.conf}} editing is finished, save and exit.
+
+<pre>
+<Ctrl-X> --> press Y --> <Enter>
+</pre>
+}}
+</div>
+</div>
+
+==== Use meek_lite Bridges ====
+
+<div class="toccolours mw-collapsible mw-collapsed">
+<div class="mw-collapsible-content">
+
+{{Code2|meek_lite}} bridges are available. To use them, simply add one more line to the {{Code2|/usr/local/etc/torrc.d/50_user.conf}} file. Take note the bridge type is called {{Code2|meek_lite}}, not {{Code2|meek}} which is used in Tor Browser Bundle. <ref>{{Code2|meek_lite}} actually uses a different implementation of {{Code2|obfs4proxy}}. Forum discussion: https://forums.whonix.org/t/censorship-circumvention-tor-pluggable-transports/2601/3</ref>
+{{Box|text=
+'''1.''' Open {{Code2|/usr/local/etc/torrc.d/50_user.conf}} in an editor. 
+
+Copy and paste the following text to enable {{Code2|meek_lite}} bridges.
+
+{{CodeSelect|code=
+ClientTransportPlugin meek_lite exec /usr/bin/obfs4proxy
+}}
+
+'''2.''' Add a {{Code2|meek_lite}} bridge to the configuration file.
+
+An example of {{Code2|meek_lite}} text that must be added to the {{Code2|/usr/local/etc/torrc.d/50_user.conf}} file is below. The bridge in this example is functional, so a search for other {{Code2|meek_lite}} bridges is unnecessary.
+
+{{CodeSelect|code=
+bridge meek_lite 0.0.2.0:2 B9E7141C594AF25699E0079C1F0146F409495296 url=https://d2cly7j4zqgua7.cloudfront.net/ front=a0.awsstatic.com
+}}
+
+'''3.''' After {{Code2|/usr/local/etc/torrc.d/50_user.conf}} editing is finished, save and exit.
+
+<pre>
+<Ctrl-X> --> press Y --> <Enter>
+</pre>
+}}
+</div>
+</div>
+
+=== Step 3: Enable Tor ===
+
+Follow this procedure if it has not been previously completed.
+
+{{Enable_Tor}}
+
+=== Step 4: Have {{Code2|/usr/local/etc/torrc.d/50_user.conf}} Changes Take Effect ===
+
+{{Reload_Tor}}
+
+== Tor Functions ==
+
+=== Disable Tor ===
+{{Disable Tor}}
+
+=== Reload Tor ===
+{{Reload_Tor}}
+
+=== Restart Tor ===
+{{Restart_Tor}}
+
+== vanguards  ==
+See [[Vanguards]].
+
+== UDP ==
+{{Tor_UDP}}
+
+== ICMP ==
+Same as above.
+
+= FAQ =
+
+== {{project name}} is Preventing Tor from Bootstrapping! ==
+
+Refer to the related [[Why_is_Tor_slow#Whonix_.E2.84.A2_has_Slowed_Tor_Connections_Dramatically.21|{{project name}} has Slowed Tor Connections Dramatically!]] wiki entry. Bootstrapping problems can relate to nation state or ISP censorship of Tor, or relate to the Tor guard in operation. In the latter case, temporarily changing the Tor guard might resolve the issue.
+
+If that is ineffective, users can also:
+
+* Confirm [[System_Requirements|minimum system requirements]] have been met for {{project_name}}.
+* Confirm the accuracy of the VM clock with [[Sdwdate|sdwdate]].
+* Remove any changes that were made to the {{gateway_product_name}} (<code>sys-whonix</code>) torrc configuration, such as [[Bridges|bridges]], pluggable transports, [[{{gateway product name short}}_Security|seccomp, connection padding]] and so on.
+* Test Tor functionality on the host.
+* In [[{{q_project_name_short}}|{{q_project_name}}]], [[Install_Tor_Browser_Outside_of_Whonix#Moderate:_{{q_project_name}}|test Tor functionality in a non-{{project_name}} AppVM]].
+* Increase the amount of RAM available to {{gateway_product_name}} (<code>sys-whonix</code>).
+* Follow other [[Troubleshooting]] advice.
+
+== Can I Speed Up Tor or the {{gateway_product_name}}? ==
+
+''Is there a way to configure the number of nodes in a circuit and to allow selection according to their speeds?''
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = '''Reminder:''' [[Free Support Principle|{{project_name}} Reliance on Debian (and Tor)]] - ''"{{project_name}} is not a stripped down version of Debian; anything possible in "vanilla" Debian GNU/Linux can be replicated in {{project_name}}."'' Tor configurations are not limited by using {{project_name}}.
+}}
+
+Those who already know how to configure Tor in this way on the command line in vanilla Debian can follow the same procedure in {{gateway_product_name}}. This is not an endorsement for making these manual Tor changes because it is not recommended by Tor developers and thus the {{project name}} team. <ref>Deferring to their expertise on the possible adverse anonymity effects.</ref> This is also the reason there are no instructions in the {{project name}} documentation to manipulate Tor nodes in this way. 
+
+That said, if general instructions were found describing how to achieve this on the host, then the same procedure could simply be repeated in {{gateway_product_name}}.
+
+== Does {{project name}} Modify Tor? ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = [https://support.torproject.org/about/what-is-tor/ Tor] is an anonymizer developed by The Tor Project. [[Tor Browser]] is a web browser [https://www.torproject.org/ developed by the Tor Project] which is optimized for privacy. Please do not confuse {{Code2|Tor}} with {{Code2|Tor Browser}} when conversing about {{project_name}} topics.
+
+For differences of Tor Browser by Tor Project compared to Tor Browser in {{project_name}} see [[Tor_Browser#Whonix_.E2.84.A2_Tor_Browser_Differences|Whonix ™ Tor Browser Differences]].
+}}
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = {{project name}} does <u>not </u> modify the Tor package itself.
+}}
+
+Although {{project name}} does not modify Tor, the Tor configuration file ''has'' been adapted for {{project_name}}. To inspect the relevant files, check the following on {{gateway_product_name}}: <ref>Changes to the configuration file are made by the [https://github.com/{{project_name_short}}/anon-gw-anonymizer-config anon-gw-anonymizer-config] package.</ref>
+
+* <code>/etc/tor/torrc</code> file.
+* <code>/etc/torrc.d</code> folder.
+* <code>/usr/local/etc/torrc.d/</code> folder.
+* <code>/usr/share/tor/tor-service-defaults-torrc</code> file. 
+
+Tor is not patched and the normal Tor deb package is used in {{project name}} [[Dev/Tor#Tor_Version|from deb.torproject.org]].
+
+Any changes to the Tor routing algorithm should be proposed, discussed and eventually implemented upstream in Tor on torproject.org. <ref>This means changes occur for all Tor users and not a subset relying on a particular distribution.</ref> If proposed changes are not adopted by The Tor Project, then the option to create a Tor fork <ref name=fork>https://en.wikipedia.org/wiki/Fork_(software_development)</ref> is available. Tor has already been forked at least once.
+
+A general {{project name}} design principle is to keep the Tor process as uniform as possible, in order to simplify any security audits. Diverging from this practice would introduce unnecessary complexity, possibly worsen fingerprinting or degrade anonymity, and limit {{project name}} discussions to the security impacts of the modified routing algorithm. For these reasons, the {{project name}} team is strongly disinclined to make any direct changes to the Tor package.
+
+== Can {{project name}} Improve Tor? ==
+
+As outlined in the [[#Does {{project name}} modify Tor?|previous section]], {{project name}} will not implement any changes to Tor directly and any suggested improvements or bug fixes are proposed upstream on torproject.org. This has already [[Dev/Threat Model#Design Document, innovations and research|happened]] on occasion. Creating {{project name}} is a difficult and time consuming endeavor, so Tor improvements are better left to dedicated, skilled developers who are more knowledgeable in this area. 
+
+Skilled coders can always provide upstream patches to Tor, or as a last resort, fork <ref name=fork /> it. Hypothetically, if a fork <ref name=fork /> developed a greater following than the original project due to proven security / anonymity benefits, then {{project name}} would seriously consider making a switch.
+
+== Tor Routing Algorithm ==
+Quote Tor Project FAQ [https://2019.www.torproject.org/docs/faq.html.en#ChooseEntryExit Can I control which nodes (or country) are used for entry/exit?]
+
+<blockquote>Yes. You can set preferred entry and exit nodes as well as inform Tor which nodes you do not want to use. The following options can be added to your config file torrc or specified on the command line:
+
+[...]
+
+We recommend you do not use these — they are intended for testing and may disappear in future versions. You get the best security that Tor can provide when you leave the route selection to Tor; overriding the entry / exit nodes can mess up your anonymity in ways we don't understand.</blockquote>
+
+To make changes to the Tor routing algorithm which benefit anonymity and not actually worsen anonymity it is required to be more clever than the Tor developers. Many questions, suggestions and discussions online only scratch the surface and are unaware of the informational resources:
+
+* [https://www.freehaven.net/anonbib/ Anonymity Bibliography - Collection Anonymity Research]
+* Read the [https://blog.torproject.org Tor blog] as there are often blog posts discussing anonymity research such as blog post [https://blog.torproject.org/new-low-cost-traffic-analysis-attacks-mitigations new low cost traffic analysis attacks and mitigations].
+
+The following resources describe the organizational structure of the {{Project name}} project in relation to The Tor Project, Debian and other upstream sources.
+
+* [[Dev/Relationship_With_Upstream|{{Project name}} Relationship With Upstream]]
+* [[Why_does_{{project_name_short}}_use_Tor|Why does {{project_name}} use Tor?]]
+* [[Trust|Placing Trust in {{project_name}}]]
+* [[Free Support Principle]]
+* [[Linux User Experience versus Commercial Operating Systems]]
+
+See also:
+
+* [[#Does Whonix ™ Modify Tor?|Does Whonix ™ Modify Tor?]]
+* [[#Can Whonix ™ Improve Tor?|Can Whonix ™ Improve Tor?]]
+
+== How do I Change Other Tor Settings? ==
+
+Questions are often raised in forums about how other Tor-specific changes can be made in {{project_name}}, such as excluding specific exit nodes. <ref>
+http://forums.whonix.org/t/how-to-set-an-exit-node-in-wonix-of-qubesos/9070
+</ref>
+
+In many cases, making such changes is already documented {{project_name}} [[Documentation]]. In other cases such changes are discouraged.
+
+In all instances:
+
+# Changes must be made to the Tor configuration file as per [[#Edit Tor Configuration|Edit Tor Configuration]].
+# Refer to the [https://2019.www.torproject.org/docs/tor-manual.html.en Tor Project Manual] for specific configuration details.
+
+For example, to exclude exit nodes from the Five Eyes countries the Tor configuration would include the following lines:
+
+[[#Tor Routing Algorithm|Discouraged!]]
+
+<pre>
+ExcludeExitNodes {us},{au},{ca},{nz},{gb}
+StrictNodes 1
+</pre>
+
+A [[#Configuration Check|Configuration Check]] should be run afterwards inside {{gateway_product_name}} ([[{{q project name short}}|{{q project name}}]]: <code>sys-whonix</code>) to confirm there are no Tor configuration syntax errors. As these configurations are specific to Tor (and not {{project_name}}), the [[Free_Support_Principle|Free Support Principle]] applies.
+
+== How do I Install the Latest Tor Version? ==
+
+Follow the instructions [[Tor_Versioning|here]] to install later Tor versions from either:
+
+* the {{project_name}} repository; or
+* Tor Project APT repositories; or
+* Tor Project source code.
+
+= Further Reading =
+<div style="column-count:2;-moz-column-count:2;-webkit-column-count:2">
+* [[Why_does_{{project_name_short}}_use_Tor|Why does {{project_name}} use Tor?]]
+* [[Why is Tor slow|Why is Tor slow?]]
+* [[Bridges|Censorship Circumvention - Configure (Private) (Obfuscated) Tor Bridges]]
+* [[Hide_Tor_and_{{project_name_short}}_from_your_ISP|Hide Tor and {{project name}} use from the ISP]]
+* [[Tor Controller|Control and Monitor Tor]]
+* [[Onion Services|Hosting Tor Onion Services (<u>any</u> Hidden Webserver)]]
+* [[Comparison Of Tor Proxies CGI proxies Proxy Chains And VPN Services|Comparison of Tor with CGI Proxies, Proxy Chains and VPN Services]]
+* [[Tor_Versioning|Newer Tor Versions]]
+</div>
+
+= Footnotes / References =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
