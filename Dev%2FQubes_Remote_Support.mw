@@ -1,0 +1,138 @@
+
+QubesOS to be remotely manageable from on-demand, ephemeral, hidden onion service to dom0/AdminVM.
+
+= challenges =
+* There are no Open Source remote support tools which are usable by laymen.
+** There is teamviewer but it's proprietary and therefore the teamviewer company could take over any users who use it.
+* The existing Open Source tools do not account for that most users nowadays are behind common NAT routers which make it hard to receive unsolicited incoming connections, i.e. hard to run servers. Would require port forwardings which are difficult for users. The internet is full of users seeking help how and failing to create port forwardings. Users are also often on networks (3/4G) that do not even support incoming (server) connections.
+* Even if some remote support instructions use Open Source software and work on Linux, these won't work easily in Qubes dom0 since non-networked by default.
+* Most if not all existing remote support Open Source software does not use encryption by default.
+** Therefore any man-in-the-middle could take over the connection and compromise the remote support receiver.
+*** It's possible to run VNC over encrypted/authenticated SSH but this is not something which laymen users that need remote support are capable to use.
+
+= goals =
+* functional for users with reasonable slow internet connections
+* reasonable security
+* Open Source
+* work behind NAT
+
+= desired security properties =
+* encrypted
+* authenticated
+* clear and reliable signaling to the user whether remote admin is enabled and whether it is currently in use
+* Even after sys-whonix compromise the attacker should not be able to access dom0 through VNC.
+
+= implementation =
+* Command line tools (which can be called by any GUI).
+* Whonix-Workstation script. (GUI and command line tools would run here.)
+* Whonix-Gateway script. (Tor onion service)
+* dom0 package (Qubes dom0 configuration, SSH/VNC server)
+* Packaging of a (python) GUI [1] (the GUI itself to be written by Marek)
+
+= sys-whonix GUI =
+able to see already existing hidden services per <code>sys-whonix</code> in a widget.
+
+Adding remote support thought requirements:
+
+* List configured onion services.
+* Delete them.
+* Create new remote support related hidden onion service. When done, output onion address, port and shared secret for the user to copy paste to chosen secured communication channel.
+* create time based or persistent remote support
+* <s>multiple remote support onions at the same time</s> remove?
+* optionally a feature to send access info to the support agent from the GUI
+
+= Missing parts =
+Avoidable?
+
+* Qubes dom0 salt
+* Qubes dom0 GUI
+
+= Idea =
+== general ==
+* x2go supports SSH.
+** (Needless to say that SSH or any extra encryption complicates things.)
+** TODO: test if x2go can work in acceptable speed over a Tor onion. FreeNX (maybe outdated), SPICE, x2go... x2go [in packages.debian.org: yes] seems most promising.
+* Run an SSH server in dom0.
+* magic-wormhole? 
+** [in packages.debian.org: yes]
+** ([[File_Sharing#Magic-Wormhole]])
+** These code words are quite usable. Example: <code>7-crossover-clockwork</code> We'd need two of these.
+
+questions:
+
+* SSH server running in dom0 is OK?
+* I guess running VNC (and perhaps SSH) in dom0 is OK?
+* Things can always be more compartmentalized, secure but also getting more and more complicated, fragile.
+
+I am considering to script this entirely from dom0 using `qvm-run`. Only expectation: installed (use salt?) and non-broken <code>sys-whonix</code>
+
+= Draft Concept =
+== remote support provider ==
+On remote support provider machine.
+
+* dom0 <code>qvm-start</code> <code>sys-whonix</code>
+* dom0 <code>qvm-run</code> <code>sys-whonix</code> create <code>.onion</code> service config file in <code>/usr/local/etc/torrc.d/40_remote_support.conf</code>
+** [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/man/anon-auth-autogen.8.ronn <code>anon-auth-autogen</code>]
+* dom0 <code>qvm-run</code> <code>sys-whonix</code> reload Tor
+* dom0 <code>qvm-start</code> <code>remote-support-provider-server-vm</code>
+* dom0 <code>qvm-run</code> <code>remote-support-provider-server-vm</code> install openssh-server
+* make openssh-server reachable through <code>.onion</code> running in <code>sys-whonix</code>
+* dom0 <code>wormhole send</code> <code>connection.zip</code>
+** write wormhole code into script variable
+* <code>connection.zip</code> contains
+** <code>.onion</code> hostname of remote support provider
+** <code>~/.ssh/known_hosts</code>
+** <code>.auth_private</code> file (private key) for authenticated Tor onion service
+** ssh key
+* tell remote support receiver out of band (telephone, chat, e-mail) the wormhole code
+* wait for remote support receiver to start the remote support receiver tool and to enter the wormhole code
+* in <code>remote-support-provider-server-vm</code>: x2go connect to remote support receiver localhost:port [reverse ssh]
+
+== remote support receiver ==
+On remote support receiver machine.
+
+* dom0 <code>sudo dnf install x2go-server</code>
+* dom0 <code>qvm-start</code> <code>sys-whonix</code>
+* dom0 <code>wormhole receive</code> <code>connection.zip</code>
+** Must be done in dom0. Not <code>sys-whonix</code>. Because goal is <code>sys-whonix</code> to be untrusted.
+* dom0 install <code>~/.ssh/known_hosts</code>
+* dom0 <code>qvm-run</code> <code>sys-whonix</code> install <code>.auth_private</code> file (private key)
+** <code>sudo sourcefile=~/user.auth_private anon-server-to-client-install</code> (adjust path)
+* dom0 <code>qvm-run</code> <code>sys-whonix</code> test connection to <code>.onion</code>
+* dom0 test connection to <code>.onion</code>
+* dom0 reverse ssh connect to remote support provider <code>.onion</code>
+* There is now an open port on remote support receiver machine over ssh and over <code>.onion</code> available to remote support provider.
+
+== qubes-remote-support-provider-gui ==
+Not needed. Remote support provider can use CLI tools for connection setup. Would be encapsulated into a simple CLI call and telling the remote support receiver the wormhole code. Once the remote support receiver connected to the remote support provider (reverse SSH), the remote support provider can use a $VNC viewer (which is graphical) to connect.)
+
+== notes ==
+* Can use two wormhole codes if not avoidable.
+* Automatically re-connect if reverse SSH is down.
+
+= ssh keys =
+challenges:
+
+* Have to manage file <code>/root/.ssh/authorized_keys</code> using scripts.
+** Use secure, long, script generated passwords instead?
+
+= send access into to gpg agent =
+
+> optionally a feature to send access info to the support agent from the GUI (for example GPG encrypted email)
+
+Patrick said: I would discourage that. Challanges:
+
+* calling e-mail / gpg from command line
+* calling e-mail / gpg from dom0 or adminVM?
+
+= Preliminary Work Done =
+* https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/man/anon-auth-autogen.8.ronn
+* https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/bin/anon-auth-autogen
+* https://forums.whonix.org/t/onion-services-authentication/975/4
+* https://www.whonix.org/wiki/Onion_Services#Configure_Onion_Services_Authentication
+* https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/bin/anon-server-to-client-install
+* https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/man/anon-server-to-client-install.8.ronn
+
+= See also =
+* [[Dev/Qubes#ssh_into_Qubes_dom0]]
+* https://github.com/fepitre/qubes-remote-desktop
