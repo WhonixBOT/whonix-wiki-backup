@@ -1,0 +1,112 @@
+{{Header}}
+{{Title
+|title=Remount Secure
+}}
+{{#seo:
+|title=Remount Secure
+|description=Secure Mount Options for better Security Hardening
+|image=https://www.whonix.org/w/images/thumb/7/7b/Mountoptions.jpg/470px-Mountoptions.jpg
+}}
+
+== /run/user/1000 bypass ==
+Quote madaidan:
+
+<blockquote>/run/user/1000 bypasses /run's `noexec` as it is its own mount point. We might want to look into restricting that too.</blockquote>
+
+== Resources ==
+* https://github.com/Whonix/security-misc/pull/68
+* https://github.com/Whonix/security-misc/pull/69
+* [https://phabricator.whonix.org/T941 lock down interpreters / compilers (interpreter lock) (compiler lock)]
+* https://seifried.org/lasg/installation/
+
+== CLIP OS ==
+https://github.com/clipos/products_clipos/blob/master/core/configure.d/40_fstab.sh
+
+== RedHat ==
+Quote https://people.redhat.com/sgrubb/files/hardening-rhel5.pdf
+
+<blockquote>Partitioning
+
+Allow minimal privileges via mount options
+
+* Noexec on everything possible
+* Nodev everywhere except / and chroot partitions
+* Nosetuid everywhere except /
+* Consider making /var/tmp link to /tmp, or maybe mount –bind option
+
+A reasonable /etc/fstab:
+
+<pre>
+LABEL=/               /               ext3    defaults                      1 1
+LABEL=/tmp            /tmp            ext3    defaults,nosuid,noexec,nodev  1 2
+LABEL=/var/log/audit  /var/log/audit  ext3    defaults,nosuid,noexec,nodev  1 2
+LABEL=/home           /home           ext3    defaults,nosuid,nodev         1 2
+LABEL=/var            /var            ext3    defaults,nosuid               1 2
+LABEL=/boot           /boot           ext3    defaults,nosuid,noexec,nodev  1 2
+/tmp                  /var/tmp        ext3    defaults,bind,nosuid,noexec,nodev  1 2
+tmpfs                 /dev/shm        tmpfs   defaults,nosuid,noexec,nodev  0 0
+devpts                /dev/pts        devpts  gid=5,mode=620                0 0
+sysfs                 /sys            sysfs   defaults                      0 0
+proc                  /proc           proc    defaults                      0 0
+LABEL=SWAP-sda6       swap            swap    defaults                      0 0
+</pre>
+</blockquote>
+
+== CentOS ==
+Quote https://wiki.centos.org/HowTos/OS_Protection#Modifying_fstab
+
+<blockquote>Modifying fstab
+
+Once you have your partitions broken out and sized accordingly, you can begin to restrict the various mount points as much as possible. You should add nodev, noexec, and nosuid wherever possible. An example of a decently restricted /etc/fstab file is below:
+
+<pre>
+/dev/VG_OS/lv_root          /        ext3      defaults     1 1
+/dev/VG_OS/lv_tmp           /tmp     ext3      defaults,nosuid,noexec,nodev  1 2
+/dev/VG_OS/lv_vartmp        /var/tmp ext3      defaults,nosuid,noexec,nodev 1 2
+/dev/data_vol/lv_home       /home    ext3      defaults,nosuid,nodev  1 2
+/dev/VG_OS/lv_var           /var     ext3      defaults,nosuid     1 2
+/dev/data_vol/lv_web        /var/www ext3      defaults,nosuid,nodev  1 2
+/dev/sda1                   /boot    ext3      defaults,nosuid,noexec,nodev  1 2
+tmpfs                       /dev/shm tmpfs     defaults 0 0
+devpts                      /dev/pts devpts    gid=5,mode=620 0 0
+sysfs                       /sys     sysfs     defaults    0 0
+proc                        /proc    proc      defaults    0 0
+/dev/_VG_OS/lv_swap         swap     swap      defaults    0 0
+</pre>
+
+Obviously you'll need to modify this example to suit your own system. LVM, volume names, labels etc are all subject to change. Please don't copy this example verbatim and expect it to work for you.
+
+The webserver mount can also be set noexec, however this will impact cgi based applications, as well as server side includes which rely on the execute bit hack. If you're not using cgi applications, I would recommend at least testing noexec and using it if there are no negative side-effects.</blockquote>
+
+== Arch Linux ==
+<blockquote>Mount options
+
+Following the principle of least privilege, file systems should be mounted with the most restrictive mount options possible (without losing functionality).
+
+Relevant mount options are:
+
+* nodev: Do not interpret character or block special devices on the file system.
+* nosuid: Do not allow set-user-identifier or set-group-identifier bits to take effect.
+* noexec: Do not allow direct execution of any  binaries on the mounted file system.
+** Setting noexec on /home disallows executable scripts and breaks Wine* and Steam.
+** Some packages (building nvidia-dkms for example) may require exec on /var.
+
+*Wine does not need the exec flag for opening Windows executables. It is only needed when Wine itself is installed in /home.
+
+File systems used for data should always be mounted with nodev, nosuid and noexec.
+
+Potential file system mounts to consider:
+
+* /var
+* /home
+* /dev/shm
+* /tmp
+* /boot
+</blockquote>
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Design]]
