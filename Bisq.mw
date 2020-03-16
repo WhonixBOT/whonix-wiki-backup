@@ -1,0 +1,194 @@
+{{Header}}
+{{#seo:
+|description=How to use Bisq - The P2P Exchange Network - in Whonix
+}}
+{{Title|title=
+Bisq - The P2P Exchange Network
+}}
+
+__FORCETOC__
+
+= Introduction =
+TODO: write short introduction to Bisq
+
+{{onion-grater-warning}}
+
+= Installation =
+=== {{gateway_product_name}} Installation Steps ===
+==== onion-grater profile ====
+'''On {{gateway_product_name}}.'''
+
+{{Control_Port_Filter_Python_Profile_Add
+|filename_new=/usr/share/doc/onion-grater-merger/examples/40_bisq.yml
+}}
+
+== {{workstation_product_name}} Installation Steps ==
+=== Firewall Settings ===
+Modify the {{workstation_product_name}} (<code>anon-whonix</code>) user firewall settings and reload them.
+
+{{Firewall Settings Workstation}}
+
+Add. TODO: <code>EXTERNAL_OPEN_ALL=true</code> is non-ideal.
+
+{{CodeSelect|code=
+EXTERNAL_OPEN_ALL=true
+}}
+
+Save.
+
+{{Reload_Firewall_ws}}
+
+=== Get the Signing Key ===
+'''On {{workstation_product_name}}.'''
+
+Download.
+
+{{CodeSelect|code=
+scurl-download https://github.com/bisq-network/exchange/releases/download/v0.8.0/29CDFD3B.asc
+}}
+
+Check fingerprint.
+
+{{CodeSelect|code=
+gpg --show-key --with-fingerprint 29CDFD3B.asc
+}}
+
+Should show the following.
+
+<pre style="white-space: pre-wrap;">
+pub   rsa4096/0xCD5DC1C529CDFD3B 2017-07-27 [SC] [expires: 2021-07-27]
+      Key fingerprint = CB36 D7D2 EBB2 E35D 9B75  500B CD5D C1C5 29CD FD3B
+uid                              Christoph Atteneder <christoph.atteneder@gmail.com>
+sub   rsa4096/0x1E0B7BDFA4D6EC0A 2017-07-27 [E] [expires: 2021-07-27]
+</pre>
+
+Import signing key.
+
+{{CodeSelect|code=
+gpg --import 29CDFD3B.asc
+}}
+
+Should show the following.
+
+<pre>
+gpg: keybox '/home/user/.gnupg/pubring.kbx' created
+gpg: /home/user/.gnupg/trustdb.gpg: trustdb created
+
+gpg: key 0xCD5DC1C529CDFD3B: public key "Christoph Atteneder <christoph.atteneder@gmail.com>" imported
+gpg: Total number processed: 1
+gpg:               imported: 1
+</pre>
+
+=== Download ===
+'''On {{workstation_product_name}}.'''
+
+Check latest version number and read release notes.
+
+https://github.com/bisq-network/bisq/releases
+
+Download bisq.
+
+{{CodeSelect|code=
+scurl-download https://github.com/bisq-network/bisq/releases/download/v1.2.7/Bisq-64bit-1.2.7.deb
+}}
+
+Download OpenPGP signature.
+
+{{CodeSelect|code=
+scurl-download https://github.com/bisq-network/bisq/releases/download/v1.2.7/Bisq-64bit-1.2.7.deb.asc
+}}
+
+=== Verification ===
+'''On {{workstation_product_name}}.'''
+
+Verify OpenPGP signature.
+
+{{CodeSelect|code=
+gpg --verify Bisq*.asc
+}}
+
+Should show.
+
+<pre style="white-space: pre-wrap;">
+gpg: assuming signed data in 'Bisq-64bit-0.8.0.deb'
+gpg: Signature made Wed 22 Aug 2018 10:50:09 AM UTC
+gpg:                using RSA key CB36D7D2EBB2E35D9B75500BCD5DC1C529CDFD3B
+gpg:                issuer "christoph.atteneder@gmail.com"
+gpg: Good signature from "Christoph Atteneder <christoph.atteneder@gmail.com>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: CB36 D7D2 EBB2 E35D 9B75  500B CD5D C1C5 29CD FD3B
+</pre>
+
+=== Tor over Tor Prevention ===
+'''On {{workstation_product_name}}.'''
+
+Avoiding Tor over Tor.
+
+Create folder <code>/home/user/.local/share/Bisq/btc_mainnet/tor/</code>.
+
+{{CodeSelect|code=
+mkdir -p /home/user/.local/share/Bisq/btc_mainnet/tor/
+}}
+
+Create a dummy Tor binary <code>/home/user/.local/share/Bisq/btc_mainnet/tor/tor</code>.
+
+{{CodeSelect|code=
+sudo touch /home/user/.local/share/Bisq/btc_mainnet/tor/tor
+}}
+
+=== xdg-desktop-menu bug workaround ===
+'''On {{workstation_product_name}}.'''
+
+Workaround for some bug. <ref>
+https://github.com/bisq-network/bisq/issues/848
+</ref>
+
+{{CodeSelect|code=
+sudo mkdir -p /usr/share/desktop-directories
+}}
+
+=== Install ===
+'''On {{workstation_product_name}}.'''
+
+Install bisq.
+
+{{CodeSelect|code=
+sudo dpkg -i Bisq*.deb
+}}
+
+= Usage =
+'''On {{workstation_product_name}}.'''
+
+Start bisq.
+
+{{CodeSelect|code=
+/opt/Bisq/Bisq --torControlPort=9051 --torControlPassword=notrequired --socks5ProxyBtcAddress=127.0.0.1:9050 --useTorForBtc=true --daoActivated=false
+}}
+
+If you would like to use the DAO, you could drop <code>--daoActivated=false</code>. If you don't know what the DAO is, you might not need it. When DAO is activated, bisq will consume a lot more resources, and you will probably need to increase VCPUs/RAM.
+
+If fonts are too small, you could alternatively use the following command. <ref>
+Same as above but prepend <code>GDK_SCALE=2</code>.
+
+https://github.com/bisq-network/bisq/issues/1425
+</ref>
+
+{{CodeSelect|code=
+GDK_SCALE=2 /opt/Bisq/Bisq --torControlPort=9051 --torControlPassword=notrequired --socks5ProxyBtcAddress=127.0.0.1:9050 --useTorForBtc=true --daoActivated=false
+}}
+
+= Forum Discussion =
+https://forums.whonix.org/t/bisq-the-p2p-exchange-network/4953
+
+= Donations =
+After installing Bisq, please consider making a [[Donate|donation]] to {{project name}} to keep it running for years to come.
+
+Donate Bitcoin (BTC) to {{project_name}}.
+
+{{Pay Bitcoin}}
+
+= Footnotes = 
+{{reflist|close=1}}
+{{Footer}}
+[[Category:Documentation]]
