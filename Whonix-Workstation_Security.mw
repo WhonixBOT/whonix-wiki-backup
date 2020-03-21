@@ -1,0 +1,287 @@
+{{Header}}
+{{#seo:
+|description=This page is targeted at users who wish to improve the security of their {{Workstation product name}} to become even more secure.
+|image=https://www.whonix.org/w/images/9/98/{{project_name_short}}workstation3423423.png
+}}
+
+{{security intro}}
+
+This page is targeted at users who wish to improve the security of their {{Workstation product name}} to become even more secure.
+
+= {{workstation_product_name}} Security Introduction =
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = '''Tip:''' {{project_name}} implementation examples are based on Debian. To use a customized {{workstation_product_name}} VM based on other operating systems, see [[Other_Operating_Systems|here]]. For technical design notes, see [[Operating_System|here]].
+}}
+
+If the {{workstation_product_name}} (<code>anon-whonix</code>) VM is ever compromised, the attacker has access to the data it contains, including all credentials, browser data and passwords. The IP address is never leaked since this requires a compromise of the {{gateway_product_name}} (<code>sys-whonix</code>) VM, but this information may still result in identity disclosure.
+
+== {{non_q_project_name_short}} ==
+
+Best practice is to:
+
+# Keep a clean master copy of the {{workstation_product_name}} VM.
+# Make snapshots / clones of the master copy.
+# Only use the snapshots / clones for Internet activity.
+# Periodically delete old snapshots / clones.
+
+This way it is possible to 'rollback' -- use a new clean clone / snapshot VM -- after risky activity or if a system compromise is suspected. See the multiple [[#VM_Snapshots|VM Snapshots]] recommendation below.
+
+== {{q_project_name}} ==
+
+Best practice is to:
+
+* Use [[Qubes/Disposable_VM|DisposableVMs]] for all Internet activity; or
+* Periodically delete the {{workstation_product_name}} AppVM(s) and create fresh instances from the {{workstation_product_name}} TemplateVM.
+
+{{Anchor|Recommendation to use multiple VM Snapshots}}
+
+= AppArmor =
+
+It is recommended to enable the [[AppArmor|{{project_name}} AppArmor profiles]] which are available for various applications that are run in either the {{gateway_product_name}} or {{workstation_product_name}}, such as Tor, Tor Browser, Thunderbird and others. The profiles are easy to apply and provide a considerable security benefit.
+
+= File Storage Location =
+
+It is unsafe to store files directly in the root section of the home folder (like <code>/home/user</code>). <ref>This is because AppArmor profiles (and possibly other mandatory access control frameworks) are often required to grant read access to the root home folder due to technical limitations.</ref> It is far better to use a sub-folder and store the file there, for example:
+
+* <u>Non-ideal storage location</u>: <code>/home/user/some-document</code>
+* <u>Safer storage location</u>: <code>/home/user/my-documents/some-document</code>
+
+The following sub-folders in the home directory should also be avoided: <ref>/etc/apparmor.d/abstractions/user-download</ref>
+
+* <code>~/tmp</code>
+* <code>~/Download</code>
+* <code>~/Downloads</code>
+* <code>~/download</code>
+* <code>~/downloads</code>
+* <code>~/Desktop</code>
+
+If files are downloaded to the <code>~/Downloads</code> folder -- the only folder available if the Tor Browser [[AppArmor]] profile is enforced -- then move them elsewhere. A folder of your own choosing will keep its contents private from any confined application that is later (hypothetically) compromised.
+
+Other folders that should also be avoided include: <ref>/etc/apparmor.d/abstractions/ubuntu-browsers.d/user-files</ref>
+
+* <code>/media</code>
+* <code>/srv</code>
+* <code>/net</code>
+
+It is easy to choose folder names which are better than the default naming convention. As soon as a user prepends or appends a random number or string to a folder (such as <code>my-</code>), this makes it unlikely that AppArmor profiles or possibly other mandatory access control frameworks will allow access to these folders by default.
+
+= Firejail =
+
+== Introduction ==
+
+According to the Firejail project page: <ref>https://firejail.wordpress.com/</ref>
+
+<blockquote>Firejail is a SUID program that reduces the risk of security breaches by restricting the running environment of untrusted applications using Linux namespaces and seccomp-bpf. It allows a process and all its descendants to have their own private view of the globally shared kernel resources, such as the network stack, process table, mount table.
+
+Written in C with virtually no dependencies, the software runs on any Linux computer with a 3.x kernel version or newer. The sandbox is lightweight, the overhead is low. There are no complicated configuration files to edit, no socket connections open, no daemons running in the background. All security features are implemented directly in Linux kernel and available on any Linux computer. The program is released under GPL v2 license.</blockquote>
+
+Firejail has built-in profiles for a large number of popular Linux programs, including many which are used in {{project_name}}. A small sample of the 100+ profiles includes: Chromium, CryptoCat, Dolphin, Evince, Firefox, HexChat, LibreOffice, Okular, Thunderbird, Transmission, VirtualBox, VLC and wget. <ref>https://github.com/netblue30/firejail/tree/master/etc</ref>
+
+== Launch Firejailed Applications ==
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = In [[{{q project name short}}|{{q project name}}]], create a new {{workstation_product_name}} AppVM based on any modified, cloned template(s) before running any applications. Never launch applications in the {{workstation_product_name}} TemplateVM.
+}}
+
+To run sandboxed applications, simply prefix the program command with "firejail" in a terminal. For example: 
+
+{{CodeSelect|code=
+firejail evince
+}}
+{{CodeSelect|code=
+firejail vlc
+}}
+
+For [[Tor Browser]] see [[Tor_Browser#Hardening|Tor Browser Hardening]] instead.
+
+To confirm an application is sandboxed, open a terminal and run.
+
+    firejail --tree
+
+== Additional Firejail Options ==
+
+The full list of Firejail command line options can be found in the [https://firejail.wordpress.com/features-3/man-firejail/ official documentation]. Alternatively, run the following terminal command in {{workstation_product_name}} (<code>anon-whonix</code>).
+
+{{CodeSelect|code=
+man firejail
+}}
+
+Firejail has a host of additional security features. For instance, VLC could be run while blocking access to the Internet as follows.
+
+{{CodeSelect|code=
+firejail --net=none vlc
+}}
+
+Similarly, the following commands would run VLC with seccomp restrictions and debug output. <ref>Preliminary tests of other security features reveals they are not yet functional in {{project_name}}, for instance {{code|--apparmor}}, {{code|--private}}, and {{code|--overlay-tmpfs}}. If the user does not specify a path to a specific profile when running Firejail, it will search for any relevant profile automatically. If a specific profile is not located, a default profile will be used.</ref>
+
+{{CodeSelect|code=
+firejail --debug vlc
+}}
+
+For a further technical discussion of Firejail containment options, see [https://forums.whonix.org/t/firejail-seccomp-more-options-for-program-containment here]. To build a customized Firejail profile for other applications, follow [https://firejail.wordpress.com/documentation-2/building-custom-profiles/ these steps].
+
+== Firejail Firefox-ESR in Qubes Debian AppVM ==
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = '''Warning:''' Do not use Firefox-ESR in a {{project_name}} template! It is easily fingerprinted and is less secure than Tor Browser.
+}}
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Consider using [[SecBrowser|SecBrowser ™]] instead. It automatically makes use of firejail (in testers repository, coming soon to stable repository). Use SecBrowser ™ instead anyhow already. SecBrowser ™ is a security-hardened browser that provides better protection from exploits, thereby reducing the risk of drive-by virus infections. (Tor Browser without Tor)
+}}
+
+It is recommended to clone the Debian TemplateVM before proceeding, as a number of dependencies are installed:
+
+* Complete the steps to [[{{workstation product name short}}_Security#Install_Firejail|install Firejail]].
+* In a Debian AppVM, [[{{workstation product name short}}_Security#Launch_Firejailed_Applications|launch a firejailed Firefox-ESR application]].
+* Confirm Firefox-ESR is sandboxed:
+** {{CodeSelect|code=
+firejail --tree
+}}
+
+The output should confirm Firefox-ESR is now running in a firejail container.
+
+    XXXX:user:firejail /usr/lib/firefox-esr/firefox-esr
+
+= Hardened Malloc =
+Hardened malloc ('hardened_malloc') is a hardened memory allocator created by security researcher, Daniel Micay.
+
+According to the author's GitHub description: <ref>https://github.com/GrapheneOS/hardened_malloc</ref>
+
+<blockquote>
+This is a security-focused general purpose memory allocator providing the malloc API along with various extensions. It provides substantial hardening against heap corruption vulnerabilities. The security-focused design also leads to much less metadata overhead and memory waste from fragmentation than a more traditional allocator design. It aims to provide decent overall performance with a focus on long-term performance and memory usage rather than allocator micro-benchmarks. It offers scalability via a configurable number of entirely independently arenas, with the internal locking within arenas further divided up per size class.
+</blockquote>
+
+It is possible to use this as the memory allocator for many applications to increase security.
+
+Refer to the dedicated [[Hardened Malloc]] wiki page for further details.
+
+= Network Adapters =
+
+== Adding a Host-Only Networking Adapter to {{workstation_product_name}} / SSH into {{workstation_product_name}} ==
+
+If accessing the {{workstation_product_name}} via SSH, some users may consider something dangerous - adding a second network adapter with [http://www.virtualbox.org/manual/ch06.html#network_hostonly host-only networking].
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = '''Warning:''' Never add another network adapter in this manner! It is also potentially dangerous if any other VMs are running except the {{workstation_product_name}}. The reason is that it will expose the MAC address of the host to the {{workstation_product_name}}.
+}}
+
+The VMware host-only warning regarding routing and connection sharing may equally apply to Whonix: <ref>https://www.vmware.com/support/ws4/doc/network_host_ws.html</ref>
+
+<blockquote>If you install the proper routing or proxy software on your host computer, you can establish a connection between the host virtual Ethernet adapter and a physical network adapter on the host computer. This allows you, for example, to connect the virtual machine to a Token Ring or other non-Ethernet network.
+
+On a Windows 2000, Windows XP or Windows Server 2003 host computer, you can use host-only networking in combination with the Internet connection sharing feature in Windows to allow a virtual machine to use the host's dial-up networking adapter or other connection to the Internet. See your Windows documentation for details on configuring Internet connection sharing.</blockquote>
+
+If it is necessary to SSH or VNC into {{workstation_product_name}}, then use one of these recommended methods:
+
+* It is safest to do this from another {{workstation_product_name}}. When using VMs, they can see each other if they are within the same virtual LAN. When using [[Physical Isolation]], VMs can see each other if they are within the same LAN.
+* Alternatively, run the services using [[Onion Services]] and access them through another {{workstation_product_name}}.
+
+The following methods are <u>not</u> recommended, since they risk weakening isolation between the host and {{workstation_product_name}}:
+
+* Another alternative is to run the services using [[Onion Services]] and access them from the host using ordinary torification methods.
+* A final method is to SSH from the host into {{gateway_product_name}} (see [[File Transfer]] for instructions) and then SSH from there [[File_Transfer#SSH_into_{{workstation_product_name}}|into {{workstation_product_name}}]].
+
+== Adding a NAT Adapter to {{workstation_product_name}} / Updates without Tor ==
+
+Anonymity is compromised if another NAT network adapter is added to the {{workstation_product_name}}. If this advice is disregarded, then a user's identity is leaked if/when infection occurs. Therefore, it is strongly recommended to always update over the Tor network. Although Tor updating is slow by comparison, it prevents inadvertent leaks.
+
+= VM Snapshots =
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = [[{{non_q_project_name_short}}|{{non_q_project_name_short}}]] only.
+}}
+
+Apart from offering protection against hardware serial leaks, VMs have another major advantage: the ability to quickly discard and restore a system. This process is easy in [[{{q_project_name_short}}|{{q_project_name}}]], since every template-based AppVM used for activities is based on a TemplateVM which is only used for software installation and updates, and nothing else. AppVMs are easily discarded and recreated in a clean state whenever the user requires it. <ref>https://www.qubes-os.org/doc/templates/</ref> In [[{{non_q_project_name_short}}|{{non_q_project_name_short}}]], greater precaution is required. 
+
+== Best Practice ==
+
+It is <u>strongly recommended</u> the user keep a master copy of the {{workstation_product_name}} VM which is:
+
+* Kept updated.
+* Does not have any additional software installed.
+* Does not have any default settings changed.
+* Is not used directly for any activities.
+
+Regular <i>clean</i> snapshots or clones of the master VM should be made for activities that require anonymity. Particular care must be taken that clean and unclean states are never mixed up!
+
+The correct method for the safest operation of {{non_q_project_name_short}} is as follows:
+# Import both VMs into the virtualizer.
+# Start both the {{gateway_product_name}} and {{workstation_product_name}} VMs.
+# [[Operating_System_Software_and_Updates#Updates|Securely update both VMs]].
+# After the updates have finished, shut down both VMs. <u>Do not</u> browse anywhere or open any unauthenticated communication channels to the internet.
+# Create snapshots of both VMs in their clean state.
+# Only use the snapshots for browsing or initiating any external connections.
+
+Note: The only exception made is running apt, since it has a guaranteed way to securely download and verify packages.
+
+== Tools ==
+
+<div class="toccolours mw-collapsible mw-collapsed">
+<u>For important [[VirtualBox]] information</u>, please press on Expand on the right.
+<div class="mw-collapsible-content">
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = '''Warning''': VirtualBox's VM Snapshot feature is recommended against because [https://www.whonix.org/old-forum/index.php/topic,97.msg1586.html#msg1586 data loss] has been experienced using it. Instead, use clones or other reliable methods outlined below.
+}}
+
+{{Anchor|Reliable Alternative To Virtualbox VM Snapshots}}
+
+Although VirtualBox's snapshot feature is useful when making interim snapshots of live running systems, it is not recommended as a reliable method for backing up VMs. Data loss is possible, primarily in the form of corrupted virtual hard drives (VHDs). Following VHD corruption, reverting can be very painful or even impossible. Alternative methods are copy / paste, cloning, and exporting / importing. These methods reliably provide VM backups, but disk resources are used inefficiently and manual versioning is required.
+
+=== SubVersioN (SVN) Backup Tool ===
+
+[http://en.wikipedia.org/wiki/Subversion_(software) SubVersioN] is considered the best alternative tool for backing up VM operating environments. It is similar to VirtualBox's snapshot feature, but is much more reliable and efficient. Prior to using it, familiarize yourself with the tool's [https://subversion.apache.org/docs/ documentation] and design. SVN [http://en.wikipedia.org/wiki/Comparison_of_Subversion_clients clients] are available for various platforms.
+
+SVN is a tool typically used by software developers to conduct: collaborative configuration management, version control, and backup / restore of file sets under development by many people over extended period of time. Basic functionality of versioning, backing up and restoring changes to sets of files is available. However, SVN is considered superior to CVS, GIT and other options for VM backups, because it does not have any file size limitations by design. Regardless of how big or small the files are, SVN handles them reliably and efficiently. See the following section: [http://svn.apache.org/repos/asf/subversion/trunk/doc/user/svn-best-practices.html "Be patient with large files"]. 
+
+When versioning file sets, SVN employs [http://en.wikipedia.org/wiki/Atomic_commit "atomic commits"]. By way of comparison, [http://en.wikipedia.org/wiki/Concurrent_Versions_System Concurrent Versions System (CVS)] does not employ [http://en.wikipedia.org/wiki/Atomic_commit atomic commits]. Manual backup procedures are inherently not [http://en.wikipedia.org/wiki/Atomic_commit atomic functions]. Additionally, SVN also handles [http://en.wikipedia.org/wiki/Sparse_file sparse (dynamic)] virtual hard disk files, an option VirtualBox offers when [http://www.virtualbox.org/manual/ch01.html#gui-createvm instantiating new virtual disk drives].
+
+Similar to VirtualBox's snapshot capability, SVN also takes into consideration differences in files -- both textual and binary -- from version to version. For instance, if a 50 GB virtual hard drive grows by an additional 60 GB over the course of a week, SVN's repository will not necessarily increase by an additional 60 GB when a new backup is performed. The outcome depends on how much of the original file changed since the previous backup. SVN will analyze differences between newer files against older files in its repository and only save the differences. Therefore, the repository may only grow as little as 10 GB+, making more efficient use of system resources.
+
+VirtualBox's snapshot feature provides [http://forums.virtualbox.org/viewtopic.php?f=3&p=123806 'branching'] capability. This means it is possible to revert to an earlier version of the VM and start a new branch / version of the VM from where you left off earlier. SVN also provides similar [http://svnbook.red-bean.com/en/1.7/svn.branchmerge.html branching] capability. 
+
+{{mbox
+| type      = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = '''Tip:''' For backups and restores, configuration management tools like SVN require significant additional disk space over and above the size of the file.
+}}
+
+For instance, a 50 GB file typically requires approximately 150 GB of disk space to manage that instance of the VM. The reason is you require: 50 GB for the original source file, 50 GB in SVN's database [http://en.wikipedia.org/wiki/Apache_Subversion#Repository_types repository], and another 50 GB for SVN's [http://svnbook.red-bean.com/en/1.6/svn.tour.initial.html local workspace] working folder ('./.svn'). Although this overhead may seem inefficient, it is not when you consider SVN's functionality and reliability in comparison to manual backup methods outlined earlier.
+
+=== Complete Operating Environment Backups ===
+
+In addition to backing up the {{gateway_product_name}} and {{workstation_product_name}}(s) virtual hard drive files, it is also possible to back up the whole VirtualBox application and {{project_name}} environment for a completely restorable solution. Cloning is another possible option, but that requires more advanced technical skills.
+
+Usually the VirtualBox application that is installed has been provided by [http://www.virtualbox.org Virtualbox.org]. However, a [http://en.wikipedia.org/wiki/Portable_application portable application] version of VirtualBox is available via a tool provided by [http://www.vbox.me VBox.me]. This application converts VirtualBox's "install application" into a "portable application", thereby providing the option to port VMs to other computers via external USB hard drives and/or sticks. By instantiating VMs under portable VirtualBox's ''~/data/.VirtualBox/Machines'' folder, it is possible to backup and restore the complete operating environment of not only {{project_name}}, but also specific instances of VirtualBox and SVN for complete portability. This method captures the entire {{project_name}} operating environment under one parent folder, rather than distributing it across various user and system folders.
+
+'''Figure:''' ''Complete {{project_name}} OS Backup #1''
+
+[[File:2014-05-11 09_42_19.png]]
+
+'''Figure:''' ''Complete {{project_name}} OS Backup #2''
+
+[[File:2014-05-11 09_46_43.png]]
+
+'''Figure:''' ''Complete {{project_name}} OS Backup #3''
+
+[[File:2014-05-11 09_54_39.png]]
+</div>
+</div>
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
