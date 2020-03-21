@@ -1,0 +1,391 @@
+{{Title|
+title=Security Hardening Checklist
+}}
+{{Header}}
+{{#seo:
+|description=Security hardening instructions for {{project_name}} and {{q_project_name}}. Improving Linux, Windows and macOS host computer security and networking configurations. Safe Tor, Tor Browser and other online activities.
+|image=https://www.whonix.org/w/images/5/52/Hardening-13423213.jpg
+}}
+{{Maintainer|
+|status=stable
+|about=About this {{Code2|{{PAGENAME}}}} Page
+|difficulty=easy
+|maintainer=[https://forums.whonix.org/users/torjunkie torjunkie]
+|support=[[Support]]
+}}
+{{project name}} comes with [https://www.whonix.org/#features many security features]. {{project name}} is [[Kicksecure]] ™ Security Hardened by default and also provides extensive [[Documentation]] including this Security Hardening Checklist. The more you know, the safer you can be.
+
+This page is targeted at users who wish to improve the security of their systems to become even more secure.
+
+= Introduction =
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = Recommendations specific to [[{{q project name short}}|{{q project name}}]] or [[{{non q project name short}}|{{non q project name}}]] are marked accordingly.
+}}
+
+It is possible to significantly harden the {{project_name}} and/or host platform. This reduces the likelihood of a temporary or persistent compromise, while increasing the chances of successful, anonymous activity.  Hardening is dependent upon a user's skill set, motivation and available hardware. The checklist below is intended to provide a quick overview of important issues, categorized by difficulty level - easy, moderate, difficult and expert.
+
+= Easy =
+
+== Anonymous Blogging, Posting, Chat, Email and File Sharing ==
+
+* To remain anonymous, follow all the [[Surfing_Posting_Blogging|{{project_name}} recommendations]] to minimize threats of keyboard/mouse biometrics, [[Surfing_Posting_Blogging#Stylometry|stylometric analysis]] and other covert channels.
+* Remove [[metadata|metadata]] from documents, pictures, videos or other files before uploading them to the Internet.
+* Think twice before sharing [[Surfing_Posting_Blogging#Photographs|"anonymous" photos]] due to unique embedded noise signatures that have no known countermeasures.
+* Be careful sharing [[Surfing_Posting_Blogging#Documents|anonymous documents]]. Digital watermarks with embedded covert data are robust, so run documents through Optical Character Recognition (OCR) before sharing the output.
+* Utilize [[Onionshare|OnionShare]] to share or receive files securely and anonymously over the Tor network, or to host anonymous websites.
+
+== Command Line Operations ==
+
+* Do not run commands unless they are completely understood -- first refer to a suitable [[Documentation|{{project_name}} wiki resource]] if available.
+* If [[Root|root privileges]] are required, run the command with <code>sudo</code> rather than logging in as root or using <code>sudo su</code>. <ref>This reduces the likelihood of a successful root or non-root user compromise.</ref>
+** Consider [[Root#Disable_Root_Account|disabling the root account]] permanently. <ref>{{project_name}} 16 and later versions will disable the root account by default.</ref>
+** To prevent malware sniffing the root password, before performing administrative tasks that require root access, [[Root#Prevent_Malware_from_Sniffing_the_Root_Password|create an <code>admin</code> user account with sudo permissions]].
+** Prefer <code>sudoedit</code> for better security when editing files. <ref>
+https://forums.whonix.org/t/use-sudoedit-in-whonix-documentation/7599
+</ref>
+* Consider enabling [[SysRq]] "Security Keys" functionality as insurance against system malfunctions -- this assists in system recovery efforts and limits the potential harm of a malware compromise.
+
+== Disabling and Minimizing Hardware Risks ==
+
+* In [[{{q_project_name_short}}|{{q_project_name}}]], only use a mouse and keyboard utilizing PS/2 ports (not USB ports) to prevent [https://theinvisiblethings.blogspot.fr/2011/06/usb-security-challenges.html malicious compromise] of dom0 (PS/2 adapters and available controllers are required).
+* Do not enable audio input to any VM unless strictly required and consider [[Hardware_Threat_Minimization#Microphones|disabling microphones]] where possible (muting on the host) or unplugging external devices.
+* Preferably [[Hardware_Threat_Minimization#Webcams|detach or cover webcams]] unless they are in use. In [[{{q_project_name_short}}|{{q_project_name}}]], assign it to an untrusted VM (if needed).
+* If possible, [[Hardware_Threat_Minimization#Speakers|physically remove speakers on the host and remove/disable the beeper]]. <ref>This addresses deanonymization techniques relying on watermarked, (in)audible sounds that can link multiple devices, as well as [https://arxiv.org/ftp/arxiv/papers/1611/1611.07350.pdf headphones/speakers being covertly used as a microphone].</ref>
+* Avoid using [[Hardware_Threat_Minimization#Wireless_Input_Devices|wireless devices]], since they are insecure.
+* Preferably disable or remove [https://en.wikipedia.org/wiki/Bluetooth#History_of_security_concerns Bluetooth hardware modules].
+* Disable or remove [[Protection_Against_Physical_Attacks#Problematic_Interfaces|problematic devices]] like ExpressCard, PCMCIA, FireWire or Thunderbolt which may allow attackers with physical access to read RAM.
+* Apply [[Firmware_Security_and_Updates#Firmware_Updating_and_Security_Problems|CPU microcode updates]] on the host operating system <ref>This applies to both Intel and AMD architecture.</ref> or baremetal configurations like [[Physical_Isolation|Physical Isolation]]. <ref>While this may introduce new vulnerabilities, this is objectively better than running a system that is vulnerable to known attacks.</ref>
+* Consider [[Whonix-Workstation_Security_Hardening#Restrict_Hardware_Information_to_Root|restricting hardware information to the root user]] in {{workstation_product_name}} and {{gateway_product_name}}. <ref>This hides hardware identifiers from unprivileged users.</ref>
+
+== Entropy ==
+
+* To mitigate against inadequate entropy seeding by the Linux Random Number Generator (RNG), it is recommended to install daemons that inject more randomness into the pool.
+** From [https://wiki.debian.org/DebianBuster Debian 10 ("Buster")], [[Dev/Entropy#jitterentropy|jitterentropy-rngd]] is available; see footnote. <ref>{{CodeSelect|code=
+sudo apt-get install jitterentropy-rngd
+}}
+</ref>
+** [[Dev/Entropy#haveged|haveged]] also uses CPU timer jitter to generate entropy and additional entropy sources cannot hurt; see footnote. <ref>{{CodeSelect|code=
+sudo apt-get install haveged
+}}
+</ref>
+
+== File Handling ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = {{q_project_name}} only.
+}}
+
+* In File Manager, disable previews of files from untrusted sources. Change file preferences in the TemplateVM's File Manager so future AppVMs inherit this feature.
+* Files received or downloaded from untrusted sources (the internet, via email etc.) should not be opened in a trusted VM. Instead, open them in a DisposableVM: <code>Right-click</code> &rarr; <code>Open In DisposableVM</code>
+* Untrusted PDFs should be opened in a DisposableVM or converted into a [https://github.com/QubesOS/qubes-app-linux-pdf-converter trusted (sanitized) PDF] to prevent exploitation of the PDF reader and potential infection of the VM.
+
+== File Storage Location ==
+
+* Avoid storing files directly in the root home folder and [[Whonix-Workstation_Security#File_Storage_Location|create appropriate sub-folders instead]].
+* Move files downloaded by Tor Browser from the <code>~/Downloads</code> folder to another specially created one. <ref>The reason is AppArmor profiles (and possibly other mandatory access control frameworks) are unlikely to allow access to these folders by default.</ref>
+
+== Mandatory Access Control ==
+
+* Enable all available [[AppArmor|apparmor profiles]] in the {{workstation_product_name}} and {{gateway_product_name}} TemplateVMs.
+* Enable [[{{gateway product name short}}_Security#Seccomp|seccomp]] on {{gateway_product_name}} (<code>sys-whonix</code> ProxyVM).
+
+== Passwords and Logins ==
+
+* Use strong, unique and random [[Passwords|passwords]] for all online accounts, system logins and encryption / decryption purposes to prevent the feasibility of brute-forcing attacks.
+* Use a trusted [https://packages.debian.org/buster/keepassxc password manager], so hundreds of different passwords can be kept stored in an encrypted password database, protected by one strong master password. <ref>For greater security, store the password manager off-line.</ref>
+* For high-entropy passwords, consider using [[Passwords#Generating_Unbreakable_Passwords|Diceware passphrases]]. <ref>To [[Passwords#Diceware_Password_Strength|estimate strength]], an 8-word Diceware passphrase provides ~90 bits of entropy, while a 10-word passphrase provides ~128 bits of entropy.</ref>
+* In [[{{q_project_name_short}}|{{q_project_name}}]], store all login credentials and passwords in an offline vault VM (preferably with KeePassXC) and securely cut and paste them into the Tor Browser. <ref>For greater safety, copy something else into the clipboard after pasting so the password is purged and cannot be accidentally pasted elsewhere.</ref>
+* Read and follow all the [[Passwords#Principles_for_Stronger_Passwords|principles for stronger passwords]].
+
+== Secure Downloads ==
+
+* Download Internet files [[Secure_Downloads|securely]] using <i>scurl</i> instead of <i>wget</i> from the command line.
+* When downloading with Tor Browser, [[Tor_Browser#Preventing_SSLStrip_Attacks|prevent SSLstrip attacks]] by typing <code>https://</code> links directly into the URL / address bar. 
+* Prefer [[Tor_Browser#Other_Precautions|onion services]] file downloads, which provide greater security and anonymity than https.
+
+== Secure Qubes Operation ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = {{q_project_name}} only.
+}}
+
+* Refer to the [[{{q_project_name_short}}_Security|{{q_project_name}} security recommendations]] and always follow the [https://www.qubes-os.org/news/ latest security news] and [https://www.qubes-os.org/doc/security-guidelines/ advice] from the Qubes team.
+
+== Secure Software Installation ==
+
+* Default to Debian's [[Install_Software#Best_Practices|official package manager APT]] for installing software, and avoid third party package managers.
+* When possible, use mechanisms which simplify and automate software upgrades and installations, like <i>apt-get</i> functions.
+* Prefer installation of software from [[Install_Software#Best_Practices|signed (Debian) GNU/Linux repositories]] and avoid manually installing software, particularly if it is unsigned.
+* Set the Qubes, Debian and {{project_name}} package updates to [[Onionizing_Repositories|Tor onion service repositories]]. <ref>The {{project_name}} and Debian repositories are no longer set to onion mirrors by default due to stability issues. This decision will be reviewed in the future once v3 onions have further matured.</ref>
+* For safer installations or updates, first [[Install_Software#How-to:_Install_or_Update_with_Utmost_Caution|stop all activity/applications and rotate the Tor circuits]].
+* Always [[Verifying_Software_Signatures|verify key fingerprints and digital signatures of signed software]] before importing keys or installing software.
+
+== Tor Browser Series and Settings ==
+
+* Prefer the stable Tor Browser release over the alpha series in line with Tor developer recommendations; see footnotes. <ref>[https://blog.torproject.org/new-release-tor-browser-90a1 Tor Blog]: <blockquote><b>Note:</b> this is an alpha release, an experimental version for users who want to help us test new features. For everyone else, we recommend downloading the latest stable release instead.</blockquote></ref> <ref>[https://www.ics.uci.edu/~perl/pets16_selfrando.pdf Selfrando] (load-time memory randomization) protection is [https://trac.torproject.org/projects/tor/ticket/30377 being removed from alpha Tor Browser Linux builds]. Although Selfrando provides a security improvement over standard address space layout randomization (ASLR) present in Tor Browser and other browsers, Tor developers believe it is relatively easy for attackers to bypass and not worth the effort.</ref> <ref>The "hardened" Tor Browser series has been deprecated, see: https://trac.torproject.org/projects/tor/ticket/21912</ref> <ref>Following the official release of the v8.0+ Tor Browser series (based on Firefox 60 ESR), the stable and alpha Tor Browser versions both have a [https://wiki.mozilla.org/Security/Sandbox native sandbox].</ref>
+* Run the [[Tor_Browser#Security_Slider|Tor Browser Security Slider]] in the highest position. <ref>This may affect usability and proper functioning on some websites.</ref>
+* [https://www.torproject.org/docs/faq.html.en#TBBJavaScriptEnabled Disable Javascript] by default and [[Tor_Browser#Security_vs_Usability_Trade-off|only allow it sparingly]] for trusted sites. <ref>This is more secure, but increases the user's fingerprinting risk due to selective use of Javascript.</ref>
+* Do not configure [[Tor_Browser#NoScript_Custom_Setting_Persistence|custom NoScript (per-site) settings]] which persist across successive Tor Browser sessions because this aids fingerprinting.
+* Use [https://www.torproject.org/docs/hidden-services.html.en <i>.onion</i> services] where possible to stay within the Tor network, such as defaulting searches to the [https://3g2upl4pq6kufc4m.onion/ DuckDuckGo onion service]. <ref>Take care to observe you stay within the Tor network -- 'downgrade' attacks have been observed that result in clearnet URLs being loaded in place of onion services across successive page loads on some sites.</ref>
+* Use [[Tor_Browser#Multiple_Tor_Browser_Instances_and_{{workstation_product_name}}|multiple Tor Browser instances or {{workstation_product_name}}s]] to better compartmentalize contextual identities.
+* Follow all other [[Tor_Browser#Unsafe_Tor_Browser_Habits|{{project_name}} recommendations for safe]] and [[DoNot|anonymous]] use of [[Tor_Browser|Tor Browser]].
+* [[Install_Tor_Browser_Outside_of_{{project_name_short}}|Install Tor Browser outside of {{project_name}}]] so a second, working instance is always available for anonymous activities. <ref>Thereby circumventing any possible future problems, like the breakage of {{project_name}}.</ref>
+
+== VirtualBox ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = {{non_q_project_name_short}} Only.
+}}
+
+* Remove a host of [[Virtualization_Platform_Security#VirtualBox Hardening|VirtualBox features]] to reduce the attack surface.
+* Take regular, clean [[{{workstation product name short}}_Security#VM_Snapshots|VM snapshots]] that are not used for any activities.
+* Spoof the initial [[Network_Time_Synchronization#Spoof_the_Initial_Virtual_Hardware_Clock_Offset|virtual hardware clock offset]].
+
+= Moderate =
+
+== Create a USB Qube ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = {{q_project_name}} only.
+}}
+
+* Prepare and utilize a [https://www.qubes-os.org/doc/usb/ USB qube]. <ref>A USB qube is automatically created as of Qubes R4.0</ref> <ref>USB keyboards and mice expose dom0 to attacks, and all USB devices are potential [https://en.wikipedia.org/wiki/Side-channel_attack side channel attack vectors].</ref>
+
+== Host Operating System Distribution ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = {{non_q_project_name_short}} only.
+}}
+
+* For a truly private operating system, install [[Host_Operating_System_Selection|GNU/Linux]] on the host. <ref>[https://www.gnu.org/proprietary/malware-microsoft.html Windows] and [https://www.gnu.org/proprietary/malware-apple.en.html macOS] are surveillance platforms that do not respect user freedom or privacy.</ref>
+* The [[Host_Operating_System_Selection#Recommended_GNU.2FLinux_Distribution|Debian distribution]] is recommended by {{project_name}} as providing a reasonable balance of security and usability.
+
+== Host Operating System Hardening ==
+
+=== All Platforms ===
+
+* Use [[Full_Disk_Encryption_and_Encrypted_Images#Full_Disk_Encryption_on_the_Host|Full Disk Encryption (FDE)]] on the host.
+* Apply a [[Protection_Against_Physical_Attacks#BIOS_Password|BIOS password]] for BIOS setup and boot.
+* [[General_Host_Security#Torify_apt-get_Traffic|Torrify apt-get traffic]] on the host to prevent fingerprinting and leakage of sensitive security information.
+* Follow all other {{project_name}} recommendations to [[General_Host_Security#Key_Hardening_Steps|further harden the host OS]] against [[Protection_Against_Physical_Attacks|physical attacks]].
+
+=== {{non_q_project_name_short}} Only ===
+
+* [[Operating_System_Hardening#Harden_Debian|Harden]] the host Debian Linux OS.
+
+== Kernels / Kernel Modules ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = <u>Note</u>: 
+* Cutting-edge kernels can destabilize the system or cause boot failures.
+* Newer kernels can expose additional vulnerabilities; see footnotes. <ref>[https://www.grsecurity.net/the_truth_about_linux_4_6 The Truth about Linux 4.6]: <blockquote>The real "hard truth" about Linux kernel security is that there's no such thing as a free lunch. Keeping up to date on the latest upstream kernel will generally net all the bug fixes that have been created thus far, but with it of course brings completely new features, new code, new bugs, and new attack surface. The majority of vulnerabilities in the Linux kernel are ones that have been released just recently, something any honest person active in kernel development can attest to.</blockquote></ref> <ref>Whonix developer madaidan has [https://forums.whonix.org/t/kernel-recompilation-for-better-hardening/7598?page=11 noted]: "LTS kernels have less hardening features and not all bug fixes are backported but it has less attack surface and potentially less chance of having bugs. Stable kernels have more hardening features and all bug fixes but more attack surface and more bugs."</ref>
+* Kernel modules in Qubes and {{q project name}} usually require configuration of a Qubes VM Kernel.
+}}
+
+* To benefit from additional protections, <ref>Including [https://www.grsecurity.net/ grsecurity elements] being mainlined by the [http://kernsec.org/wiki/index.php/Kernel_Self_Protection_Project Kernel Self Protection Project].</ref> consider installing [[Kernel|newer kernels]].
+** On the [https://wiki.debian.org/KernelFAQ host Linux platform].
+** In {{project name}} VMs.
+** Qubes: in [https://www.qubes-os.org/doc/software-update-dom0/ dom0] and in Qubes VMs (see [https://www.qubes-os.org/doc/managing-vm-kernel/ Qubes VM Kernel]). <ref>This will likely become the default in future, see: [https://github.com/QubesOS/qubes-issues/issues/5212 Simplify and promote using in-vm kernel].</ref> <ref>Do not raise Qubes VM Kernel issues at {{Project name}}. Instead, contact [https://www.qubes-os.org/support/ Qubes support].</ref> <ref>https://forums.whonix.org/t/what-to-post-in-this-qubes-whonix-forum-and-what-not/2275</ref>
+* Consider installing the [[Linux_Kernel_Runtime_Guard_LKRG|Linux Kernel Runtime Guard (LKRG)]] kernel module for improved detection and  protection against common kernel exploits. <ref>[https://www.openwall.com/lkrg/ Openwall]: <blockquote>... LKRG attempts to post-detect and hopefully promptly respond to unauthorized modifications to the running Linux kernel (integrity checking) or to credentials (such as user IDs) of the running processes (exploit detection). For process credentials, LKRG attempts to detect the exploit and take action before the kernel would grant the process access (such as open a file) based on the unauthorized credentials.</blockquote></ref>
+* Consider installing the [https://github.com/Whonix/tirdad tirdad] kernel module to protect against [https://bitguard.wordpress.com/2019/09/03/an-analysis-of-tcp-secure-sn-generation-in-linux-and-its-privacy-issues/ TCP ISN-based CPU information leaks]. <ref>The TCP Initial Sequence Numbers (ISNs) are randomized.</ref>
+
+== Live-mode ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = {{non_q_project_name_short}} only.
+}}
+
+* Consider running {{project_name}} as a [[Whonix_Live|live system]], so all writes go to RAM instead of the hard disk.
+** If Debian is run as the host OS, consider also booting into Live Mode with [[Grub-live|<code>grub-live</code>]] <ref>https://github.com/Whonix/grub-live</ref> <ref>Boots into persistent mode by default. The grub boot menu has an option to boot into live mode.</ref> or <code>grub-default-live</code>. <ref>https://github.com/Whonix/grub-default-live</ref> <ref>Boots into live mode by default. The grub boot menu has an option to boot into persistent mode.</ref>
+* [[Anti-Forensics_Precautions|Disable swap and program crash dumps]] as an anti-forensics precaution.
+* Consider enabling [[Whonix_Live/Read_Only_Mode_Hard_Drive|read-only hard drive mode]] to make it harder for malware to gain persistence. <ref>This prevents remounting of the hard drive as read-write.</ref>
+
+== Memory Allocator ==
+
+* Consider installing a [[Hardened_Malloc|hardened memory allocator ('Hardened Malloc')]] to launch regularly used applications. <ref>This provides hardening against [https://googleprojectzero.blogspot.com/2015/06/what-is-good-memory-corruption.html heap corruption vulnerabilities] and improves overall memory performance and usage. Note that using Hardened Malloc with Tor Browser, Firefox or SecBrowser ™ is difficult and unsupported.</ref>
+
+== Networking ==
+
+=== All Platforms ===
+* If possible, use a [[Host_Firewall#Dedicated_Connection|dedicated network connection]] (LAN, WiFi etc.) that is not shared with other potentially compromised computers.
+* If using a shared network via a common cable modem/router or ADSL router, configure a [[General_Host_Security#DMZ|de-militarized zone]] (perimeter network). <ref>This restricts {{gateway_product_name}} accessibility to/from other nodes on the network such as printers, phones and laptops.</ref>
+* Test the [[Host_Firewall#Port_Scan|LAN's router/firewall]] with either an internet port scanning service or preferably a port scanning application from an external IP address.
+* Change the default administration password on the router to a unique, random, and suitably long [[Passwords#Generating_Unbreakable_Passwords|Diceware passphrase]] to prevent bruteforcing attacks.
+* WiFi users should default to the [https://en.wikipedia.org/wiki/Wi-Fi_Protected_Access WPA2-AES] or [https://www.wi-fi.org/news-events/newsroom/wi-fi-alliance-introduces-security-enhancements WPA3] standard; the protocols are safer and have stronger encryption. <ref>[https://blog.malwarebytes.com/security-world/2018/01/wpa3-will-secure-wi-fi-connections-in-four-significant-ways-in-2018/ WPA3 protocol improvements] include: 
+* Protection against brute force “dictionary” attacks -- adversaries cannot make multiple login attempts with commonly used passwords.
+* Stronger encryption: WPA2 relies on a 64-bit or 128-bit encryption key, but WPA3 uses 192-bit encryption.
+* Use of individualized data encryption in open networks to strengthen user privacy.
+* [https://www.schneier.com/blog/archives/2018/07/wpa3.html Forward secrecy]: if an adversary captures encrypted Wi-Fi transmissions and cracks the password, they cannot use it to read older data.</ref> <ref>Do not rely on WiFi Protected Set-up (WPS), which has [https://en.wikipedia.org/wiki/Wi-Fi_Protected_Setup major security flaws].</ref>
+* Follow all other {{project_name}} recommendations to [[Router_and_Local_Area_Network_Security#Recommended_Router_Settings|lock down the router]].
+* [[Whonix-Workstation_Security_Hardening#Disable_TCP_SACK|Disable TCP SACK]] to limit the risk of remote DoS and other attacks.
+
+=== {{q_project_name}} Only ===
+* Prefer the Debian Template for networking (<code>sys-net</code> and <code>sys-firewall</code>) since it is [https://github.com/QubesOS/qubes-issues/issues/1781 minimal in nature] and does not "ping home", unlike the Fedora Template. <ref>https://forums.whonix.org/t/disable-sys-net-pings-to-fedoraproject-org/1952</ref>
+* Consider using customized [https://www.qubes-os.org/doc/templates/fedora-minimal/ minimal templates] for NetVMs to reduce the attack surface.
+* For greater security, higher performance and a lower resource footprint, consider using an experimental [https://github.com/talex5/qubes-mirage-firewall MirageOS-based unikernel firewall] that can run as a QubesOS ProxyVM.
+
+== Sandboxing ==
+
+* Use [[{{workstation product name short}}_Security#Firejail|Firejail]] to restrict Tor Browser, Firefox-ESR, VLC and other regularly used applications. <ref>Previously The Tor Project's [[Deprecated#Sandboxed_Tor_Browser|alpha sandbox]] was recommended to restrict Tor Browser, but [https://trac.torproject.org/projects/tor/ticket/25540 the project has unfortunately been abandoned].</ref>
+
+== Spoof MAC Addresses ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = '''Tip:''' [https://en.wikipedia.org/wiki/MAC_spoofing MAC spoofing] is only necessary if traveling with your laptop or PC. It is not required for home PCs that do not change locations.
+}}
+
+* In [[{{q_project_name_short}}|{{q_project_name}}]], [https://www.qubes-os.org/doc/anonymizing-your-mac-address/ follow these steps] to spoof the MAC address on the Debian or Fedora TemplateVM used for network connections.
+* In [[{{non_q_project_name_short}}|{{non_q_project_name}}]], follow [[MAC_Address#Changing_MAC_Addresses|these steps]] to spoof the MAC address of the network card on a Linux, Windows or macOS host.
+
+== Time Stamps and NTP Clients ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = {{non_q_project_name_short}} only.
+}}
+
+* [[Disable_TCP_and_ICMP_Timestamps#Disable_ICMP_Timestamps|Disable ICMP timestamps]] and [[Disable_TCP_and_ICMP_Timestamps#Disable_TCP_Timestamps|TCP timestamps]] on the host operating system to prevent leakage of information. <ref>Such as system information, host time, system uptime, and fingerprinting of devices behind a router.</ref>
+* [[Time_Attacks#Mitigations|Uninstall the NTP client]] on the host operating system and disable systemd's timdatectl NTP synchronization feature. <ref>This prevents time-related attack vectors which rely on leakage of the host time.</ref>
+
+== Tor Settings ==
+
+* Consider enabling [[{{gateway product name short}}_Security#Tor_Connection_Padding|Tor connection padding]] for greater anonymity.
+* Consider installing [[Tor_Versioning|newer Tor versions]] via the {{project_name}} stable-proposed-updates repository or directly from The Tor Project repository.
+* Avoid [[Tor_Entry_Guards#Regenerate_the_Tor_State_After_Saving_the_Tor_State_Folder|regenerating the Tor state file]] or [[Tor_Entry_Guards#Manual_Rotation_of_Tor_Guards|manually rotating Tor guards]] <ref>Via creation of a new {{gateway_product_name}} (<code>sys-whonix</code>).</ref> because it degrades anonymity.
+* Avoid configuring [[Tor_Entry_Guards#Fresh_Tor_Entry_Guards_by_Regenerating_the_Tor_State_File|non-persistent entry guards]], as this ''severely'' degrades anonymity.
+* Consider using [[Bridges]] if Tor is censored, dangerous or deemed suspicious in your location.
+* If using a bridge, configure [[Tor_Entry_Guards#Alternating_Bridges|alternating bridges]] for different physical locations.
+* Heavily censored users should configure a ''meek-azure'' bridge with [[Anon_Connection_Wizard|Anon Connection Wizard]]. <ref>For example, {{project_name}} users residing in China.</ref>
+* To help preserve anonymity, copy [[Tor_Entry_Guards#Copy_Tor_Configuration_files_and_Settings_to_Another_sys-whonix_Instance|Tor configuration files and settings]] to any new <code>sys-whonix</code> instance which is created. <ref>This is useful when testing later {{project_name}} releases to stymie deanonymization attempts by advanced adversaries, or when creating an identical backup that does not share any other persistent data, except for Tor state and custom torrc options.</ref>
+
+== {{project_name}} VM Security ==
+
+* Consider disabling the [[{{gateway product name short}}_Security_Hardening#Disable_Control_Port_Filter_Proxy|Control Port Filter Proxy]] to reduce the attack surface of both the {{gateway_product_name}} and {{workstation_product_name}}.
+* On {{workstation_product_name}}, consider [[{{project name short}}check_Hardening|hardening whonixcheck]].
+
+= Difficult =
+
+== Anti-Evil Maid ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = {{q_project_name}} only.
+}}
+
+* If a Trusted Platform Module is available, use [https://www.qubes-os.org/doc/anti-evil-maid/ AEM protection] to attest that only desired (trusted) components are loaded and executed during the system boot. <ref>Unauthorized modifications to BIOS or the boot partition will be notified.</ref>
+* Consider the Android [https://guardianproject.github.io/haven/ Haven application] for sensitive devices -- motion, sound, vibration and light sensors can monitor and protect physical areas. <ref>Notifications are made in real time for any potentially suspicious activity.</ref>
+
+== Chaining Anonymizing Tunnels ==
+
+* Avoid this course of action. The [[Tunnels/Introduction|anonymity benefits are unproven]] and it may actually hurt a user's anonymity and security goals.
+* Virtual Private Network (VPN) tunnel-links are [[Tunnels/Introduction#VPN_Tunnel_Risks|strongly recommended against]] due to multiple security and anonymity risks.
+
+== DisposableVMs ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = {{q_project_name}} only.
+}}
+
+* Run all instances of Tor Browser in a [[Qubes/Disposable_VM|DisposableVM]] which is preferably uncustomized to resist fingerprinting. <ref>This is safe in Qubes R4, but [https://phabricator.whonix.org/T695 privacy issues] are unresolved in Qubes R3.2</ref>
+* Configure each ServiceVM as a [https://www.qubes-os.org/doc/dispvm-customization/#using-static-disposable-vms-for-sys- Static DisposableVM] to mitigate the threat from persistent malware accross VM reboots. <ref>Users may configure <code>sys-net</code>, <code>sys-firewall</code> and <code>sys-usb</code> as static DisposableVMs. This option is only available for Qubes R4 users.</ref>
+
+== Email ==
+
+=== All Platforms ===
+
+* Follow the [[E-Mail#Email_Provider_Comparison|{{project_name}} recommendations]] to select an email provider compatible with privacy and anonymity.
+* For [[E-Mail#Encrypted_Email|anonymous PGP-encrypted email]] over Tor, use [[Encrypted_Email_with_Thunderbird_and_Enigmail|Mozilla Thunderbird, Enigmail and TorBirdy]]. <ref>Reminder: The ''Subject:'' line and other header fields are <u>not</u> encrypted in the current configuration.</ref>
+* Follow all other [[E-Mail#Safe_Email_Principles|email principles for greater safety]].
+
+=== {{q_project_name}} Only ===
+
+* Use [https://www.qubes-os.org/doc/split-gpg/ split-GPG] for email to reduce the risk of key theft used for encryption / decryption and signing.
+* Create an AppVM that is exclusively used for email and  change the VM's firewall settings to only allow network connections to the email server and nothing else ("Deny network access except...").
+* Only open [https://micahflee.com/2016/07/how-qubes-makes-handling-pdfs-way-safer/ untrusted email attachments] in a DisposableVM to prevent possible infection.
+
+== Ethernet/FDDI Station Activity Monitor ==
+
+* Consider running [https://packages.debian.org/buster/arpon ArpON] as a daemon to defend against ARP attacks like [https://fossbytes.com/arp-spoofing-attacks-detection-prevention/ ARP spoofing], [https://www.techopedia.com/definition/27471/address-resolution-protocol-poisoning-arp-poisoning ARP cache poisoning] and [https://networklessons.com/switching/arp-poisoning ARP poison routing]. <ref>Attackers use these methods to redirect local network traffic and execute Man in the Middle Attacks.</ref>
+* Consider utilizing [https://packages.debian.org/buster/arpwatch Arpwatch] to be alerted about any changes to the database of Ethernet MAC addresses seen on the network. <ref>Administrators are advised of any changes via email, such as new station/activity, flip-flops and re-used/changed old addresses.</ref>
+
+== Flash the Router with Opensource Firmware ==
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = '''Warning:''' risk of bricking your router!
+}}
+
+* Flash the insecure, limited-utility, proprietary firmware on the router with a [[Router_and_Local_Area_Network_Security#Router_Firmware|powerful, open-source GNU/Linux alternative]].
+
+== Multi-Factor User Authentication ==
+
+* Configure [https://wiki.debian.org/pamusb PAM USB] as a module that only allows user authentication by inserting a token (a USB stick), in which a one-time password is stored. 
+* For secure account logins, utilize a [https://www.yubico.com/ Yubikey] hardware authentication device which supports one-time passwords, public-key encryption, and the Universal 2nd Factor (U2F) and FIDO2 protcols.
+** Qubes: Follow the [https://www.qubes-os.org/doc/yubi-key/ Yubikey] instructions to enhance the security of Qubes user authentication, mitigate the risk of password snooping, and to improve USB keyboard security.
+
+== Whitelisting Tor Traffic ==
+
+* <u>[[{{q project name short}}|{{q project name}}]]</u>: Configure sys-whonix to use [[Corridor|corridor]] as a filtering gateway to ensure only connections to Tor relays pass through. <ref>This provides an additional fail-safe to protect from accidental clearnet leaks that might arise from hypothetical {{project_name}} bugs, but does not address potential Qubes ProxyVM leaks.</ref> <ref>https://github.com/rustybird/corridor</ref>
+* <u>[[{{non q project name short}}|{{non q project name}}]] or {{q_project_name_short}}</u>: Use a standalone [https://github.com/rustybird/corridor corridor] as a filtering gateway.
+
+= Expert =
+
+== Disable Intel ME Blobs ==
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = '''Warning:''' high risk of bricking your computer!
+}}
+
+* It is possible to [http://hardenedlinux.org/firmware/2016/11/17/neutralize_ME_firmware_on_sandybridge_and_ivybridge.html partially deblob] Intel's despicable ME firmware image by [https://github.com/corna/me_cleaner/blob/master/me_cleaner.py removing unnecessary partitions] from it.
+
+== Opensource Firmware ==
+
+* [https://libreboot.org/ Libreboot] is no longer recommended as a proprietary firmware alternative; see footnote. <ref>Although Libreboot is a free, opensource BIOS or UEFI replacement that initializes the hardware and starts the bootloader for the OS, the absence of proprietary firmware means important microcode security updates are unavailable. Also, even experts risk bricking their hardware during the process and it is incompatible with newer architectures, making it impractical for the majority of the Whonix population.</ref>
+* [https://www.coreboot.org/ Coreboot] is a possible BIOS/UEFI firmware alternative -- consider [[Open-source_Hardware#Buyer_Considerations|purchasing hardware]] that has it pre-installed (like Chromebooks), or research flashing procedures for the handful of refurbished motherboards that support it.
+** <u>Note</u>: The open Qubes ticket on [https://github.com/QubesOS/qubes-issues/issues/1594 Research support for libreboot/coreboot-based systems] makes the opensource firmware recommendation generally unsuitable for {{q_project_name}} in 2019.
+** <u>Exception</u>: The fairly priced [https://www.qubes-os.org/news/2019/07/18/insurgo-privacybeast-qubes-certification/ Insurgo PrivacyBeast X230] is the first custom, refurbished laptop to exceed all Qubes hardware certification requirements. <ref>This includes:
+* Binary-blob-free Coreboot initialization, including native graphic initialization.
+* Heads provides an Anti-evil Maid (AEM) firmware solution and protects against malicious interdiction.
+* Intel ME is neutered and unnecessary modules involved in main CPU initialization have been deleted.
+* Ships with Qubes OS pre-installed (with full-disk encryption), with the final disk encryption key being regenerated when first powered on by the buyer.</ref> For detailed specifications and pricing, see: [https://insurgo.ca/produit/qubesos-certified-privacybeast_x230-reasonably-secured-laptop/ Insurgo PrivacyBeast X230 Laptop - QubesOS Certified & preinstalled - Single Order].
+
+== Physical Isolation ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = {{non_q_project_name_short}} only.
+}}
+
+* If additional hardware is available, consider [[Dev/Build_Documentation/Physical_Isolation|Physical Isolation]] in [[{{non_q_project_name_short}}|{{non_q_project_name}}]]. <ref>Using two different computers and virtualization is one of the most secure configurations available, but may be less secure than [http://invisiblethingslab.com/resources/2014/Software_compartmentalization_vs_physical_separation.pdf Qubes' approach] (software compartmentalization).</ref>
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
