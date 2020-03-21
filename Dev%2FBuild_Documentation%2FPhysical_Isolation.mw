@@ -1,0 +1,935 @@
+{{Title|title=Build Documentation: Physical Isolation}}
+{{Header}}
+{{#seo:
+|description=Security by Isolation. Using {{project name}} with Physical Isolation on Bare Metal for Better Security.
+|image=https://www.whonix.org/w/images/9/98/Digital-art-191226640.jpg
+}}
+{{forkme}}
+
+'''{{free}}'''
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = '''Warning:''' It is essential to read the [[#Security and Support Status|Security and Support Status]], [[#Warnings|Warnings]] and [[#First time user?|First time user]] entries in conjunction with this chapter.
+}}
+
+= Introduction =
+== Basic ==
+{{Other Platforms}}
+
+See also Physical Isolation [[#Security and Support Status]].
+
+The following instructions are for [[{{non q project name short}}|{{non q project name}}]]. For [[{{q project name short}}|{{q project name}}]] see:<br />
+https://forums.whonix.org/t/physical-isolation-is-back-qubes-whonix-style
+
+== Technical Introduction ==
+When setting up {{project name}} in the form of two Virtual Machines running on the same physical host, exploits targeting the VM implementation or the host can still break out of the torified Client VM and expose the IP of a user. Malware running on the host has full control over all VMs. To protect such attacks we need a different approach: In this context we called it Physical Isolation, because the gateway system is installed on separate hardware. This drastically reduces the TCB<ref>https://en.wikipedia.org/wiki/Trusted_computing_base</ref> by more than the half.
+
+In total we'll be installing and configuring two computers and set up an isolated point to point network between them (you could also set up a an ordinary, completely isolated, LAN behind the {{gateway_product_name}}). One computer acts as the client or "{{workstation_product_name}}", the other as a proxy or "{{gateway_product_name}}" which will transparently route all of the {{workstation_product_name}} traffic through Tor.
+
+The {{gateway_product_name}} on its own physical device can either run directly on hardware or inside a virtual machine. Both options have advantages and disadvantages. We recommend to use no additional Virtual Machine for the {{gateway_product_name}}.
+
+The {{workstation_product_name}} should always be installed in a Virtual Machine: A VM hides hardware serial numbers. See also [[Security_Guide#Recommendation_to_use_multiple_VM_Snapshots|Recommendation to use multiple VM Snapshots]].
+
+The host operating system(s) should only be used for downloading operating system updating, hosting {{gateway_product_name}} or {{workstation_product_name}} and nothing else.
+
+Bonus points if the physical systems are exclusively used for hosting {{project_name}}, or if storage devices are separated for {{project name}} and non-{{project_name}} use cases, to avoid a {{project name}} hard drive getting infected by a another operating system.
+
+==  First time user? ==
+{{Default Passwords}}
+{{First_Time_User}}
+
+== Warnings ==
+'''WARNING''': Less tested than VM builds. Needs your help for more rigid testing!
+
+'''WARNING''': Instructions are difficult. Only advanced Linux users can understand them.
+
+'''WARNING''': [[Dev/Build Anonymity]] has not been considered for this article.
+
+'''WARNING''': Do also read the [[Dev/BuildDocumentation_8#Warning|warnings]] in the [[Dev/BuildDocumentation|latest build instructions for VM images]]. Some of them, {{Code2|Don't add private files to {{project name}} source code folder!}} and {{Code2|Check if the OpenPGP public keys are still up to date.}} also applies to the physical isolation page.
+
+'''WARNING''': This article currently lacks information about {{gateway_product_name}} and {{workstation_product_name}} MAC address. See also:
+
+* [[Protocol-Leak-Protection and Fingerprinting-Protection]]
+* [[Computer_Security_Education#MAC_Address|{{project_name}} in public networks / MAC Address]]<br />
+
+'''WARNING''': {{software compartmentalization vs. physical separation}} (See also: [[{{q_project_name_short}}|{{q_project_name}}]].)
+
+== Using spare hardware + Virtual Machine ==
+
+Advantages:
+
+* You can install a graphical host.
+* Use the {{project name}} download version.
+* You can use the graphical network manager on the host, for example to connect to WiFi.
+* You can setup easily a VPN on the host. Tor will be tunneled through the VPN.
+
+Disadvantages:
+
+* Higher attack surface, because the Virtual Machine code get's involved.
+
+== Using spare hardware without Virtual Machine ==
+
+Advantages:
+
+* More secure, because less code is involved.
+
+Disadvantages:
+
+* Slightly more complicated setup
+* More difficult to set up VPN
+* More difficult to set up 3G networking compared to using a Windows host
+
+== Hardware ==
+
+=== General ===
+
+We recommend that you use two dedicated computers for {{project name}} that are never used for activities that could lead back to your identity. Alternatively you can use an already existing and otherwise used computer for the {{gateway_product_name}}. To offer some isolation you should disconnect all internal and external drives and boot from a eSATA, USB or another internal drive into a clean environment.
+
+=== non-anonymous use ===
+
+* non-anonymous box (leave it as it is, like you want)
+* non-anonymous home dial up internet router (leave it as it is, like you want)
+
+=== anonymous use ===
+
+* {{gateway_product_name}}
+** This really does not have to be a big desktop computer or ordinary server. There are alternatives.
+** smartphone <ref name=one>Just some hints to get started. It is difficult and beyond the scope of {{project_name}}, because you don't have an Ethernet interface. Some (after market) firmwares support USB-host. (You can plug USB devices into your phone, such as an USB ethernet card. For example some rooted android smartphones can [http://android.galoula.com/en/LinuxInstall/ install] Debian Linux.</ref>,
+** UMPC<ref>https://en.wikipedia.org/wiki/Ultra-mobile_PC</ref>
+** pad, tablet,
+** notebook, netbook,
+** <s>Raspberry Pi</s><ref>https://en.wikipedia.org/wiki/Raspberry_Pi</ref>: needs contributor, [https://forums.whonix.org/t/whonix-raspberry-pi/723 development thread]
+** router <ref>something like OpenWRT</ref>,
+** set top box,
+** etc.
+** how to utilize such a device as a linux server is beyond the scope of this guide, there are already better resources
+* anonymous 3G modem (see below) or anonymous wifi adapter (see below)
+* {{workstation_product_name}}
+** You get the idea. Use a device which suits you.
+
+= Before installing =
+{{Pre_Install_Advice}}
+
+= Prerequisites =
+* [[System Requirements]]
+* {{gateway_product_name}}: A device with at least two network adapters, at least one of them ethernet <ref>The other one may be either an [[Security_Guide#Anonymous_3G_modem|Anonymous 3G modem]]; [[Security_Guide#Anonymous_WiFi_adapter|Anonymous WiFi adapter]], another ethernet or wifi connected to your modem/router.</ref>, capable of running Linux. It will run Debian. <ref>Theoretically you could use any OS that supports iptables or pf. If you don't want to use Debian you will have to edit the source code. This will be easy for Debian derivatives but much more difficult for *BSD for example. In any case, the choice of OS shouldn't really matter because this system is not used for anything but running Tor. A cheap plug computer, something like Raspberry Pi or the hardware used by Torouter would be sufficient.</ref>
+* {{workstation_product_name}}: A device connected via ethernet to the {{gateway_product_name}}. It must only have this one NIC and no other network connectivity! Must be connected by wire.<ref>If you don't connect by wire, you significantly weaken isolation and security. One the {{workstation_product_name}} were infected, it could jump onto another network and start leaking.</ref> This will be the torified client system or {{workstation_product_name}}. It must be capable of running Debian.<ref>Any OS can be used. But this is not recommended! If you do anyway, read warning, especially for Windows: [https://trac.torproject.org/projects/tor/wiki/doc/TransparentProxyLeaks Transparent Proxy Leaks].</ref>
+* We recommend to use a VM as the client, the same {{workstation_product_name}}, that most non Physical Isolation users use. <ref>From the [[Download]] page or build it yourself from source code.</ref> <ref>A generic VM image can neither leak identifying hardware serial numbers nor unique software fingerprints. (e.g. trough [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Softwareupdaters software updates]).</ref> <ref>This ensures that you get the latest security features and most secure configurations. (Such as stream isolation that protects against Identity correlation through circuit sharing, HexChat IRC hardening or {{project name}} Protocol-Leak-Protection and Fingerprinting-Protection etc.)</ref>
+* Host build environment has a working internet connection to Debian mirrors.
+* Optionally, it would be useful, if you knew how to open a second [[Desktop#Virtual_Consoles|virtual console]].
+
+= Host Preparation =
+<!--
+EDITORS NOTE: The following host preparation text is duplicated on 3 pages.
+(1) [[Physical Isolation]]
+(2) [[Dev/Build Documentation]] for VM images
+(3) {{project name}} debian packages.
+When making changes here, please consider also making changes there.
+-->
+* You need to build on '''Debian {{Stable_project_version_based_on_Debian_codename}}'''. (How to obtain Debian safely: <ref>[[Debian|Debian ISO OpenPGP verification]]</ref>) <ref>The build scripts could be adapted to run on other {{Code2|*NIX}} systems as well but currently they assume {{Code2|apt-get}} and {{Code2|grml-debootstrap}} to be available. You need about 15 GB of free space.</ref>
+* Build dependencies and configurations get automatically applied, so you don't have to worry about that. <ref>By {{Code2|[https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/build-steps.d/1100_prepare-build-machine build-steps.d/1100_prepare-build-machine]}}.))</ref>
+* It is recommended to set your terminal (for example Konsole) to unlimited scrollback, so you can watch the full build log.
+
+= How To Install {{gateway_product_name}} on the Raspberry Pi huy 3 B (RPI3) =
+* of <code>How To Install {{gateway_product_name}} on the Raspberry Pi 3 B (RPI3)</code>: [https://forums.whonix.org/u/Algernon Algernon]
+* Forum discussion: [https://forums.whonix.org/t/whonix-for-arm64-raspberry-pi-rpi/1788 {{project name}} for arm64 / Raspberry Pi ( RPi )]
+
+Get the source (see below).
+
+From inside the {{project name}} source folder run:
+
+{{CodeSelect|code=
+sudo ./whonix_build --target raw --flavor whonix-gateway-rpi --build --arch arm64 --kernel linux-image-arm64 --headers linux-headers-arm64
+}}
+
+After a succesful build burn the <code>whonix_gw_rpi.img</code> to a micro SD card using gnome-disk-utility.
+# Within gnome-disk-utility select the SD card. 
+# At the top panel select options (next to the poweroff button). 
+# Click restore disk image and choose the respective file. 
+# Click start restoring and wait until it is finished. 
+# Put the SD card into the RPI3, attach an HDMI monitor, an USB-ethernet adapter as well as a keyboard and boot it. 
+
+After login run:
+
+{{CodeSelect|code=
+sudoedit /etc/network/interfaces.d/30_non-qubes-whonix
+}}
+
+and change the address and the gateway of eth0 corresponding to your local network / upstream router. 
+As an example  our ISP router uses 192.168.0.1/24 for the internal network. The settings of eth0 would look like the following:
+
+{{CodeSelect|code=
+auto eth0
+iface eth0 inet static
+    address 192.168.0.11
+    netmask 255.255.255.0
+    gateway 192.168.0.1
+}}
+
+
+By default eth0 is the native ethernet connection of the RPI3. Hence, connect a network cable from there to your router. eth1 is the USB-ethernet adapter which should also be connected via cable to the computer running the workstation.
+Since the RPI3 is lacking a real time clock you need to set the date manually to the current UTC time. Example:
+
+{{CodeSelect|code=
+sudo date -s "09 NOV 2019 17:00:00"
+}}
+
+Run:
+
+{{CodeSelect|code=
+sudo service networking restart
+}}
+
+and
+
+{{CodeSelect|code=
+sudo service tor restart
+}}
+
+to connect to the Tor network.
+Depending on your hypervisor you need to change network settings on the Workstation in order to connect it to the gateway (see below).
+
+= How To Install {{gateway_product_name}} on Hardware (RECOMMENDED) =
+== Get Debian ==
+Download a Debian {{Stable_project_version_based_on_Debian_codename}} 32 bit installation iso. Detailed instructions doing so are unfortunately not part of this guide. However, the [[Debian]] page contains some help.
+
+You can choose iso of any desktop environment (KDE, LXDE, Xfce, ...) but since you'll be using the command line, Debian {{Stable_project_version_based_on_Debian_codename}} network install (netinst) version is recommended (it is the most minimal).
+
+(You could also use a Debian {{Stable_project_version_based_on_Debian_codename}} 64 bit installation iso, these instructions should also work, but it is less tested.)
+
+== Install Debian ==
+In the installer boot menu of Debian {{Stable_project_version_based_on_Debian_codename}} press "Install" and choose following settings:
+
+<pre>
+Select a language: English
+Select your location: United States
+Configure the keyboard: (select yours)
+Hostname: host
+Domain name: (empty)
+Root password: (set up a strong password)
+Full name for the new user: user
+Username for your account: user
+Password for the new user: (choose a good password, different from root password)
+Partitioning method: Guided - use entire disk (it is a good idea to set up cryptsetup encrypted LVM at this point)
+Partitioning scheme: All files in one partition (select the listed device in the next step)
+Partition disks/overview: Finish partitioning
+Write changes to disk: Yes
+
+Debian archive mirror country: Go back
+Continue without a network mirror: Yes
+
+Use a network mirror: No
+Participate in the package usage survey: No
+Software selection: None; deselect all options (using Space)
+Install the GRUB boot loader: Yes (select the listed device in the next step)
+Finish the installation: Continue
+</pre>
+
+<div class="toccolours mw-collapsible mw-collapsed">
+'''OPTIONAL.'''
+
+If you are interested in seeing a visual walk-through of the minimal installation of Debian {{Stable_project_version_based_on_Debian_codename}}, click on Expand on the right. 
+
+<div class="mw-collapsible-content">
+In the menu select "Install"
+
+[[Image:20.png|400px]]
+
+
+Set language as English.
+
+[[File:21.png|400px]]
+
+
+Set location as United States.
+
+[[File:22a.png|400px]]
+
+
+Select your keyboard.
+
+[[File:23.png|400px]]
+
+
+Installing additional content.
+
+[[File:53.png|400px]]
+
+
+Network will auto-configure (hopefully).
+
+[[File:24.png|400px]]
+
+
+Set the hostname to "host".
+
+[[File:25.png|400px]]
+
+
+Leave the domain name empty.
+
+[[File:26.png|400px]]
+
+
+Pick a strong root password.
+
+[[File:27.png|400px]]
+
+
+Reenter the password.
+
+[[File:28.png|400px]]
+
+
+Full name should should be "user".
+
+[[File:29.png|400px]]
+
+
+Username should also be "user".
+
+[[File:30.png|400px]]
+
+
+Enter a strong user password.
+
+[[File:31.png|400px]]
+
+
+Reenter the password.
+
+[[File:32.png|400px]]
+
+
+Network time procedure.
+
+[[File:33.png|400px]]
+
+
+Use a guided partitioning method with the whole disk (FDE is a good idea if you plan to use physical isolation or as your main system).
+
+[[File:34.png|400px]]
+
+
+Select the suggested disk.
+
+[[File:35.png|400px]]
+
+
+Partition all files in one partition.
+
+[[File:36.png|400px]]
+
+
+Finish partitioning.
+
+[[File:37.png|400px]]
+
+
+Confirm the changes.
+
+[[File:38.png|400px]]
+
+
+It takes a few minutes to get the base system installed.
+
+[[File:39.png|400px]]
+[[File:40.png|400px]]
+
+
+We don't need any extra packages so don't select a mirror, "Go back".
+
+[[File:41.png|400px]]
+
+
+Confirm that you want to continue without a mirror.
+
+[[File:42.png|400px]]
+
+
+Configuring apt.
+
+[[File:43.png|400px]]
+
+
+"No thanks" to survey participation.
+
+[[File:44.png|400px]]
+
+
+Deselect (no star) the given option (using Space).
+
+[[File:45.png|400px]]
+[[File:46.png|400px]]
+
+
+Install GRUB.
+
+[[File:47.png|400px]]
+
+
+Select your disk.
+
+[[File:48.png|400px]]
+
+
+Finishing the installation.
+
+[[File:49.png|400px]]
+
+
+Done! The system will reboot.
+
+[[File:50.png|400px]]
+
+
+OS screen.
+
+[[File:51.png|400px]]
+
+
+Login screen.
+
+[[File:52a.png|400px]]
+</div>
+</div>
+
+<div class="toccolours mw-collapsible mw-collapsed">
+'''OPTIONAL - CUSTOMIZING FULL DISK ENCRYPTION'''
+
+If you are interested in configuring a custom encryption algorithm to enhance security during the minimal installation of Debian {{Stable_project_version_based_on_Debian_codename}}, click on Expand on the right. 
+
+<div class="mw-collapsible-content">
+
+1. Under "Partitioning method", select Manual
+
+2. Select the disk you are installing to and press enter, then select <Yes> to create a new empty partition table.
+
+3. Select the "FREE SPACE" of the drive you are installing to, press Enter, "Create a new partition" should already be selected; press Enter again.
+
+4. Now create a boot partition. This is the unencrypted partition your system boots from. The standard is 254.8 MB. Type "254.8 MB" (without the quotes) and press Enter.
+
+5. Under "Type for the new partition:", Primary should already be selected, press Enter again; Under "Location for the new partition: "Beginning" should already be selected, press Enter again to go to the Partition settings screen.
+
+Use the following settings for your boot partition:
+
+<pre>
+
+Use as:         Ext2 file system
+
+Mount point:       /boot
+Mount options:    noatime
+Label:                 none
+Reserved blocks:  5%
+Typical Usage:     standard
+Bootable flag:      on    
+
+</pre>
+
+Then select "Done setting up the partition" and press Enter, you will be brought back to the main partitioning menu.
+
+6. Select "Configure encrypted volumes" and press Enter, then select <Yes> when asked to write the changes to disk and configure encrypted volumes.
+
+7. Create encrypted volumes should already be selected, press Enter and select the free space of the drive you are installing to by pressing the spacebar, then select <Continue> and press Enter again. Additional components will load, then you will be brought to the configuration page for your encrypted partition. Here you can customize your encryption settings.
+
+<pre>
+
+Use as:      physical volume for encryption
+Encryption method:   Device-mapper (dm-crypt)
+
+Encryption: twofish 
+[Recommend "twofish" and "serpent" as alternatives. "Serpent" is the slowest and only recommended if you have a fast system (and a fast drive), as it creates a lot of system overhead. "Twofish" is an algorithm created by Bruce Schneier, and is a lot faster, computationally-speaking. For most use-cases, "twofish" should be sufficient as an alternative algorithm]
+Key size:     256 (leave as-is)
+IV algorithm:  xts-plain64 
+[for most use-cases, xts-plain64 should be sufficient. Do not change this unless you know what you are doing. You could inadvertently create a security hole]
+Encryption key: Passphrase (leave as-is)
+Erase data: yes (this will wipe the partition)
+Bootable flag: off  
+
+</pre>
+
+8. After you have completed your configuration, select "Done setting up this partition", and press Enter, then select <Yes> and press enter to write the changes to disk, then on the next screen select "Finish", and press Enter. 
+
+9. It is highly recommended that you erase the partition before you continue. Please note this may take a while for large drives. If you have already securely wiped your device before starting this installation, you can skip this step. To erase the partition, select <Yes> and press enter. 
+
+10. Choose a strong password. This password should be at LEAST 26 characters, including symbols. Remember: the stronger your password, the stronger your encryption. The weaker the password, the weaker your encryption. After entering your password and confirming it, you will be brought back to the main partitioning menu.
+
+11. Under your new "Encrypted volume" (which should be at the top of the list), highlight the partition that was just created under it (it should say ext4), and press Enter. Under "Use as:", change this to "physical volume for LVM", and press Enter, then select "Done setting up the partition", and press Enter again to be brought back to the main partitioning menu.
+
+12. Now select "Configure the Logical Volume Manager" and press Enter. 
+
+13. Highlight "Create volume group", and press Enter. Under "Volume group name:", enter HOST_VG, and press Enter.
+
+14. Use the spacebar to select your encrypted partition, then select <Continue> and press Enter.
+
+<pre>
+(Optional) SWAP USERS:
+
+O1. Now create your swap partition. Highlight "Create logical volume" and press Enter, then select HOST_VG and press Enter again. Type SWAP, press Enter.
+
+O2. Enter your volume size (2.5 GB is usually a good standard size for most systems) then select <Continue> and press Enter.
+
+</pre>
+
+15. Highlight "Create logical volume" and press Enter, then select HOST_VG and press Enter again. Type ROOT, press Enter.
+
+16. Under the "Logical volume size:", your entire volume should already be displayed, press Enter again. 
+
+17. Highlight "Finish", then press Enter to be brought back to the main partitioning menu.
+
+18. You should see your new partition for ROOT displayed on this screen [LVM VG HOST_VG, LV ROOT - xxx.x GB Linux device-mapper (linear)]. Select the partition underneath the heading and press Enter
+
+19. Change "do not use" to the filing system of your choice. Ext4 is good for most installations. XFS is more suitable for filesystems on top of encryption and is more robust with better performance. For the purposes of this documentation, the following configuration is provided:
+
+<pre>
+
+Use as:             XFS journaling file system
+
+Mount point:     / 
+Mount options: defaults
+Label:               none
+
+</pre>
+
+20. Once you're done, select "Done setting up this partition", and press Enter to return to the main partitioning menu.
+
+<pre>
+(Optional) SWAP USERS:
+
+O1. You should see your new partition for SWAP displayed on this screen [LVM VG HOST_VG, LV SWAP - 2.5 GB Linux device-mapper (linear)]. Select the partition underneath the heading and press Enter.
+
+O2. Change "do not use" to "swap area", and press Enter. Then select "Done setting up the partition" to return to the main partitioning menu.
+
+</pre>
+
+21. Highlight "Finish partitioning and write changes to disk" and press Enter, then select <Yes> when asked to confirm the changes. Your installation will continue automatically.
+</div>
+</div>
+
+== Network Configuration ==
+The external interface (usually eth0) may need to be configured according to the requirements of your local network, e.g. static or simply left to use dhcp if the gateway is connected to a dhcp capable router. For wlan follow the upstream documentations: [http://wiki.debian.org/WiFi debian wiki], [https://help.ubuntu.com/community/WifiDocs/WiFiHowTo Ubuntu help].
+
+Make sure the internet is working.
+
+== Logon and upgrade Debian ==
+Logon, install all security updates and reboot.
+
+Login with "root"
+
+Add a new repository source.
+
+{{CodeSelect|code=
+echo "deb http://ftp.us.debian.org/debian {{Stable_project_version_based_on_Debian_codename}} main" >> /etc/apt/sources.list
+}}
+
+Add a new repository source. TODO: Is this needed?
+
+{{CodeSelect|code=
+echo "deb http://security.debian.org {{Stable_project_version_based_on_Debian_codename}}/updates main" >> /etc/apt/sources.list
+}}
+
+Refresh package lists and upgrade.
+
+{{CodeSelect|code=
+apt-get update && apt-get dist-upgrade -y
+}}
+
+== Firmware Updating and Security Problems ==
+As per [[Firmware_Security_and_Updates#Firmware_Updating_and_Security_Problems]].
+
+{{Update}}
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+For Intel.
+
+{{CodeSelect|code=
+sudo apt-get install intel-microcode
+}}
+
+For AMD.
+
+{{CodeSelect|code=
+sudo apt-get install amd64-microcode
+}}
+
+== Preparation ==
+Install sudo and git. <ref>You need git to obtain the source code. Alternatively, you could also download a git tag as an archive using a (torified) browser: https://github.com/{{project_name_short}}/{{project_name_short}}/tags</ref>
+
+<pre>
+## Install "sudo" and git.
+apt-get install sudo git -y
+</pre>
+
+You must build as user "user" and that user must be a member of the "sudo" group. Rebooting applies the changes.
+
+<pre>
+## Add "user" to "sudo" group
+addgroup user sudo
+
+## Reboot the system
+shutdown -r now
+
+## (host) login with "user"
+user
+</pre>
+
+'''Optional''': <br />
+You may want to take an image of your installation in case the build script fails in the middle.
+
+{{Build Documentation Get Source Code
+|vers={{VersionNew}}-stable
+|extra=--recurse-submodules
+}}
+
+See also [[Build_Configuration|Optional Build Configuration]].
+
+== Network Verification ==
+Before running the {{Code2|whonix_build}} script make sure eth1 and eth0 refer to the correct interfaces.
+
+<pre>
+## May be helpful.
+dmesg | grep eth
+</pre>
+
+<div class="toccolours mw-collapsible mw-collapsed">
+If you are using non-default network interface names, please click on Expand on the right. 
+<div class="mw-collapsible-content">
+Should be doable using non-default network interface names as well. Not as easy. Not fully documented. Untested.
+
+One way would be to figure out how to change a network interface name such as <code>wlan0</code> to <code>eth0</code>.
+
+Otherwise you could consider to change the network interface names in the configuration files. To find the components that require configuration changes in the {{project name}} source folder, the following commands may be helpful. Should be really only a very few files. We used variables for eth0 and eth1 wherever possible.
+
+<pre>
+exclude="--exclude=README.md --exclude=control --exclude=changelog.upstream --exclude-dir=.git --exclude-dir=whonix-developer-meta-files --exclude-dir=build-steps.d --exclude-dir=qubes-whonix"
+</pre>
+
+<pre>
+grep $exclude -r eth0 ~/{{project_name_short}}
+grep $exclude -r eth1 ~/{{project_name_short}}
+</pre>
+
+<pre>
+grep -l $exclude -r eth0 ~/{{project_name_short}}
+grep -l $exclude -r eth1 ~/{{project_name_short}}
+</pre>
+
+Should you decide to edit these files in {{project name}} source folder, note to apply the build parameters from [[#Source Code Changes]] as well.
+
+Another, perhaps better option might be to change the network interface names after {{project name}} build script finished.
+
+For example <code>/home/user/{{project_name_short}}/packages/whonix-ws-network-conf/etc/network/interfaces.d/30_non-qubes-whonix</code> becomes <code>/etc/network/interfaces.d/30_non-qubes-whonix</code>.
+
+'''/usr/bin/whonix_firewall'''
+
+Do not edit. We use a drop-in config snippet instead.
+
+'''/etc/whonix_firewall.d/30_default.conf'''
+
+Use a drop-in config snippet instead.
+
+{{Open with root rights|
+filename=/etc/whonix_firewall.d/50_user.conf
+}}
+
+Add. Replace eth0 with your actual external network interface name as well as eth1 with your actual internal network interface name.
+
+<pre>
+EXT_IF="eth0"
+INT_IF="eth1"
+</pre>
+
+Save.
+
+'''/etc/network/interfaces.d/30_non-qubes-whonix'''
+
+Manual edit required.
+
+{{Open with root rights|
+filename=/etc/network/interfaces.d/30_non-qubes-whonix'
+}}
+
+Replace interface names.
+
+Save.
+
+'''/uwt/usr/lib/uwtwrapper'''
+
+Do not edit. Use a drop-in config snippet instead.
+
+Required for {{workstation_product_name}} in {{project name}} 14 and above only.
+
+{{Open with root rights|
+filename=/etc/uwt.d/50_user.conf
+}}
+
+Add. Replace eth0 interface name.
+
+<pre>
+bindp_interface="eth0"
+</pre>
+
+'''/usr/bin/leaktest'''
+
+Not important. Manual edit required.
+
+'''/usr/lib/whonixcheck/check_network_interfaces.bsh'''
+
+Manual edit required. Will break when whonixcheck gets upgraded. Then it needs to be edited again. This will be configurable in {{project name}} 14 so the setting survives whonixcheck upgrades.
+
+'''/etc/sudoers.d/whonixcheck'''
+
+Do not edit. Use a drop-in config snippet instead.
+
+Use any editor of your choice.
+<pre>
+sudo EDITOR=nano visudo -f /etc/sudoers.d/whonixcheck-user
+</pre>
+
+Add. Replace eth0 and eth1 with your network interface names.
+
+<pre>
+whonixcheck ALL=NOPASSWD: /sbin/ifconfig eth0
+whonixcheck ALL=NOPASSWD: /sbin/ifconfig eth1
+</pre>
+
+Save.
+</div>
+</div>
+
+== Minor Things ==
+<s>Most configuration files work well inside Virtual Machines and on hardware. Only minor things such as deactivating powersaving, passwordless reboot, shutdown etc. are only recommended for Virtual Machines. You can easily comment them out by putting a hash # in front of them. They are marked, to find them, grep can be used.</s> Skip this for now. You can change these files later after building {{project_name}}. (Simpler.)
+
+<pre>
+grep -r VMONLY* *
+</pre>
+
+== Run Build Script ==
+It is recommended that you create a log of the build process by redirecting all the output to a log file. Be aware that by doing so no build progress will appear on the screen - instead a text log file will be created in your home folder. 
+
+<pre>
+sudo ./whonix_build --flavor whonix-gateway-xfce --target root --build >> ~/log-phyiso 2>&1
+</pre>
+
+To optionally watch the progress, open a second [[Desktop#Virtual_Consoles|virtual console]] and type.
+
+<pre>
+tail -f ~/log-phyiso
+</pre>
+
+If don't want to create a log of the build process (the build progress will then appear on screen) use the following command. 
+
+'''This is not recommended because if anything goes wrong during the build, it will be harder to pinpoint the exact error without the actual log file.'''
+
+<pre>
+sudo ./whonix_build --flavor whonix-gateway --target root --build
+</pre>
+
+== Final Steps ==
+Reboot.
+
+<pre>
+sudo reboot
+</pre>
+
+Login as new user "user". (If you didn't install as user "user", your old user and home folder does of course still exist.)
+
+* This is untested since [https://phabricator.whonix.org/T347 use /etc/network/interfaces.d instead of /etc/network/interfaces] was implemented. Please test and leave feedback. [https://github.com/{{project_name_short}}/whonix-gw-network-conf whonix-gw-network-conf] ships a file [https://github.com/{{project_name_short}}/whonix-gw-network-conf/blob/master/etc/network/interfaces.d/30_non-qubes-whonix {{Code2|/etc/network/interfaces.d/30_non-qubes-whonix}}]. Usually it should not conflict with your {{Code2|/etc/network/interfaces}}. If it does, consider removing {{Code2|source-directory /etc/network/interfaces.d}} from {{Code2|/etc/network/interfaces}} (if there are no other files in {{Code2|/etc/network/interfaces.d}} folder) or moving {{Code2|/etc/network/interfaces.d/30_non-qubes-whonix}} out of the way. ({{Code2|sudo mv /etc/network/interfaces.d/30_non-qubes-whonix ~/}})
+<br />
+Done.
+
+== Cleanup ==
+{{Build Documentation Cleanup}}
+
+= How To Install {{gateway_product_name}} in a VM (UNTESTED / NOT RECOMMENDED) =
+
+It is advised to install a new OS just for hosting the Gateway VM, any OS that can run VirtualBox works but we recommend an Open Source system.
+
+[[Download]] the {{gateway_product_name}} image. (Or [[Dev/Build Documentation|build it]] from source code.)
+
+Adapter 1 can be set up as a NAT network. Adapter 2 must either be set to NAT as well (but you will need to forward ports from the host to the guest) or much simpler: use bridged networking and set it to the second physical interface (the one that goes into the isolated network/point to point ethernet). See "NAT vs Bridging" below.
+
+This configuration is entirely untested and not recommended unless you need to run Tor through an unsupported 3G modem and can't afford a 3rd physical device.
+
+When using NAT for a virtualized Gateway you need to set up port forwarding in VirtualBox. Using bridged network may be easier, but then the router may see the {{gateway_product_name}} MAC address which identifies as {{gateway_product_name}}. (Should not be of concern in home networks. Should be of concern in untrusted networks or when using a modem to connect.)
+
+= Install {{workstation_product_name}} in a VM (RECOMMENDED) =
+
+=== First Steps ===
+
+Install and update a host operating system. On the host can run any OS that is capable of running VirtualBox, but be aware of [https://trac.torproject.org/projects/tor/wiki/doc/TransparentProxyLeaks Transparent Proxy Leaks]. It is recommended against to use Windows or another other commercial proprietary system as host operating system.
+
+[[Download]] the {{workstation_product_name}} image. (Or [[Dev/Build Documentation|build it]] from source code.)
+
+Note sure what we wanted to say with this sentence: If the physical network (between {{gateway_product_name}} and a router) uses 10.152.152.* you need to review and edit all shell scripts and switch the internal network to something else!
+
+=== Host Network Adapter ===
+
+The host has to be configured to use the static IP configuration.
+
+<pre>
+## {{workstation_product_name}}
+## /etc/network/interfaces for the host,
+## when using Physical Isolation,
+## with {{workstation_product_name}} in a VM.
+
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet static
+   ## Increment last octet of address
+   ## on optional additional hosts.
+   address 10.152.152.11 
+   netmask 255.255.192.0
+   gateway 10.152.152.10
+   #pre-up /usr/bin/whonix_firewall
+
+   ## Out commented.
+   ## For what do we require the network and broadcast
+   ## instances anyway?
+   #network 10.152.152.0
+   #broadcast 10.152.152.255
+
+#auto eth0
+#iface eth0 inet dhcp
+
+## end of /etc/network/interfaces
+</pre>
+
+If the physical network (between {{gateway_product_name}} and a router) uses 10.152.152.* you need to review and edit all ''/etc/network/interfaces''.
+
+=== NAT vs Bridging ===
+
+==== Two Choices ====
+
+In the default {{project name}} VirtualBox image, the network adapter setting for Adapter 1 (eth0) is set to internal network and will therefore not work out of the box. There are two choices to fix this. NAT (recommended) or bridged network.
+
+==== NAT (RECOMMENDED) ====
+
+If you use NAT you will have to edit the ''/etc/network/interfaces'' in {{workstation_product_name}} to use DHCP (easier, shown in the example below) or a static IP for VirtualBox NAT.
+
+<pre>
+sudoedit /etc/network/interfaces
+</pre>
+
+Replace it with.
+
+<pre>
+## {{workstation_product_name}}
+## /etc/network/interfaces in a VM
+## when using Physical Isolation.
+
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet dhcp
+
+## end of /etc/network/interfaces
+</pre>
+
+==== Bridged Network (UNTESTED / NOT RECOMMENDED) ====
+
+If you use bridged networking things will (or should, we haven't tested anything yet) just work.
+
+Since in the bridged network case, {{workstation_product_name}} can see the MAC address of whatever network adapter it is connected to, you should change the MAC address of the Workstation host and of the {{gateway_product_name}}.
+
+See [[Pre_Install_Advice#MAC_Address|{{project_name}} in public networks]].
+
+==== Macvtap on KVM ====
+
+Change the network source of the ethernet nic to "macvtap" and the source mode to "passthrough"
+Be aware, you can't use networking on the host anymore.
+
+==== Attach an USB-ethernet adapter to the VM ====
+
+Remove the network adapter from the VM and instead attach an USB-ethernet adapter to the host and redirect it to the VM.
+
+= Install {{workstation_product_name}} on hardware (NOT RECOMMENDED) =
+
+Install {{workstation_product_name}} on hardware without using a VM is recommended against, because hardware serials would be visible to {{workstation_product_name}}.
+
+The instructions are very similar, if not the very same, to those in "How To Install {{gateway_product_name}} on hardware" above. You have to use {{Code2|--flavor whonix-workstation}} instead of {{Code2|--flavor whonix-gateway}}.
+
+= Expected Build Warnings =
+{{Expected_Build_Warnings}}
+
+= After installing =
+Further required reading: [[Documentation]]. The host security chapter applies to both computers!
+
+{{Post Install Advice}}
+
+=  Stay tuned =
+{{Stay_tuned}}
+
+= Extra packages for better hardware support =
+
+Some packages for bare metal may or may not be missing. Here is a probably incomplete list of packages, which may or may not be useful for better hardware support. Some suggestions.
+
+<pre>
+xorg
+xserver-xorg-input-all
+xserver-xorg-input-wacom
+xserver-xorg-input-geode
+xserver-xorg-input-vmmouse
+xserver-xephyr
+
+xserver-xorg-input-*
+xserver-xorg-*
+
+acpi-support-base
+acpid
+acpi
+
+discover
+discover-modprobe
+discover-data
+
+hwdata
+
+mdetect
+
+apt-cache show task-desktop
+apt-cache show task-kde-desktop
+apt-cache show task-laptop
+</pre>
+
+If you have EFI bios.
+
+<pre>
+grub-efi-amd64
+</pre>
+
+To get a more complete list, install Debian (with KDE) on bare metal using the regular Debian installer medium.
+
+* diff "dpkg -l" with Whonix
+* diff "sudo lsmod" with Whonix
+* contribute your findings
+
+* See also: http://wiki.debian.org/HardwareAutodetection
+
+= Troubleshooting =
+* Slow network speed? Eventually it is the fault of your wifi driver? We had such a [https://forums.whonix.org/t/solved-network-speed-stability-7-7-8-9-gw-physically-isolated/82 report] in the forum.
+* No connection between {{gateway_product_name}} and {{workstation_product_name}}? Could have something to do with [https://en.wikipedia.org/wiki/Medium_Dependent_Interface Auto-MDIX]. We had such a [https://forums.whonix.org/t/testers-wanted-whonix-8-release-candidate-1-whonix-7-7-8-6/67 report] in the forum.
+
+= Known bugs =
+{{Known_bugs}}
+
+= Security and Support Status =
+{{project_name}} Physical Isolation has no dedicated [[Contribute#Maintainer|maintainer]]. It is a leftover from previous times, where no other [[Download|supported platforms]] were supported. This setup, these instructions still work. Some users are still using them. But Patrick's focus has now moved to [[Qubes]]. Grave security issues are unlikely due to {{project name}} design. There is no [[Team|{{project_name}} team]] member testing {{project name}} physical isolation. No progress on the [https://phabricator.whonix.org/maniphest/?statuses=open%28%29&projects=PHID-PROJ-f6ufodh4cac5ursi7kcq#R {{project name}} Physical Isolation development task list] should be expected. That's why the [[Download|supported platforms table]] lists Physical Isolation in the column 'security' with 'experimental'.
+
+= Help Wanted =
+* work on the [https://phabricator.whonix.org/maniphest/?statuses=open%28%29&projects=PHID-PROJ-f6ufodh4cac5ursi7kcq#R {{project name}} Physical Isolation development task list] (not even filled up)
+* Become {{project name}} Physical Isolation [[Contribute#Maintainer|maintainer]] so the [[#Security and Support Status]] can be improved.
+
+= Footnotes / References =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
