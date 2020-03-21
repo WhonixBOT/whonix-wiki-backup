@@ -1,0 +1,113 @@
+{{Header}}
+{{#seo:
+|description={{workstation_product_name}} Security Hardening. This page is targeted at users who wish to improve the security of their {{Workstation product name}} to become even more secure.
+|image=https://www.whonix.org/w/images/0/0f/Doors-1767563_640.jpg
+}}
+{{security intro}}
+
+This page is targeted at users who wish to improve the security of their {{Workstation product name}} to become even more secure.
+
+= Introduction =
+
+{{project_name}} is by no means a perfectly hardened system. Additional hardening measures are most welcome, but at the same time hardening by default is very difficult. Until the {{project_name}} project realizes a significant increase in resources or community assistance, extra measures will remain out of scope and hardening will be left to the upstream operating system. See [[Dev/Virtualization_Platform|Virtualization Platform]] for further details.
+
+= AppArmor =
+
+Learn more about [http://wiki.apparmor.net AppArmor], which helps to protect against vulnerabilities by confining a program's file access based upon strict rule-sets. It is recommended to apply the available [[AppArmor#Installation|{{project_name}} AppArmor profiles]] to contain various applications which are run in {{gateway_product_name}} (<code>sys-whonix</code>) and/or {{workstation_product_name}} (<code>anon-whonix</code>), like Tor, Tor Browser, Thunderbird and others.
+
+= Disable TCP SACK =
+
+[https://en.wikipedia.org/wiki/TCP_SACK#Selective_acknowledgments TCP Selective Acknowledgement (SACK)] is a commonly exploited option in the TCP protocol and not needed for many people. <ref>For example, it has been used for [https://en.wikipedia.org/wiki/SACK_Panic#SACK_Panic remote denial of service attacks] and can even lead to a Linux kernel panic.</ref>  For this reason, it is recommended to disable it unless required.
+
+{{Open with root rights|filename=
+/etc/sysctl.d/tcp_sack.conf
+}}
+
+Uncomment all lines starting with <code>net.ipv4</code>.
+
+This procedure can also be repeated on the Whonix Gateway. 
+
+TCP SACK is not disabled by default because on some systems it can greatly decrease network performance. <ref>https://forums.whonix.org/t/disabling-tcp-sack-dsack-fack/8109/5</ref>
+
+= Multiple Tor Browser Instances and Workstations =
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = As noted on the [[Warning]] page, [[Warning#{{project_name}}_does_not_Separate_Different_Contextual_Identities|{{project_name}} does not Separate Different Contextual Identities]]. 
+}}
+
+Appropriate compartmentalization of user activities is important when different identities and/or additional software are in use. Multiple Tor Browser instances provide some separation of distinct identities, however this issue has not yet been fully solved by [[Tor_Browser|Tor Browser]] or [[Tor_Browser#Torbutton|Torbutton]]. A more secure method of compartmentalization is using [[Multiple {{workstation_product_name_short}}|Multiple {{workstation_product_name}}]], which are easily created.
+
+== Multiple Tor Browser Instances ==
+
+To better separate different contextual identities, consider starting multiple Tor Browser instances. Follow the steps in the [[Manually Downloading Tor Browser]] entry, except for minor changes that are necessary; for example Tor Browser must be extracted into a different folder.
+
+This method is less secure than using multiple {{workstation_product_name}}s, which is outlined below.
+
+== Multiple {{workstation_product_name}} ==
+
+For tasks requiring different identities and/or additional software, it is recommended to utilize [[Multiple_{{workstation_product_name_short}}|two or more {{workstation_product_name}} VMs]] since different torified clients are isolated from each other. In this configuration, a Tor Browser exploit in one {{workstation_product_name}} cannot simultaneously read the user's identity in another VM (for example, an IRC account). <ref>This does not protect against the sudden loss of networking, which could reveal to the attacker that two activities / accounts suddenly going off-line are probably related.</ref> 
+
+This method is less secure than using Tor Browser in a Qubes [[Qubes/Disposable_VM|{{workstation_product_name}} DisposableVM]].
+
+= Restrict Hardware Information to Root =
+
+Details about your hardware can be used for identification, so Whonix includes the <code>hide-hardware-info.service</code> systemd unit that restricts access to <code>/proc/cpuinfo</code>, <code>/proc/bus</code>, <code>/proc/scsi</code> and <code>/sys</code> to the root user only. This hides most hardware identifiers and increases security as <code>/sys</code> exposes a lot of information that should not be accessible by unprivileged users.
+
+This setting is disabled by default because it might break many applications. It can optionally be enabled by running the following command.
+
+{{CodeSelect|code=
+sudo systemctl enable hide-hardware-info.service
+}}
+
+This command can also be run on {{Gateway product name}}.
+
+A whitelist that allows specific applications to access <code>/sys</code> and <code>/proc/cpuinfo</code> is enabled by default to maintain basic functionality. For example, this allows the launching of applications like XFCE.
+
+== Whitelisting Applications ==
+
+To whitelist applications, they must be run under the <code>sysfs</code> group (if allowing access to <code>/sys</code>) or the <code>cpuinfo</code> group (if allowing access to <code>/proc/cpuinfo</code>).
+
+For example, to run a systemd service as the <code>sysfs</code> group, create a [[Configuration_Files#Configuration_Drop-In_Folders|drop-in directory]] and add the following.
+
+{{CodeSelect|code=
+[Service]
+SupplementaryGroups=sysfs
+}}
+
+To run a specific binary as the <code>sysfs</code> group, the binary must be owned by the <code>sysfs</code> group and be made setgid. To achieve this, change the ownership of the binary by running the following.
+
+{{CodeSelect|code=
+sudo chgrp sysfs /path/to/binary
+}}
+
+Then make the binary setgid.
+
+{{CodeSelect|code=
+sudo chmod g+s /path/to/binary
+}}
+
+The binary will now run with the permissions of the <code>sysfs</code> group and have access to <code>/sys</code>.
+
+All of these steps can also be applied to the <code>cpuinfo</code> group.
+
+Remember that any whitelisted applications add to the attack surface. An attacker can attempt to exploit a vulnerability in the whitelisted application(s) to gain access to hardware information.
+
+== Disable the Whitelist ==
+
+In order to reduce the attack surface as much as possible, optionally the whitelist can be disabled entirely.
+
+{{Open with root rights|filename=
+/etc/hide-hardware-info.d/30_whitelist.conf
+}}
+
+Uncomment the <code>sysfs_whitelist=0</code> and <code>cpuinfo_whitelist=0</code> sections to disable the whitelist.
+
+Note that this setting will break many applications; for example, the desktop environment will not even start. Do not perform this action unless you understand the implications and can reverse the change.
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
