@@ -1,0 +1,613 @@
+{{Header}}
+{{#seo:
+|description=Copying files into and out of {{project name}} Virtual Machines.
+|image=https://www.whonix.org/w/images/2/2c/Filetransfer-2126883640.png
+}}
+= [[{{q_project_name_short}}|{{q_project_name}}]] =
+For [[{{q_project_name_short}}|{{q_project_name}}]], you can then use the usual [https://www.qubes-os.org Qubes] capabilities. Please refer to the Qubes documentation on how to do that.
+
+* https://www.qubes-os.org/doc/CopyingFiles/
+
+= {{non_q_project_name_short}} =
+{{non-q-project}}
+== Security Overview ==
+All methods:
+
+* Risk of transferring [[Metadata]] or other sensitive information into {{workstation_product_name}}.
+* {{project name}} is about isolation. If you import data from the host or other media into {{workstation_product_name}} you weaken isolation and must be very careful.
+<br />
+Shared Folder:
+
+* Recommended.
+<br />
+SSH:
+
+* Works with ssh, scp, sshfs. Instructions below.
+<br />
+ISO Images, Host &rarr; {{gateway_product_name}}/Workstation:
+
+* Safest method of getting files into {{workstation_product_name}}.
+<br />
+USB devices plugged into VirtualBox:
+
+* Hardware serials of the USB controller and/or USB device could leak into {{workstation_product_name}}.
+* Requires closed source VirtualBox extensions.
+* Bad idea security wise to plug USB controllers into untrusted virtual machines.
+<br />
+Mounting Virtual Machine images:
+
+* No idea if and if yes, what could leak into the Virtual Machine image.
+* See also [[Dev/Build Anonymity]].
+<br />
+Adding Host-Only Networking adapter to {{workstation_product_name}}
+
+* Discouraged. (Details: [[Whonix-Workstation_Security#Adding_a_Host-Only_Networking_Adapter_to_Whonix-Workstation_.E2.84.A2_.2F_SSH_into_Whonix-Workstation_.E2.84.A2|Adding a Host-Only Networking Adapter to Whonix-Workstation ™ / SSH into Whonix-Workstation ™]])
+
+== Transfer files from the Host into {{gateway_product_name}} or {{workstation_product_name}} through ISO images ==
+
+=== Linux Host ===
+
+==== Brasero ====
+
+Act like you are burning a data disk with Brasero, and it gives you the option to create an iso. Go to the virtual machine window menu > Devices > CD/DVD devices > Choose a virtual disk.
+
+==== Command line ====
+
+Install genisoimage:
+
+{{CodeSelect|code=
+sudo apt-get install genisoimage
+}}
+
+To create an iso "files.iso" containing the content of "folder":
+
+{{CodeSelect|code=
+genisoimage -o files.iso /path/to/folder
+}}
+
+Use the VirtualBox graphical user interface to mount your newly created iso a virtual VM CD/DVD drive.
+
+Inside {{workstation_product_name}}...
+
+Create the folder /media/cdrom.
+
+{{CodeSelect|code=
+sudo mkdir -p /media/cdrom
+}}
+
+Now attach the iso to the VM. Mount it with
+
+{{CodeSelect|code=
+sudo mount /dev/sr0 /media/cdrom
+}}
+
+Get into that folder.
+
+{{CodeSelect|code=
+cd /media/cdrom
+}}
+
+See your files.
+
+{{CodeSelect|code=
+dir
+}}
+
+This is intentionally one-way as the {{workstation_product_name}} is inherently untrusted and should remain isolated to prevent side-channel attacks and covert channel leaks.
+
+= KVM =
+See [[KVM#Shared_Folders]].
+
+= VirtualBox =
+== Shared Folder ==
+'''Recommended.'''
+
+This option works when your {{project name}} is able to start normally. In case however where {{project name}} does not start, you need to use another option such as [[#Mount Disk Images]]. See [[VirtualBox/Guest_Additions#Shared_Folder|VirtualBox Guest Additions, Shared Folder]] chapter.
+
+== Mount Disk Image ==
+All these steps going to be inside the host operating system.
+
+Shut down any eventually still running {{project name}} virtual machines. preferably to back-up your data to avoid any data loss.
+
+Don't run the {{project name}} VM that you have currently mounted! That could lead to data loss. Always unmount first.
+
+{{Update}}
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+Install qemu.
+
+{{CodeSelect|code=
+sudo apt-get install qemu 
+}}
+
+Load the Network Block Device kernel module.
+
+{{CodeSelect|code=
+sudo modprobe nbd max_part=16
+}}
+
+Attach the disk image (.vmdk) to one of the nbd you just created.
+
+(The example is {{project_name_short}}-ws.vmdk which is stored in the default place created by VirtualBox for VMs <code>/home/user/VirtualBox VMs</code>.
+
+{{CodeSelect|code=
+sudo qemu-nbd -c /dev/nbd0 '/home/user/VirtualBox VMs/{{workstation_product_name_short}}/{{workstation_product_name_short}}-13.0.0.1.5-disk1.vmdk'
+}}
+
+<ref>
+Why do we use <code>sudo modprobe nbd max_part=16</code> instead of just <code>sudo modprobe nbd</code>? because it will show this error:-
+
+{{CodeSelect|code=
+sudo qemu-nbd -c /dev/nbd0 '/home/user/VirtualBox VMs/{{workstation_product_name_short}}/{{workstation_product_name_short}}-13.0.0.1.5-disk1.vmdk'
+}}
+
+{{CodeSelect|code=
+Failed to open /dev/nbd0: No suck file or directory /build/qemu-XXUWBP/qemu-2.1+dfsq/nbd.c:nbd_receive_request ():L756: read failed
+}}
+
+This is perhaps due to an old bug.
+</ref> <ref>
+https://forums.gentoo.org/viewtopic-t-822672-start-0.html
+</ref>
+
+Create a mount point. For example.
+
+{{CodeSelect|code=
+sudo mkdir -p /mnt/workstation
+}}
+
+Now you could, for instance, run a partition manager like <code>cfdisk</code> on the block device, but you will most likely want to mount an individual partition.
+
+{{CodeSelect|code=
+sudo mount /dev/nbd0p1 /mnt/workstation
+}}
+
+Done. Now you can see new partition with {{workstation_product_name}} mounted inside it. 
+
+Once you are done, you should unmount everything by.
+
+{{CodeSelect|code=
+sudo umount /mnt/workstation
+}}
+
+{{CodeSelect|code=
+sudo qemu-nbd -d /dev/nbd0
+}}
+
+Now if you wish you are free to restart the {{project name}} VM.
+
+== Transfer files from one {{workstation_product_name}} to a different {{workstation_product_name}} through a VDI file ==
+=== Linux ===
+This is one of the more convenient solutions for copying work from one {{workstation_product_name}} to another {{workstation_product_name}}. 
+
+0. The virtual machine you want to edit needs to be powered off.
+
+1. First, in VirtualBox, click on the "Settings" for the {{project name}} Workstation that you desire to copy files from. Then, click on "Storage."
+
+2. In the "Storage" settings, click on the square with a + sign on it to "add hard disk." It will be located next to an entry that says "Controller: {{project_name}}."
+
+3. In the next window that appears, click on "create new disk."
+
+4. When prompted to choose a "hard drive file type,"  select "VDI."
+
+5. When prompted to choose "storage on physical hard drive," choose "dynamically allocated."
+
+6. In the next window, type "WhonixTransferBackup" for the drive name and then choose the storage capacity you need. In many cases, the default "8.00 GB" will be enough.
+
+7. When you are returned to the "Settings" window, click the "OK" button.
+
+8. Next, start the {{project name}} Workstation that you wish to transfer files from. When you reach the desktop, open a Terminal/Konsole session. 
+
+9. Now, format the new drive you created. Type
+{{CodeSelect|code=
+sudo fdisk /dev/sdb
+}}
+at the command prompt that appears, type "n" create a new partition. Press "enter" to choose the default options when prompted until you are returned to fdisk's main menu. Finally, when you are returned to fdisk's main command prompt, type "w" to write the partition and exit fdisk.
+
+10. Next, type
+{{CodeSelect|code=
+sudo mkfs.ext4 /dev/sdb1
+}}
+in the terminal session. 
+
+11. Now create a new directory to be the mount point for your drive. Type
+{{CodeSelect|code=
+mkdir temp
+}}
+in the terminal.
+
+12. Next, mount your new drive. Type
+{{CodeSelect|code=
+sudo mount /dev/sdb1 temp
+}}
+in the terminal.
+
+13. Now, change the permissions to your mount folder so you can write to the drive. Type
+{{CodeSelect|code=
+sudo chmod 777 temp
+}}
+in the terminal.
+
+14. At this point, you can copy whichever files you desire to your new drive by copying them to the "temp" folder. You can do this in the terminal, with the file browser, etc.  Once you have finished copying the files you want to the "temp" folder, shut down the {{project name}} Workstation.
+
+15. After the {{project name}} Workstation is closed, open the "Virtual Media Manager" in VirtualBox by clicking on "File &rarr; Virtual Media Manager."
+
+16. Locate the new VDI file you created in steps 1-7 and click on it. Then, click the "copy" button. When the next window appears, click the "next" button.
+
+17. When prompted to choose a "hard drive file type,"  select "VDI."
+
+18. When prompted to choose "storage on physical hard drive," choose "dynamically allocated."
+
+19. In the next window, type "WhonixWorkstationFileTransfer" for the drive name and then choose a folder where you wish to store it. The, click on the "copy" button. [ If copying does not work for you, you can also just power down the old VM, and attach the same vdi to the new VM. ]
+
+20. When you are returned to the "Virtual Media Manager" window, click the "close" button.
+
+21. Now, in the main VirtualBox window, click on the version of the {{project name}} Workstation that you want to copy the files into and click "settings." 
+
+22. Got to the "storage" section and click on the square with a + sign on it to "add hard disk." It will be located next to an entry that says "Controller: {{project_name}}."
+
+23. In the next window that appears, click on "choose existing disk." Then, find where you saved the "WhonixWorkstationFileTransfer.vdi" file and select it.
+
+24.When you are returned to the "settings" window, click "OK."
+
+25. Now, start the {{project name}} Workstation that you wish to copy your files into. When you reach your desktop, open a Terminal/Konsole session.
+
+26. At the terminal command prompt, create a new directory to be the mount point for your drive. Type
+{{CodeSelect|code=
+mkdir temp
+}}
+in the terminal.
+
+27. Next, mount your new drive. Type
+{{CodeSelect|code=
+sudo mount /dev/sdb1 temp
+}}
+in the terminal.
+
+28. Finally, copy the files you want into the {{project name}} Workstation. When you are finished copying all the files, you can shut down the {{project name}} Workstation and delete the temporary "file transfer" VDI files you used in this process through the Virtual Media Manager if you desire.
+
+Related forum topic: <br />
+[https://forums.whonix.org/t/solved-how-to-tranfer-data-to-whonix-8/115 How to tranfer data to {{project name}} 8]
+
+=== Windows ===
+https://forums.whonix.org/t/virtualbox-transfer-files-from-whonix-to-host-with-disk-images/2189
+
+== Adding USB device to VirtualBox ==
+This is not recommended for security reasons. <ref>
+A malicious guest can flash the low level firmware of your USB thumbdrive turning it into an attack vehicle against any machine you plug it into.
+</ref>
+
+Please read the chapter [[About#{{project_name}}_is_based_on_Debian.2C_VirtualBox_and_Tor | {{project name}} is based on Debian]]. Means, you can change your search terms from "How to get USB in {{workstation_product_name}}?" to "How to get USB in VirtualBox?".
+
+Anyway, VirtualBox does only support USB 1.1 out of the box.
+
+There are closed source additional extensions for better USB support. You can download them from the [https://www.virtualbox.org/wiki/Downloads VirtualBox download page]. VirtualBox extension pack on the host if you want better USB support. We don't know if reboot is required after installation of the VirtualBox extension pack. <ref>
+Does '''not''' require VirtualBox Guest Additions.
+</ref>
+
+For Linux hosts, the user that is running VirtualBox needs to be a member of linux user group <code>vboxusers</code>. <ref>
+Otherwise VirtualBox GUI will show <code>no devices available</code>.
+</ref> Add your current user to group <code>vboxusers</code>.
+
+{{CodeSelect|code=
+sudo adduser $(whoami) vboxusers
+}}
+
+Reboot required. <ref>
+Or re-login.
+</ref>
+
+Then you can plug USB devices into Virtual Machines through the device menu in VirtualBox.
+
+Note that automount of USB devices is disabled in {{project name}} by default. Try, Start menu &rarr; System Settings &rarr; Removable Media or manually mount. [https://sourceforge.net/p/whonix/discussion/general/thread/3b4b67c2/ (Old forum topic.)] [https://forums.whonix.org (You could start a new forum discussion to share your results.)]
+
+Note, if you USB device is formatted with NTFS, you need to install the ntfs-3g package, and a special mount command, see <ref>http://sourceforge.net/p/whonix/discussion/general/thread/c2429909/</ref>.
+
+https://forums.whonix.org/t/can-t-enable-usb-drive-in-virtualbox-troubleshooting-help-needed/1563/7
+
+== SSH into {{gateway_product_name}} ==
+'''Developers / experts only! Only for debugging!''' <br />
+
+These instructions assume connecting from a local host into {{project_name}}, not ssh to a remotely running {{project_name}}.
+
+On {{gateway_product_name}}.
+
+Look at the {{Code|/etc/whonix_firewall.d/30_default.conf}} config file.
+
+Set GATEWAY_ALLOW_INCOMING_SSH to 1.
+
+<pre>GATEWAY_ALLOW_INCOMING_SSH=1</pre>
+
+Restart firewall.
+
+On {{gateway_product_name}}!
+
+{{CodeSelect|code=
+sudo /usr/bin/whonix_firewall
+}}
+
+Inside {{gateway_product_name}}:
+
+On {{gateway_product_name}}! Run once.
+
+{{CodeSelect|code=
+sudo apt-get install openssh-server
+}}
+
+On the host: Add port forwarding from host into Virtual Machine.
+
+On the host! Run once.
+
+Open a terminal. This forwards connection from the host to 127.0.0.1:2200 to the SSH server running inside {{gateway_product_name}} on port 22.
+
+{{CodeSelect|code=
+VBoxManage modifyvm "{{gateway_product_name_short}}" --natpf1 "ssh",tcp,127.0.0.1,2200,,22
+}}
+
+If you ever want to undo this...
+
+{{CodeSelect|code=
+VBoxManage modifyvm "{{gateway_product_name_short}}" --natpf1 delete "ssh"
+}}
+
+If you ever want to verify this...
+
+{{CodeSelect|code=
+VBoxManage showvminfo "{{gateway_product_name_short}}"
+}}
+Look for the lines beginning with NIC. e.g. NIC 1 Rule(0):   name = ssh, protocol = tcp, host ip = 127.0.0.1, host port = 2222, guest ip = 127.0.0.1, guest port = 22
+
+On the host: Open a ssh session.
+
+On the host! As user.
+
+{{CodeSelect|code=
+ssh user@127.0.0.1 -p 2200
+}}
+
+Or as root.
+
+{{CodeSelect|code=
+ssh root@127.0.0.1 -p 2200
+}}
+
+On the host: Or mount {{gateway_product_name}} as a folder.
+
+Create a folder which will be used to mount the image. It needs to exist before trying to mount.
+
+{{CodeSelect|code=
+mkdir ~/mountgateway
+}}
+
+On the host! As user.
+
+{{CodeSelect|code=
+sshfs user@127.0.0.1:/ -p 2200 ~/mountgateway
+}}
+
+Or as root.
+
+{{CodeSelect|code=
+sshfs root@127.0.0.1:/ -p 2200 ~/mountgateway
+}}
+
+== SSH into {{workstation_product_name}} ==
+'''Developers / experts only! Only for debugging!'''
+
+These instructions assume connecting from a local host into {{project_name}}, not ssh to a remotely running {{project_name}}.
+
+You can not directly SSH into {{workstation_product_name}}, because {{workstation_product_name}} has only an internal network interface and no NAT interface. Adding one would defeat the purpose of {{project_name}}. (See [[Security Guide]] for details why.)
+
+Required: You mastered the steps "SSH into {{gateway_product_name}}" above.
+
+Connection will look like this: host &rarr; ssh &rarr; {{gateway_product_name}} &rarr; ssh &rarr; {{workstation_product_name}}.
+
+On {{workstation_product_name}}:
+
+{{CodeSelect|code=
+sudo apt-get install openssh-server
+}}
+
+On the {{gateway_product_name}}:
+
+Or {{Code|user@}}.
+
+{{CodeSelect|code=
+/usr/bin/ssh.anondist-orig root@10.152.152.11
+}}
+
+Then SSH from the host into {{gateway_product_name}} (host &rarr; {{gateway_product_name}}). From there, SSH into {{workstation_product_name}} ({{gateway_product_name}} &rarr; {{workstation_product_name}}). You can also do that with one command (called SSH hopping).
+
+On the host!
+
+Or {{Code|root@}}.
+
+{{CodeSelect|code=
+ssh -t user@127.0.0.1 -p 2200 "ssh.anondist-orig user@10.152.152.11"
+}}
+
+You can also mount the filesystem of {{workstation_product_name}} with two commands. SSH hopping is also possible for sshfs (a website [http://www.larkinweb.co.uk/computing/mounting_file_systems_over_two_ssh_hops.html told] ([http://www.webcitation.org/6FDYtApEP w]) me).
+
+{{CodeSelect|code=
+mkdir ~/mountworkstation
+}}
+
+On the host!
+
+Or {{Code|root@}}.
+
+SSH into {{workstation_product_name}} and map to localhost:2222.
+
+{{CodeSelect|code=
+ssh -f user@127.0.0.1 -p 2200 -L 2222:10.152.152.11:22 -N
+}}
+
+Mount {{workstation_product_name}} folder on the host.
+
+{{CodeSelect|code=
+sshfs -p 2222 user@127.0.0.1:/ ~/mountworkstation
+}}
+
+If these instructions do not work for your, you can try the alternative standalone instructions [[Sshfs into {{workstation_product_name_short}}]].
+
+== Mount and inspect images ==
+=== Introduction ===
+'''Developers / experts only! Only for debugging!'''
+
+{{mbox
+| type    = critical
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = '''Warning:''' If a guest image file is mounted and the image is compromised by malware, a user's system can be infected. <ref>https://www.berrange.com/posts/2013/02/20/a-reminder-why-you-should-never-mount-guest-disk-images-on-the-host-os/</ref>
+}}
+
+Required user knowledge:
+
+* This method is not compulsory. Standard ''vdi'' (or ''raw'') images are used, but the user can mount them using any other preferred method.
+* The mounting and inspecting of images has only been researched for Linux hosts. It may be possible on Windows, but it is undocumented.
+* The user must understand the purpose and use of ''raw'' and ''vdi'' images, which is explained on the [[Dev/Source Code Intro]] page.
+* The {{project name}} source code is required; see chapter [[Dev/BuildDocumentation_7#Get_{{project_name_short}}_Source_Code|Get the {{project name}} source code]].
+* {{project name}} source code should be verified with OpenPGP, although this is not compulsory.
+* Several dependencies are required and can be installed using the {{Code|build-steps.d/1100_prepare-build-machine}} script.
+
+=== VDI ===
+==== Mount {{gateway_product_name}} ''vdi'' images. ====
+{{CodeSelect|code=
+sudo ./help-steps/mount-vdi --target virtualbox --build --flavor whonix-gateway
+}}
+{{CodeSelect|code=
+cd "/home/user/whonix_binary/{{gateway_product_name_short}}_image"
+}}
+
+Inspect.
+
+{{CodeSelect|code=
+cd ~
+}}
+{{CodeSelect|code=
+sudo ./help-steps/unmount-vdi --target virtualbox --build  --flavor whonix-gateway
+}}
+
+==== Mount {{workstation_product_name}} ''vdi'' images. ====
+{{CodeSelect|code=
+sudo ./help-steps/mount-vdi --target virtualbox --build --flavor whonix-workstation
+}}
+{{CodeSelect|code=
+cd "/home/user/whonix_binary/{{gateway_product_name_short}}_image"
+}}
+
+Inspect.
+
+{{CodeSelect|code=
+cd ~
+}}
+{{CodeSelect|code=
+sudo ./help-steps/unmount-vdi --target virtualbox --build --flavor whonix-workstation
+}}
+
+=== raw ===
+
+==== Mount {{gateway_product_name}} ''raw'' images. ====
+{{CodeSelect|code=
+sudo ./help-steps/mount-raw --target virtualbox --build --flavor whonix-gateway
+}}
+{{CodeSelect|code=
+cd "/home/user/whonix_binary/{{gateway_product_name_short}}_image"
+}}
+
+Inspect.
+
+{{CodeSelect|code=
+cd ~
+}}
+{{CodeSelect|code=
+sudo ./help-steps/unmount-raw --target virtualbox --build --flavor whonix-gateway
+}}
+
+==== Mount {{workstation_product_name}} ''raw'' images. ====
+{{CodeSelect|code=
+sudo ./help-steps/mount-raw --target virtualbox --build --flavor whonix-workstation
+}}
+{{CodeSelect|code=
+cd "/home/user/whonix_binary/{{gateway_product_name_short}}_image"
+}}
+
+Inspect.
+
+{{CodeSelect|code=
+cd ~
+}}
+{{CodeSelect|code=
+sudo ./help-steps/unmount-raw --target virtualbox --build --flavor whonix-workstation
+}}
+
+=== VMDK ===
+==== Mount {{workstation_product_name}} ''vmdk'' images. ====
+Use this method to mount any VirtualBox file type (VMDK, VDI, VHD, or raw) on a Linux host.
+
+'''Broken''', because package virtualbox-fuse package is no longer available in Debian jessie or above.
+
+This method uses a VirtualBox utility named "vdfuse" ([http://packages.debian.org/wheezy/virtualbox-fuse virtualbox-fuse package]). It uses the VirtualBox access library to open a VirtualBox supported image file and mount it as a Fuse file system.
+
+This step is optional. You can skip this step and come back to it if the next step fails.
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+Install the VirtualBox vdfuse utility. Note: this only works up to Debian Wheezy.
+{{CodeSelect|code=
+sudo apt-get install virtualbox-fuse
+}}
+
+Edit the /etc/fuse.conf file and uncomment the line #user_allow_other and then save the file. Then, set the permissions on /etc/fuse.conf.
+{{CodeSelect|code=
+sudo vi /etc/fuse.conf (Uncomment #user_allow_other and then save)
+}}
+{{CodeSelect|code=
+sudo chmod 644 /etc/fuse.conf
+}}
+
+Create a mount point and mount the {{project name}} Workstation image. This example shows a .vmdk file type, but any VirtualBox file type should work (VMDK, VDI, VHD, or raw).
+{{CodeSelect|code=
+mkdir /mnt/whonix
+}}
+{{CodeSelect|code=
+vdfuse -f /path/to/{{workstation_product_name_short}}/{{workstation_product_name_short}}-disk1.vmdk /mnt/whonix
+}}
+
+The path /mnt/whonix/ will now contains files like EntireDisk, Partition1, etc. Last, mount Partition1 at a second mount point.
+{{CodeSelect|code=
+mkdir /mnt/workstation
+}}
+{{CodeSelect|code=
+sudo mount -o loop /mnt/whonix/Partition1 /mnt/workstation
+}}
+
+Now, you can copy files to/from the {{project name}} workstation disk image.
+
+When you are finished, unmount each of the mount points.
+{{CodeSelect|code=
+sudo umount /mnt/workstation
+}}
+{{CodeSelect|code=
+sudo umount /mnt/whonix
+}}
+
+=== Related ===
+* [[Dev/Source Code Intro]]
+
+== Usability Development Tickets ==
+All solutions listed here are far from user friendly. Please help improving this. See also our tickets about this issue:
+* [https://phabricator.whonix.org/T21 {{project name}} Host Additions]
+
+= See Also =
+* [[Backup {{project name short}} VMs|Backup {{project name}} VMs]]
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]] [[Category:Development]]
