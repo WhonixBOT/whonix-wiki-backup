@@ -1,0 +1,127 @@
+{{Header}}
+{{#seo:
+|description=Everything you should know about Configuration Drop-in Folders and Files.
+|image=https://www.whonix.org/w/images/3/3b/Five-elements-379106640.jpg
+}}
+__TOC__
+
+{{Anchor|.d Style Configuration Folders}}
+= Configuration Drop-In Folders =
+When changing any configurations it is recommended to use configuration drop-in folders whenever available to avoid the [[#Ordinary_Configuration_Files|disadvantages of ordinary configuration files]]. To use a configuration drop-in folder means "to drop a configuration snippet" which translates to creating a new configuration file in a configuration drop-in folder.
+
+This applies to most, if not all, other (Debian based) Linux distributions including {{project_name}}.
+
+[https://github.com/Whonix Most] of [[{{project name short}} Debian Packages|packages by {{project name}}]] provide configuration drop-in folders.
+
+* <code>/etc/torbrowser.d</code>
+* <code>[[#/usr/local/etc|/usr/local/etc]]/torbrowser.d</code>
+* <code>/etc/whonix.d</code>
+* <code>/etc/whonix_firewall.d</code>
+* <code>/etc/onion-grater-merger.d</code> (Only on {{gateway_product_name}}.)
+* <code>/etc/whonix_buildconfig.d</code> (Only if you build from source code.)
+* <code>/etc/sdwdate.d</code>
+* <code>/etc/sdwdate-gui.d</code>
+* <code>/etc/uwt.d</code>
+* Configuration of Tor is a special case, see [[Tor#Configuration|Tor configuration]].
+
+We'll explain it using an example. For example, <code>/etc/whonix_firewall.d/30_default.conf</code> says.
+
+<blockquote>
+Please use "/etc/whonix_firewall.d/50_user.conf" for your custom configuration,
+which will override the defaults found here. When {{project_name}} is updated, this 
+file may be overwritten.
+</blockquote>
+
+The same in other words.
+
+<blockquote>
+Instead of editing this file, please create and use the file
+"/etc/whonix_firewall.d/50_user.conf". When {{project_name}} is updated,
+"/etc/whonix_firewall.d/30_default.conf" will be overwritten. Files in folder
+"/etc/whonix_firewall.d/" are sourced in alphabetical order. Anything in
+"/etc/whonix_firewall.d/50_user.conf" will always override the defaults,
+allowing the user to keep their settings after updating {{project_name}}.
+</blockquote>
+
+The same yet in other words... Files in configuration drop-in folders are usually sourced in lexical order. That means, files named <code>30_...</code> will always get overruled by files named <code>50_...</code>.
+
+For example, directly editing <code>/etc/whonix_firewall.d/30_default.conf</code> is recommended against. This is because, next time {{project_name}} gets updated, <code>/etc/whonix_firewall.d/30_default.conf</code> may get new settings and improved settings. You would end up with an {{Code2|dpkg interactive conflict resolution dialog}}, which would for example look the following.
+
+<pre>
+Configuration file `/etc/whonix_firewall.d/30_default.conf'
+ ==> Modified (by you or by a script) since installation.
+ ==> Package distributor has shipped an updated version.
+   What would you like to do about it ?  Your options are:
+    Y or I  : install the package maintainer's version
+    N or O  : keep your currently-installed version
+      D     : show the differences between the versions
+      Z     : background this process to examine the situation
+ The default action is to keep your current version.
+*** interfaces (Y/I/N/O/D/Z) [default=N] ? N
+</pre>
+
+Modifications coming with {{project_name}} will always fall back to reasonable defaults, if you were still using an old version. However, to prevent such conflicts in the first place, you're better off reading <code>/etc/whonix_firewall.d/30_default.conf</code>, leaving <code>/etc/whonix_firewall.d/30_default.conf</code> untouched, copying settings you wish to overrule from <code>/etc/whonix_firewall.d/30_default.conf</code> and pasting them into <code>/etc/whonix_firewall.d/50_user.conf</code>.
+
+Since standardized configuration drop-in folders are not standardized, configuration drop-in snippets are processed in very different ways depending on the software that reads the configuration. Differences in drop-in folders:
+
+* Some allow overwriting configuration variables from lexical lower configuration files such as <code>/etc/default/grub.d</code> (grub configuration).; Some do not such as <code>/etc/apt/sources.list.d</code> (where APT repository definitions can be dropped) or <code>/etc/apt/trusted.gpg.d</code> (where APT signing keys can be dropped).
+* Some are <code>source</code>ed in lexical order such a <code>/etc/profile.d</code> or <code>/etc/X11/Xsession.d</code>.
+* Some contain scripts which are executed such as <code>/etc/grub.d</code> (boot grub menu generation).
+
+= Ordinary Configuration Files =
+There is something you should be aware of when editing ordinary configuration files where configuration drop-in folders are unavailable. This applies to {{project_name}} as well as most, if not all, other Debian based Linux distributions.
+
+We'll explain it using an example. Let's take for example <code>/etc/hdparm.conf</code>.
+
+There is no <code>/etc/hdparm.d</code> folder. Therefore, if you want to make changes, your only option is to edit <code>/etc/hdparm.conf</code>. But this comes with a disadvantage. Next time this file gets changed by the <code>hdparm</code> maintainer and you upgrade your system, you would end up with an {{Code2|dpkg interactive conflict resolution dialog}}, which would for example look the following.
+
+{{Anchor|dpkg interactive conflict resolution dialog}}
+<pre>
+Configuration file `/etc/hdparm.conf'
+ ==> Modified (by you or by a script) since installation.
+ ==> Package distributor has shipped an updated version.
+   What would you like to do about it ?  Your options are:
+    Y or I  : install the package maintainer's version
+    N or O  : keep your currently-installed version
+      D     : show the differences between the versions
+      Z     : background this process to examine the situation
+ The default action is to keep your current version.
+*** interfaces (Y/I/N/O/D/Z) [default=N] ? N
+</pre>
+
+Check the differences <code>D</code>, then make a decision. If you know you made changes to that file, you most likely want to keep them, i.e. select <code>N</code>. If you are unsure, after the upgrade finished, check again that config file and re-apply your settings if necessary.
+
+= /usr/local/etc =
+Some configuration files also reside in folder <code>/usr/local/etc</code>.
+
+Placing configuration files in <code>/usr/local</code> is a relatively new development. Few applications are looking for configuration files in <code>/usr/local</code>. Most configurable applications developed by Whonix developers support configuration files in folder <code>/usr/local/application-name'''.d'''</code>. Some applications developed b Qubes developers might support configuration files in that folder. Other applications using configuration files in that folder are unknown.
+
+Support for configuration files in that folder was created because of [[Qubes]], which is explained in next chapter, see [[#Qubes Persistence|Qubes Persistence]].
+
+Configuration of Tor is a special case, see [[Tor#Configuration|Tor configuration]].
+
+= Qubes Persistence =
+In the Qubes TemplateVM model, <ref>[https://www.qubes-os.org/getting-started AppVMs (qubes) and TemplateVMs].</ref> any changes made to a [https://github.com/QubesOS/qubes-issues/issues/2489 root filesystem of a TemplateBasedVM] are lost upon reboot. This is advantageous for several reasons: it saves time and disk space, and allows faster, centralized updates for applications that are usually found inside the root filesystem. However, certain directories are designed to persist between reboots in order to store files and settings. These directories are stored in <code>/rw</code>, include <code>/home/user</code> and <code>/usr/local</code> as well as additional directories defined by "bind directory" settings. <ref>[https://www.qubes-os.org/doc/bind-dirs/ How to make any file in a TemplateBasedVM persistent using bind-dirs].</ref>
+
+{{Qubes persistence}}
+
+Therefore when editing configuration files:
+
+* Configuration changes in TemplateBasedVM: Changes in <code>/etc</code> will be lost after reboot.
+** For persistent configuration changes folder <code>/usr/local/etc</code> can be used in TemplateBasedVM if supported by the application. Applications that support it, will document that. Then it will apply only to that TemplateBasedVM.
+** Otherwise settings can be changed persistently in TemplateVM <code>/etc</code> but then the change will effect all TemplateBasedVM based on that TemplateVM.
+* TemplateVM: <code>/etc</code> persists.
+* StandaloneVM: <code>/etc</code> persists.
+
+User documentation will advise in which VM configuration files can be edited in [[documentation]] specific to various subjects.
+
+= See Also=
+* Nice explanation here: https://www.freedesktop.org/software/systemd/man/modules-load.d.html
+* [[grub]] configuration changes
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
