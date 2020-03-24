@@ -1,0 +1,218 @@
+{{Header}}
+{{#seo:
+|description=VirtualBox Licensing Issues, unavailable in Debian main and Debian backports, missing features. Is VirtualBox an Insecure Choice? Arguments for keeping VirtualBox Support.
+|image=https://www.whonix.org/w/images/d/d5/Virtualbox_logo.png
+}}
+{{forkme}}
+
+== Is VirtualBox an Insecure Choice? ==
+
+<u>Update</u>:
+
+Although [[VirtualBox]] is not an ideal choice, fortunately other platforms are [[Download|supported]]:
+
+* [[{{q project name short}}|{{q project name}}]].
+* [[KVM|{{project_name}} for KVM / Virt-Manager]]. 
+
+For greater security, users with suitable hardware and sufficient skill are recommended to  [[Virtualization_Platform_Security#Type_1_vs_Type_2_Hypervisors|prefer {{q_project_name}}]] (a bare-metal hypervisor) over Type 2 hypervisors like VirtualBox.
+
+The primary reason {{project name}} supports VirtualBox is because it is a familiar, cross-platform virtualizer which can attract more users to open source (free/Libre) software, Tor and Linux in general. By remaining highly accessible, Whonix: 
+
+* Increases the scope of potential growth in the user base.
+* Attracts greater attention as a suitable anonymity-focused operation system.
+* Increases the likelihood of additional human resources and monetary contributions.
+* Allows novice users to easily test {{project name}} and learn more about security and anonymity practices.
+* Improves the relative security and anonymity of Tor / Tor Browser users by offering a virtualized solution.
+* See also [[#Arguments for keeping VirtualBox Support|Arguments for keeping VirtualBox Support]].
+
+<u>Old statement</u>:
+
+<div class="toccolours mw-collapsible mw-collapsed">
+If you would like to see the old statement, please press on expand on the right.
+<div class="mw-collapsible-content">
+
+=== {{project name}} in VirtualBox vs Tor / Tor Browser / Torified Applications on the Host ===
+
+It is recognized that VirtualBox is not an ideal choice; see [[Dev/Virtualization Platform]]. However, there are different goals to bear in mind - {{project name}} is primarily focused on protecting a user's IP address / location.
+
+A common refrain of critics is that VirtualBox is "too weak". This is a theoretical concern and does not have any practical implications at present, since {{project name}} in VirtualBox is actually more secure than running Tor, Tor Browser or torified applications on the host in many cases; see [[Security in Real World|{{project_name}} Security in the Real World]]. 
+
+It must be remembered that there are no alternatives for a large segment of the population who do not have sufficiently powerful hardware to run [[{{q project name short}}|{{q project name}}]], or who are technically incapable of running [[KVM]]. In this case, it is safer for them to run {{project name}} in VirtualBox, rather than continuing to utilize Tor on the host. For example, {{project name}} helps to protect against future [https://blog.torproject.org/blog/firefox-security-bug-proxy-bypass-current-tbbs proxy bypass bugs] or software which [https://blog.torproject.org/blog/bittorrent-over-tor-isnt-good-idea does not honor proxy settings].
+
+The strength of {{project name}} and virtualization in general is adherence to the security by isolation principle. VirtualBox critics need to objectively consider how many exploits currently exist for VirtualBox and the track record of exploits. Admittedly, virtual machine exploits may become far more problematic in the future, but at present {{project name}} is considered to provide more security out of the box running in VirtualBox, than not.
+ 
+=== Platforms with Improved Security ===
+
+Anybody seriously considering {{project name}} for improved security should refer to the [[Documentation]], particularly the Security Guide and Advanced Security Guide entries, as well as [[Download|supported platforms]] other than VirtualBox. {{project name}} is a poster child for the [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO/IsolatingProxy Isolating Proxy Concept] and [http://theinvisiblethings.blogspot.com/2008/09/three-approaches-to-computer-security.html Security by Isolation].
+
+Many users still default to running Tor on their Windows or Linux host. {{project name}} is immediately available to this cohort to substantially improve their real world security. Indeed, {{project name}} is the only up-to-date OS designed to be run inside a VM and paired with Tor, which is actively maintained and developed. Other similar projects like [http://www.janusvm.com/tor_vm/ JanusVM] are seriously outdated and no longer actively maintained. <ref>In response to whether JanusVM was safe to use, Roger Dingledine of The Tor Project [https://lists.torproject.org/pipermail/tor-talk/2011-December/022446.html stated in 2011]: "No, not safe. Probably has been unsafe to use for years."</ref>
+
+{{project_name}} cannot serve all target audiences. Users seeking a higher security solution will prefer [[Download|other supported platforms]], like [[{{q project name short}}|{{q project name}}]]. "Hardcore" users may prefer to build their own custom hardened solutions, while still profiting from {{project name}} research and source code. Hardened solutions like the [[Hardened Gentoo TG|Hardened Gentoo {{gateway_product_name}}]] are more difficult to use and therefore cannot be set as the default installation for {{project_name}}.
+</div>
+</div>
+
+== VirtualBox missing features ==
+* The following is non-ideal for [[Comparison_with_Others#Verifiable_Builds|verifiable builds]], because we have to convert to vdi first:
+** [https://forums.virtualbox.org/viewtopic.php?f=1&t=58460 export VM using VDI instead of VMDK?]: seems not possible.
+** [https://forums.virtualbox.org/viewtopic.php?f=7&t=58461 Mount VMDK on Debian jessie?]: seems not possible.
+* VirtualBox uses VMDK version 3. This is non-ideal, because working with these images is difficult.
+** Converting these images is difficult.
+*** <s>qemu-img version 1.6.1 ({{Code|qemu-img convert "vmdk_file" -O RAW "vdi_file"}}) fails with: {{Code2|qemu-img: 'image' uses a vmdk feature which is not supported by this qemu version: VMDK version 3}}, which is a [https://bugs.launchpad.net/qemu/+bug/1253465 known issue in qemu].</s> As per [https://bugs.launchpad.net/bugs/1253465 this], QEMU version equal or bigger than {{Code2|2.8}} should be capable to work with VMDK version 3 disks. TODO: try
+*** Therefore it is required to convert them with VBoxManage to .vdi first. ({{Code|VBoxManage clonehd --format VDI "vmdk_file" "vdi_file"}})
+** <s>Therefore the Free guestmount doesn't support mounting VMDK version 3 as well (because it internally uses qemu-img).</s> (Still true?)
+** <s>It requires proprietary software to mount them, such as the proprietary nbdkit plugin [https://github.com/libguestfs/nbdkit/blob/master/plugins/vddk/README.VDDK vddk]. We're not aware of a Free Software alternative yet.</s> (Still true?)
+** When importing VMs these become VDI images nowadays with recent VirtualBox versions.
+* [https://www.virtualbox.org/ticket/734 Guest Additions Debian Packages unavailable from Oracle Repository]
+* [https://forums.virtualbox.org/viewtopic.php?f=1&t=58498 Can a guest find out its host operating system?]: seems not possible. This is is non-ideal, because we can not warn when host operating systems are being used we don't think are the right tool for hosting {{project name}} VMs.
+* Signatures (not important because we offer OpenPGP / gpg signatures):
+** https://forums.whonix.org/t/appliance-is-not-signed/4230
+** https://forums.virtualbox.org/viewtopic.php?f=1&t=94327#p455421
+
+== VirtualBox Unavailable in Debian stable and backports due to Debian Stable Security Maintenance Issues ==
+Quote https://people.debian.org/~lucas/virtualbox-buster/
+
+<blockquote>Virtualbox is not available in Debian 10 (nor in backports). The reasons are discussed at length in https://bugs.debian.org/794466 and various other mailing list threads, but can be summarized as:
+
+* Virtualbox is not suitable for Debian stable releases because of the lack of cooperation of Oracle on security support (that’s the Debian security team decision).
+* Since it is not suitable for stable releases, it cannot be included in the testing suite (that’s the Debian release team decision).
+* It also cannot be included in official backports, as packages must be in testing before they get backported (that’s the Debian backports team’s decision).</blockquote>
+
+There is hope this will improve in future: [https://salsa.debian.org/fasttrack-team/support/issues/10 please add VirtualBox to fasttrack]
+
+== VirtualBox Unavailable in Debian main due to Licensing Issues ==
+Quote [[KVM#Why_Use_KVM_Over_VirtualBox.3F|Whonix KVM]]:
+
+<blockquote>
+The VirtualBox developer team have recently taken the decision to switch out the BIOS in their hypervisor. However, it now comes with one that requires compilation by a toolchain that [[Dev/Virtualization_Platform#VirtualBox_no_longer_in_Debian_main|does not meet the definition of Free Software]] as per the guidelines of the Free Software Foundation. This move is considered problematic for free and open source software projects like Debian, on which {{project name}} is based. 
+
+The issues of the Open Watcom License are explained in [https://www.mail-archive.com/debian-legal@lists.debian.org/msg34687.html this thread] on the Debian Mailinglist. In summary, there are issues surrounding the contradictory language of the license, the assertion of patents against software that rely upon it, and the placing of certain restrictions on software uses. For these reasons, those who care about running FOSS and appreciate its ethical views are recommended to avoid running VirtualBox; also see  [[Avoid_nonfree_software|avoid non free software]].
+</blockquote>
+
+References:
+
+* http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=709899
+* http://lists.debian.org/debian-devel/2013/08/msg00057.html
+* "Virtualbox ships a BIOS that requires Watcom to compile from real sources,precompiled copy they ship as well is free but is not the preferred form for modification." http://lists.debian.org/debian-devel/2013/08/msg00106.html
+* https://lists.torproject.org/pipermail/tor-talk/2013-September/029978.html
+* ticket [https://github.com/open-watcom/open-watcom-v2/issues/271 asking Sybase to fix licensing issues for Watcom compiler]
+* ticket [https://www.virtualbox.org/ticket/12011 asking Oracle to use a compiler different than Watcom]
+
+* This is unrelated to <code>VirtualBox Oracle VM VirtualBox Extension Pack</code>, which is proprietary, and which was never in Debian.
+
+== Arguments for keeping VirtualBox Support ==
+* [[KVM]] is not available to Windows users.
+* Simplicity, as in: [[VirtualBox]] has a VM import GUI feature.
+* Available to users not owning computer providing hardware virtualization. ([[KVM]] requires that. [[QEMU]] may or may not but is [[unsupported]].)
+* Due to Windows users and simplicity it leads to greater popularity, which in theory attracts more users, developers, auditors, [[payments]], etc and is therefore good for the overall health of the project.
+* Some Windows/[[VirtualBox]] users experimenting with their first Linux ({{project_name}}) will one day become users who mainly use Linux as their host operating system.
+* We have a [[Windows Quick Start|{{project_name}} Windows Installer]] which installs VirtualBox {{project_name}} VirtualBox VMs because of [[Dev/Whonix-Windows-Installer#Rationale|these reasons]].
+
+= Bugs =
+== [drm:vmw_host_log [vmwgfx]] ERROR Failed to send log ==
+Confusing message but no bad effects.
+
+https://www.virtualbox.org/ticket/19168
+
+== [sda] Incomplete mode parameter data / Assuming drive cache: write through ==
+Confusing error message due to our use of a SAS virtual hard drive controller no bad effects. Error message doesn't happen with SATA controller but we can't use that one
+
+* https://github.com/Whonix/Whonix/issues/274
+* https://www.virtualbox.org/ticket/10031
+
+{{Anchor|VirtualBox Guest Additions Bugs}}
+= VirtualBox Bug Reports =
+VirtualBox (Guest Additions) have various issues. Often copy/paste from host to VM does not work or VMs are not automatically reized to optional size.
+
+The internet is full of discussions that lead to no solution. Hard to find good information. It is unhelpful to ask in arbitrary places about it as this only leads to more discussions which go nowhere. The only option is to find out what information VirtualBox developers are asking for, to write a good bug report and to report to virtualbox.org developers.
+
+* Step 1) Research what information VirtualBox developers would be asking for.
+* Step 2) Write a good bug report.
+
+== What Should Be Included In Bug Report ==
+Include as many information as possible.
+
+* bug reporting instructions
+** VirtualBox VM log <code>~/"VirtualBox VMs"/Whonix-Gateway-XFCE/Logs/VBox.log</code>
+** VirtualBox host log <code>~/.config/VirtualBox/VBoxSVC.log</code>
+** read these posts
+*** https://forums.virtualbox.org/viewtopic.php?f=3&t=87130#p416223
+*** https://forums.virtualbox.org/viewtopic.php?f=7&t=77347
+*** https://forums.virtualbox.org/viewtopic.php?f=3&t=91874#p442720
+** VRAM (video RAM) to 128 MB
+** VirtualBox host version
+** VirtualBox guest additions version
+** host operating system
+** guest operating system
+** guest: <code>/var/log/Xorg.0.log</code>
+** guest: <code>sudo lsmod | grep vbox</code>
+** guest: <code>sudo apt update && sudo apt install mesa-utils</code> 
+*** <code>glxinfo | grep OpenGL</code>
+*** <code>glxinfo></code>
+** 3D acceleration on/off
+** VMSVGA
+** VBoxVGA
+** VBoxSVGA
+** <code>dpkg -l | grep xorg</code>
+** <code>dpkg -l | grep x11</code>
+
+== Resize Issues ==
+=== Notes ===
+* https://www.virtualbox.org/wiki/Guest_resizing
+** <blockquote>Deleting the file <code>~/config/Monitors.xml</code> in the guest helps.</blockquote>
+** Try without snapshots.
+** Use a real screen not over VNC.
+
+=== Non-Issues ===
+* https://www.virtualbox.org/ticket/17777
+** <blockquote>(EE) Failed to load module "vboxvideo" (module does not exist, 0)</blockquote>
+** <blockquote>As of X.Org server 1.19 we use a kernel driver and the X.Org modesetting driver. See the log section you attached.</blockquote>
+
+= Bug Report Draft =
+
+<pre>
+user@host:~$ dpkg -l | grep x11
+ii  libqt5x11extras5:amd64                        5.11.3-2                     amd64        Qt 5 X11 extras
+ii  libva-x11-2:amd64                             2.4.0-1                      amd64        Video Acceleration (VA) API for Linux -- X11 runtime
+ii  libx11-6:amd64                                2:1.6.7-1                    amd64        X11 client-side library
+ii  libx11-data                                   2:1.6.7-1                    all          X11 client-side library
+ii  libx11-xcb1:amd64                             2:1.6.7-1                    amd64        Xlib/XCB interface library
+ii  libxkbcommon-x11-0:amd64                      0.8.2-1                      amd64        library to create keymaps with the XKB X11 protocol
+ii  virtualbox-guest-x11                          6.1.4-dfsg-2                 amd64        x86 virtualization solution - X11 guest utilities
+ii  x11-common                                    1:7.7+19                     all          X Window System (X.Org) infrastructure
+ii  x11-utils                                     7.7+4                        amd64        X11 utilities
+ii  x11-xkb-utils                                 7.7+4                        amd64        X11 XKB utilities
+ii  x11-xserver-utils                             7.7+8                        amd64        X server utilities
+</pre>
+
+<pre>
+ii  xserver-xorg                                  1:7.7+19                     amd64        X.Org X server
+ii  xserver-xorg-core                             2:1.20.4-1                   amd64        Xorg X server - core server
+ii  xserver-xorg-input-all                        1:7.7+19                     amd64        X.Org X server -- input driver metapackage
+ii  xserver-xorg-input-libinput                   0.28.2-2                     amd64        X.Org X server -- libinput input driver
+ii  xserver-xorg-video-fbdev                      1:0.5.0-1                    amd64        X.Org X server -- fbdev display driver
+ii  xserver-xorg-video-qxl                        0.1.5-2+b1                   amd64        X.Org X server -- QXL display driver
+ii  xserver-xorg-video-vesa                       1:2.4.0-1                    amd64        X.Org X server -- VESA display driver
+</pre>
+
+Bug descriptions:
+
+Broken:
+
+1) Power off the VM.
+2) Restart the VM.
+3) Maximize the VM window after start of the VM as soon as possible.
+4) VirtualBox VM Window → View → Virtual Screen 1 → Choose any, resize to another resolution
+5) VirtualBox VM Window → View → Auto-resize Guest Display / Adjust Window Size
+
+Also broken:
+
+XFCE Start Menu → Settings → Display → Resolution: → Choose a higher resolution resolution → Apply 
+
+TODO: manual resize functional using xrandr
+
+= References =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Design]]
