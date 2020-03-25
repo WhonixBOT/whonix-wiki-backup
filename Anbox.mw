@@ -1,0 +1,336 @@
+{{Header}}
+{{title|title=Run Anbox inside {{workstation product name}}
+}}
+{{#seo:
+|description=Anbox allows Android applications and mobile games to run inside {{project name}}.
+|image=https://www.whonix.org/w/images/1/1e/Anbox_apps_short.png
+}}
+<!--|image=https://www.whonix.org/w/images/c/c9/Android23432.png-->
+[[File:anbox_apps_short.png|thumb|800px]]
+
+[https://anbox.io/ Anbox] allows Android applications and mobile games to run inside {{project name}}.
+
+== Install Anbox ==
+All installation steps inside {{workstation product name}}. No modifications of {{gateway product name}} required.
+
+{{Box|text=
+{{Install Package|
+package=linux-image-amd64 linux-headers-amd64 adb fastboot anbox
+}}
+}}
+
+{{Box|text=
+Download Anbox Android image.
+
+If you want to do this inside a Qubes TemplateVM then parameter <code><nowiki>--proxy http://127.0.0.1:8082</nowiki></code> needs to be added to <code>scurl</code> as shown below.
+
+* Non-Qubes-Whonix or Qubes StandaloneVM: {{CodeSelect|code=
+scurl --tlsv1.2 --remote-name https://build.anbox.io/android-images/2018/07/19/android_amd64.img
+}}
+* Qubes-Whonix TemplateVM: {{CodeSelect|code=
+scurl --proxy http://127.0.0.1:8082 --tlsv1.2 --remote-name https://build.anbox.io/android-images/2018/07/19/android_amd64.img
+}}
+
+Download Anbox Android image <code>sha256sum</code> file.
+
+* Non-Qubes-Whonix or Qubes StandaloneVM: {{CodeSelect|code=
+curl --tlsv1.2 --remote-name https://build.anbox.io/android-images/2018/07/19/android_amd64.img.sha256sum
+}}
+* Qubes-Whonix TeplateVM:{{CodeSelect|code=
+curl --proxy http://127.0.0.1:8082 --tlsv1.2 --remote-name https://build.anbox.io/android-images/2018/07/19/android_amd64.img.sha256sum
+}}
+
+Verify.
+
+{{CodeSelect|code=
+sha256sum --check android_amd64.img.sha256sum
+}}
+
+Should show:
+
+<pre>
+android_amd64.img: OK
+</pre>
+
+
+Move (rename) <code>android_amd64.img</code> to <code>/var/lib/anbox/android.img</code>:<ref>
+<code>anbox-container-manager.service</code> expects this file name.
+</ref>
+
+{{CodeSelect|code=
+sudo mv android_amd64.img /var/lib/anbox/android.img
+}}
+
+}}
+
+<ref>
+These steps are probably not required. Should work out of the box after reboot.
+
+{{Box|text=
+Start kernel module.
+
+{{CodeSelect|code=
+sudo modprobe ashmem_linux
+}}
+
+Start kernel module.
+
+{{CodeSelect|code=
+sudo modprobe binder_linux
+}}
+
+Start anbox systemd service.
+
+{{CodeSelect|code=
+sudo systemctl start anbox-container-manager.service
+}}
+
+Check if anbox systemd service is functional.
+
+{{CodeSelect|code=
+sudo systemctl status anbox-container-manager.service
+}}
+
+Should show something similar to the following.
+
+<pre>
+● anbox-container-manager.service - Anbox Container Manager
+   Loaded: loaded (/lib/systemd/system/anbox-container-manager.service; enabled; vendor preset: enabled)
+   Active: active (running) since Mon 2018-12-31 06:23:49 EST; 874ms ago
+     Docs: man:anbox(1)
+  Process: 1996 ExecStartPre=/usr/share/anbox/anbox-bridge.sh start (code=exited, status=0/SUCCESS)
+  Process: 1991 ExecStartPre=/sbin/modprobe binder_linux (code=exited, status=0/SUCCESS)
+  Process: 1986 ExecStartPre=/sbin/modprobe ashmem_linux (code=exited, status=0/SUCCESS)
+ Main PID: 2074 (anbox)
+    Tasks: 9 (limit: 4915)
+   Memory: 5.1M
+      CPU: 51ms
+   CGroup: /system.slice/anbox-container-manager.service
+           └─2074 /usr/bin/anbox container-manager --daemon --privileged --data-path=/var/lib/anbox
+
+Dec 31 06:23:48 debian systemd[1]: Starting Anbox Container Manager...
+Dec 31 06:23:49 debian systemd[1]: Started Anbox Container Manager.
+</pre>
+}}
+</ref>
+
+== Whonix Configuration ==
+Disabling [[{{workstation product name short}} Firewall|{{workstation product name}} Firewall]] is unfortunately required. Otherwise there would be no network access. <ref>
+This is because Anbox comes with its own bridged network. Whitelisted that interface in {{workstation product name}} firewall is [[undocumented]] and might require source code modifications. [[Reporting_Bugs#Patches_are_Welcome|Patches are Welcome]].
+</ref>
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = 
+This reduces security! Especially when using [[Multiple_Whonix-Workstations|multiple {{workstation product name}}]] behind the same {{gateway product name}}.
+}}
+
+Inside {{workstation product name}}.
+
+({{Q project name}}: inside StandaloneVM (better!) or TemplateVM.
+
+{{CodeSelect|code=
+sudo systemctl mask whonix-firewall
+}}
+
+Disable [[whonixcheck]] of {{workstation product name}} Firewall.
+
+{{Box|text=
+{{Open with root rights|filename=
+/etc/whonix.d/50_whonixcheck_user.conf
+}}
+
+Paste.
+
+{{CodeSelect|code=
+whonixcheck_skip_functions+=" check_whonix_firewall_systemd_status "
+}}
+
+Save.
+}}
+
+Reboot required. <ref>
+To unload {{workstation product name}} firewall rules and to make anbox load its firewall rules.
+</ref>
+
+{{CodeSelect|code=
+sudo reboot
+}}
+
+== Qubes Configuration ==
+[[Qubes]] users only.
+
+You probably want to use a StandaloneVM. Otherwise changes would be non-persistent, i.e. lost after VM restart. Instructions on how to make Anbox persistent using a TemplateBased AppVM are not existing yet. (See footnote for experimental instructions. <ref>
+Does not work yet.
+
+<pre>
+[ 2019-10-14 11:00:41] [launch.cpp:214@operator()] Session manager failed to become ready
+</pre>
+
+1) Increase VM private storage.
+
+Power off the VM.
+
+Add at least 2 GB more private storage to VM. This can be done using Qubes VM Manager (QVMM).
+
+Reboot the VM.
+
+2) Add <code>/var/lib/anbox</code> to [https://www.qubes-os.org/doc/bind-dirs/ Qubes bind-dirs].
+
+Create folder <code>/rw/config/qubes-bind-dirs.d</code>.
+
+{{CodeSelect|code=
+sudo mkdir -p /rw/config/qubes-bind-dirs.d
+}}
+
+Create a new configuration file <code>/rw/config/qubes-bind-dirs.d/50_user.conf</code>.
+
+{{CodeSelect|code=
+sudoedit /rw/config/qubes-bind-dirs.d/50_user.conf
+}}
+
+Paste.
+
+{{CodeSelect|code=
+binds+=( '/var/lib/anbox' )
+}}
+
+Save.
+
+Reboot the VM.
+
+This results in storing <code>/var/lib/anbox</code> in the private rather than root image. Thereby changes would persist rather than be lost after VM restart.
+
+Fix file permissions.
+
+Warning: might have security issues
+
+{{CodeSelect|code=
+sudo systemctl stop anbox-container-manager.service
+}}
+
+{{CodeSelect|code=
+sudo chown --recursive user:user /var/lib/anbox
+}}
+
+{{CodeSelect|code=
+sudo systemctl start anbox-container-manager.service
+}}
+</ref>)
+
+{{Q project name}} requires using [https://www.qubes-os.org/doc/managing-vm-kernel/ Qubes VM kernel]. <ref>
+Using VM kernel may come with its own challenges currently.
+
+https://github.com/QubesOS/qubes-issues/issues/5212#issuecomment-533873012
+
+Since Anbox is implemented using kernel modules.
+</ref> Users can follow the instructions from the Qubes website [https://www.qubes-os.org/doc/managing-vm-kernel/#installing-kernel-in-debian-vm Installing kernel in Debian VM] which are equally functional in {{Q project name}}.
+
+It has been [https://github.com/QubesOS/qubes-issues/issues/2233#issuecomment-593137226 reported] that it is required to enable [https://docs.anbox.io/userguide/advanced/software_rendering.html Anbox software rendering] but how to do this in this guide is unknown at this point. The command from previous link probably won't work as this guide does not use snap and it shouldn't use snap either because that would break recommendation [[Warning#Always_Verify_Signatures|Always Verify Signatures]] since snap does not verify software signatures. <ref>
+https://forums.whonix.org/t/snap-store-snaps-snapcraft-io-a-new-software-source/7631
+</ref>
+
+== Start Anbox ==
+=== From Start Menu ===
+<code>Start menu</code> &rarr; <code>Accessories</code> &rarr; <code>Anbox</code>
+
+=== From Command Line ===
+<ref>
+<code>/usr/share/applications/anbox.desktop</code>
+</ref>
+
+{{CodeSelect|code=
+anbox launch --package=org.anbox.appmgr --component=org.anbox.appmgr.AppViewActivity
+}}
+
+== Usage ==
+=== F-Droid ===
+[[File:fdroid.png|400px]]
+[[File:fdroid2.png|400px]]
+[[File:fdroid3.png|400px]]
+
+==== Installation ====
+Might want to install F-Droid.
+
+Here are instructions document how to download and verify F-Droid inside {{workstation product name}}.
+
+<ref>
+https://f-droid.org/docs/Release_Channels_and_Signing_Keys/
+</ref>
+
+{{gpg key
+|url=scurl-download "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x37d2c98789d8311948394e3e41e7044e1dba2e89"
+|source_filename='lookup?op=get&search=0x37d2c98789d8311948394e3e41e7044e1dba2e89'
+|fingerprint=37D2C98789D8311948394E3E41E7044E1DBA2E89
+|gpg_fingerprint_output=
+gpg: key 41E7044E1DBA2E89: 42 signatures not checked due to missing keys
+pub   rsa4096/41E7044E1DBA2E89 2014-04-25 [C]
+      Key fingerprint = 37D2 C987 89D8 3119 4839  4E3E 41E7 044E 1DBA 2E89
+uid                            F-Droid <admin@f-droid.org>
+sub   rsa3072/5DCCB667F9BF9046 2014-04-25 [E] [expires: 2021-04-24]
+sub   rsa3072/7A029E54DD5DCE7A 2014-04-25 [S] [expires: 2021-04-24]
+}}
+
+Download F-Droid.
+
+{{CodeSelect|code=
+scurl-download https://f-droid.org/FDroid.apk
+}}
+
+Download F-Droid signature.
+
+{{CodeSelect|code=
+scurl-download https://f-droid.org/FDroid.apk.asc
+}}
+
+Verify F-Droid.
+
+{{CodeSelect|code=
+gpg --verify FDroid.apk.asc
+}}
+
+Should show.
+
+<pre>
+gpg: assuming signed data in 'FDroid.apk'
+gpg: Signature made Thu 11 Apr 2019 12:41:19 PM UTC
+gpg:                using RSA key 0x7A029E54DD5DCE7A
+gpg: Good signature from "F-Droid <admin@f-droid.org>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 37D2 C987 89D8 3119 4839  4E3E 41E7 044E 1DBA 2E89
+     Subkey fingerprint: 802A 9799 0161 1234 6E1F  EFF4 7A02 9E54 DD5D CE7A
+</pre>
+
+Install F-Droid inside Anbox using <code>adb</code>.
+
+{{CodeSelect|code=
+adb install FDroid.apk
+}}
+
+=== File Sharing ===
+<ref>
+https://forums.whonix.org/t/running-android-apps-inside-whonix-workstation-anbox-proof-of-concept/7441/13
+</ref>
+
+{{CodeSelect|code=
+lxsudo thunar
+}}
+
+Browse to:
+
+{{CodeSelect|code=
+/var/lib/anbox/rootfs/data/media/0/
+}}
+
+Files dropped to this download directory are readily visible to apps within Anbox.
+
+= Forum Discussion =
+https://forums.whonix.org/t/running-android-apps-inside-whonix-workstation-proof-of-concept/7441/11
+
+= Footnotes =
+<references />
+
+{{Footer}}
+
+[[Category: Design]]
