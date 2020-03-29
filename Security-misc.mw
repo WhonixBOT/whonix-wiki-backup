@@ -1,0 +1,222 @@
+{{Header}}
+{{#seo:
+|description=Documentation for package security-misc.
+}}
+
+= Stable Features =
+[https://github.com/Whonix/security-misc#enhances-misc-security-settings Described here].
+
+= Testing Features =
+== Restrict Hardware Information to Root ==
+See [[Whonix-Workstation_Security_Hardening#Restrict_Hardware_Information_to_Root|Restrict Hardware Information to Root]].
+
+https://forums.whonix.org/t/restrict-hardware-information-to-root-testers-wanted/8618
+
+= Experimental Features =
+Unreleased. (Developers only.) Will flow into other repositories as per usual.
+
+{{anchor|suid}}
+== SUID Disabling and Permission Hardening ==
+=== Introduction ===
+* [https://github.com/Whonix/security-misc/blob/master/etc/permission-hardening.d/30_default.conf default config file]
+* [https://github.com/Whonix/security-misc/blob/master/usr/lib/security-misc/permission-hardening <code>/usr/lib/security-misc/permission-hardening</code>].
+* [https://github.com/Whonix/security-misc/blob/master/usr/lib/security-misc/permission-hardening-undo <code>/usr/lib/security-misc/permission-hardening-undo</code>].
+* [https://github.com/Whonix/security-misc/blob/master/lib/systemd/system/permission-hardening.service systemd unit file]
+
+=== Enable ===
+Only required doing once.
+
+Enable systemd unit.
+
+{{CodeSelect|code=
+sudo systemctl enable permission-hardening.service
+}}
+
+Start systemd unit.
+
+{{CodeSelect|code=
+sudo systemctl start permission-hardening.service
+}}
+
+=== Debugging ===
+Look what permission-hardening is actually doing. Most interesting during initial installation of security-misc.
+
+{{CodeSelect|code=
+sudo journalctl --no-pager -b -o cat -u permission-hardening
+}}
+
+<code>/var/lib/permission-hardening/existing_mode/statoverride</code> records modes before changing them using permission hardening.
+
+{{CodeSelect|code=
+cat /var/lib/permission-hardening/existing_mode/statoverride
+}}
+
+<code>/var/lib/permission-hardening/new_mode/statoverride</code> now records modes that were changed by permission hardening.
+
+{{CodeSelect|code=
+cat /var/lib/permission-hardening/new_mode/statoverride
+}}
+
+To view previous modes and how these were changed (replace <code>meld</code> with your favorite <code>diff</code> viewer):
+
+{{CodeSelect|code=
+meld /var/lib/permission-hardening/existing_mode/statoverride /var/lib/permission-hardening/new_mode/statoverride
+}}
+
+=== Removal ===
+Undo all changes. The following command is is only efficient until upgrade of package security-misc or reboot. To disable entirely the subsequent systemctl commands are required as well.
+
+{{CodeSelect|code=
+sudo /usr/lib/security-misc/permission-hardening-undo
+}}
+
+Stop systemd unit.
+
+{{CodeSelect|code=
+sudo systemctl stop permission-hardening.service
+}}
+
+Mask systemd unit.
+
+{{CodeSelect|code=
+sudo systemctl mask permission-hardening.service
+}}
+
+=== SUID SGID Hardening Issues ===
+This is a list of SUID / SGID programs which have their <code>set-user-id</code> bit and/or <code>set-group-id</code> bit removed. 
+
+To use the following programs you need to:
+
+* either use [[root]] rights, OR
+* restore SUID / SGID (undocumented)
+
+Standard GNU/Linux utilities:
+
+* These tools probably are used much nowadays on Linux desktop single user computers. If you need any of this, you are better off using root.
+* <code>passwd</code> [https://manpages.debian.org/passwd man] (change user password)
+* <code>chage</code> [https://manpages.debian.org/chage man] (change user password expiry information)
+* <code>expiry</code> [https://manpages.debian.org/expiry man] (check and enforce password expiration policy)
+* <code>chfn</code> [https://manpages.debian.org/chfn man] (change real user name and information)
+* <code>chsh</code> [https://manpages.debian.org/chsh man] (change login shell)
+* <code>gpasswd</code> [https://manpages.debian.org/gpasswd man] (administer <code>/etc/group</code> and <code>/etc/gshadow</code>)
+* <code>newgrp</code> [https://manpages.debian.org/newgrp man] (log in to a new group)
+
+applications related:
+
+* <code>/usr/lib/kde4/libexec/fileshareset</code>: dolphin
+* <code>/usr/lib/openssh/ssh-keysign</code>
+* <code>ssh-agent</code>
+* <code>pppd</code> [https://manpages.debian.org/pppd man] (Point-to-Point Protocol Daemon) Dial up modem only?
+
+root rights related:
+
+* <code>su</code>: substitute user. See also [[Root#Substitute_User_.28su.29_Command|documentation about <code>su</code>]]
+* <code>pkexec</code> [https://forums.whonix.org/t/cannot-use-pkexec/8129 some issues unrelated to SUID]
+* <code>/usr/lib/kde4/libexec/kdesud</code>
+
+mount related:
+
+* <code>mount</code>
+* <code>umount</code>
+* <code>fusermount</code>
+* <code>mount.nfs</code>
+* <code>mount.cifs</code>
+* <code>ntfs-3g</code>
+* <code>/usr/lib/eject/dmcrypt-get-device</code>
+
+virtualization related:
+
+* <code>/usr/lib/x86_64-linux-gnu/lxc/lxc-user-nic</code> (Manage nics in another network namespace) Does [[Anbox]] need this?
+
+namespace related:
+
+* <code>newgidmap</code> [https://manpages.debian.org/newgidmap man] (set the gid mapping of a user namespace)
+* <code>newuidmap</code> [https://manpages.debian.org/newuidmap man] (set the uid mapping of a user namespace)
+
+crontab related:
+
+* You are better off editing any non-root user's crontab with root rights.
+* <code>crontab</code> [https://manpages.debian.org/crontab man] (Manage users crontab files)
+* <code>at</code> [https://manpages.debian.org/at man] (executes commands at a specified time)
+
+local mail, mailspool, printing related:
+
+* Related to local mail, mailspool. Webmail and e-mail clients should be fine. These tools probably are used much nowadays on Linux desktop single user computers.
+* <code>dotlockfile</code> [https://manpages.debian.org/dotlockfile man] (Utility to manage lockfiles)
+* <code>dotlock.mailutils</code> [https://manpages.debian.org/dotlock.mailutils man] (lock mail spool files) Also related to printing?
+* <code>exim4</code> [https://manpages.debian.org/exim4 man] (Mail Transfer Agent)
+* <code>/usr/lib/evolution/camel-lock-helper-1.2</code> See [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=336755 this].
+
+system local messaging:
+
+* Even more obscure than above. Linux multi user systems could send each other local messages.
+* <code>wall</code> [https://manpages.debian.org/wall man] (write a message to all users)
+* <code>write</code> / <code>bsd-write</code> [https://manpages.debian.org/bsd-write man] (send a message to another user)
+
+<code>Network Information Server</code> (<code>NIS</code>):
+
+* <code>unix_chkpwd</code> [https://manpages.debian.org/unix_chkpwd man] (Helper binary that verifies the password of the current user) Related to <code>Network Information Server</code> (<code>NIS</code>)? See [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=155583 this discussion]. Does not look important.
+
+=== Permission Hardening Issues ===
+The following folders are only readable with root rights.
+
+* <code>/boot</code>: breaks KVM direct kernel boot using kernel images located in <code>/boot</code>. I.e. when using KVM to boot a kernel from the host disk located in <code>/boot</code> this will not be possible by default. The safest alternative would be using another file location for kernel images or inside VM kernel images.
+
+== Console Lockdown ==
+TODO: document
+
+Will be default in {{Project name}} build version <code>15.0.0.7.8</code> and above. Unreleased.
+
+Using pam_access.
+
+* https://github.com/Whonix/security-misc/blob/master/etc/security/access-security-misc.conf
+* https://github.com/Whonix/security-misc/blob/master/usr/share/pam-configs/console-lockdown-security-misc
+
+To enable for older builds of {{Project name}}.
+
+Add user <code>user</code> to group <code>console</code>.
+
+{{CodeSelect|code=
+sudo adduser user console
+}}
+
+Enable pam console lockdown.
+
+{{CodeSelect|code=
+sudo pam-auth-update --enable console-lockdown-security-misc
+}}
+
+== Remount Secure ==
+Feature not ready!
+
+* https://forums.whonix.org/t/re-mount-home-and-other-with-noexec-and-nosuid-among-other-useful-mount-options-for-better-security/7707/27
+* https://github.com/Whonix/security-misc/blob/master/lib/systemd/system/remount-secure.service
+* https://github.com/Whonix/security-misc/blob/master/usr/lib/security-misc/remount-secure
+
+{{CodeSelect|code=
+sudo touch /etc/noexec
+}}
+
+= install =
+This chapter is only required for users which aren't users of Whonix or Kicksecure. That is because security-misc is installed by default in Whonix and Kicksecure.
+
+Prerequisites:
+
+{{Kicksecure Prerequisites}}
+
+{{Project-APT-Repository-Add}}
+
+{{Box|text=
+Install <code>security-misc</code>.
+
+{{Install Package|package=
+security-misc
+}}
+}}
+
+= References =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
