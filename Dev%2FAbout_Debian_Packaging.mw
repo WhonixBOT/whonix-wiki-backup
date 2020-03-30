@@ -1,0 +1,109 @@
+__FORCETOC__
+{{Header}}
+{{#seo:
+|description=Debian Packaging of {{project name}} Design Documentation / Recommends vs Depends / --no-install-recommends / Files in Home Folder / Files in /etc/skel
+}}
+
+= Recommends vs Depends =
+This is about <code>Recommends:</code> vs <code>Depends:</code> in context of <code>debian/control</code>.
+
+<code>debian/control</code>: There are separate [https://github.com/{{project_name_short}}/anon-meta-packages/blob/master/debian/control meta packages] for dependencies and recommended packages. For example:
+
+* <code>anon-shared-packages-dependencies</code>
+* <code>anon-shared-packages-recommended</code>
+
+The reason for this is, because if we used the <code>Recommends:</code> field for {{project name}} meta packages (those who pull the required Debian upstream packages for creating {{project_name}}), we could not install them using <code>apt-get</code> with <code>--install-recommends</code>, which is <code>apt-get</code>'s default option, because that would also install packages recommend by any dependency we install.
+
+On the other hand, if we installed using apt-get <code>--no-install-recommends</code>, the packages {{project name}} meta packages recommends, will not get installed.
+
+Therefore splitting them into packages suffixed <code>*-dependencies</code> or <code>*-recommended</code> which both use <code>Depends:</code> and installing them using <code>--no-install-recommends</code> appeared to be the only solution.
+
+Otherwise it would install packages such as <code>virtuoso</code>, <code>soprano</code> and <code>vlc</code>, which are not useful '''in context of''' {{gateway_product_name}}.
+
+The <code>Recommends:</code> and <code>Suggests:</code> field is still being used but this is mostly useful for one package advertising related packages users using <code>apt-cache show package-name</code> and [[{{project name short}} Packages for Debian Hosts]].
+
+See also [[{{project name short}}_Debian_Packages#Technical_Stuff]].
+
+= Files in Home Folder =
+* <code>/home</code> is for users. Not for distribution maintainers.
+* Leads to a [[{{project name short}}_Configuration_Files#dpkg_interactive_conflict_resolution_dialog]] when package file is updated, in case file gets modified by the user or a program in the home folder, which is a usability issue, which we try to avoid.
+* <code>serious</code> <code>lintian</code> error [https://lintian.debian.org/tags/dir-or-file-in-home.html <code>dir-or-file-in-home</code>].
+** Makes the package unfit for inclusion into packages.debian.org (very long term goal) (or other distribution archives).
+** Looks amateurish in the eyes of Debian packagers.
+* For which user? User <code>user</code> only? Inconsistent for multi user use cases.
+* Doesn't work / inconsistent in [https://www.qubes-os.org Qubes] TemplateBasedVMs. Since packages are usually upgraded in TemplateVMs, the change never propagates to the home folder of the TemplateBasedVM since it has an independently persistent home folder.
+** Special code would be required to handle these cases. Such as a script that runs after boot but in TemplateBasedVMs that are not DispVM-Templates only. Example:
+*** https://github.com/{{project_name_short}}/tb-updater/blob/master/lib/systemd/system/tb-updater-first-boot.service
+*** https://github.com/{{project_name_short}}/tb-updater/blob/master/usr/lib/tb-updater/first-boot-home-population
+*** More code to carry around, understand interactions, bugfix, maintain, explain, audit.
+* In most cases there are more suitable mechanisms to reach the implementation goal than writing into the user's home folder.
+** If not, the lack of such mechanisms should be discussed with / requested from upstream.
+
+= Files in /etc/skel =
+* Files in <code>/etc/skel</code> are not as bad as files in [[#Files in Home Folder|<code>/home</code> folder]].
+** Works for any user.
+* Inconsistencies. Not deployed through <code>/etc/skel</code> mechanism if file is added to a package after a user account was created. I.e. users who upgraded will miss that file.
+** Needs special code to handle such cases.
+* If the file from <code>/etc/skel</code> is in the user's home folder, it's hard to update it. Updating the file in <code>/etc/skel</code> won't effect the user's version of the file in the user's home folder.
+** Needs special code to handle such cases.
+
+= Modifying Default Configuration of Third Party Packages =
+
+Taking systemd as an example. Suppose <code>/lib/systemd/system/systemd-random-seed.service</code> modifications are desired.
+
+File <code>/lib/systemd/system/systemd-random-seed.service</code> is owned by a third party package <code>systemd</code>.
+
+{{CodeSelect|code=
+dpkg -S /lib/systemd/system/systemd-random-seed.service
+}}
+
+<pre>
+systemd: /lib/systemd/system/systemd-random-seed.service
+</pre>
+
+* Editing <code>/lib/systemd/system/systemd-random-seed.service</code>.
+** Is the worst (changes get lost on systemd package gets upgraded) (there is a solution using <code>dpkg-divert</code> encapsulated in a more sane by using <code>config-package-dev</code> <code>displace</code> and we use it in Whonix source code where it could not be avoided but if avoidable it is best avoided if possible somehow).
+* Shipping <code>/etc/systemd/system/systemd-random-seed.service</code>
+** would be better but still not great (this is for local administrator, not linux distribution)
+* <code>/lib/systemd/system/systemd-random-seed.service.d</code> folder and a file such as <code>/lib/systemd/system/systemd-random-seed.service.d/30_something.conf</code>
+** is an ideal solution for linux distributions such as Whonix since it does not takeover files by other packages and does not take away something from the local system administrator or user.
+
+= config-package-dev =
+Debian package <code>xfce4-session</code> owns file <code>/etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-session.xml</code>. Therefore package <code>whonix-xfce-desktop-config</code> cannot directly overwrite it.
+
+<pre>
+Preparing to unpack .../whonix-xfce-desktop-config_1.4-1_all.deb ...
+Unpacking whonix-xfce-desktop-config (3:1.4-1) ...
+dpkg: error processing archive /mnt/initialdeb/pool/main/w/whonix-xfce-desktop-config/whonix-xfce-desktop-config_1.4-1_all.deb (--unpack):
+ trying to overwrite '\''/etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-session.xml'\'', which is also in package xfce4-session 4.12.1-6
+Errors were encountered while processing:
+ /mnt/initialdeb/pool/main/w/whonix-xfce-desktop-config/whonix-xfce-desktop-config_1.4-1_all.deb
+E: Sub-process /usr/bin/dpkg returned an error code (1)       '
++ apt_get_exit_code=100
+</pre>
+
+config-package-dev can help with such situations.
+
+Examples on how to use config-package-dev displace:
+
+* https://github.com/Whonix/whonix-xfce-desktop-config/commit/0e9daa97e9f9e70120c969aa9c9d52cace46971a
+* https://github.com/Whonix/security-misc/commit/93c08210545dd77b608515351154bcc16c8464b4
+
+Ideally avoided as per above.
+
+https://debathena.mit.edu/config-packages/
+
+= Whonix / Kicksecure Package Design =
+* whonix-base-files: Whonix-Host, Whonix-Gateway, Whonix-Workstation
+* whonix-libvirt: Whonix-Host only
+* anon-gw-base-files: Whonix-Gateway only
+* anon-ws-base-files: Whonix-Workstation only
+* kicksecure-base-files: Kicksecure-VMs and Kicksecure-Hosts
+* vm-config-dist: Kicksecure-VMs and Whonix-VMs
+
+= See Also =
+* [[Dev/Versioning Format Conventions|Versioning Format Conventions]]
+
+{{Footer}}
+
+[[Category:Design]]
