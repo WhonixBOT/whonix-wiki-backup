@@ -1,0 +1,189 @@
+{{Header}}
+{{#seo:
+|description=Why does {{project name}} (not) use Automatic Updates? Why does {{project name}} (not) use a GUI Update Notifier or GUI Updater?
+}}
+
+= Introduction =
+== apt-get upstream bugs ==
+{{Anchor|Bugs}}
+* [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=745735 apt: Provide meaningful exit codes for gpg failures]
+* [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=776152 provide meaningful exit codes for network failures]
+* [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=778357 audit 'apt-get update' exit codes]
+* [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=696335 exit-code 0 when apt-get update fails]
+* https://wiki.debian.org/Teams/Apt/Specs/UpdateExitStatus
+
+== Security Issues when using apt-get update in Scripts ==
+The issue is, that apt-get does not provide meaningful exit codes for gpg and network failures. "Not meaningful" here means, that `apt-get update` exits `0`, even if it failed. This makes it hard to figure out in scripts if `apt-get update` actually succeeded loading repository metadata or failed.
+
+The threat model here is using multiple repositories. Such as Debian's main repository as well as Debian's security repository. For consistent and secure builds, both have to be enabled. Now, an adversary could make fetching the Debian main repository succeed, but simulate a gpg or network failure for the Debian security repository. Then the build would go on only with the Debian main repository, without the Debian security repository.
+
+In other words... Here is a practical example...
+
+Consider the following sources.list which is fine.
+
+<pre>
+deb http://security.debian.org wheezy/updates main contrib non-free
+deb http://ftp.us.debian.org/debian wheezy main contrib non-free
+</pre>
+
+Consider the following sources.list which is fine which contains an intentional typo for demonstration purposes.
+
+<pre>
+deb http://not-security.debian.org wheezy/updates main contrib non-free
+deb http://ftp.us.debian.org/debian wheezy main contrib non-free
+</pre>
+
+Now, when you run...
+
+<pre>
+sudo apt-get update ; echo $?
+</pre>
+
+The output shows.
+
+<pre>
+Err http://not-security.debian.org wheezy/updates Release.gpg                                                                                                                      
+  Could not resolve 'not-security.debian.org'
+Hit http://ftp.us.debian.org wheezy Release.gpg                                                                                                                                    
+...
+W: Failed to fetch http://not-security.debian.org/dists/wheezy/updates/Release.gpg  Could not resolve 'not-security.debian.org'
+
+W: Some index files failed to download. They have been ignored, or old ones used instead.
+0
+</pre>
+
+Security repository was excluded. That's an attack an adversary can mount or it can happen for other reasons also. The bad thing here is, apt-get exited `0`. Therefore hard to detect these situations in scripts. (Bugs are reported upstream - see ticket description - could take a very long time until fixed upstream.)
+
+The way this was solved in {{project name}} 10 is by using a wrapper. [https://github.com/{{project_name_short}}/whonixcheck/blob/master/usr/lib/apt-get-wrapper /usr/lib/apt-get-wrapper], that parses `apt-get update`'s output. Awful hack, but the real fix would require fixing apt-get upstream at Debian.
+
+= Simplified Assisted Updates =
+== One click upgrade button for Debian packages ==
+This is a very difficult problem. Unspecific to {{project_name}}. Applies to any apt-get based distribution.
+
+Automation is very difficult due to issues introduced at a higher level (Debian and The Tor Project).
+
+apt-get is not good at conflict resolution with config files (the user may have installed arbitrary packages, changed their configs and then upstream may have updated the config file. dpkg will ask if the user wants to take the new or the old config file. I.e. apt-get is showing an [[{{project name short}}_Configuration_Files#dpkg_interactive_conflict_resolution_dialog|dpkg interactive conflict resolution dialog]]. See also [[{{project name short}}_Configuration_Files|{{project_name}} Configuration Files]].
+
+Also other things can go wrong, such as problems with gpg verification, package lists, which are no longer {{Code2|valid-until}}<ref>http://blog.ganneff.de/blog/2008/09/23/valid-until-field-in-release-f.html</ref>, general brokenness due to aborts during last action and so forth. Others dedicated projects have failed at simplification of apt-get, such as synaptic, apper<ref>Bugs such as apper recommends restarting while apt-get (command line) is still working.</ref>, packagekit and software center. All failed at implementing this for everyone in all cases. When separate projects failed as a higher level (Linux distributions aren't user friendly themselves in the first place), there is nothing that be could fixed in {{project name}} at a lower level.
+
+See also these related [[#apt-get upstream bugs]], which would make it harder to implement a script automating this. See also this [https://phabricator.whonix.org/T135 issue with packages that lack full security support, even though those are in Debian stable repository].
+
+See also [[Security_Guide#Updates|Security Guide about Updates]] for yet more complexity that needs to be covered, that we're currently only documenting (unsigned packages, restart required).
+
+See the following ticket, where it has been discussed at length, why an automated, one or zero click update utility cannot be securely and easily implemented by "just writing some utility".
+
+(Not {{project name}} specific, even though discussed at {{project name}} tracker...!)
+
+[https://phabricator.whonix.org/T373#5867 Qubes templates: graphical updater (Apper) broken]
+
+This issue has been confirmed by Qubes lead developer Marek Marczykowski-Górecki. <ref>
+<blockquote>
+Everybody who has been following Qubes development in the recent years know Marek very well, I'm sure, and realize he has been the lead developer of Qubes OS for a while now.
+</blockquote>
+</ref> <ref>
+https://groups.google.com/d/msg/qubes-users/W7B7vgzhL5s/GGVMSKYnLAAJ
+</ref>
+
+* On major upgrades we need apt-get autoremove.
+
+= Automatic Updates =
+== Security ==
+Due to apt security bug [[CVE-2016-1252]] it was better to [[Stay Tuned]] and manually rather than automatically upgrading. <ref>
+During apt-get upgrading signature verification can be tricked resulting in arbitrary package installation, system compromise.
+
+sources:
+
+* https://security-tracker.debian.org/tracker/CVE-2016-1252
+* https://www.debian.org/security/2016/dsa-3733
+* https://bugs.launchpad.net/ubuntu/+source/apt/+bug/1647467
+* https://lists.debian.org/debian-security-announce/2016/msg00316.html
+* https://forums.whonix.org/t/apt-get-upgrading-security-issue-cve-2016-1252
+</ref>
+
+== Unattended upgrades in background for Debian packages ==
+Reasons for Automatic Updates:
+
+* Better usability.
+
+Reasons against Automatic Updates:
+
+* [[#Security]]
+* Apparently mysterious <ref name=mysterious>to those who don't know that automatic updates are enabled by default; would result in questions such as this: [[Special:AWCforum/st/id178/Weird_traffic_display_in_arm.html]]</ref> system load.
+* Apparently mysterious <ref name=mysterious /> network load.
+* Some people may be on different kinds of internet connections. Sometimes they may use a connection with unlimited quota and want to postpone updating.
+* If Debian's update mechanism ever gets compromised <ref>If a malicious package was uploaded to Debian's APT repository or if there was a critical bug in apt-get.</ref>, then it would make sense for users to read [[whonixcheck|{{project_name}} News]] before manually updating.
+* [https://trac.torproject.org/projects/tor/wiki/doc/TorBOX/Dev/ArchivedDiscussion/SECURITY#SECURITYAutomaticUpdatesREJECTED Old discussion]
+* If the user is using Debian a host operating system or connecting to the same mirror,
+[[DoNot#Do_not_connect_to_any_server_anonymously_and_non-anonymously_at_the_same_time.21]] applies. (Since using stream isolation, in worst case, as far as I can see, the server only knows what packages you wanted to download, if that happens.)
+* When the apt-get is already updating in background and the user starts it manually the user will see the following error message. This is happening in Qubes Debian and [[{{q_project_name_short}}|{{q_project_name}}]] templates. apt-get would need to give better feedback to the user or abort the background process and start the foreground process.
+
+<pre>
+sudo apt-get update
+Reading package lists... Done
+E: Could not get lock /var/lib/apt/lists/lock - open (11: Resource temporarily unavailable)
+E: Unable to lock directory /var/lib/apt/lists/
+</pre>
+
+Needs Research:
+
+* What happens when a stale mirror is detected? Will the user be informed?
+* Stale mirror attack not of concern, since exit relays change anyway?
+* Are times when "apt-get update" is run randomized to prevent a clear network fingerprint? If not, this needs a custom implementation/diverting some scripts.
+* Are times when "apt-get dist-upgrade" is run randomized to prevent a clear network fingerprint? If not, this needs a custom implementation/diverting some scripts.
+* What are the reasons why distributions such as Debian/Ubuntu/Qubes OS are not using automatic updates by default?
+
+Non-issues:
+
+* The Tor Project did not ask us, not to download updates over Tor, see FAQ: [[FAQ#You_should_not_waste_the_Tor_network.27s_bandwith_by_downloading_operating_system_updates_over_Tor.21|You should not waste the Tor network's bandwith by downloading operating system updates over Tor!]]
+
+Forum discussion:
+
+* in old forum https://sourceforge.net/p/whonix/discussion/general/thread/2753b89c/
+
+== Auto Upgrading Tor Browser ==
+<s>For the Tor Browser version check is unreliable. Sometimes upstream messed up versions, uploads faulty version files or changes the version format. There is reliable no way for a machine<ref>script</ref> to determine if a new version has been released. <ref>[https://trac.torproject.org/projects/tor/ticket/13065 counter downgrade / stale mirror attacks on RecommendedTBBVersions - sign / verify tbb versions file]</ref> <ref>[https://trac.torproject.org/projects/tor/ticket/14386 better support for TBB / TPO software downloaders]</ref></s>
+
+<s>And due to other issues (not passing the <code>TUF (The Update Framework)</code>'s<ref>https://www.updateframework.com/</ref> <ref>https://github.com/theupdateframework/tuf</ref> threat model [<code>TUF: Attacks and Weaknesses</code>]<ref name=tufaaw>https://github.com/theupdateframework/tuf/blob/develop/SECURITY.md http://www.webcitation.org/6F7Io2ncN</ref>), the torbrowser downloader ([https://github.com/{{project_name_short}}/tb-updater tb-updater]) shouldn't blindly trust what the version check claims is the most recent version. Therefore the user still has to check if it is sane. Could be very well a downgrade attack at some point.</s>
+
+This issue has now been solved by upstream. See: <br />
+[[Tor_Browser#Update_Tor_Browser]]
+
+= Update Notifier / GUI Updater =
+== Rejects ideas ==
+=== apper (kde) package ===
+<s>whonixcheck runs ''apt-get update''. Checks if there are updates with ''/usr/lib/update-notifier/apt-check''. If there are updates, it opens ''apper --updates'', if installed. (Otherwise notifies about updates only in whonixcheck result.)</s>
+
+Apper is user friendly since there is only one big update button and does also honor proxy settings in ''/etc/apt/apt.conf'' which are required for Tor stream isolation.
+
+Automatic update check has been disabled in ''/etc/apt/apt.conf.d/10periodic'' because the execution time would be too predictable. Whonixcheck runs at startup (non-predictable) and every day at a random time.
+
+Apper / Synaptic subject for removal for {{project name}} 8, see:
+https://github.com/{{project_name_short}}/{{project_name_short}}/issues/104
+
+Too many bugs, too confusing:
+
+* [[Special:AWCforum/st/id166/Gateway_update_errors.html]]
+* [[Special:AWCforum/st/id42/You_have_194_updates_(can't_be_a....html]]
+
+=== update-notifier (gnome) package ===
+
+Overall ui is very good. Asks a confusing question to update "safely" and not removing packages. After updating "safely" it still reports updates. Open question: how to provide update-notifer in several languages? Would be all gnome language packages needed?
+
+Would have to configure it with something like "gconftool-2 --config-source xml:readwrite:/etc/gconf/gconf.xml.mandatory". Would have to
+
+<pre>cp /etc/xdg/autostart/update-notifier.desktop /etc/xdg/autostart/update.desktop</pre>
+
+And remove shownotin kde from /etc/xdg/autostart/update.desktop.
+
+=== update-notifier-kde package ===
+Is confusing. It shows how many updates are available, but it has only one button "later".
+
+= Conclusion =
+As long there are no tools which can handle always all cases for all users, it is the best of the worse choices to teach users how to update using the CLI tools. Those always work reliably.
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Design]] [[Category:Development]]
