@@ -1,0 +1,220 @@
+{{Header}}
+{{Title|
+title=Install {{kicksecure}} inside a folder (chroot)
+}}
+{{#seo:
+|description=You can install {{kicksecure}} on top of your existing Debian (based) Linux installation inside a chroot (change root).
+}}
+
+{{kicksecure disclaimer}}
+
+You can install [[Kicksecure|{{kicksecure}}]] on top of your existing Debian (based) Linux installation inside a [[chroot]].
+
+__TOC__
+
+= chroot Creation =
+== Qubes Notes ==
+Only users of Qubes need to consider these notes in this chapter.
+
+Users that don't use Qubes or don't know what Qubes is should skip this chapter.
+
+TODO: elaborate
+
+* nosuid / nodev can cause issues?
+* default private image size (/home folder) is too small for {{Kicksecure}} XFCE
+
+== Install Required Tools ==
+<ref>
+* <code>apt-transport-https</code> is required for some older Debian based Linux distributions that have not integrated https support into APT yet. If not available in your distribution, can be safely ignored.
+* <code>apt-transport-tor</code> is required because [https://github.com/Whonix/anon-apt-sources-list/blob/master/etc/apt/sources.list.d/debian.list /etc/apt/sources.list.d/debian.list] is using <code>tor+https</code>. Otherwise we would see the following error.
+<pre>
+I: cleaning package lists and apt cache...
+Reading package lists...
+E: The method driver /usr/lib/apt/methods/tor+https could not be found.
+E: The method driver /usr/lib/apt/methods/tor+https could not be found.
+E: The method driver /usr/lib/apt/methods/tor+https could not be found.
+E: Failed to fetch tor+https://deb.debian.org/debian-security/dists/buster/updates/InRelease  
+E: Failed to fetch tor+https://deb.debian.org/debian/dists/buster/InRelease  
+E: Failed to fetch tor+https://deb.whonix.org/dists/buster-developers/InRelease  
+E: Some index files failed to download. They have been ignored, or old ones used instead.
+E: apt-get --option Dir::Etc::SourceList=/dev/null update -oAPT::Status-Fd=<$fd> -oDpkg::Use-Pty=false failed
+</pre>
+* <code>tor</code> is required so <code>apt-transport-tor</code> can use Tor. Otherwise we would see the following error.
+<pre>
+I: cleaning package lists and apt cache...
+Err:1 tor+https://deb.debian.org/debian-security buster/updates InRelease
+  Could not connect to 127.0.0.1:9050 (127.0.0.1). - connect (111: Connection refused)
+Err:2 tor+https://deb.debian.org/debian buster InRelease
+  Unable to connect to 127.0.0.1:9050:
+Err:3 tor+https://deb.whonix.org buster-developers InRelease
+  Could not connect to 127.0.0.1:9050 (127.0.0.1). - connect (111: Connection refused)
+Reading package lists...
+W: Failed to fetch tor+https://deb.debian.org/debian-security/dists/buster/updates/InRelease  Could not connect to 127.0.0.1:9050 (127.0.0.1). - connect (111: Connection refused)
+W: Failed to fetch tor+https://deb.debian.org/debian/dists/buster/InRelease  Unable to connect to 127.0.0.1:9050:
+W: Failed to fetch tor+https://deb.whonix.org/dists/buster-developers/InRelease  Could not connect to 127.0.0.1:9050 (127.0.0.1). - connect (111: Connection refused)
+W: Some index files failed to download. They have been ignored, or old ones used instead.
+</pre>
+* Actually package <code>apt-transport-tor</code> recommends package <code>tor</code> but listing it here anyhow for those using APT with parameter <code>--no-install-recommends</code>.
+* <code>apt-transport-https</code> is suggested below to download the signing key.
+</ref>
+
+{{Install Package
+|package=mmdebstrap apt-transport-https apt-transport-tor tor curl
+}}
+
+== Add Signing Key ==
+{{Box|text=
+It is required to add the signing key on the host because <code>mmdebstrap</code> will need it.
+
+(Users of {{Project name}} and {{kicksecure}} could skip this step since the signing key is there by default.)
+
+Key could be removed at the end. (Except {{Project name}} and {{kicksecure}} should not do this unless they upgrade from source code.)
+
+{{W-APT-Repository-Key-Download}}
+}}
+
+== Set Variables ==
+File <code>/etc/hostname</code> must exist. <ref>
+Fixed in <code>mmdebstrap</code> <code>0.5.0</code>. Quote [https://gitlab.mister-muffin.de/josch/mmdebstrap/blob/master/CHANGELOG.md changelog]:
+<blockquote>
+do not copy /etc/resolv.conf or /etc/hostname if the host system doesn't have them
+</blockquote>
+Therefore no longer required in Debian <code>bullseye</code>.
+</ref>
+
+{{CodeSelect|code=
+sudo touch /etc/hostname
+}}
+
+== Set Variables ==
+Note: You could also replace <code>kicksecure-xfce</code> with <code>kicksecure-cli</code>.
+
+{{CodeSelect|code=
+package=kicksecure-xfce
+repo=buster-developers
+path_to_chroot=~/kicksecure-xfce-chroot
+path_to_temp_sources_list=~/temp-sources.list
+}}
+
+== APT Sources List ==
+Create temporary APT sources list for <code>mmdebstrap</code>.
+
+{{CodeSelect|code=
+echo "
+deb https://deb.debian.org/debian-security/ buster/updates main contrib non-free
+deb https://deb.debian.org/debian buster main contrib non-free
+deb https://deb.whonix.org $repo main contrib non-free
+" > "$path_to_temp_sources_list"
+}}
+
+== APT Cache ==
+Optional. If you are interested, please press Expand on the right side.
+
+<div class="toccolours mw-collapsible mw-collapsed">
+<div class="mw-collapsible-content">
+This shouldn't be done unless you are behind a firewall since apt-cacher-ng will by default listen on all network interfaces.
+
+{{Install Package
+|package=apt-cacher-ng
+}}
+
+{{CodeSelect|code=
+apt_cacher_ng_maybe="\
+--aptopt='Acquire::http { Proxy "http://127.0.0.1:3142"; }' \
+--aptopt='Acquire::https { Proxy "http://127.0.0.1:3142"; }' \
+--aptopt='Acquire::tor { Proxy "http://127.0.0.1:3142"; }' \
+"
+}}
+
+{{CodeSelect|code=
+echo "
+deb http://HTTPS///deb.debian.org/debian-security/ buster/updates main contrib non-free
+deb http://HTTPS///deb.debian.org/debian buster main contrib non-free
+deb http://HTTPS///deb.whonix.org $repo main contrib non-free
+" > "$path_to_temp_sources_list"
+}}
+</div>
+</div>
+
+== Run mmdebstrap ==
+Run <code>mmdebstrap</code>. <ref>
+<code>debootstrap</code> cannot be used since it is a single-mirror Debian chroot creation tool. I.e. it cannot use multiple APT repositories at the same time. And {{Kicksecure}} APT repository does not ships no packages available from packages.debian.org. Therefore using <code>mmdebstrap</code> which is a multi-mirror Debian chroot creation. If you cannot use <code>mmdebstrap</code> either (cross platform builds?), you could first create a Debian chroot using <code>debootstrap</code> (or anything) and then install a {{Kicksecure}} meta package manually inside the chroot.
+</ref>
+
+{{CodeSelect|code=
+sudo \
+SECURITY_MISC_INSTALL=force \
+WHONIX_APT_REPOSITORY_OPTS="--enable --codename $repo" \
+anon_shared_inst_tb=open \
+mmdebstrap \
+--verbose \
+--variant=required \
+--include $package \
+$apt_cacher_ng_maybe \
+buster \
+"$path_to_chroot" \
+"$path_to_temp_sources_list"
+}}
+
+== Chroot Post Processing ==
+Delete the chroot's temporary <code>/etc/apt/sources.list</code>. <ref>
+During chroot build process the following files were already created.
+
+* <code>/etc/apt/sources.list.d/debian.list</code>
+* <code>/etc/apt/sources.list.d/whonix.list</code>
+</ref>
+
+{{CodeSelect|code=
+sudo rm "$path_to_chroot/etc/apt/sources.list"
+}}
+
+== Host Cleanup ==
+Optional: You can delete the signing key from the host.
+
+{{CodeSelect|code=
+sudo rm /etc/apt/trusted.gpg.d/whonix.gpg
+}}
+
+= Usage =
+=== Simple Classic Chroot Method ===
+{{CodeSelect|code=
+sudo chroot ~/kicksecure-xfce-chroot bash
+}}
+
+== systemd-nspawn Method ==
+=== systemd-nspawn Simple Chroot ===
+{{CodeSelect|code=
+sudo systemd-nspawn -D ~/kicksecure-xfce-chroot
+}}
+
+=== systemd-nspawn Boot Chroot CLI Only ===
+{{CodeSelect|code=
+sudo systemd-nspawn -D ~/kicksecure-xfce-chroot /bin/init
+}}
+
+=== systemd-nspawn Boot Chroot with GUI Support ===
+This is unfinished. Unspecific to {{Kicksecure}}. Could be resolved as per [[Free Support Principle]].
+
+{{CodeSelect|code=
+xhost +local:
+}}
+
+{{CodeSelect|code=
+sudo systemd-nspawn --setenv=DISPLAY=$DISPLAY -D ~/kicksecure-xfce-chroot /bin/init
+}}
+
+=== Exit systemd-nspawn Chroot ===
+{{systemd-nspawn-exit}}
+
+=== Limitations of systemd-nspawn based Chroot ===
+Despite these limitations, <code>systemd-nspawn</code> should probably preferred over classic <code>chroot</code>. Depends on what you are trying to accomplish.
+
+* [[sdwdate]] (and [[Boot Clock Randomization]]) cannot work inside <code>systemd-nspawn</code>.
+* Tor will fail to start inside <code>systemd-nspawn</code> <code>chroot</code> if Tor is already running on the host in default config (local listen post <code>9050</code>). But that shouldn't matter. The <code>systemd-nspawn</code> <code>chroot</code> will use the host's Tor in this case. <code>systemd-nspawn</code> has also option to run private networking but these have not been researched for {{Kicksecure}} yet.
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
