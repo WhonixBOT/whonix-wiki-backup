@@ -1,0 +1,606 @@
+{{Header}}
+{{#seo:
+|description=Anonymously host any server with {{project name}} and Tor onion services
+|image=https://www.whonix.org/w/images/1/12/Fly-agaric808110640.jpg
+}}
+<blockquote>Tor makes it possible for users to hide their locations while offering various kinds of services, such as web publishing or an instant messaging server. [...] other Tor users can connect to these onion services, formerly known as hidden services, each without knowing the other's network identity.</blockquote>
+= Tor Onion Services - EASY =
+== Introduction ==
+Be sure to read and understand [https://www.torproject.org/docs/hidden-services.html.en Tor: Onion Service Protocol] (general information) and [https://www.torproject.org/docs/tor-onion-service Configuring Onion Services for Tor] (standard setup, no isolated proxy) first. Note that onion services are always only reachable using Tor or tunnel services, such as tor2web, ([https://trac.torproject.org/projects/tor/wiki/doc/tor2web be careful]). Also review Riseup's [https://riseup.net/en/security/network-security/tor/onionservices-best-practices Tor Hidden (Onion) Services Best Practices guide].
+
+You do not need SSL <ref>https://en.wikipedia.org/wiki/Secure_Sockets_Layer</ref>, because connections to Tor onion services are end-to-end encrypted by default. <ref>To be exact, only tor-to-tor, see [[Onion_Services#Notes_about_End-to-end_security_of_Onion_Services|Notes about End-to-end security of Onion Services]].</ref><ref>http://www.quora.com/Is-there-an-SSL-equivalent-for-Tor-Hidden-Services</ref> This is handy, as you do not have to bother with self signed certificates or certificate authorities.
+
+Another interesting property is they can serve as a drop-in Global Server Load Balancing and Layer 3 DDoS-resistance solution.<ref>https://archive.is/Aaqsz</ref> This raises the bar to withstanding attacks that the entire Tor network can tolerate. Same with [[I2P|I2P Eepsties]]. Tor can be also considered a very simple to configure encrypted transport alternative to IPSec.<ref>https://lists.torproject.org/pipermail/tor-talk/2016-October/042360.html
+</ref>
+
+An adversary can see whether the service (and presumably Tor) is up and running or not.
+
+Even if someone hacks your hidden server software (<code>micro-httpd</code>, <code>nginx</code>, <code>apache</code>, etc.), the attacker can not steal your onion service key or bypass Tor, see [[Comparison with Others#Attacks|Attack on {{project_name}}]]. The key is stored on the {{gateway_product_name}}. Once you cleaned your {{workstation_product_name}}, no one can impersonate your onion service anymore.
+
+For alternatives to onion services, see [[Hosting_Location_Hidden_Services|Hosting Location Hidden Services]].
+
+== Web Server Software Recommendations ==
+* Avoid the <code>Apache</code> web server. It has much more functionality, leak potential and attack surface than smaller and lighter alternatives.
+** If you are using the Apache web server, see the following footnotes. <ref>
+It is advised to install [https://packages.debian.org/{{Stable {{project name short}} based on Debian codename}}/libapache2-mod-removeip libapache2-mod-removeip].
+
+{{Install_Package|package=
+libapache2-mod-removeip
+}}
+</ref> <ref>
+(Source: [http://sourceforge.net/p/whonix/discussion/general/thread/407fce8f/?limit=25#478a old forum])
+
+Stop Apache.
+
+In {{Code|ports.conf}}:
+
+<pre>
+NameVirtualHost 127.0.0.1:80
+Listen 127.0.0.1:80
+ServerName localhost
+</pre>
+
+In {{Code|sites-available/default}}:
+<pre>
+</pre>
+
+Start Apache.
+
+Now Apache is not listening on {{Code|10.152.152.10}}, but only on {{Code|127.0.0.1}}. So now we somehow need to redirect {{Code|10.152.152.10:80}} to {{Code|127.0.0.1:80}}.
+
+It can be done with a firewall rule or netcat:
+
+{{CodeSelect|code=
+sudo ncat -l 10.152.152.10 80 -c 'ncat 127.0.0.1 80'
+}}
+</ref>
+
+* If your needs are limited to hosting static pages then look no further than <code>micro-httpd</code> available from Debian repos. It is a bare-bones daemon made up of 150 lines of code.<ref>https://wiki.debian.org/WebServers</ref>
+
+* The <code>Nginx</code> web server is a recommended alternative.
+
+== Security Recommendations ==
+* '''Credits''': Some of these instructions are paraphrased from Sarah Jamie Lewis' write-up after running OnionScan<ref>
+https://mascherari.press/why-onionscan-should-worry-you/</ref> on the Onion web. All credit goes to her.<ref>
+https://mascherari.press/thwarting-identity-correlation-attacks/
+</ref> OnionScan<ref>
+https://github.com/s-rah/onionscan
+</ref> is an open source pen-testing suite that exposes misconfiguration errors that expose Hidden Servers. '''Do''' run it before your service goes live. 
+
+* '''Application Level Leaks''': Beware of application level leaks. See [[Protocol-Leak-Protection and Fingerprinting-Protection]] for definition.
+
+* '''Hide IP''': IP hiding instructions for your specific server software should be applied.
+** This is because a combination of a webserver that forwards IP addresses to web apps such as for example mediawiki would be a discouraged case, since mediawiki by default puts IPs of anonymous editors in the public accessible editor logs. The IP would be 10.152.152.10. That could not be used to identify you, because that is not your real external IP address, but it would identify the server as an onion service behind a {{gateway_product_name}}.<ref>
+Since it is easy to know that the internal LAN IP 10.152.152.10 is usually used by {{gateway_product_name}}.
+</ref>
+
+* '''Server Software Hardening''': If any instructions for hardening the server instructions are available it is recommended to apply them. While using {{project name}} we're quite confident that there are no IP/DNS leaks, but hardening the server software is still recommended but the responsibility of the user.
+
+* '''General Hardening''': In the [[Security Guide]] and in the [[Advanced Security Guide]] you'll find pointers for hardening.
+
+* '''Mitigate DoS attacks''': Its good practice to setup access to your site through reverse proxies to mitigate layer 7 DoS attacks and information leaks about your setup.
+
+* '''Disable Banner'''s: For SSH, FTP, SMTP and HTTP servers which leak info about the a daemon's name and version. If your SSH instance is for private use, use it with an Authenticated Onion Service to protect your server from brute-force and remote exploitation.
+
+* '''Dedicated Onion Address''': Each service you host should get its own dedicated onion address to prevent correlation between multiple instances running in the same VM.
+
+* '''ALPaCA''': An advanced website fingerprinting client/server mitigation named ALPaCA in development that applies server-side padding to requests sent out to Tor Browser. Once ts ready, service operators can run it to protect against this class of correlation attacks.<ref>
+https://github.com/camelids/
+</ref><ref>
+[https://petsymposium.org/2017/papers/issue2/paper54-2017-2-source.pdf Website Fingerprinting Defenses at the Application Layer]
+</ref><ref>
+https://www.esat.kuleuven.be/cosic/?p=6743
+</ref>
+
+* '''vanguards''': protects against guard discovery and related traffic analysis attacks. Soon installed by default in {{project name}}. See [[Vanguards]].
+
+* '''onionbalance''': [https://onionbalance.readthedocs.org onionbalance] can help to prevent de-anonymization of an onion service by protecting it from becoming unavailable through denial of service attacks (DDOS). onionbalance is mentioned in [https://github.com/mikeperry-tor/vanguards/blob/master/README_SECURITY.md security readme] by vanguards author Tor developer Mike Perry on attacks against onion services and defenses. [https://onionbalance.readthedocs.org onionbalance] now available for onion v3 services <ref>
+* https://github.com/DonnchaC/onionbalance/issues/69#issuecomment-58108608
+* https://lists.torproject.org/pipermail/tor-dev/2020-January/014142.html Tor development mailing list - Request for onionbalance v3 pre-alpha testing]
+</ref>, see https://blog.torproject.org/cooking-onions-reclaiming-onionbalance
+
+== Hidden Webserver ==
+==== {{gateway_product_name}} ====
+On your {{gateway_product_name}}:
+
+====== Step 1: open Tor config ======
+On your {{gateway_product_name}}.
+
+{{Open_/usr/local/etc/torrc.d/50_user.conf}}
+
+====== Step 2: edit Tor config ======
+{{Box|text=
+On your {{gateway_product_name}}.
+
+(all {{project name}} platforms)
+
+You need to add two settings to <code>/usr/local/etc/torrc.d/50_user.conf</code>.
+
+* A <code>HiddenServiceDir</code> configuration directive declaring where onion services files (hostname file and private key file) should be stored.
+* A <code>HiddenServicePort</code> configuration directive declaring,
+** the virtual port and
+** the IP and port of the {{workstation_product_name}} that will run a server service that processing incoming onion service connections.
+* <code>HiddenServiceVersion</code> configuration directive declaring which onion service versino to use (<code>2</code> or <code>3</code>).
+}}
+
+{{Box|text=
+On your {{gateway_product_name}}.
+
+To do that, add the following three lines.
+
+{{Box|text=
+[[{{q_project_name_short}}|{{q_project_name}}]]: 
+
+{{IP-of-q-ws-AppVM}}
+
+Make sure to replace <code>IP-of-q-ws-AppVM</code> with the actual IP address of your {{workstation_product_name}}.
+
+{{CodeSelect|code=
+HiddenServiceDir /var/lib/tor/hidden_service/
+HiddenServicePort 80 IP-of-q-ws-AppVM:80
+HiddenServiceVersion 3
+}}
+}}
+
+{{Box|text=
+[[{{non q project name short}}|{{non q project name}}]]:
+
+{{CodeSelect|code=
+HiddenServiceDir /var/lib/tor/hidden_service/
+HiddenServicePort 80 10.152.152.11:80
+HiddenServiceVersion 3
+}}
+}}
+}}
+
+{{Box|text=
+(all {{project name}} platforms) 
+
+Save.
+}}
+
+====== Step 3: Configure Onion Services Authentication ======
+{{Anchor|Configure Onion Services Authentication}}
+{{Box|text=
+'''Optional''': authenticated onion services.
+
+<u>Onion services authentication is only possible for private onion services</u> with a limited number of visitors. This is impossible for a public onion service. <u>For a public onion service you should skip this step.</u> Each visitor needs to be provided with a key file. This chapter describes the server side. The client side is described below in chapter [[#Onion Service Authentication Client Setup|Onion Service Authentication Client Setup]].
+
+With v3 onions addresses it is no longer possible for adversaries to learn about the existence of v3 onion addresses if these are not published. This was different previously with v2 onion addresses. Therefore, what is the purpose of onion services authentication for v3 onions?
+
+Onions services authentication for v3 onions exist to eliminate the side risks where the onion address is accidentally leaked. This could be for example due to human error, a bug in the software using the onion address or other yet unknown possibilities. By using onions services authentication the onion service could not be accessed even if the onion address was leaked.
+
+Quote: <ref>
+The purpose of Onion Services Authentication has been [https://lists.torproject.org/pipermail/tor-dev/2019-December/014105.html asked about on the Tor Talk Mailing List]. Answers:
+
+* https://lists.torproject.org/pipermail/tor-dev/2019-December/014106.html
+* https://lists.torproject.org/pipermail/tor-dev/2019-December/014107.html
+* https://forums.whonix.org/t/onion-services-authentication/975/14
+</ref>
+
+<blockquote>
+Also, if you have multiple users, having one v3 address with authentication is much better than multiple addresses, for the following reasons:
+
+* easier management
+* easier to configure and easier to maintain the application behind it (web server or whatever it is)
+* less resources needed by the Tor daemon
+* less load on your guard(s) / bridge(s), thus more capacity and better experience for your clients / visitors (if you have multiple addresses you need to maintain active introduction point circuits for all of them, publish descriptors, etc.)
+</blockquote>
+
+These instructions are based on [https://tor.stackexchange.com/questions/19221/how-to-setup-client-authorization-for-v3-onion-services this]. <ref>
+But modified since instructions did not create files <code>1.auth_private</code>, <code>1.auth</code> for the user and only echoed these two the shell which most users would not know what to do with.
+</ref> These instruction can be quite difficult but this is not specific to {{Project name}}. These instructions are quite difficult anywhere. [[About#Based_on_Debian|Whonix is based on Debian]] and [[Free_Support_Principle|Free Support Principle]]. <ref>
+The only {{Project name}} specific thing below is <code>str_replace</code>, which is only available in {{Project name}}. A tool which makes string search and replace easier.
+</ref>
+
+On your {{gateway_product_name}}.
+
+Install <code>basez</code>.
+
+{{Install Package|package=
+basez
+}}
+
+Create temporary private key.
+
+{{CodeSelect|code=
+openssl genpkey -algorithm x25519 -out private-key.pem
+}}
+
+Create temporary public key.
+
+{{CodeSelect|code=
+openssl pkey -in private-key.pem -pubout -outform PEM -out public-key.pem
+}}
+
+Create temporary file.
+
+{{CodeSelect|code=
+cat private-key.pem {{!}} \
+    grep -v " PRIVATE KEY" {{!}} \
+    basez --base64pem --decode {{!}} \
+    tail --bytes 32 {{!}} \
+    basez --base32 {{!}} \
+    tr -d '=' > temp1
+}}
+
+Steps towards <code>1.auth_private</code>.
+
+Set file path variable. Modify the path below in case above you did not use what we use as defaults in these instructions <code>HiddenServiceDir /var/lib/tor/hidden_service/</code>. Otherwise if you used exactly as above, no change required. If you changed, you might want to change <code>hidden_service</code> to something else below.
+
+{{CodeSelect|code=
+file_name="/var/lib/tor/hidden_service/hostname"
+}}
+
+Set onion hostname variable.
+
+{{CodeSelect|code=
+hostname="$(sudo cat "$file_name")"
+}}
+
+View your onion hostname.
+
+{{CodeSelect|code=
+echo "$hostname"
+}}
+
+Should show something similar.
+
+<pre>
+bvwxablxzabj4yudgzgooeg55sys2c3li7w5hhnongdm2p62l7hfnvid.onion
+</pre>
+
+Create variable <code>onionname</code> without appendix <code>.onion</code>.
+
+{{CodeSelect|code=
+onionname="$(echo "$hostname" {{!}} str_replace .onion "")"
+}}
+
+View your onion name.
+
+{{CodeSelect|code=
+echo "$onionname"
+}}
+
+Should show something similar.
+
+<pre>
+bvwxablxzabj4yudgzgooeg55sys2c3li7w5hhnongdm2p62l7hfnvid
+</pre>
+
+Create final <code>1.auth_private</code>.
+
+{{CodeSelect|code=
+echo -n "$onionname:descriptor:x25519:" {{!}} \
+    cat - temp1 > 1.auth_private
+}}
+
+Steps towards <code>1.auth</code>.
+
+{{CodeSelect|code=
+cat public-key.pem {{!}} \
+    grep -v " PUBLIC KEY" {{!}} \
+    basez --base64pem --decode {{!}} \
+    tail --bytes 32 {{!}} \
+    basez --base32 {{!}} \
+    tr -d '=' > temp2
+}}
+
+Create final <code>1.auth</code>.
+
+{{CodeSelect|code=
+echo -n "descriptor:x25519:" {{!}} cat - temp2 > 1.auth
+}}
+
+Now we have two files.
+
+* <code>1.auth</code> which belongs to onion server in folder <code>/var/lib/tor/hidden_service/authorized_clients/</code>.
+* <code>1.auth_private</code> which visitors need to be provided with.
+
+It is of course possible to use different file names.
+
+Create folder <code>/var/lib/tor/hidden_service/authorized_clients/</code>.
+
+{{CodeSelect|code=
+sudo mkdir -p /var/lib/tor/hidden_service/authorized_clients/
+}}
+
+Copy <code>1.auth</code> to folder <code>/var/lib/tor/hidden_service/authorized_clients/</code>.
+
+{{CodeSelect|code=
+sudo cp 1.auth /var/lib/tor/hidden_service/authorized_clients/
+}}
+
+Fix owner permissions.
+
+{{CodeSelect|code=
+sudo chown --recursive debian-tor:debian-tor /var/lib/tor/hidden_service
+}}
+}}
+
+====== Step 4: Denial of Service Mitigation Options ======
+Documentation for Denial of Service Mitigation Options is incomplete. Contributions are happily considered! 
+
+Requires Tor 0.4.25 and above. See https://forums.whonix.org/t/tor-0-4-25-release-how-can-we-upgrade/8614
+
+See Tor manual. https://2019.www.torproject.org/docs/tor-manual.html.en Search for <code>DENIAL OF SERVICE MITIGATION OPTIONS</code>.
+
+Nothing {{Project name}} specific regarding installation from source. As per:
+
+* [[Free_Support_Principle|Free Support Principle]]
+* [[About#Based_on_Debian|Based on Debian]]
+
+See also:
+https://forums.whonix.org/t/onion-services-ddos-defense-tor-0-4-2-5/8644
+
+====== Step 5: make changes to Tor config take effect ======
+On your {{gateway_product_name}}.
+
+{{Reload Tor}}
+
+====== Step 6: get your onion hostname ======
+On your {{gateway_product_name}}.
+
+To get your Tor onion service url.
+
+{{CodeSelect|code=
+sudo cat /var/lib/tor/hidden_service/hostname
+}}
+
+====== Step 7: backup your Tor onion service private key ======
+On your {{gateway_product_name}}.
+
+{{
+Backups_Tor_Onion_Service_private_key
+|private_key_file=/var/lib/tor/hidden_service/hs_ed25519_secret_key
+|file_name=hs_ed25519_secret_key
+}}
+
+==== {{workstation_product_name}} ====
+On your {{workstation_product_name}}:
+===== Step 1: Install Server Software =====
+On your {{workstation_product_name}}.
+
+Either,
+
+'''A)''' Run the following commands to install micro-httpd. <u>OR</u>
+
+{{Install_Package|package=
+micro-httpd
+}}
+
+'''B)''' Run the following commands to install nginx.
+
+{{Install_Package|package=
+nginx
+}}
+
+===== Step 2: Open {{workstation_product_name}} Firewall Port =====
+On your {{workstation_product_name}}.
+
+{{Firewall Settings Workstation}}
+
+Add.
+
+{{CodeSelect|code=
+EXTERNAL_OPEN_PORTS+=" 80 "
+}}
+
+Save.
+
+{{Reload_Firewall_ws}}
+
+===== Step 3: Final Notes =====
+Done.
+
+<u>Note</u>, that it may take up to 30 minutes (or so?) until a fresh .onion domain gets reachable.
+
+<u>Note</u>, accessing 127.0.0.1 {{Tor_Browser_Local_Connections}}.
+
+=== Debugging ===
+On {{gateway_product_name}}.
+
+Check permissions.
+
+{{CodeSelect|code=
+sudo ls -la /var/lib/tor/hidden_service/
+}}
+
+In case you manually restored your hidden_service keys as root, Tor will fail to start. The folder must be owned by debian-tor. In that case, fix the permissions.
+
+{{CodeSelect|code=
+sudo chown debian-tor:debian-tor /var/lib/tor/hidden_service/
+}}
+
+In {{workstation_product_name}}. 
+
+Check if the service is available on 127.0.0.1:80.
+
+{{CodeSelect|code=
+## Circumventing {{project name}} curl stream isolation wrapper.
+{{Curl_Plain}} 127.0.0.1:80
+}}
+
+[[{{q_project_name_short}}|{{q_project_name}}]]: In [[{{q_project_name_short}}|{{q_project_name}}]] {{workstation_product_name}}, check if the service is available on Qubes-{{workstation_product_name}} IP, port 80.
+
+{{CodeSelect|code=
+## Circumventing {{project name}} curl stream isolation wrapper.
+{{Curl_Plain}} $(qubesdb-read /qubes-ip):80
+}}
+
+[[{{non q project name short}}|{{non q project name}}]]: In {{workstation_product_name}}, check if the service is available on 10.152.152.11:80.
+
+{{CodeSelect|code=
+## Circumventing {{project name}} curl stream isolation wrapper.
+{{Curl_Plain}} 10.152.152.11:80
+}}
+
+Note: Tor Browser will allow connections to ''127.0.0.1:80'' but not to ''10.152.152.11:80''.
+
+== Tips settings up any onion service ==
+Please test the example Hidden Webserver above first. It helps understanding this in general and will ease debugging.
+
+Quoted from the Tor manual<ref>https://www.torproject.org/docs/tor-manual.html.en</ref>:
+
+<pre>HiddenServiceDir DIRECTORY
+
+Store data files for an onion service in DIRECTORY. Every onion service must have a separate
+directory. You may use this option multiple times to specify multiple services. DIRECTORY
+must be an existing directory.</pre>
+Quoted from the Tor manual<ref>https://www.torproject.org/docs/tor-manual.html.en</ref>:
+
+<pre>HiddenServicePort VIRTPORT [TARGET]
+
+Configure a virtual port VIRTPORT for an onion service. You may use this option multiple
+times; each time applies to the service using the most recent hiddenservicedir. By default,
+this option maps the virtual port to the same port on 127.0.0.1 over TCP. You may override
+the target port, address, or both by specifying a target of addr, port, or addr:port. You
+may also have multiple lines with the same VIRTPORT: when a user connects to that VIRTPORT,
+one of the TARGETs from those lines will be chosen at random.</pre>
+
+== Hidden VoIP Server ==
+On the [[VoIP]] page is an example for a Hidden VoIP Mumble Server.
+
+= Tor Onion Services - ADVANCED =
+== Onion Services Security Enhancements ==
+See:
+
+* https://blog.torproject.org/announcing-vanguards-add-onion-services
+* https://github.com/mikeperry-tor/vanguards
+* https://forums.whonix.org/t/vanguards-additional-protections-for-tor-onion-services/8064
+* https://forums.whonix.org/t/onion-service-guard-protection-hslayer2nodes-hslayer3nodes/4855
+
+== How Onion Services Connections Work ==
+{{Template:Onion_Services_Technical}}
+
+== Onion Services Security ==
+'''Not {{project name}} specific! Talking about Tor in general.'''
+
+How safe are Tor Onion Services?
+
+This is a difficult question. Therefore state relevant facts, quotes and links here.
+
+Quote Roger Dingledine, an original developer of Tor, [https://lists.torproject.org/pipermail/tor-talk/2013-March/027539.html tor-talk mailing list: How easy are Tor hidden services to locate?]:
+
+<blockquote>
+Hidden services are definitely weaker than regular Tor circuits, a)
+because the adversary can induce them to speak, and b) because they stay
+at the same place over time. Mostly 'a'.
+
+That said, there are plenty of hidden services out there, and few
+stories of people breaking their anonymity by breaking Tor. So they're
+not foolproof for sure, but they're also not trivial to deanonymize.
+
+I'll turn it around, and ask "easy compared to what?"
+</blockquote>
+
+[https://lists.torproject.org/pipermail/tor-talk/2013-March/027544.html Goes on].
+
+<blockquote>
+When you're a Tor client, you only use the Tor network when you choose
+to access it (e.g. by trying to fetch a web page). So if the attacker has
+some attack that works only a very small percentage of time, they have to
+wait for you to initiate connections.
+
+But for a hidden service, they can cause you to initiate a connection just
+by visiting the hidden service. And they can do it as often as they want.
+
+See http://freehaven.net/anonbib/#hs-attack06 for the original paper about
+this topic (and the reason we implemented entry guards).
+
+And then see http://freehaven.net/anonbib/#wpes12-cogs for a more recent
+example. The goal of that paper is to understand how long it takes in
+normal operation (with entry guards going offline and being replaced)
+before a typical user touches an adversary-controlled guard node. For
+simplicity, the paper assumes that you use your guards every minute of
+every day for however many weeks or months it takes. A realistic user
+doesn't do that, so the paper overestimates the risk. But a realistic
+hidden service *would* do that, if the adversary caused it to.
+
+--Roger
+</blockquote>
+
+* At time of writing there are no known attacks used in the wild constantly deanonymizing Tor onion services.
+* The following is outdated since [https://blog.torproject.org/tors-fall-harvest-next-generation-onion-services NextGenOnions] (<code>HiddenServiceVersion 3</code>)
+* <s>80 bit name hash and RSA-1024 sized keys</s>
+* <s>Quote Mike Perry {{Code|Tor core people}}<ref>https://www.torproject.org/about/corepeople.html.en</ref>): http://www.mail-archive.com/liberationtech@lists.stanford.edu/msg05418.html</s>
+* <s>Quote Mike Perry: http://www.mail-archive.com/liberationtech@lists.stanford.edu/msg05462.html</s>
+* <s>Also see, [https://blog.torproject.org/blog/hidden-services-need-some-love The Tor Project Blog: Onion Services need some love].</s>
+* <s>[https://conference.hitb.org/hitbsecconf2015ams/sessions/non-hidden-hidden-services-considered-harmful-attacks-and-detection Non-Hidden Onion Services Considered Harmful: Attacks and Detection] <ref>
+https://forums.whonix.org/t/cryptolog-for-whonix-website/3369/12
+</ref></s>
+
+{{Anchor|Hidden Service Authentication}}
+
+== Onion Service Authentication Client Setup ==
+Transfer <code>1.auth_private</code> from onion service provider to client.
+
+Create folder <code>/var/lib/tor/authdir</code>.
+
+{{CodeSelect|code=
+sudo mkdir -p /var/lib/tor/authdir
+}}
+
+Fix ownership permissions. <ref>
+We do this here in case the user does not follow through with all instructions to avoid Tor from refusing to start due to broken file permissions. If user follows through, this chown command could be omitted here and be done at the end.
+</ref>
+
+{{CodeSelect|code=
+sudo chown --recursive debian-tor:debian-tor /var/lib/tor/authdir
+}}
+
+{{Open /usr/local/etc/torrc.d/50_user.conf}}
+
+Paste.
+
+{{CodeSelect|code=
+ClientOnionAuthDir /var/lib/tor/authdir/
+}}
+
+Save.
+
+Copy <code>1.auth_private</code> to <code>/var/lib/tor/authdir/</code>.
+
+{{CodeSelect|code=
+sudo cp 1.auth_private /var/lib/tor/authdir/
+}}
+
+Fix ownership permissions.
+
+{{CodeSelect|code=
+sudo chown --recursive debian-tor:debian-tor /var/lib/tor/authdir
+}}
+
+{{Reload Tor}}
+
+Done.
+
+== Notes about End-to-end Security of Onion Services ==
+Hidden services are not really "end-to-end" encrypted, they encrypted only Tor to End. (or "Tor to Tor") The communication between the browser or server and Tor is sent in clear text. This doesn't really constitute a security issue, as localhost (or Workstation to Gateway on an isolated network), is supposed to be secure. But it has some security implications:
+
+With onion services alone, without TLS enabled, the adversary only needs to compromise {{gateway_product_name}} to get knowledge of the content of the connection and the clients identity/location. To compromise the content of the connection, the adversary only needs to compromise either the gateway or the workstation.
+
+With onion services, and TLS enabled, an adversary needs to compromise {{workstation_product_name}} to gain knowledge of the content of the connection. The adversary would have to compromise {{gateway_product_name}} as well, to gain knowledge of the client's identity/location.
+
+It is possible to use onion services and TLS at the same time, i.e. https://****************.onion. There are only a very few onion services reachable over TLS. For example https://pad.riseup.net/ can be reached over https://5jp7xtmox6jyoqd5.onion/. But since this only offers benefits to users of {{project name}} (and other Tor gateway implementations), there is no demand. It would provide some nice defense in depth as it eliminates a single point of failure.
+
+It would open the question, how would the certificate be verified?
+
+That's simple for private sites, where server and clients know each other. They simply verify it over preshared secure channel, for example, a meeting.
+
+And public onion services? It is unlikely, that certificate authorities will give out certificates for .onion sites. Startssl.com declined, because .onion is no .gTLD, see [https://trac.torproject.org/projects/tor/ticket/6116 Bug #6116: apply for .onion gTLD at IANA]. Although you could try asking other certificate authorities, if they offer SSL certificates for people who can prove that they own a .onion domain. You can prove, that you have control over the domain by editing its contents on their request.
+
+But CAs should not be relied on anyway. See chapter [[SSL]].
+
+Onion Services with {{project name}} are still safer than running Tor and the server software on the same host, because even when misconfigured, there can be, by design, no IP or DNS leaks.
+
+== See Also ==
+* [[Hosting_Location_Hidden_Services|Hosting Location Hidden Services]]
+* [[Onion_Services_Guides|Onion Services Guides]]
+
+= References =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
