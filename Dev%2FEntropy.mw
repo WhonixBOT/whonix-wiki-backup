@@ -1,0 +1,670 @@
+{{Header}}
+{{#seo:
+|description=Technical Design Documentation about Entropy
+|image=https://www.whonix.org/w/images/1/13/Random_entropy.png
+}}
+= Introduction =
+The [http://www.kernel.org/doc/man-pages/online/pages/man4/random.4.html Linux Kernel man page] says: "''[...] /dev/random should be suitable for uses that need very high quality randomness'' [...]".
+
+Quoted from the [https://we.riseup.net/riseup+tech/entropy riseup.net page about entropy]: "''[...] entropy-estimation is a black-art and not very well understood [...]''".
+
+While it would be good to be cautions, i.e. learning about the entropy quality in Virtual Machines and if required learning about methods to improve it, it is not a critical problem. Successful entropy estimation attacks have never been reported for any software.
+
+User space (not kernel space) entropy failures:
+
+* https://lists.debian.org/debian-security-announce/2008/msg00152.html
+* [https://research.swtch.com/openssl Lessons from the Debian/OpenSSL Fiasco]
+
+= Quality =
+As long as one entropy source of many is high quality, this foils attempts by adversaries to predict output and rescues the RNG.<ref>Peter Gutmann of secure erasure fame https://www.metzdowd.com/pipermail/cryptography/2019-September/035329.html</ref>
+
+= RDRAND =
+[https://github.com/Whonix/security-misc security-misc] (installed by default in {{project name}}) distrusts the CPU for initial entropy at boot as it is not possible to audit, may contain weaknesses or a backdoor.
+
+* sets <code>random.trust_cpu=off</code> kernel boot parameter
+* [https://web.archive.org/web/20180320163305/https://plus.google.com/+TheodoreTso/posts/SDcoemc9V3J Linux kernel developer Theodore Ts'o warning against RDRAND]
+* [https://forums.whonix.org/t/entropy-config-random-trust-cpu-yes-or-no-rng-core-default-quality/8566 entropy CONFIG_RANDOM_TRUST_CPU yes or no? / rng_core.default_quality]
+* https://en.wikipedia.org/wiki/RDRAND#Reception
+* https://twitter.com/pid_eins/status/1149649806056280069
+* https://archive.nytimes.com/www.nytimes.com/interactive/2013/09/05/us/documents-reveal-nsa-campaign-against-encryption.html
+* https://forums.whonix.org/t/entropy-config-random-trust-cpu-yes-or-no-rng-core-default-quality/8566
+* https://www.metzdowd.com/pipermail/cryptography/2014-October/023349.html
+
+= /dev/random vs. /dev/urandom =
+{{Anchor|Viewpoint: /dev/random is obsolete}}
+
+Viewpoint: "/dev/random is obsolete" has been deprecated. It's still available as a footnote. <ref>
+The following viewpoint "/dev/random is obsolete" has been deprecated.
+
+<blockquote>
+This debate comes from a misconception by the Linux manual writer.
+
+https://pthree.org/2014/07/21/the-linux-random-number-generator/
+
+The fact is both APIs use the same CSPRNG. The issue happens when the randomness pool has not been properly initialized and entropy is requested early at boot. Otherwise the blocking behavior of <code>/dev/random</code> during normal system running is an annoying bug than a useful safety feature. A well seeded pool should be able to provide sufficient/endless randomness from a single seed.
+
+https://news.ycombinator.com/item?id=11561340 Comments by tptacek
+
+https://www.2uo.de/myths-about-urandom
+
+There is no concept of entropy being used up when urandom is used unlike random that nonsensically calculates left over entropy and blocks despite a healthily initialized pool.
+
+
+https://unix.stackexchange.com/questions/94206/how-to-determine-which-processes-are-using-how-much-entropy-from-dev-urandom
+
+Therefore rate limiting virtio-rng is unnecessary when using urandom as a backend.
+
+Here is what renown cryptographer Dr. Daniel J. Bernstein has to say on the matter:
+
+http://www.mail-archive.com/cryptography@randombit.net/msg04763.html
+
+<blockquote>
+Cryptographers are certainly not responsible for this superstitious
+nonsense. Think about this for a moment: whoever wrote the /dev/random
+manual page seems to simultaneously believe that
+
+(1) we can't figure out how to deterministically expand one 256-bit
+/dev/random output into an endless stream of unpredictable keys
+(this is what we need from urandom), but
+
+(2) we _can_ figure out how to use a single key to safely encrypt
+many messages (this is what we need from SSL, PGP, etc.).
+
+For a cryptographer this doesn't even pass the laugh test.
+
+I'm not saying that /dev/urandom has a perfect API. It's disappointingly
+common for vendors to deploy devices where the randomness pool has never
+been initialized; BSD /dev/urandom catches this configuration bug by
+blocking, but Linux /dev/urandom (unlike Linux /dev/random) spews
+predictable data, causing (e.g.) the widespread RSA security failures
+documented on http://factorable.net. But fixing this configuration bug
+has nothing to do with the /dev/random superstitions.
+</blockquote>
+</blockquote>
+</ref>
+
+{{Anchor|Viewpoint: better use /dev/random}}
+Better use <code>/dev/random</code>.
+
+Here is what renown cryptographer Dr. Daniel J. Bernstein has to say on the matter. <ref>
+http://www.mail-archive.com/cryptography@randombit.net/msg04763.html
+</ref> The quote was cut to simplify things.
+
+<blockquote>
+[...] but Linux /dev/urandom ([...]) spews predictable data [...]
+</blockquote>
+
+Quote without cutting the parentheses. (<u>Underline</u> is mine. <code>code</code> is mine.)
+
+<blockquote>
+[...] but Linux <code>/dev/<u>u</u>random</code> (unlike Linux <code>/dev/random</code>) spews predictable data [...]
+</blockquote>
+
+Oversimplified interpretation:
+
+* He's saying that <code>/dev/random</code> does not spew predictable data.
+* In other words, he's saying that <code>/dev/random</code> produces random data.
+* He's saying that <code>/dev/<u>u</u>random</code> spews predictable data.
+
+Quoting whole paragraph.
+
+<blockquote>
+I'm not saying that <code>/dev/<u>u</u>random</code> has a perfect API. It's disappointingly
+common for vendors to deploy devices where the randomness pool has never
+been initialized; BSD <code>/dev/<u>u</u>random</code> catches this configuration bug by
+blocking, but Linux <code>/dev/<u>u</u>random</code> (unlike Linux <code>/dev/random</code>) spews
+predictable data, causing (e.g.) the widespread RSA security failures
+documented on http://factorable.net. But fixing this configuration bug
+has nothing to do with the <code>/dev/random</code> superstitions.
+</blockquote>
+
+Interpretation:
+
+* He's saying that <code>/dev/<u>u</u>random</code> spews predictable data if the randomness pool has never been initialized.
+
+A randomness pool that has never been initialized is an issue in many cases:
+
+* first boot
+* inside virtual machines
+* first boot inside virtual machines
+* golden images without random seeds
+* golden images coming with published, shared (among all users of the golden image) random seeds
+
+The issue of randomness pool initialization is well elaborated at [https://systemd.io/RANDOM_SEEDS/ systemd Random Seeds].
+
+Finally, I need to address what my interpretation is what he means by "superstitions". Quote:
+
+<blockquote>
+the <code>/dev/random</code> superstitions.
+</blockquote>
+
+Related paragraphs. Quote:
+
+<blockquote>
+Cryptographers are certainly not responsible for this superstitious
+nonsense. Think about this for a moment: whoever wrote the /dev/random
+manual page seems to simultaneously believe that
+
+   (1) we can't figure out how to deterministically expand one 256-bit
+       /dev/random output into an endless stream of unpredictable keys
+       (this is what we need from urandom), but
+
+   (2) we _can_ figure out how to use a single key to safely encrypt
+       many messages (this is what we need from SSL, PGP, etc.).
+
+For a cryptographer this doesn't even pass the laugh test.
+</blockquote>
+
+Interpretation: He is only talking about people who think that <code>/dev/random</code> should always be used. Should always be considered more secure. Even in cases where randomness pool initialization is done. That is superstitious and I think that is a fair argument. The problem is, that it is non-trivial to know the status of randomness pool initialization. Therefore that is a rather theoretic consideration.
+
+Quote [https://systemd.io/RANDOM_SEEDS/ systemd Random Seeds]:
+
+<blockquote>
+(Strictly speaking there are more APIs, for example <code>/dev/random</code>, but these should not be used by almost any application and hence aren’t mentioned here.)
+</blockquote>
+
+This could use some elaboration. Hence, asked, see systemd feature request: [https://github.com/systemd/systemd/issues/14199 systemd.io/RANDOM_SEEDS - elaborate on /dev/random]
+
+My conclusion is:
+
+* Prefer using <code>/dev/random</code> whenever security is important such as for key generation.
+* <code>/dev/random</code> provides higher quality assurance than <code>/dev/<u>u</u>random</code>. No conditionals.
+** <code>/dev/<u>u</u>random</code> might be OK depending on randomness pool initialization.
+** <code>/dev/random</code> is OK either way.
+* This is specifically important at early boot when it's non-obvious if randomness pool initialization is done yet.
+* How to check the status of randomness pool initialization? Non-trivial.
+* Just make sure that <code>/dev/random</code> produces enough random data which is doable nowadays thanks to these [[#Software Packages|software packages]] listed on this page.
+* <code>/dev/<u>u</u>random</code> might be providing the same level of entropy quality as <code>/dev/random</code> does, but due to the previous point, for simplicity, there is no reason to use <code>/dev/<u>u</u>random</code>.
+
+My simplified conclusion is:
+
+* Use jitterentropy-rng kernel module, jitterentropy-rng user space daemon, haveged and whatnot.
+* And then simply use <code>/dev/random</code>.
+
+Proponents of the viewpoint that "<code>/dev/random</code> is obsolete, use  <code>/dev/<u>u</u>random</code>, always" should explain:
+
+* Why Linux offers both, <code>/dev/random</code> and <code>/dev/<u>u</u>random</code> and why if it is "really the same" isn't just a symlink from the one to the other.
+* Why Linux does not use the same code paths for <code>/dev/random</code> and <code>/dev/<u>u</u>random</code>? Why have this distinction in the first place?
+
+Kernel developer Theodore Y. Ts'o in 2019: https://lore.kernel.org/linux-ext4/20190915052242.GG19710@mit.edu/
+
+= Entropy Sources =
+=== Introduction ===
+It has to be researched if they do work well inside Virtual Machines. Simply installing all of them may not be wise.
+
+=== early-rng-init-tools ===
+* https://lists.debian.org/debian-devel/2019/02/msg00383.html
+* https://lists.debian.org/debian-devel/2019/02/threads.html#00327
+* http://fish.mirbsd.org/~tg/Debs/dists/sid/wtf/Pkgs/early-rng-init-tools/
+* https://pkgs.org/download/early-rng-init-tools
+* https://evolvis.org/plugins/scmgit/cgi-bin/gitweb.cgi?p=alioth/early-rng-init-tools.git;a=tree
+* https://forums.whonix.org/t/early-rng-init-tools-for-better-entropy/8579
+
+=== use kernel command line as a source of randomness ===
+'''Introduction'''
+
+[1] Kernel will use kernel command line as a source of randomness in any case - whether a random seed is added to kernel command line or not. Sources:
+
+* https://www.openwall.com/lists/kernel-hardening/2017/08/16/15
+* https://lore.kernel.org/patchwork/cover/822010/
+* https://lore.kernel.org/patchwork/patch/822011/
+* https://lore.kernel.org/patchwork/patch/822012/
+
+'''adding a random seed to kernel command line'''
+
+Goal: see [[#Goal|goal]].
+
+Design:
+
+* Do not [[#Credit_Entropy|credit entropy]] since this might be dangerous if something goes wrong.
+* Non-goal: Fixing performance related [[#Early Entropy Issue|early entropy issue]] since there is none.
+* systemd unit file drop-in for [https://www.freedesktop.org/software/systemd/man/systemd-random-seed.service.html <code>systemd-random-seed.service</code>] by adding
+** <code>ExecStartPost</code> to refresh seed early at boot to avoid re-using the same one.
+** <code>ExecStopPost</code> to mix in new entropy that was collected since last boot.
+* add a <code>randomseed=</code> parameter to kernel command line
+** The kernel does not support a <code>randomseed=</code> parameter directly. But the kernel uses kernel command line as a source of entropy. The keyword <code>randomseed=</code> could be replaced with any other keyword. This is just for self-documenting purposes. I.e. by reading the web searching for and reading the scripts, clues are given why what is being done.
+
+Similar to:
+
+* Adding a random seed to kernel command line would be similar to [https://www.freedesktop.org/software/systemd/man/systemd-random-seed.service.html <code>systemd-random-seed.service</code>] (enabled by systemd and Debian default) but happening earlier already at boot stage of initial ramdisk. <code>systemd-random-seed.service</code> by default also does not credit entropy.
+* Also similar to [[#early-rng-init-tools|early-rng-init-tootls]] but without its potential security issues since not crediting entropy.
+
+Disadvantages:
+
+* Does not work at first boot.
+* Does not work for live boot but no worse than too due to [1].
+
+Advantages:
+
+* Same as <code>systemd-random-seed.service</code> but already available at boot stage initial ramdisk.
+
+[https://forums.whonix.org/t/use-kernel-command-line-as-a-source-of-randomness/8945 forum discussion]
+
+=== timer_entropyd ===
+* https://www.vanheusden.com/te/
+* [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=575614 Not in Debian.]
+* https://github.com/adrelanos/timer-entropyd
+* https://www.whonix.org/pipermail/whonix-devel/2020-January/001500.html
+* Quote https://www.kernel.org/doc/ols/2014/ols2014-harris.pdf
+** <blockquote>I have written a daemon program which I believe solves this problem. I wanted a name distinct from the existing“Timer entropy daemon” [2], developed by Folkert vanHeusden, so I named minemaxwell(8), after Maxwell’s demon, an imaginary creature discussed by the great physicist James Clerk Maxwell. Unlike its namesake, however, my program does not create exceptions to the laws of thermodynamics.</blockquote>
+** <blockquote>The timer entropy daemon uses floating point math in some of its calculations. It collects data in a substantial buffer, 2500 bytes, goes through a calculation to estimate the entropy, then pushes the whole load of buffered data into random(4). My program does none of those things.</blockquote>
+* Quote https://metacpan.org/pod/release/DANAJ/Crypt-Random-TESHA2-0.01/lib/Crypt/Random/TESHA2.pm
+** <blockquote>Uses a related method (jitter in timing data between usleeps) as this module, but inefficient and only suitable for bulk feeding of an entropy pool. Even after von Neumann debiasing, the output has distinct patterns and at most 0.5 bits of entropy per output bit. HAVEGE is a superior overall solution. However, note a number of other links at the site for other sources as well as links to hardware RNGs.</blockquote>
+* Quote https://github.com/infinity0/rngutils/blob/master/README.md
+** <blockquote>(This was inspired by timer entropy daemon^TED, which generates entropy in an inefficient way, and whose output fails FIPS 140-2.)</blockquote>
+* Quote http://www.freepatentsonline.com/y2019/0050202.html
+** <blockquote>The timer entropy daemon uses timing jitters over sleeps to produce entropy, much like MAXWELL. This demon is even more lightweight than MAXWELL, and makes no attempt to spice things up by doing small calculations, rather it only uses a 100 s sleep wrapped by gettimeofday(2) sampling.</blockquote>
+
+=== sound based ===
+==== randomsound ====
+* [https://packages.debian.org/buster/randomsound In Debian.]
+* [https://www.whonix.org/pipermail/whonix-devel/2019-November/001479.html randomsound is being discouraged nowadays by its author].
+* https://forums.whonix.org/t/moar-entropy-sources/8543
+* [https://www.whonix.org/pipermail/whonix-devel/2020-February/001509.html revive randomsound?]
+* [https://www.whonix.org/pipermail/whonix-devel/2020-February/001513.html reply to above]
+
+==== audio-entropyd ====
+* [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=526470 Not in Debian.]
+* [https://www.whonix.org/pipermail/whonix-devel/2019-April/001361.html asked]: [https://www.whonix.org/pipermail/whonix-devel/2019-April/001363.html Confirmed by author to not cache audio input same for video.]
+* Might not be advisable due to the same reasons [https://www.whonix.org/pipermail/whonix-devel/2019-November/001479.html randomsound is being discouraged nowadays by its author]?
+** asked: https://www.whonix.org/pipermail/whonix-devel/2020-January/001500.html
+
+==== turbid - High-Entropy Symbol Generator ====
+* http://www.av8n.com/turbid/
+* http://www.av8n.com/turbid/paper/turbid.htm
+* [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=591472 Not in Debian.]
+* https://www.metzdowd.com/pipermail/cryptography/2014-October/023417.html
+
+=== video-entropyd ===
+* [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=672347 Not in Debian.]
+* Do reasons that made [https://www.whonix.org/pipermail/whonix-devel/2019-November/001479.html randomsound author discourage use of randomsound nowadays] also similarly apply to video-entropyd?
+** asked: https://www.whonix.org/pipermail/whonix-devel/2020-January/001500.html
+* <blockquote>VideoEntropyd is like timer-entropyd for a 'video-4-linux'-compatible device. E.g. a tv-card or a webcam.</blockquote>
+
+=== TrueRand Based ===
+==== clrngd - clock randomness gathering daemon ====
+
+* Not in Debian.
+* http://freshmeat.sourceforge.net/projects/clrngd
+* https://packages.gentoo.org/packages/sys-apps/clrngd
+* Quote https://www.vanheusden.com/Linux/
+** <blockquote>clrngd.tar.gz - this patch adds code to clrngd so that it will fork itself into the background. This tar-ball also contains a Makefile (the original distribution did not).</blockquote>
+** <blockquote>clrngd is a daemon which adds entropy to the kernel entropy-driver-buffers which it creates by looking at the differences between several clocks in your workstation/server</blockquote>
+* added clrngd.tar.gz to github https://github.com/adrelanos/clrngd for better publication and easier readability
+** licensing issue? BSD license with advertising clause.
+*** https://www.gnu.org/licenses/bsd.html
+**** contacted author https://www.whonix.org/pipermail/whonix-devel/2020-February/001508.html
+* written in C
+* writing log output broken for Patrick (might be since that works different nowadays with systemd)
+* daemonizes itself (which is also outdated nowadays with systemd)
+
+==== twuewand - a truerand algorithm for generating entropy ====
+* https://www.finnie.org/software/twuewand/
+* https://github.com/rfinnie/twuewand
+* https://www.finnie.org/2011/09/25/introducing-twuewand/
+* https://www.finnie.org/2012/08/14/twuewand-2-0-released/
+* https://forums.whonix.org/t/twuewand-a-truerand-algorithm-for-generating-entropy-whonix-integration/8880
+
+=== EGD - The Entropy Gathering Daemon ===
+* http://egd.sourceforge.net/
+* Discouraged by its author nowadays.
+* https://www.whonix.org/pipermail/whonix-devel/2020-January/001502.html
+* https://www.whonix.org/pipermail/whonix-devel/2020-January/001504.html
+* https://www.whonix.org/pipermail/whonix-devel/2020-January/001505.html
+
+=== PRNGD - Pseudo Random Number Generator Daemon ===
+* http://prngd.sourceforge.net/
+* http://prngd.sourceforge.net/00README
+* http://prngd.sourceforge.net/00DESIGN
+* https://www.whonix.org/pipermail/whonix-devel/2020-February/001506.html
+* https://www.whonix.org/pipermail/whonix-devel/2020-February/001507.html
+
+=== jitter based ===
+==== haveged ====
+Haveged is an entropy gathering daemon.
+
+Quoted from the [http://www.issihosts.com/haveged/ais31.html haveged testing page]: "''[...] will behave similarly in a virtual environment is a more risky proposition [...] there have been reports of VM that implement the processor time stamp counter as a constant and there are known differences in cpuid operation in others. [...]''"
+
+Will haveged create sufficient entropy in VirtualBox? Luckily, haveged comes with tools to check the if the entropy it creates.
+
+The README in the haveged source folder and the [http://www.issihosts.com/haveged/index.html haveged website] contains [http://www.issihosts.com/haveged/ais31.html instructions] for testing haveged.
+
+Makes sense to test entropy while haveged is disabled.
+<pre>
+sudo service haveged stop
+</pre>
+
+Get haveged sources and test.
+
+<pre>
+apt-get source haveged
+cd haveged-*
+./configure --enable-nistest
+make check
+
+## perhaps repeat
+#make clean
+#make check
+</pre>
+
+Should say something like
+
+<pre>
+0 failed individual tests
+PASS: nist/test.sh
+==================
+All 2 tests passed
+==================
+</pre>
+
+* This was successfully tested in VirtualBox without haveged running.
+* This was successfully tested in VirtualBox with haveged running.
+* This was successfully tested in kvm without rng device and without haveged running.
+* This was successfully tested in kvm without rng device and with haveged running.
+* This was successfully tested in Qubes without haveged running. <ref>https://phabricator.whonix.org/T32</ref>
+* This was successfully tested in Qubes with haveged running.
+
+Installed by default in {{project name}}.
+
+==== jitterentropy ====
+
+jitterentropy is a RNG designed in the spirit of haveged (using CPU timer jitter as entropy source) except it made up of a kernel module - mainlined since Linux 4.2 and a userspace daemon (jitterentropy-rngd*) to prevent /dev/random from blocking. The advantage of jitterentropy is by taking advantage of a loaded kernel module, it can ensure randomness is being collected before the CSPRNG is initialized. So, when CSPRNG initialization happens, we can ensure that it is properly seeded on first boot, minimizing the likelihood that exact keys will be created on distinct systems. This is something haveged can't provide, as it runs entirely in userspace.
+
+It is a good alternative to haveged, especially for hypervisors that don't support virtio-RNG and so don't have access to entropy sources early during boot process. jitterentropy-rngd is now included in Debian Buster and has been available since {{project name}} 15.<ref>https://phabricator.whonix.org/T817</ref><ref>https://phabricator.whonix.org/T727</ref>
+
+Links:
+
+* http://www.chronox.de/jent.html
+* http://www.chronox.de/jent/doc/CPU-Jitter-NPTRNG.pdf
+* https://pthree.org/2016/05/24/cpu-jitter-entropy-for-the-linux-kernel/
+* https://packages.debian.org/sid/jitterentropy-rngd
+
+Playing devil's advocate here: Ted Ts'o <ref>He's the main developer behind Linux's RNG and staunchly resisted relying only on Intel's RDRAND. His opinions carry weight with good reason.</ref> expresses strong skepticism about the efficacy of RNGs that rely on CPU jitter. summary: CPU jitter may not be random as thought to someone who designed the CPU cache and know how its internals "tick" <ref>https://lwn.net/Articles/586427/</ref>. So while these RNGs may not harm, another solution for RNG-less platforms may be a good idea.
+
+<blockquote>
+It may be that there is some very complex state which is hidden inside the the CPU execution pipeline, the L1 cache, etc., etc. But just because *you* can't figure it out, and just because *I* can't figure it out doesn't mean that it is ipso facto something which a really bright NSA analyst working in Fort Meade can't figure out. (Or heck, a really clever Intel engineer who has full visibility into the internal design of an Intel CPU....)
+</blockquote>
+
+* https://forums.whonix.org/t/jitterentropy-rngd/7204
+* Debian bug report: [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=927972 set jitterentropy_rng.ko to built-in]
+* [https://github.com/QubesOS/qubes-issues/issues/4174 ask Xen developers about Efficacy of jitterentropy RNG in Xen]
+* [https://lists.xen.org/archives/html/xen-users/2019-04/msg00017.html Xen-users - Efficacy of jitterentropy RNG in Xen]
+* [https://lists.nongnu.org/archive/html/qemu-devel/2018-08/msg00368.html Qemu-devel - Efficacy of jitterentropy RNG on qemu-kvm Guests (asks about Xen too)]
+* Qubes feature request: [https://github.com/QubesOS/qubes-issues/issues/4169 consider installing jitterentropy-rngd to improve entropy collection]
+* [https://github.com/smuellerDD/jitterentropy-rngd/issues/6#issuecomment-483191719 Answer by jitterentropy developer]
+* [https://github.com/smuellerDD/jitterentropy-rngd/issues/6#issuecomment-489428226 Efficacy test results for VirtualBox, KVM, Xen]
+
+kernel module added ({{project name}} 15.0.0.7.2) and above:
+
+* https://github.com/Whonix/security-misc/commit/fe1f1b73a77d11c136cedcdb3efcb57f4c68c6af
+
+==== Combining Multiple Jitter Based Entropy Gathering Daemons ====
+https://github.com/smuellerDD/jitterentropy-library/issues/16
+
+=== Motherboard Integrated ===
+"such as some Intel/AMD/VIA chipsets"
+
+==== rng-tools ====
+[https://packages.debian.org/buster/rng-tools In Debian.]
+
+Requires a Hardware RNG device. Will result in a failed systemd unit file if none is available. <ref>
+<pre>
+Setting up rng-tools (2-unofficial-mt.14-1+b2) ...
+Job for rng-tools.service failed because the control process exited with error code.
+See "systemctl status rng-tools.service" and "journalctl -xe" for details.
+invoke-rc.d: initscript rng-tools, action "start" failed.
+\u25cf rng-tools.service
+   Loaded: loaded (/etc/init.d/rng-tools; generated)
+   Active: failed (Result: exit-code) since Fri 2020-01-31 10:56:20 UTC; 7ms ago
+     Docs: man:systemd-sysv-generator(8)
+  Process: 32118 ExecStart=/etc/init.d/rng-tools start (code=exited, status=1/FAILURE)
+
+Jan 31 10:56:20 host systemd[1]: Starting rng-tools.service...
+Jan 31 10:56:20 host rng-tools[32118]: Starting Hardware RNG entropy gatherer daemon: (Hardware RNG device inode not found)
+Jan 31 10:56:20 host rng-tools[32118]: /etc/init.d/rng-tools: Cannot find a hardware RNG device to use.
+Jan 31 10:56:20 host systemd[1]: rng-tools.service: Control process exited, code=exited, status=1/FAILURE
+Jan 31 10:56:20 host systemd[1]: rng-tools.service: Failed with result 'exit-code'.
+Jan 31 10:56:20 host systemd[1]: Failed to start rng-tools.service.
+</pre>
+</ref>
+
+Useful nonetheless to install on the host for those who are lucky to have a hardware random device? Do some motherboards come with a hardware random device by default? Is this still a thing nowadays?
+
+==== rng-tools-debian ====
+[https://packages.debian.org/buster/rng-tools-debian In Debian.] 
+
+==== rng-tools5 ====
+[https://packages.debian.org/buster/rng-tools5 In Debian.]
+
+=== Remote Server Based ===
+* added attack surface
+** https://forums.whonix.org/t/dev-random-vs-dev-urandom/8571/20
+
+==== GUChaos ====
+* http://vladz.devzero.fr/guchaos.html
+* https://www.whonix.org/pipermail/whonix-devel/2020-January/001501.html
+* https://www.whonix.org/pipermail/whonix-devel/2020-February/001510.html
+
+==== pollinate ====
+* https://packages.debian.org/buster/pollinate
+* https://launchpad.net/pollinate
+
+=== Linux kernel GCC Plugins ===
+
+==== latent_entropy ====
+
+Linux has the latent_entropy GCC plugin to gather more entropy.
+
+Quote https://github.com/torvalds/linux/blob/master/scripts/gcc-plugins/Kconfig
+
+<blockquote>By saying Y here the kernel will instrument some kernel code to extract some entropy from both original and artificially created program state. This will help especially embedded systems where there is little 'natural' source of entropy normally. The cost is some slowdown of the boot process (about 0.5%) and fork and irq processing.
+
+Note that entropy extracted this way is not cryptographically secure!</blockquote>
+
+<code>CONFIG_GCC_PLUGIN_LATENT_ENTROPY</code> is disabled by default in the Debian kernel but [https://www.whonix.org/wiki/Hardened-kernel hardened-kernel] enables it.
+
+The [https://github.com/anthraxx/linux-hardened linux-hardened] kernel patch improves latent_entropy by adding a <code>extra_latent_entropy</code> boot parameter <ref>https://github.com/anthraxx/linux-hardened/commit/0ca98c2ffe1ee5b4580c4d2aa797bc793164fc94</ref> which security-misc enables.
+
+= Hardware Entropy Keys =
+
+== Entropy Key ==
+[http://www.entropykey.co.uk/ Entropy Key]; Hardware not fully open source. Some resources say, it is okay as an additional source of entropy. Where to add it? Since {{project name}} depends on a host operating system, the {{gateway_product_name}} and the {{workstation_product_name}}, where it does make most sense to add it? Perhaps adding it to the host and using a entropy broker could be the most effective method. Better than buying three entropy keys.
+
+== OneRNG ==
+[https://www.kickstarter.com/projects/moonbaseotago/onerng-an-open-source-entropy-generator OneRNG]; Hardware and Firmware fully open source. Firmware is cryptographically signed to ensure it hasn't been tampered with. Board has a removable tin RF Shield so you can verify the circuits match the diagrams provided by the manufacturer. Fully reprogrammable with manufacturer provided software+cable (must be bought separately). Where to add it? Since {{project name}} depends on a host operating system, the {{gateway_product_name}} and the {{workstation_product_name}}, where it does make most sense to add it? Perhaps adding it to the host and using a entropy broker could be the most effective method.
+
+* https://www.metzdowd.com/pipermail/cryptography/2014-December/023948.html
+* https://www.metzdowd.com/pipermail/cryptography/2014-November/023534.html
+
+== List ==
+* http://noosphere.princeton.edu/reg.html
+* http://en.m.wikipedia.org/wiki/Noosphere
+* http://www.idquantique.com/random-number-generators/products/quantis-usb.html
+* http://onerng.info
+* http://www.entropykey.co.uk
+** https://www.metzdowd.com/pipermail/cryptography/2014-December/023816.html
+** https://www.metzdowd.com/pipermail/cryptography/2014-December/023988.html
+* https://en.wikipedia.org/wiki/Comparison_of_hardware_random_number_generators
+* http://www.seeedstudio.com/wiki/FST-01
+* https://packages.debian.org/buster/bit-babbler
+* Simtec Electronics Entropy Key - ekeyd - [https://packages.debian.org/stretch/ekeyd In Debian.]
+* https://www.metzdowd.com/pipermail/cryptography/2014-October/023335.html
+* https://www.metzdowd.com/pipermail/cryptography/2014-November/023522.html
+* XR232USB - True Random Number Generator @ USB
+** http://www.jtxp.org/tech/xr232usb_en.htm
+** https://www.metzdowd.com/pipermail/cryptography/2014-November/023694.html
+* TrueRNG
+** https://www.metzdowd.com/pipermail/cryptography/2014-November/023534.html
+* Atmel ATSHA204A
+** https://www.metzdowd.com/pipermail/cryptography/2014-December/023816.html
+
+= Write to /dev/random =
+Quote Wikipedia:
+
+This could use a better source. While the contents can be confirmed this write-up is good.
+
+<blockquote>It is also possible to write to <code>/dev/random</code>. This allows any user to mix random data into the pool. Non-random data is harmless, because only a privileged user can issue the ioctl needed to increase the entropy estimate. The current amount of entropy and the size of the Linux kernel entropy pool, both measured in bits, are available in <code>/proc/sys/kernel/random/</code> and can be displayed by the command <code>cat /proc/sys/kernel/random/entropy_avail</code> and <code>cat /proc/sys/kernel/random/poolsize</code> respectively.</blockquote>
+
+<code>/dev/random</code> by default is world-writable. Unprivileged users can write to it. If that was considered insecure <code>/dev/random</code> would not be world-writable by default. In other words, nothing written to <code>/dev/random</code> can lower the entropy quality of the system. This would only be risky if the entropy was credited using ioctl.
+
+= Credit Entropy =
+* https://web.archive.org/web/20191031233802/https://systemd.io/RANDOM_SEEDS.html
+* https://www.freedesktop.org/software/systemd/man/systemd-random-seed.service.html
+* <code>$SYSTEMD_RANDOM_SEED_CREDIT</code>
+
+refers to this as "credit the entropy" vs "not credit the entropy".
+
+Quote http://man7.org/linux/man-pages/man4/random.4.html 
+
+<blockquote>ioctl</blockquote>
+
+<blockquote>RNDADDTOENTCNT
+
+Increment or decrement the entropy count of the input pool by the value pointed to by the argument.</blockquote>
+
+<blockquote>
+RNDADDENTROPY
+
+Add some additional entropy to the input pool, incrementing the entropy count.  This differs from writing to /dev/random or /dev/urandom, which only adds some data but does not increment the entropy count.  The following structure is used:
+
+<pre>
+struct rand_pool_info {
+    int    entropy_count;
+    int    buf_size;
+    __u32  buf[0];
+};
+</pre>
+
+Here entropy_count is the value added to (or subtracted from) the entropy count, and buf is the buffer of size buf_size which gets added to the entropy pool.
+</blockquote>
+
+It is safer to improve the actual entropy but not credit it. The rationale here is if whatever is being developed here won't ever worsen entropy. The only requisite for that is that assumption that nothing written to /dev/random can worsen the entropy. If entropy was credited and the added entropy was flawed, the security could be actually worsened. Therefore the same strategy that systemd is implementing by default - adding entropy but not crediting it - is the safer way to implement new entropy generators. Better for entropy but no gain in performance.
+
+If we added extra entropy and credited it: the process would be faster but less secure. I don't think we should make the process faster at the expense for higher risks. That would be possible but would require this solution to generate traction and peer review.
+
+If we added extra entropy and credited it,
+
+* in best case: entropy quality increases
+* in worst case: we waste CPU cycles, increase lines of Whonix source code, waste time and accomplish no entropy quality increase but also no entropy quality degradation.
+
+Goals:
+
+* Main goal: improve entropy quality
+* Improving boot time (credit entropy): non-goal
+* Not worsening boot time so that nobody wants to use {{project name}} anymore: goal
+* Price to pay: slightly increased boot time / system load
+
+= rndaddentropy - An RNDADDENTROPY ioctl wrapper =
+== Software ==
+<pre>
+$ENTROPY_GENERATOR | rndaddentropy
+</pre>
+
+<code>rndaddentropy</code> is used to pipe entropy directly into Linux's primary entropy pool. This requires superuser privileges.
+
+Adding entropy directly to the primary entropy pool can be very dangerous, a predictable entropy increases the predictability of resulting data from <code>/dev/random</code> and <code>/dev/urandom</code>. Be sure the entropy is generated from a truly random source, and is properly debiased.
+
+* https://github.com/rfinnie/twuewand/tree/master/rndaddentropy
+* https://github.com/rfinnie/twuewand/blob/master/rndaddentropy/Makefile
+* https://github.com/rfinnie/twuewand/blob/master/rndaddentropy/rndaddentropy.c
+* https://github.com/rfinnie/twuewand/blob/master/doc/rndaddentropy.1
+* https://github.com/rfinnie/twuewand/blob/master/doc/rndaddentropy.md
+
+== Opinion ==
+Probably not needed and hard to use in a secure way. See [[#Write to /dev/random]] and [[#Credit Entropy]].
+
+= Debiasing and Whitening =
+https://github.com/smuellerDD/jitterentropy-library/issues/16#issuecomment-581901851
+
+= Early Entropy Issue =
+TODO: update
+
+This is described here: https://web.archive.org/web/20191031233802/https://systemd.io/RANDOM_SEEDS.html
+
+I don't think there's a fragile time window. We're [[Dev/Entropy#RDRAND|distrusting RDRAND]] already. Kernel will [[Dev/Entropy#.2Fdev.2Frandom_vs._.2Fdev.2Furandom|block]] <code>/dev/random</code> until ready and of sufficient quality.
+
+Any new entropy gathering daemons could block booting until systemd <code>sysinit.target</code> or something even earlier is done.
+
+Whonix / Kicksecure VMs currently also do not have a slow boot issue due to entropy starvation.
+
+= VirtualBox Bug Reports =
+
+* [https://www.virtualbox.org/ticket/11296 entropy quality]
+* [https://www.virtualbox.org/ticket/11297 poor entropy performance]
+
+= Entropy Broker =
+Entropy Broker is an infrastructure for distributing cryptographically secure random numbers (entropy data) from one or more servers to one or more clients.
+
+* [http://www.vanheusden.com/entropybroker/ entropy broker]
+* [https://packages.debian.org/source/stable/entropybroker In Debian.]
+
+= Entropy Tests =
+== ent ==
+{{CodeSelect|code=
+sudo apt install ent
+}}
+
+{{CodeSelect|code=
+ent file_name
+}}
+
+== rngtest ==
+{{CodeSelect|code=
+sudo apt install rng-tools5
+}}
+
+{{CodeSelect|code=
+cat file_name {{!}} rngtest
+}}
+
+== dieharder ==
+{{CodeSelect|code=
+sudo apt install dieharder
+}}
+
+{{CodeSelect|code=
+dieharder -a -f file_name
+}}
+
+== PractRand ==
+http://pracrand.sourceforge.net
+
+= Implementation =
+Once we can come up with a design for a new entropy gathering daemon (and perhaps a proof of concept in script language / rapid prototype) [https://github.com/0xsirus 0xsirus] might help to implement the performance critical part in C programming language depending on complexity.
+
+= Goal =
+Assumption is that any source of randomness could be (sometimes) flawed (weak / predictable / broken / compromised) (in some situations). Such as either in VMs and/or n the host.
+
+Therefore the goal was established to - simplified - "make use of as many sources of entropy as possible".
+
+Ideally, sources of randomness should also be coming from different devices.
+
+CPU is already being used as a source of entropy by [[#haveged|haveged]] and [[#jitterentropy-rng|jitterentropy-rng]]. That's two implementations using the same source using the same device. Adding more entropy generation daemons that are based on CPU - or even worse - based on jitter - is therefore undesirable.
+
+It would be better to tap into other [[#Entropy Sources|entropy sources]] such as from noise generated from audio, video, etc. if we can verify these to be good sources of entropy. By implementing that, even if one source of randomness (retrospectively) turns out to be flawed, quality of system entropy should still be excellent.
+
+= Resources =
+
+* [http://en.gentoo-wiki.com/wiki/Generating_better_random_numbers#Dieharder Gentoo wiki: Generating better random numbers]
+* [https://polarssl.org/tech-updates/security-advisories/polarssl-security-advisory-2011-02 HAVEGE: PolarSSL Security Advisory 2011-02]
+* [http://wiki.qemu.org/Features/VirtIORNG Qemu: virtio-rng, virtual random generator]
+* [http://holdenc.altervista.org/avalanche/ Random Sequence Generator based on Avalanche Noise]
+* https://groups.google.com/forum/#!forum/randomness-generation
+* https://groups.google.com/forum/#!topic/randomness-generation/pIdFa3iarhI
+* On Linux entropy issues generally. Must read. - https://www.av8n.com/computer/htm/secure-random.htm
+* [https://systemd.io/RANDOM_SEEDS/ systemd Random Seeds]
+* https://wiki.debian.org/Entropy
+* https://www.phoronix.com/scan.php?page=news_item&px=Linux-5.4-Actively-Gen-Entropy
+* https://volumeintegration.com/best-entropy-generation-software-for-linux/
+* https://www.bsi.bund.de/SharedDocs/Downloads/EN/BSI/Publications/Studies/LinuxRNG/LinuxRNG_EN.pdf
+* https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Publikationen/Studien/ZufallinVMS/Randomness-in-VMs.pdf
+* http://www.av8n.com/computer/htm/fixup-live-cd.htm
+* https://lwn.net/Articles/525459/
+* https://daniel-lange.com/archives/152-hello-buster.html
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Design]]
