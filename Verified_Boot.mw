@@ -1,0 +1,105 @@
+{{Header}}
+{{#seo:
+|description=Boot chain and integrity guarantees, Verified Boot, Secure Boot, Trusted Boot, dm-verity
+}}
+{{forkme}}
+
+= User Freedom =
+Freedom Software can be compatible with Verified Boot. No user freedom restrictions required. While verified boot is often used to restrict user freedom, to prevent the user from modifications and installing another operating system, Verified Boot is not inherently bad. User-controlled keys are possible.
+
+[https://blog.torproject.org/mission-improbable-hardening-android-security-and-privacy Quote]
+
+<blockquote>
+Nexus and Pixel lines support Verified Boot with user-controlled keys
+</blockquote>
+
+= Concepts =
+== Verified VM Boot Sequence without Secure Boot ==
+
+(Same security level as Secure Boot?)
+
+Talking about VMs only in this concept.
+
+We could boot from a virtual, read-only (write protected) boot medium such as another virtual HDD or ISO. Such a boot medium which only contains a bootloader (shim or grub?) which only task is to verify the bootloader on the main hard drive that contains the bootloader, kernel, debian. That boot medium (such as IOS) could be shipped on Whonix Host through a <code>deb</code> package <code>/usr/share/verified-boot/check.iso</code>.
+
+Presuppositions:
+
+* the virtual BIOS cannot be flashed/compromised
+* host not compromised
+
+boot sequence:
+
+VM powered on &rarr; virtual BIOS loads boot DVD ISO (or alternatively another hard drive) (contains a bootloader only) &rarr; this initial bootloader signature is not verified but secure since boot from read-only medium &rarr; verify bootloader on main hard drive &rarr; bootloader of main hard drive does signature verification of kernel &rarr; continue boot
+
+What we need for that: <code>grub-pc</code> (not <code>grub-efi</code>) with signature verification. <ref>
+* https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=939188
+* https://savannah.gnu.org/bugs/index.php?56887
+</ref>
+
+By not booting from that initial boot medium (for testing or if that was broken or so), users could do regular boots without verification of the bootloader on the main drive. From the perspective of the main drive, nothing would change. Except we'd enable grub signature verification of the kernel on the main drive.
+
+The boot medium should not load the actual kernel for simplicity of the implementation. Since it is read-only it cannot be easily updated. Kernel packages change and during kernel upgrades <code>/boot</code> and <code>grub.cfg</code> on the main disk changes. If <code>/boot</code> was write protected, that would fail. Therefore the initial boot medium is only a simplified alternative to EFI Secure Boot. By making the initial boot medium as simple as possible, i.e. only chainloading the next bootloader, it does not need frequent updates and does not need to be updated when kernel versions change.
+
+If we could make <code>grub-pc</code> (not <code>grub-efi</code>) use <code>check_signatures=enforce</code>, then maybe we don't need to port to EFI and/or Secure Boot soon and perhaps never?
+
+The disadvantage of this concept is that it is only as secure as Secure Boot. [https://forums.whonix.org/t/enable-linux-kernel-gpg-verification-in-grub-and-or-enable-secure-boot-by-default/7894/30?u=patrick initrd could still be compromised].
+
+== Hash Check all Files at Boot ==
+Higher security level as Secure Boot.
+
+Talking about VMs only in this concept.
+
+We could boot from a virtual, read-only (write protected) boot medium such as another virtual HDD or ISO. Such a boot medium which runs a minimal linux distribution which then compares against checksums from Debian repository on the main boot drive:
+
+* The MBR (master boot record)
+* The VBR (volume boot record)
+* [A] the booloader
+* [B] the partition table
+* [C] the kernel
+* [D] the initrd
+* [E] all files shipped by all packages
+
+There are tools that can help with checking all files on the hard drive such as <code>debsums</code>. However, while <code>debsums</code> is more popular, it is unsuitable. <ref>
+Quote https://www.elstel.org/debcheckroot/
+
+<blockquote>
+Usage of debsums instead of Debian-checkroot is strongly discouraged because debsums uses locally stored md5sums which can be modified by an attacker along with the files themselves. It has been meant for integrity checking not for security issues! Debsums furthermore does not provide an output as clean and neatly structured as checkroot and does not spot files additionally added to your system by someone else. 
+</blockquote>
+</ref>
+
+A tool such as [https://www.elstel.org/debcheckroot/ debcheckroot] might be more suitable for this task.
+
+During development of [[Verifiable Builds]] experiences were made with verification of MBR, VBR, bootloader, partition table, kernel and initrd. Source code was created to analyze such files. <ref>
+https://github.com/Whonix/Whonix/blob/master/build-steps.d/2800_create-report
+</ref>
+
+Extraneous files would be reported, with option to delete them, to move them to quarantaine and/or to view them.
+
+Initrd is by Debian default, auto generated on the local system. Hence, there is nothing to compare with from Debian repository. However, after verification of everything (all files from all packages) it would be secure to chroot into the verified system and to re-generate the initrd. Then to compare both versions. This might not be required if initrd can be extracted and compared against files on the root disk.
+
+That boot medium (such as IOS) could be shipped on Whonix Host through a <code>deb</code> package <code>/usr/share/verified-boot/check.iso</code>.
+
+Disadvantage of this concept might be that it might be slower than dm-verity. On the other hand the advantage of this concept is that this does not require a OEM image. Also it might be more secure since it does not verify against an OEM image but would verify the individual files. Another advantage is that users are free to install any package and not limited by a readonly root image. Users do not have to wait for the vendor to update the OEM image.
+
+= Status =
+* Help welcome to implement this.
+* https://forums.whonix.org/t/no-longer-add-virtual-dvd-drive-to-vm-by-default/9337 needs to be undone or considered. Could auto-add a DVD drive as long as needed.
+
+= Other Distributions implementing Verified Boot =
+* https://docs.clip-os.org/clipos/boot_integrity.html
+* https://source.android.com/security/verifiedboot/
+* https://www.chromium.org/chromium-os/chromiumos-design-docs/verified-boot
+* https://blogs.oracle.com/solaris/solaris-verified-boot-v3
+* https://coreos.com/blog/verifying-os-at-runtime.html
+* https://blog.verbum.org/2017/06/12/on-dm-verity-and-operating-systems/
+
+= Forum Discussion =
+https://forums.whonix.org/t/enable-linux-kernel-gpg-verification-in-grub-and-or-enable-secure-boot-by-default/7894
+
+= Footnotes=
+<references/>
+
+{{Footer}}
+
+[[Category: Design]]
+[[Category: Development]]
