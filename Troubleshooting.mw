@@ -1,0 +1,511 @@
+{{Header}}
+{{#seo:
+|description=Troubleshooting Installation and Network Issues with {{Project name}}
+|image=https://www.whonix.org/w/images/8/81/Troubleshooting-114197640.jpg
+}}
+
+The following steps summarize basic troubleshooting instructions, which are described in greater detail below. In basic terms:
+
+# Exclude basic [[#Hardware Issues|hardware issues]].
+# Ensure the virtual machine images have been imported into a supported virtualizer.
+# Check if [https://www.torproject.org/download/download-easy.html.en Tor Browser] works on the host.
+# Check if other virtual machines have Internet connectivity, such as newly created ones or those from a different vendor.
+
+Information pertaining to these points should be included in any [[Support|support]] request or [[Reporting_Bugs|bug report]].
+
+__TOC__
+
+= Troubleshooting Steps =
+
+== General ==
+{{Box|text=
+'''1.''' "Forget" about {{Project name}} for a moment. Imagine you newer knew about {{Project name}}. Test your host computer first.
+
+'''2.''' Test if the host internet connection is functional. <ref>
+By using ping.
+
+For example, ping <code>8.8.8.8</code>..
+
+On the host, run.
+
+{{CodeSelect|code=
+ping google.com
+}}
+
+Ping <code>google.com</code> and other websites.
+
+{{CodeSelect|code=
+ping google.com
+}}
+
+and so on.
+</ref>
+
+Open different websites such as <code>whonix.org</code> in a host web browser.
+
+'''2.''' Check the date and time. <ref>
+{{CodeSelect|code=
+date
+}}
+</ref>
+
+If the host clock is more than 1 hour in the past or more than 3 hours in the future, Tor cannot connect. Fix that first if host time is wrong.
+
+'''3.''' Linux users only: The following command should not show any errors. <ref name=lengthy_test>
+This process can be lengthy.
+</ref>
+
+{{CodeSelect|code=
+sudo dpkg-reconfigure -a
+}}
+
+'''4.''' Linux users only: The following command should be silent and not show any errors or output at all. <ref name=lengthy_test />
+
+{{CodeSelect|code=
+sudo dpkg --configure -a
+}}
+
+'''5.''' Linux users only: Next attempt to retrieve all available updates.
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+{{CodeSelect|code=
+sudo apt-get dist-upgrade
+}}
+
+'''6.''' Download the Tor Browser Bundle from [https://www.torproject.org/download/download-easy.html.en torproject.org] and test if it is working on the host.
+
+Follow one of the methods outlined in [[Install_Tor_Browser_Outside_of_{{project_name_short}}|Non-{{project_name}} Tor Browser]].
+
+If the Tor Browser Bundle is not functional on the host, then {{project_name}} is unlikely to work either. It is recommended to have a recent Tor Browser Bundle version installed at all times. This way users can test if they live in a censored area or not and whether Tor is blocked by the ISP. Further, if (private) (obfuscated) bridges are necessary for Tor Browser Bundle functionality on the host, then {{project_name}} will similarly require them.
+}}
+
+== {{project_name}} Network Connectivity Problems ==
+
+If networking is unavailable inside {{project_name}}, then try:
+
+# Installing an operating system in a non-{{project_name}} virtual machine or downloading a regular image without Tor enforcement.
+# Testing network functionality in a freshly downloaded non-{{project_name}} virtual machine.
+
+If networking is still not functional, then {{project_name}} will not work either. The user must first resolve this issue, which might require re-installation of the virtualizer, followed by a reboot and further connectivity test(s).
+
+If networking is functional, then users should note that networking is working in non-{{project_name}} VMs as part of the support request or bug report.
+
+== whonixcheck ==
+
+Run [[whonixcheck]] to verify that the {{project_name}} system is up-to-date and that everything is in proper working order.
+
+== Clock Fix ==
+In case [[Sdwdate|sdwdate]] fails to properly randomize the system clock, it is possible <ref>Since Whonix 14.</ref> to manually set a random value. 
+
+The first step should be completed on the host to ensure the host clock is set to the correct time.
+{{Box|text=
+'''1.''' On the host ([[{{q project name short}}|{{q project name}}]]: <code>dom0</code>), run the following command to report the time in UTC.
+
+{{CodeSelect|code=
+date -u
+}}
+
+The output should be similar to the following.
+
+{{CodeSelect|code=
+Mon Apr 22 04:30:44 UTC 2019
+}}
+
+'''2.''' Set the correct time in {{gateway_product_name}} (<code>sys-whonix</code>). 
+
+Run the following command with the correct date and time parameters. <ref>A non-zero exit codes signifies an error, while <code>0</code> means it succeeded.</ref> <ref>Also see: 
+{{CodeSelect|code=
+man clock-random-manual-gui
+}}
+
+{{CodeSelect|code=
+man clock-random-manual-cli
+}}
+</ref>
+
+* <code>clock-random-manual-gui</code>: a randomized clock setting (in UTC) is entered via a GUI.
+* <code>clock-random-manual-cli</code>: a randomized clock setting (in UTC) is entered on the command line. For example: {{CodeSelect|code=
+echo "Sat Oct 26 07:18:25 UTC 2019" {{!}} /usr/bin/clock-random-manual-cli
+}}
+
+'''3.''' Restart sdwdate.
+
+{{CodeSelect|code=
+sudo service sdwdate restart
+}}
+
+'''4.''' If Tor is still not functional, try restarting Tor.
+
+{{CodeSelect|code=
+sudo service tor restart
+}}
+
+Tor should work once correct clock values are set, but that can be manually tested with [[whonixcheck]].
+}}
+
+== Clearnet Connectivity Test ==
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = '''Warning:''' The following test might reveal the {{project_name}} platform is in use. If that is a valid concern, then omit this step.
+}}
+
+It is possible to check if a non-torified, non-anonyomus, direct connection to check.torproject.org is functional. <ref>This test only uses TCP and not DNS.</ref>
+
+On {{gateway_product_name}}, run.
+
+{{CodeSelect|code=
+sudo -u clearnet {{Curl Plain}} {{Curl Secure}} -H 'Host: check.torproject.org' -k https://{{Check.torproject.org IP}} | grep IP
+}}
+
+== Qubes-specific ==
+
+=== Connectivity Issue ===
+
+Complete the following steps:
+
+# Shut down <code>sys-whonix</code>. 
+# Change the <code>sys-whonix</code> NetVM setting from <code>sys-firewall</code> to <code>sys-net</code>.
+# Restart </code>sys-whonix</code>. 
+
+This procedure might help, but should not be considered a final solution. <ref>This procedure was useful for [[{{q_project_name_short}}|{{q_project_name}}]] R3.2 users, although the Qubes bug report is now resolved: https://github.com/QubesOS/qubes-issues/issues/2141</ref>
+
+== Low RAM Issues ==
+
+When available RAM is insufficient to meet the {{project_name}} VM requirements, problems can emerge which make the VM(s) unusable. Factors that commonly contribute to low RAM issues in {{project_name}} include: 
+
+* Unnecessary processes running and/or multi-tasking on the host OS.
+* Multiple browser tabs being open.
+* Unnecessary processes running in the {{project_name}} VM(s).
+* Allocating more RAM to the {{project_name}} VM than is available; this prevents the VM from booting. 
+* Insufficient RAM allocated to the {{project_name}} VM(s).
+* Other non-{{project_name}} VMs running in parallel.
+
+While insufficient RAM can cause a host of issues, behaviors most commonly seen with low memory resources include:
+
+* Applications are slow or unresponsive.
+* The virtual machine, mouse and/or keyboard freeze.
+* Scrolling causes window staggers or jumps.
+* Issues become worse when additional browser tabs or processes are spawned.
+* Overall performance is poor.
+
+=== Free up Additional Memory Resources ===
+
+If additional memory is needed for the virtual machine, then free up resources and/or add more RAM to the virtual machine:
+
+* Terminate any non-essential processes on the host.
+* Shutdown any non-essential VMs.
+* Shutdown and/or close non-essential processes and browser tabs in {{project_name}} VMs. 
+* [[{{non q project name short}}|{{non q project name}}]] only: If low memory issues are experienced in {{workstation_product_name}}, additional resources can be freed by reducing RAM in {{gateway_product_name}} with [[RAM_Adjusted_Desktop_Starter|rads]].
+
+To add additional RAM to the {{project_name}} VM(s), follow the platform-specific advice below.
+
+=== KVM ===
+{{KVM RAM}}
+
+=== [[{{q_project_name_short}}|{{q_project_name}}]] ===
+
+Utilize Qube Manager: <br />
+* <code>Qube Manager</code> &rarr; <code>VM_name</code> &rarr; <code>Qubes s<u>e</u>ttings</code> &rarr; <code>Advanced</code> &rarr; <code>Max memory:</code> <code><i>mem_size</i></code>
+
+=== VirtualBox ===
+
+# To add RAM in VirtualBox the VM <u>must</u> first be powered down. 
+# <code>Virtual machine</code> &rarr; <code>Menu</code> &rarr; <code>Settings</code> &rarr; <code><i>Adjust</i></code> <code>Memory slider</code> &rarr; <code><i>Hit:</i> OK</code>
+
+See also [[VirtualBox/Troubleshooting]].
+
+== Why can't I Ping the {{gateway_product_name}}? ==
+
+The {{gateway_product_name}} does not respond to ping or similar commands because it is firewalled for security reasons; see ''{{W_Firewall}}'' or refer to the {{project name}} source code. In most cases it is unnecessary to ping the {{gateway_product_name}} anyhow.
+
+If you insist on pinging the {{gateway_product_name}} or have a unique setup that requires it, then this can be tested by clearing all firewall rules with the [https://github.com/{{project_name_short}}/whonix-developer-meta-files/blob/master/dangerous_scripts/dev_clearnet dev_clearnet] script. Alternatively, a script can be run to try and [[Dev/Firewall_Unload|unload / remove every iptables rule]], or the {{project name}} firewall can be hacked to not load at all. The latter method is only for experts and it is necessary to comment out ''exit 0'' at the beginning.
+
+= System Logs =
+<ref>
+"user support template": https://forums.whonix.org/t/workstation-keeps-freezing/7693/6
+</ref>
+
+== Check Systemd Journal Log of Current Boot ==
+To inspect the systemd journal log of the current boot, run.
+
+{{CodeSelect|code=
+sudo journalctl -b
+}}
+
+This command requires pressing arrow keys like &uarr;, &darr;, &larr;, &rarr;, as well as <code>PgUp</code> and <code>PgDn</code> for scrolling.
+
+For convenient reading of the log (until the command is issued), the log can be dumped to file. For example, the following command would write the log to file <code>~/systemd-log</code>.
+
+{{CodeSelect|code=
+sudo journalctl -b > ~/systemd-log
+}}
+
+Use any available editor to read the log file, such as <code>mousepad</code>.
+
+{{CodeSelect|code=
+mousepad ~/systemd-log
+}}
+
+== Watch Systemd Journal Log of Current Boot ==
+It is possible to to watch the systemd journal log as it is written. 
+
+{{CodeSelect|code=
+sudo journalctl -b -f
+}}
+
+== Enable Persistent Systemd Journal Log ==
+By default, a persistent systemd journal log is not enabled in Debian. <ref>https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=801906</ref>
+
+Enable persistent systemd journal log:
+
+* <u>Non-Qubes-Whonix</u>: No special action is required.
+* <u>Qubes users</u>: The following changes must be applied in a VM with a persistent root image such as TemplateVM or StandaloneVM. It could be confusing if applied in TemplateBasedVMs since the systemd journal log might be mixed up with boots by the TemplateVM, while the AppVM systemd journal logs would not be persistent. [https://www.qubes-os.org/doc/bind-dirs/ bind-dirs] might be helpful, but that requires further research.
+
+{{Box|text=
+Create folder <code>/etc/systemd/journald.conf.d</code>.
+
+{{CodeSelect|code=
+sudo mkdir -p /etc/systemd/journald.conf.d
+}}
+
+{{Open with root rights|filename=
+/etc/systemd/journald.conf.d/60_persistent_journal.conf
+}}
+
+Add.
+
+{{CodeSelect|code=
+[Journal]
+Storage=persistent
+}}
+
+Save.
+
+Restart <code>systemd-journald</code>.
+
+{{CodeSelect|code=
+sudo systemctl restart systemd-journald
+}}
+
+A persistent systemd journal log has now been enabled.
+}}
+
+== Check Systemd Journal Log of Previous Boot ==
+After following the [[#Enable Persistent Systemd Journal Log|Enable Persistent Systemd Journal Log]] steps, it is possible to inspect the systemd journal log of the previous boot.
+
+{{CodeSelect|code=
+sudo journalctl -b -1
+}}
+
+This command requires pressing arrow keys like &uarr;, &darr;, &larr;, &rarr;, as well as <code>PgUp</code> and <code>PgDn</code> for scrolling.
+
+For convenient reading of the log until the time of issuing the command, the log can be dumped to file. For example, the following command would write the log to file <code>~/systemd-log-previous</code>.
+
+{{CodeSelect|code=
+sudo journalctl -b -1 > ~/systemd-log-previous
+}}
+
+Use any available editor to read the log file, such as <code>mousepad</code>.
+
+{{CodeSelect|code=
+mousepad ~/systemd-log-previous
+}}
+
+== View List of Systemd Journal Logs ==
+{{CodeSelect|code=
+sudo journalctl --list-boots
+}}
+
+== lightdm ==
+<ref>
+Example debug log
+
+<pre>
+sudo journalctl -b -u lightdm -o cat
+Condition check resulted in Light Display Manager being skipped.
+Starting Light Display Manager...
+[+0.00s] DEBUG: Logging to /var/log/lightdm/lightdm.log
+[+0.00s] DEBUG: Starting Light Display Manager 1.26.0, UID=0 PID=933
+[+0.00s] DEBUG: Loading configuration dirs from /usr/share/lightdm/lightdm.conf.d
+[+0.00s] DEBUG: Loading configuration from /usr/share/lightdm/lightdm.conf.d/01_debian.conf
+[+0.00s] DEBUG: Loading configuration dirs from /usr/local/share/lightdm/lightdm.conf.d
+[+0.00s] DEBUG: Loading configuration dirs from /etc/xdg/lightdm/lightdm.conf.d
+[+0.00s] DEBUG: Loading configuration from /etc/lightdm/lightdm.conf.d/autologin.conf
+[+0.00s] DEBUG: Loading configuration from /etc/lightdm/lightdm.conf.d/whonix-autologin.conf
+[+0.00s] DEBUG:   [SeatDefaults] is now called [Seat:*], please update this configuration
+[+0.00s] DEBUG: Loading configuration from /etc/lightdm/lightdm.conf
+[+0.00s] DEBUG: Registered seat module local
+[+0.00s] DEBUG: Registered seat module xremote
+[+0.00s] DEBUG: Registered seat module unity
+[+0.00s] DEBUG: Using D-Bus name org.freedesktop.DisplayManager
+[+0.01s] DEBUG: Monitoring logind for seats
+[+0.01s] DEBUG: New seat added from logind: seat0
+[+0.01s] DEBUG: Seat seat0: Loading properties from config section Seat:*
+[+0.01s] DEBUG: Seat seat0: Starting
+[+0.01s] DEBUG: Seat seat0: Creating user session
+[+0.01s] WARNING: Error getting user list from org.freedesktop.Accounts: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.Accounts was not provided by any .ser
+[+0.01s] DEBUG: Loading user config from /etc/lightdm/users.conf
+[+0.01s] DEBUG: User user added
+[+0.01s] DEBUG: Seat seat0: Creating display server of type x
+[+0.01s] DEBUG: posix_spawn avoided (fd close requested)
+[+0.02s] DEBUG: Could not run plymouth --ping: Failed to execute child process ?plymouth? (No such file or directory)
+[+0.02s] DEBUG: Using VT 7
+[+0.02s] DEBUG: Seat seat0: Starting local X display on VT 7
+[+0.02s] DEBUG: XServer 0: Logging to /var/log/lightdm/x-0.log
+[+0.02s] DEBUG: XServer 0: Writing X server authority to /var/run/lightdm/root/:0
+[+0.02s] DEBUG: XServer 0: Launching X Server
+[+0.02s] DEBUG: Launching process 941: /usr/bin/X :0 -seat seat0 -auth /var/run/lightdm/root/:0 -nolisten tcp vt7 -novtswitch
+[+0.02s] DEBUG: XServer 0: Waiting for ready signal from X server :0
+[+0.02s] DEBUG: Acquired bus name org.freedesktop.DisplayManager
+[+0.02s] DEBUG: Registering seat with bus path /org/freedesktop/DisplayManager/Seat0
+Started Light Display Manager.
+[+0.98s] DEBUG: Got signal 10 from process 941
+[+0.98s] DEBUG: XServer 0: Got signal from X server :0
+[+0.98s] DEBUG: XServer 0: Connecting to XServer :0
+[+0.99s] DEBUG: posix_spawn avoided (fd close requested) (child_setup specified)
+[+0.99s] DEBUG: Seat seat0: Display server ready, starting session authentication
+[+0.99s] DEBUG: Session pid=970: Started with service 'lightdm-autologin', username 'user'
+Error getting user list from org.freedesktop.Accounts: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.Accounts was not provided by any .service files
+[+1.01s] DEBUG: Session pid=970: Authentication complete with return value 0: Success
+[+1.01s] DEBUG: Seat seat0: Session authenticated, running command
+[+1.01s] DEBUG: Registering session with bus path /org/freedesktop/DisplayManager/Session0
+[+1.01s] DEBUG: posix_spawn avoided (fd close requested) (child_setup specified)
+[+1.02s] DEBUG: Session pid=970: Running command /etc/X11/Xsession startxfce4
+[+1.02s] DEBUG: Creating shared data directory /var/lib/lightdm/data/user
+[+1.02s] DEBUG: Session pid=970: Logging to .xsession-errors
+pam_unix(lightdm-autologin:session): session opened for user user by (uid=0)
+pam_exec(lightdm-autologin:session): Calling /usr/lib/security-misc/permission-lockdown ...
+[+1.23s] DEBUG: Activating VT 7
+[+1.23s] DEBUG: Activating login1 session 1
+[+1.23s] DEBUG: Seat seat0 changes active session to 1
+[+1.23s] DEBUG: Session 1 is already active
+[+839.74s] DEBUG: Seat seat0 changes active session to
+[+842.35s] DEBUG: Seat seat0 changes active session to 3
+[+852.02s] DEBUG: Got signal 15 from process 1
+[+852.02s] DEBUG: Caught Terminated signal, shutting down
+[+852.02s] DEBUG: Stopping display manager
+[+852.02s] DEBUG: Seat seat0: Stopping
+[+852.02s] DEBUG: Seat seat0: Stopping display server
+[+852.02s] DEBUG: Sending signal 15 to process 941
+[+852.02s] DEBUG: Seat seat0: Stopping session
+[+852.02s] DEBUG: Terminating login1 session 1
+Stopping Light Display Manager...
+[+852.05s] DEBUG: Session pid=970: Sending SIGTERM
+[+852.05s] DEBUG: Session pid=970: Exited with return value 0
+[+852.05s] DEBUG: Seat seat0: Session stopped
+[+852.05s] DEBUG: Process 941 exited with return value 0
+[+852.05s] DEBUG: XServer 0: X server stopped
+[+852.05s] DEBUG: Releasing VT 7
+[+852.05s] DEBUG: XServer 0: Removing X server authority /var/run/lightdm/root/:0
+[+852.05s] DEBUG: Seat seat0: Display server stopped
+[+852.05s] DEBUG: Seat seat0: Stopped
+[+852.05s] DEBUG: Display manager stopped
+[+852.05s] DEBUG: Stopping daemon
+[+852.05s] DEBUG: Exiting with return value 0
+lightdm.service: Succeeded.
+Stopped Light Display Manager.
+</pre>
+</ref>
+
+=== Debugging lightdm ===
+==== Configure systemd to start lightdm in debug mode ====
+Make sure folder <code>/lib/systemd/system/lightdm.service.d</code> exists.
+
+{{CodeSelect|code=
+sudo mkdir -p /lib/systemd/system/lightdm.service.d
+}}
+
+And then create a file <code>/lib/systemd/system/lightdm.service.d/40_debug-misc.conf</code>. <ref>
+{{CodeSelect|code=
+echo "
+[Service]
+ExecStart=
+ExecStart=/usr/sbin/lightdm --debug
+" {{!}} sudo tee /lib/systemd/system/lightdm.service.d/40_debug-misc.conf
+}}
+</ref>
+
+{{Open with root rights|filename=
+/lib/systemd/system/lightdm.service.d/40_debug-misc.conf
+}}
+
+Paste the following contents. <ref>
+<code>ExecStart=</code> is required to clear the original <code>ExecStart=</code> so it can be overwritten by <code>ExecStart=/usr/sbin/lightdm --debug</code>.
+</ref>
+
+{{CodeSelect|code=
+[Service]
+ExecStart=
+ExecStart=/usr/sbin/lightdm --debug
+}}
+
+Save.
+
+==== Debug ====
+Use [[#lightdm restart method]] or [[#reboot method]].
+
+===== lightdm restart method =====
+Switch to another [[Desktop#Virtual_Consoles|virtual console]].
+
+Stop lightdm.
+
+{{CodeSelect|code=
+sudo systemctl stop lightdm
+}}
+
+Restart lightdm.
+
+{{CodeSelect|code=
+sudo systemctl restart lightdm
+}}
+
+Check lightdm log.
+
+[[#Check Systemd Journal Log of Current Boot|Check Systemd Journal Log of Current Boot]] for lightdm.
+
+For convenient reading of the log, the log can be dumped to file. For example, the following command would write the log to file <code>~/lightdm-log</code>.
+
+{{CodeSelect|code=
+sudo journalctl -b -u lightdm > ~/lightdm-log
+}}
+
+===== reboot method =====
+Alternatively could also reboot but then you would need to [[#Enable Persistent Systemd Journal Log|Enable Persistent Systemd Journal Log]].
+
+[[#Check Systemd Journal Log of Previous Boot|Check Systemd Journal Log of Previous Boot]]
+
+{{CodeSelect|code=
+sudo journalctl -b -1 -u lightdm
+}}
+
+= Hardware Issues =
+Rhetoric questions:
+
+* When was the last time a qualified person disassembled your computer or notebook and removed dust from the fan and checked the cooling system of your CPU?
+* How often such maintenance should be done?
+* What is your CPU temperature under heavy system load?
+* What is the temperature is it in the room?
+
+Recommendations:
+
+* Make sure your computer or notebook had the proper maintenance.
+* Monitor CPU temperature. There are tools for your host operating system showing the temperature of your CPU.
+* Cooling the room might help.
+* Better placement (more air space) of your computer or notebook.
+* Consider a passive or active (notebook) cooling pad. Do you own research.
+
+None of these issues are {{Project name}} issues. Therefore please do not ask thees questions at {{Project name}} support (until there is a Whonix-Host operating system) as per [[Free Support Principle]].
+
+= See Also =
+* [[VirtualBox/Troubleshooting]]
+* [[KVM#Troubleshooting]]
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
