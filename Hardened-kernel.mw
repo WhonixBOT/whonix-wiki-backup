@@ -1,0 +1,308 @@
+{{title|title=hardened-kernel}}
+{{Header}}
+{{#seo:
+|title=hardened-kernel
+|description=hardened-kernel
+|image=https://www.whonix.org/w/images/thumb/6/6d/Hardenkernel.jpg/470px-Hardenkernel.jpg
+}}
+
+{{Testers-only}}
+
+{{Stub}}
+
+<div style="float:right;">__TOC__</div>
+
+= Overview =
+
+[https://github.com/Whonix/hardened-kernel hardened-kernel] attempts to increase computer security.
+
+It is based on [https://en.wikipedia.org/wiki/Linux Linux].
+
+Is consists of a hardened kernel configuration and hardening patches provided by the [https://github.com/anthraxx/linux-hardened linux-hardened] project.
+
+It is currently only tested in two Linux distributions, [[Whonix]] (anonymous operating system) and [[Kicksecure]] (A Security-hardened, Non-anonymous Linux Distribution). These two Linux distributions are based on Debian. Therefore hardened-kernel will likely work in [https://www.debian.org/ Debian] too.
+
+There are two kernel configs, [https://github.com/Whonix/hardened-kernel/blob/master/usr/share/hardened-kernel/hardened-vm-kernel hardened-vm-kernel] and [https://github.com/Whonix/hardened-kernel/blob/master/usr/share/hardened-kernel/hardened-host-kernel hardened-host-kernel]. <code>hardened-vm-kernel</code> is designed specifically for virtual machines (VMs) and <code>hardened-host-kernel</code> is designed for hosts.
+
+Both configs try to have as many hardening options enabled as possible and have little attack surface. <code>hardened-vm-kernel</code> only has support for VMs and all other hardware options are disabled to reduce attack surface and compile time.
+
+During installation of <code>hardened-vm-kernel</code>, it compiles the kernel on your own machine and does not use a pre-compiled kernel. This ensures the kernel symbols in the compiled image are completely unique which makes it far harder for kernel exploits. This is possible due to <code>hardened-vm-kernel</code> having only VM config options enabled which drastically reduces compile time.
+
+A development goal is that during installation of <code>hardened-host-kernel</code>, the kernel is not compiled on your machine but uses a pre-compiled kernel. This is because the host kernel needs most hardware options enabled to support most devices which makes compilation take a very long time. This will be probably configureable, i.e. you will be able to opt-in to compile the host kernel locally too.
+
+The VM kernel is more secure than the host kernel due to having less attack surface and not being pre-compiled but if you want more security for the host, it is recommended to edit the hardened host config, enable only the hardware options you need and compile the kernel yourself. This makes the security of the host and VM kernel comparable.
+
+These kernels use the linux-hardened patch for further hardening. Custom hardening patches should be sent there.
+
+Both configs were based on the default Debian config.
+
+= Improvements =
+
+Here is a list of the improvements of the config. This may not be complete but has the bulk of the features.
+
+== Options we disable ==
+
+Disables /proc/kcore. Exposes kernel text image layout.
+
+Disables /dev/port. Can modify kernel memory.
+
+Disables /dev/mem. Can modify kernel memory.
+
+Disables livepatching. Can modify kernel code.
+
+Disables CPU MSRS. Can be abused to write to kernel memory.
+
+Disables kexec. Can replace the current kernel.
+
+Disables kprobes. Can access kernel memory.
+
+Disables <code>bpf()</code> syscall. Can be abused to read arbitrary kernel memory through functions such as <code>bpf_probe_read()</code> and has been the cause of many kernel vulnerabilities.
+
+Disables ACPI table upgrading. Loading arbitrary ACPI tables can be abused to jump into kernel code.
+
+Disables hibernation. The kernel image can be replaced during hibernation.
+
+Disables slab merging. Reduces the risk of kernel heap overflows.
+
+Disables <code>userfaultfd()</code> syscall. Can make heap sprays easier. <ref>https://duasynt.com/blog/linux-kernel-heap-spray</ref>
+
+Disables vivid. It's only required for testing and has been the cause of multiple vulnerabilities. <ref>https://www.openwall.com/lists/oss-security/2019/11/02/1</ref>
+
+Disables binfmt_misc. We don't need custom binary formats and they just add attack surface.
+
+Disables legacy nouveau contexts. These aren't needed anymore and contain security holes. <ref>https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=b30a43ac7132cdda833ac4b13dd1ebd35ace14b7</ref>
+
+Disables INET socket monitoring interface. Has helped heap memory attacks in the past.
+
+Disables vsyscall emulation. Vsyscalls are in a fixed position in memory and can be used to bypass ASLR.
+
+Disables crash dumps and coredumps. Can contain sensitive information.
+
+Disables uselib. Only used in older libc versions and has been the cause of privilege escalation vulnerabilities in the past.
+
+Disables 32-bit support and IA32 emulation. Doesn't have much attention upstream so it's full of bugs. <ref>https://seclists.org/oss-sec/2019/q4/98</ref>
+
+Disables <code>modify_ldt()</code> syscall. Increases low-level kernel attack surface.
+
+Disables KSM. This has various vulnerabilities described [https://www.whonix.org/wiki/KVM#KSM here].
+
+Disables unused networks protocols (DCCP, RDS, SCTP, bluetooth etc.).
+
+Disables ftrace. Can hook into kernel code to gather a lot of information about what is happening in the kernel.
+
+Disables firewire and thunderbolt. Can be abused for DMA.
+
+Disables AIO. This has various vulnerabilities described [https://github.com/AndroidHardeningArchive/documentation/blob/master/technical_overview.md#attack-surface-reduction here].
+
+Disables <code>sysfs()</code> syscall. Deprecated.
+
+Disables debugfs. Contains a lot of debug info that's been the cause of many vulnerabilities in the past.
+
+Disables notifier error injection. Allows userspace to inject artificial errors into kernel code.
+
+Disables profiling support. Can gather potentially dangerous debugging information.
+
+Disables unneeded partition types.
+
+Disables IPV6.
+
+Disables unused LSMs. Only AppArmor is enabled.
+
+Disables /proc page monitoring. This adds more files to /proc which leak a lot of memory information that can be useful to bypass ASLR.
+
+Disables unused filesystems.
+
+Restrict loading line disciplines to CAP_SYS_MODULE. Prevents attackers from loading ancient line disciplines with vulnerabilities to exploit them.
+
+Distrusts the CPU for initial entropy as it cannot be audited to ensure it gives good entropy.
+
+Disables staging drivers. These are lower quality and are more likely to contain vulnerabilities.
+
+Disables some legacy drivers with security holes.
+
+== Options we enable ==
+
+Enables validation of commonly targeted structures (SG tables, notifier call chains, credential management, linked list manipulation).
+
+Enables sanity checks in virtual to page code to prevent certain data corruption.
+
+Enables IOMMU by default. Prevents DMA attacks.
+
+Enables hardening GCC plugins: LATENT_ENTROPY, STRUCTLEAK and RANDSTRUCT. LATENT_ENTROPY gathers more entropy during boot, STRUCTLEAK zero-inits variables and RANDSTRUCT randomizes the layout of sensitive kernel structures. We do not weaken RANDSTRUCT with the RANDSTRUCT_PERFORMANCE option. We use STRUCTLEAK's strongest option (BYREF_ALL).
+
+Enables reset attack mitigation. Prevents certain cold-boot attacks.
+
+Sets the number of entropy bits to use for mmap ASLR to the highest (32). linux-hardened applies this to the stack too.
+
+Compiles jitterentropy and various HWRNGs as built-in for better entropy.
+
+Signs all kernel modules during compilation.
+
+Makes the kernel panic on oopses to deter bruteforcing.
+
+Restricts the SysRq key to only allow SAK and shutdowns.
+
+= linux-hardened =
+
+[https://github.com/anthraxx/linux-hardened/ linux-hardened] is a patch for the Linux kernel that adds many hardening features.
+
+== Improvements of linux-hardened ==
+
+Many ASLR improvements https://gist.github.com/thestinger/b43b460cfccfade51b5a2220a0550c35
+
+Marks more areas as read-only with <code>__ro_after_init</code> and adds <code>__read_only</code> for non-init usage.
+
+Adds writable function pointer detection.
+
+Enables stricter sysctls by default although we set these with security-misc already.
+
+More sanity checks.
+
+Slab canaries.
+
+Sanitizes slab and page allocations on free (for non-LTS kernels, it just uses <code>init_on_{free,alloc}</code> with some enhancements).
+
+Verifies slab and page sanitization.
+
+Restricts the TIOCSTI ioctl to CAP_SYS_ADMIN as it can be used to compromise many programs in the same session.
+
+Disables unprivileged user namespaces. These expose a lot of kernel attack surface.
+
+Restricts device timing sidechannels to CAP_MKNOD.
+
+Restricts all <code>perf_event_open()</code> use to CAP_SYS_ADMIN.
+
+Makes the kernel BUG on more data corruption.
+
+Adds the <code>extra_latent_entropy</code> kernel boot parameter to gather more entropy during boot.
+
+== Improvements of linux-hardened we don't yet benefit from ==
+
+FORTIFY_SOURCE enhancements. These aren't intended for production usage.
+
+Restricts <code>userfaultfd()</code> syscall to root. We disable <code>userfaultfd()</code> altogether.
+
+Extends <code>init_on_free</code> and <code>init_on_alloc</code> to slab caches with constructors. These aren't in our kernel version.
+
+Hard-wires the legacy checkreqprot option to 0. We don't use SELinux.
+
+Adds a sysctl to disable newly added USB devices (<code>kernel.deny_new_usb</code>). We don't make use of this yet.
+
+Zero-fill uninitialized local variables. Requires clang compiler support and we use GCC.
+
+== Upcoming improvements of linux-hardened ==
+
+[https://github.com/anthraxx/linux-hardened/pulls?q=author%3Amadaidan+ We are contributing to linux-hardened and adding more hardening features.] These aren't merged yet. This list documents these upcoming features.
+
+Disables TCP simultaneous connect. This weakness allows an attacker to easily prevent a client from connecting to a known server so it should be disabled.
+
+Restricts module auto-loading to CAP_SYS_MODULE. Prevents unprivileged attackers from auto-loading vulnerable modules to increase attack surface.
+
+Restricts access to sysfs to root. Sysfs has been the cause of many vulnerabilities and info-leaks.
+
+Further restricts <code>perf_event_open()</code> to deny even root from using it.
+
+Trusted Path Execution.
+
+= Unused options =
+
+There are some hardening options we don't use. This is a list of options we don't use and why.
+
+<code>CONFIG_STATIC_USERMODEHELPER=y</code> - This would be great to enable but breaks boot.
+
+<code>CONFIG_KALLSYMS=n</code> - We set <code>kptr_restrict</code> so this won't make much difference except minor attack surface reduction.
+
+<code>CONFIG_MAGIC_SYSRQ=n</code> - There are important features of SysRq we don't want to lose such as SAK. Instead, we restrict the SysRq key to only allow SAK and shutdowns.
+
+<code>CONFIG_BPF_JIT=n</code> - We harden the BPF JIT compiler so this isn't as important but there has been some discussion on disabling this https://forums.whonix.org/t/should-the-bpf-jit-compiler-be-disabled/8475
+
+<code>CONFIG_MODULE_SIG_FORCE=y</code> - Currently, this will break the Virtualbox Guest Additions, LKRG and Tirdad kernel modules but there is work on fixing this.
+
+<code>CONFIG_SLUB_DEBUG_ON=y</code> - This gives no advantage over the <code>slub_debug=</code> boot parameter.
+
+<code>CONFIG_SECURITY_LOADPIN=y</code> - We don't use loadpin so this option is pointless.
+
+<code>CONFIG_PAGE_POISONING=y</code> - We use linux-hardened's <code>CONFIG_PAGE_SANITIZE</code> instead which is better and doesn't force debug bloat.
+
+<code>CONFIG_MODULES=n</code> - We need kernel modules and restrict module loading as much as we can (with apparmor-profile-everything and in the future, enforcing signature verification and restricting auto-loading to root). This can be reconsidered once clang CFI is upstream as disabling module support improves CFI granularity.
+
+<code>CONFIG_USER_NS=n</code> - This option is only a problem for unprivileged users and linux-hardened restricts these to root.
+
+<code>CONFIG_SHUFFLE_PAGE_ALLOCATOR=y</code> - Not in LTS kernels.
+
+<code>CONFIG_INIT_ON_ALLOC_DEFAULT_ON=y</code> - Not in LTS kernels.
+
+<code>CONFIG_INIT_ON_FREE_DEFAULT_ON=y</code> - Not in LTS kernels.
+
+<code>CONFIG_GCC_PLUGIN_STACKLEAK=y</code> - Not in LTS kernels.
+
+<code>CONFIG_SECURITY_LOCKDOWN_LSM=y</code> - Not in LTS kernels.
+
+<code>CONFIG_SECURITY_SAFESETID=y</code> - Not in LTS kernels.
+
+<code>CONFIG_INIT_STACK_ALL=y</code> - Requires clang compiler support.
+
+<code>CONFIG_LOCAL_INIT=y</code> (linux-hardened) - Requires clang compiler support.
+
+= Disabled Devices =
+
+Both kernels disable some drivers that are unlikely to be used to cut attack surface. The drivers disabled are as follows:
+
+* All staging drivers:
+** <code>CONFIG_RTL8192U</code> - RealTek RTL8192U Wireless LAN NIC driver
+** <code>CONFIG_RTL8192E</code> - RealTek RTL8192E Wireless LAN NIC driver
+** <code>CONFIG_RTL8723BS</code> - RTL8723BS SDIO
+** Intel Compute Stick, the CHIP and many other Intel Atom and ARM based devices
+** R8712U
+** D-Link DWA-130
+** <code>CONFIG_R8188EU</code>
+** TP-Link TL-WN725N
+** <code>CONFIG_R8822BE</code> - Realtek RTL8822BE 802.11ac
+** <code>CONFIG_RTS5208</code> - Realtek PCI-E Card Reader RTS5208/5288 support
+** <code>CONFIG_PI433</code> - Pi433 - a 433MHz radio module for Raspberry Pi
+** some data acquisition device such as <code>CONFIG_COMEDI</code>
+* All industrial I/O support (<code>CONFIG_IIO</code>) is disabled. This includes things like humidity sensors, chemical sensors, light sensors, accelerometers etc. that don't really make sense on a usual desktop system.
+* All android support is disabled as these kernels aren't meant to be used on any mobile devices.
+* Infiniband support.
+* SMC-R, "sockets over RDMA", RDMA over Converged Ethernet (RoCE)
+
+= Project Status =
+== Blockers before calling Whonix Users for Testing ==
+* [https://phabricator.whonix.org/T960 Debian packaging and APT integration is not done yet.]
+* [https://phabricator.whonix.org/T955 Kernel configuration needs to be reviewed.]
+* Does not [[Verifying Software Signatures|verify software signatures]] yet. This will be a non-issue when below is fixed.
+* Should not download archive files. Was discussed [https://forums.whonix.org/t/kernel-recompilation-for-better-hardening/7598/214 here].
+
+== Blockers for Host Release ==
+* There is no pre-compiled <code>hardened-host-kernel</code> package yet.
+
+== Maintainability ==
+* Could use a script that helps maintainers to easily update version numbers. (Using str_replace.)
+
+== Outreach ==
+* Few people know [https://github.com/anthraxx/linux-hardened linux-hardened] project. Even fewer know [https://github.com/Whonix/hardened-kernel hardened-kernel] project. Places that previously discussed/used grsecurity are unaware of these project. Hence, few reviews/contributors.
+
+== List of All Tasks ==
+* See [https://phabricator.whonix.org/project/view/150/ hardened-kernel development tasks].
+
+== Contribute ==
+Since this is an Open Source / Free/Libre/Freedom Software project, development help is very much welcome!
+
+= Upstreaming =
+Seems unfortunately unlikely:
+
+* Debian Linux package feature request: [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=934820 consider review and merge of linux-hardened patches (free, Libre alternative to grsecurity)]
+* Debian Request For Packaging: [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=934751 RFP: linux-hardened -- hardened Linux kernel]
+* [https://github.com/anthraxx/linux-hardened linux-hardened] feature request: [https://github.com/anthraxx/linux-hardened/issues/21 Hardened Kernel Config File for Virtual Machines (VMs) ("cloud kernel")]
+* [https://github.com/a13xp0p0v/kconfig-hardened-check kconfig-hardened-check] feature request: [https://github.com/a13xp0p0v/kconfig-hardened-check/issues/25 Hardened Kernel Config File for Virtual Machines (VMs) ("cloud kernel")]
+* [https://github.com/clipos CLIP OS] feature request: [https://github.com/clipos/bugs/issues/38 Hardened Kernel Config File for Virtual Machines (VMs) ("cloud kernel") and Hosts]
+
+= Forum Discussion =
+https://forums.whonix.org/t/kernel-recompilation-for-better-hardening/7598
+
+= References =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
