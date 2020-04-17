@@ -1,0 +1,939 @@
+{{Title|title=Protocol Leak Protection and Fingerprinting Protection‎}}
+{{Header}}
+{{#seo:
+|description=Protection from IP Leaks, DNS Leaks, Protocol Leaks and Fingerprinting. Analysis of host hardware identifiers visible or hidden inside virtual machines.
+|image=https://www.whonix.org/w/images/7/76/Leakprotection-840835.jpg
+}}
+
+= Introduction =
+{{project_name}} cannot do the impossible and magically prevent every kind of [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Protocolleaks protocol leak] and identifier disclosure:
+
+<blockquote>Tor provides only anonymity for DNS and the transmission of the TCP stream. Everything inside the stream, the application protocol, needs to be scrubbed. For example, if the application uses advanced techniques to determine your real external IP and sends it over the anonymized TCP stream, then what you wanted to hide, your real external IP, isn't hidden.
+...
+
+Many applications can also leak other problematic and/or sensitive data, such as:
+
+* Your real external non-Tor IP address, as described above
+* Your time zone (for example: IRC clients through CTCP)
+* Your user name (for example: ssh through login)
+* The name and version of the client or server you are using (for example: Apache web server leaks software name and version number; IRC clients leak client name and client version number through CTCP)
+* ​Metadata can be a risk. Click ​MAT and read 'What is a metadata?' and 'Why metadata can be a risk for your privacy?'
+* Depending on your Mode Of Anonymity you obviously shouldn't mix your use of protected (anonymous) applications with applications not passing through the Tor network or some other form of anonymity. For example, if a login name or password of yours can be traced back to your personal identity, then you are defeating the purpose entirely. Tor can not protect you from this kind of activity
+* Even sending the contents of your RAM can be dangerous. (For example: error reporting, leading to Transparent Proxy Leaks)
+* A lot of information which the application sends on request from a server (for example: most web browsers beside the Tor Browser)
+* Hardware serial numbers might be used for fingerprinting and in the worst case scenario, lead back to you.
+* License keys of non-free software is often transmitted and might lead back to you.</blockquote> 
+
+Despite the many risks, {{project_name}} is designed to offer multiple layers of defense for the best possible protection against inadvertent deanonymization.
+
+= Whonix Advantages =
+
+== Protection Against Serious Leaks ==
+
+{{project_name}} protects against the most dangerous leak categories outlined below, which would otherwise divulge the user's real identity (remotely or directly):
+
+* The real, external, non-Tor IP address is hidden due to the fundamental {{project name}} design, use of an isolated proxy, and the [[Install_Software#{{workstation_product_name}}_is_firewalled|{{project name}} firewall]]. <ref name=one>
+This does not cover application vulnerabilities and exploits, which escalate from the virtual machine to the host. See: [[Comparison_with_Others#Attacks|Attacks]]. However, by design the {{workstation_product_name}} does not know its own external non-Tor IP address.
+</ref>
+* The same applies for DNS<ref name=one /> requests; they are safe. <ref>
+''/etc/resolv.conf'' in {{workstation_product_name}} is configured to use the {{gateway_product_name}} as the DNS resolver, which is routed through Tor.
+</ref>
+
+== Numerous Default Applications are Pre-configured Against Leaks ==
+
+Developers have taken care to prevent common applications from leaking information that could identify users, including:
+
+* <u>[[Stream Isolation]]</u>: Configuring applications to use their own SocksPort, thus preventing Identity correlation through circuit sharing.
+* <u>Browser fingerprinting</u>: {{project_name}} [[Tor Browser|includes Tor Browser]] by default. The browser fingerprint is as good (or bad) as using the normal Tor Browser bundle from torproject.org
+* <u>GPG</u>: <code>/home/user/gpg.conf</code> is optimized for privacy; see footnote. <ref>Adhering to [https://github.com/ioerror/torbirdy/pull/11 recommendations] as per the [https://github.com/ioerror/torbirdy/blob/master/gpg.conf torbirdy github repository], which prevents leakage of the operating system version (no-emit-version) and other variables ([https://github.com/{{project_name_short}}/anon-gpg-tweaks/blob/master/usr/share/anon-gpg-tweaks/.gnupg/gpg.conf on github]).</ref>
+* <u>HexChat</u>: Secure defaults are utilized as per [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO/HexChat TorifyHOWTO/HexChat] ([https://github.com/{{project_name_short}}/xchat-improved-privacy on github]). The identity can be reset using ''xchat-reset'' ([https://github.com/{{project_name_short}}/xchat-improved-privacy/blob/master/usr/bin/xchat-reset on github]) as documented on the [[HexChat]] page.
+* <u>ssh</u>: Without {{project_name}}, the syntax for ssh is user@hostname [...]. However, if a specific user is not nominated before @hostname, the operating system user name will be utilized instead. If that value is something identifiable, then anonymity is broken. Since {{project name}} defaults the user name to <code>user</code>, in the worst case only the username <code>user</code> can be leaked, which is harmless. <ref>In this case it may appear that the syntax was simply copied from the manpage.</ref> <ref>The Tails OS similarly sets the username to <code>amnesia</code>, which is a default value not set by the user and therefore safe.</ref>
+
+Many protocol leaks are already documented, see: [[Documentation]] and [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO TorifyHOWTO] for further information.
+
+= Identifiers =
+
+In addition to protocol leaks, there are also a range of identifiers that can be used for fingerprinting by adversaries in order to narrow down the list of potential suspects (for example, the time zone), or even for complete deanonymization (for example, if the user name was set to John Doe). Major and minor identifiers are described below.
+
+== Major Identifiers ==
+
+'''Table:''' ''Major Identifiers''
+
+{| class="wikitable"
+|-
+! scope="col"| '''Category'''
+! scope="col"| '''Description'''
+|-
+! scope="row"| Color depth
+| The default color depth is 24-bit for all {{project name}} users. <ref>
+To check the color depth run the following command in console. 
+
+<pre>
+xdpyinfo | grep "of root"
+</pre>
+</ref> <ref name=fontlist>
+Do not rely on https://ip-check.info or similar websites to check the desktop resolution and color depth, because Tor Button changes these values to improve anonymity; refer to the TorButton specification and Tor trac for further details. In order to check the list of installed fonts, run. 
+
+<pre>
+fc-list
+</pre>
+</ref>
+|-
+! scope="row"| Desktop Resolution
+| The desktop resolution was <u>formerly</u> set to <code>1024x768</code> for all {{project name}} users, with the (virtual) refresh rate set to 60. <ref>
+To check the desktop resolution and refresh rate, run the following command in console. 
+
+<pre>
+xrandr
+</pre>
+</ref>
+|-
+! scope="row"| Fonts
+| All {{project name}} users have the same list of fonts installed. <ref>So long as the user or any additional software packages do not install further packages.</ref> <ref>Only three common fonts (monospace, serif, times new roman) can be detected for all Tor Browser users. </ref> <ref>Robert Ransom previously suggested {{project_name}} should share the same list of fonts as Tails if possible. Since Tor Browser no longer leaks which fonts are installed, lead {{project name}} developer Patrick Schleizer does not see any advantage of this action (follow-up enquiry ignored).</ref>
+|-
+! scope="row"| Hostname
+| The hostname is set to <code>host</code>. <ref>To check the hostname, run.
+
+<pre>
+host
+</pre>
+</ref>
+|-
+! scope="row"| Internal (virtual LAN) IP address
+| 
+* [[{{q project name short}}|{{q project name}}]]: The same range exists for all [[{{q_project_name_short}}|{{q_project_name}}]] users. ([https://github.com/QubesOS/qubes-issues/issues/1143 related ticket])
+* [[VirtualBox]] / [[KVM]]: This is the same for all {{project name}} users.<ref>
+To check the internal (virtual LAN) IP address, run. 
+
+<pre>
+sudo ifconfig
+</pre>
+</ref>
+|-
+! scope="row"| Long host name (FQDN)
+| The long host name (FQDN) is set to host.localdomain <ref>To check the long host name, run.
+<pre>
+hostname --fqdn
+</pre>
+</ref>
+|-
+! scope="row"| MAC address
+| The [https://en.wikipedia.org/wiki/MAC_address MAC address] is different from the host. <ref>
+To check {{workstation_product_name}}'s MAC address, run. 
+
+<pre>
+sudo ifconfig | grep HWaddr
+</pre>
+
+Inside {{workstation_product_name}} and then compare it with the host.
+</ref> <ref>
+Disadvantages of shared MAC Addresses:
+
+* [[Multiple_{{workstation_product_name_short}}|Multiple {{workstation_product_name}}]] cannot use the Internet at the same time if they are using the same MAC address. It leads to confusing connection interruptions in either of the virtual machines.
+* There are minimal advantages of sharing MAC addresses among all {{project name}} versions. (That would be useful in the event an application leaks the MAC address or if {{workstation_product_name}} was compromised.)
+* The project maintainers need to explain and defend the design, which takes a lot of time for little gain. (Again, it is important not to expose the host's real MAC address, but so long as the one inside the virtual machine is different, everything is in an acceptable state.)
+</ref> <ref>
+Advantages of shared MAC addresses:
+
+* It may be easier to develop [[Connections_between_{{gateway_product_name_short}}_and_{{workstation_product_name_short}}#ARP_spoofing_defense|ARP spoofing defense]] to implement authenticated connections between {{gateway_product_name}} and {{workstation_product_name}}. (This is only useful when using [[Multiple {{workstation_product_name_short}}|Multiple {{workstation_product_name}}]].) To understand the context, please read [[Connections_between_{{gateway_product_name_short}}_and_{{workstation_product_name_short}}]].
+* In some cases, applications gather the MAC address and send it to a remote server (proprietary license checks use the MAC for hardware fingerprinting). In this case a shared MAC address might be useful.
+</ref>
+|-
+! scope="row"| Operating system updates
+| Operating system (apt-get) updates are routed through their own circuit ([[Stream Isolation]]) to prevent accidental leakage of software packages and versions (if any custom software is installed) which could then be correlated with other anonymous activity. Also see: [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Softwareupdaters Software updaters] and [[Install Software | Software installation {{workstation_product_name}}]].
+|-
+! scope="row" | RAM
+| In the worst case scenario, if RAM contents are leaked -- such as error reporting software phoning home, RAM dump if infected with malware, or [https://trac.torproject.org/projects/tor/wiki/doc/TransparentProxyLeaks Transparent Proxy Leaks]) -- this would "only" contain the RAM of the {{workstation_product_name}}. All non-anonymous material on the host remains safe.
+|-
+! scope="row"| Time
+| 
+* {{workstation_product_name}}, {{gateway_product_name}} and the host time are all different from each other.
+* Time zone (local time) is set to UTC. <ref>
+To check the time zone, run. 
+
+<pre>
+cat /etc/timezone
+</pre>
+</ref>
+* The hardware clock is set to UTC.
+* See [[TimeSync|{{project name}} Time Synchronization Mechanism]] for further information.
+|-
+! scope="row"| User name
+| The user name is set to <code>user</code>.
+|}
+
+== Minor Identifiers ==
+
+These identifiers are less important because an adversary can only collect them if the user installed malicious software (for example, some copyright enforcement and anti-cheat tools collect them), or if the adversary achieves remote access by compromising a user or in some cases the root account.
+
+'''Table:''' ''Minor Identifiers''
+
+{| class="wikitable" style="text-align: center; background-color: #fff"
+|- style="background-color: #f9f9f9"
+| style="height: 35px"|
+| '''Qubes'''
+| '''Virtualbox'''
+| '''KVM'''
+|-
+| style="height: 27px;background-color: #f9f9f9"| Hidden hardware serial numbers <ref>Hardware serial numbers which any applications could collect are hidden due to the Virtual Machine.</ref> <ref>
+It is possible to check the visible hardware yourself with the following commands.
+
+<pre>
+sudo apt-get update
+sudo apt-get install lshw
+</pre>
+
+<pre>
+sudo lshw
+</pre>
+
+and 
+
+<pre>
+sudo lspci
+</pre>
+
+If USB devices are attached, run. 
+
+<pre>
+sudo apt-get install usbutils
+sudo lsusb
+</pre>
+
+Then compare the results with your host.
+</ref>
+| {{Yes}}
+| {{Yes}}
+| {{Yes}}
+|-
+| style="height: 27px;background-color: #f9f9f9"| Hidden CPU model and capabilities
+| {{No}}
+| {{No}} <ref>These were hidden by VirtualBox "Synthetic CPU" in the past but that feature was removed from VirtualBox. (Even then the clock speed of your host CPU was visible to all code (applications or malware) inside {{workstation_product_name}}.) [https://phabricator.whonix.org/T408 The parameters --cpuid-portability-level or --cpuidremoveall have been tested and do not hide it either.]</ref>
+| {{No}} <ref>
+https://forums.whonix.org/t/help-welcome-kvm-development-staying-the-course/166/403
+</ref> <ref>
+https://phabricator.whonix.org/T449
+</ref> <ref>
+This is due to the design of virtualization platforms (VirtualBox, VMware, etc.). Most virtualization platforms leak CPU model, capabilities and clock speed. Check.
+
+<pre>
+cat /proc/cpuinfo
+</pre>
+
+If that is a still problem for you another workaround could be to use an emulator, such as QEMU (port available, documented, see [[QEMU]]) or [http://bochs.sourceforge.net/ bochs] (no one has created a port yet, undocumented). Unfortunately such emulators are slow and there might be other limitations. (Does Bochs support internal networking?)
+</ref>
+|-
+| style="height: 27px;background-color: #f9f9f9"| Safe RAM assignment
+| style="background-color: {{Yellow}}"| Dynamically assigned
+| {{Yes}}, fixed
+| {{Yes}}, fixed
+|-
+
+| style="height: 27px;background-color: #f9f9f9"| Hidden sensor information <ref>CPU temperature, HDD temperature, [https://en.wikipedia.org/wiki/S.M.A.R.T. S.M.A.R.T.]</ref> <ref>Fortunately virtualizers hide them from the guest VM by not implementing them.</ref> <ref>To check the sensor information, run. 
+
+<pre>
+sudo apt-get install hddtemp
+
+## Qubes
+sudo hddtemp /dev/xvda
+
+## VirtualBox
+sudo hddtemp /dev/sda
+
+## KVM
+sudo hddtemp /dev/vda
+</pre>
+
+ and 
+
+<pre>
+sudo apt-get install lm-sensors
+sudo sensors-detect
+</pre>
+</ref> 
+| {{Yes}} 
+| {{Yes}} 
+| {{Yes}} 
+|-
+| style="height: 27px;background-color: #f9f9f9"| Hidden battery information <ref>To check the battery information, run. 
+
+<pre>
+sudo apt-get install acpi
+
+acpi -V
+</pre>
+</ref>
+| {{Yes}}
+| {{No}}
+| {{Yes}}
+|-
+| style="height: 27px;background-color: #f9f9f9"| Hidden BIOS DMI information <ref name=biosdmi>To check the BIOS DMI information, run.
+
+<pre>
+sudo dmidecode
+</pre>
+</ref>
+| {{Yes}}
+| {{Yes}}
+| {{Yes}}
+|-
+| style="height: 27px;background-color: #f9f9f9"| Hidden virtual BIOS DMI information and Virtual HDD and CD serial numbers <ref name=biosdmi /> <ref>
+To see disk ids that are in use, run. 
+
+<pre>
+sudo ls -la /dev/disk/by-id/
+</pre>
+
+<pre>
+sudo ls -la /dev/disk/by-uuid/
+</pre>
+
+Then compare the result with the host.
+</ref>
+| {{Yes}}, only virtual ones
+| {{Yes}}, only virtual ones
+| {{Yes}}, only virtual ones
+|-
+| style="height: 27px;background-color: #f9f9f9"| Hidden VM UUID <ref>As in explained in [http://www.virtualbox.org/manual/ch08.html#vboxmanage-modifyvdi VBoxManage modifyhd], this value has no relation to the host by default.</ref> <ref>To check the VM UUID, run.
+
+<pre>
+sudo dmidecode
+</pre>
+</ref>
+| {{Yes}}
+| {{Yes}}
+| {{Yes}}
+|-
+
+| style="height: 27px;background-color: #f9f9f9"| Hidden [https://msdn.microsoft.com/en-us/library/windows/hardware/hh673514.aspx SLIC table] <ref>
+To check the SILC table, run. 
+
+<pre>
+sudo cat /sys/firmware/acpi/tables/SLIC
+</pre>
+
+Inside the virtualizer and on the host. On the host there may or may not be not be a SLIC table. If there is none, it cannot leak into your virtualizer. If there is one, the value will not be mirrored in VirtualBox, which is fine.
+</ref>
+| {{Yes}}, not implemented
+| {{Yes}}, empty by default
+| {{Yes}}, not present
+|-
+| style="height: 27px;background-color: #f9f9f9"| HDD UUIDs are different from the host <ref>To check the HDD UUID, run. 
+
+<pre>
+## Qubes
+sudo hdparm -i /dev/xvda
+
+## VirtualBox
+sudo hdparm -i /dev/sda
+
+## KVM
+sudo hdparm -i /dev/vda
+</pre>
+</ref>
+| {{Yes}}
+| {{Yes}}
+| {{Yes}}
+|-
+| style="height: 27px;background-color: #f9f9f9"| CD-ROM UUID is identical for all {{project_name}} users <ref>To check the CD-ROM UUID, run. 
+
+<pre>
+udisks --show-info /dev/cdrom
+</pre>
+</ref>
+| {{Yes}}
+| {{Yes}}
+| {{Yes}}
+|-
+| style="height: 27px;background-color: #f9f9f9"| Identical software packages <ref>By default, all {{project name}} users have the same set of software packages installed. However, if additional software packages are installed, this advantage is lost. See also: [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Softwareupdaters Software updaters].</ref>
+| style="background-color: {{Yellow}}"| Differs from [[{{non q project name short}}|{{non q project name}}]]
+| style="background-color: {{Yellow}}"| Differs from [[{{q project name short}}|{{q project name}}]]
+| style="background-color: {{Yellow}}"| Differs from [[{{q project name short}}|{{q project name}}]]
+|-
+| style="height: 27px;background-color: #f9f9f9"| Hidden disk UUIDs <ref>Real hardware UUIDs are hidden by the virtualizer.</ref>
+| {{Yes}}
+| {{Yes}}
+| {{Yes}}
+|-
+| style="height: 27px;background-color: #f9f9f9"| Hidden [https://en.wikipedia.org/wiki/Extended_display_identification_data EDID] <ref>Virtualizers routinely hide extended display identification data.</ref>
+| {{Yes}} <ref>See: [[#Qubes|Qubes EDID]].</ref>
+| {{Yes}} <ref>See: [[#VirtualBox|VirtualBox EDID]].</ref> <ref>
+* [https://www.virtualbox.org/ticket/10976 document all virtual hardware serial numbers implemented by VirtualBox]
+* [https://www.virtualbox.org/ticket/10975 document which information from the host are visible to VMs]
+</ref>
+| {{Yes}} <ref>See: [[#KVM|KVM EDID]].</ref>
+|-
+
+|}
+
+== Metadata ==
+
+See [[Metadata]].
+
+= CPU Output Tests =
+
+TNT_BOM_BOM generated <code>/proc/cpuinfo</code> output which was posted to the {{project_name}} [https://forums.whonix.org/t/guest-systems-sees-cpu-of-the-host/1413/17 forums] and copied here.
+
+== cpu test 1:- (before VBoxManage modifyvm {{workstation_product_name}} --cpuidremoveall) ==
+
+<pre>
+>  
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 37
+model name      : Intel(R) Core(TM) i5 CPU       M 580  @ 2.67GHz
+stepping        : 5
+microcode       : 0x616
+cpu MHz         : 2659.899
+cache size      : 3072 KB
+physical id     : 0
+siblings        : 1
+core id         : 0
+cpu cores       : 1
+apicid          : 0
+initial apicid  : 0
+fdiv_bug        : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 11
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm constant_tsc xtopology nonstop_tsc pni monitor lahf_lm
+bogomips        : 5319.79
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 36 bits physical, 48 bits virtual
+power management:
+</pre>
+
+== cpu test 2 (after VBoxManage modifyvm {{workstation_product_name}} --cpuidremoveall + shutdown the WS) ==
+<pre>
+>  
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 37
+model name      : Intel(R) Core(TM) i5 CPU       M 580  @ 2.67GHz
+stepping        : 5
+microcode       : 0x616
+cpu MHz         : 2660.690
+cache size      : 3072 KB
+physical id     : 0
+siblings        : 1
+core id         : 0
+cpu cores       : 1
+apicid          : 0
+initial apicid  : 0
+fdiv_bug        : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 11
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx lm constant_tsc xtopology nonstop_tsc pni monitor lahf_lm
+bogomips        : 5321.38
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 36 bits physical, 48 bits virtual
+power management:
+</pre>
+
+== KVM {{workstation_product_name}} 12 /proc/cpuinfo ==
+<pre>
+> processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 6
+model name      : QEMU Virtual CPU version 2.1.2
+stepping        : 3
+microcode       : 0x1
+cpu MHz         : 2659.914
+cache size      : 4096 KB
+physical id     : 0
+siblings        : 1
+core id         : 0
+cpu cores       : 1
+apicid          : 0
+initial apicid  : 0
+fdiv_bug        : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 4
+wp              : yes
+flags           : fpu de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pse36 clflush mmx fxsr sse sse2 syscall nx lm pni cx16 x2apic popcnt hypervisor lahf_lm
+bogomips        : 5319.82
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 40 bits physical, 48 bits virtual
+power management:
+
+> processor       : 1
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 6
+model name      : QEMU Virtual CPU version 2.1.2
+stepping        : 3
+microcode       : 0x1
+cpu MHz         : 2659.914
+cache size      : 4096 KB
+physical id     : 1
+siblings        : 1
+core id         : 0
+cpu cores       : 1
+apicid          : 1
+initial apicid  : 1
+fdiv_bug        : no
+f00f_bug        : no
+coma_bug        : no
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 4
+wp              : yes
+flags           : fpu de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pse36 clflush mmx fxsr sse sse2 syscall nx lm pni cx16 x2apic popcnt hypervisor lahf_lm
+bogomips        : 1945.60
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 40 bits physical, 48 bits virtual
+power management:
+</pre>
+
+== KVM {{workstation_product_name}} 13 /proc/cpuinfo ==
+<pre>
+> processor : 0
+vendor_id : GenuineIntel
+cpu family : 6
+model : 6
+model name : QEMU Virtual CPU version 2.1.2
+stepping : 3
+microcode : 0x1
+cache size : 4096 KB
+physical id : 0
+siblings : 1
+core id : 0
+cpu cores : 1
+apicid : 0
+initial apicid : 0
+fdiv_bug : no
+f00f_bug : no
+coma_bug : no
+fpu : yes
+fpu_exception : yes
+cpuid level : 4
+wp : yes
+flags : fpu de pse msr pae mce cx8 apic sep mtrr pge mca cmov pse36 mmx fxsr sse sse2 syscall nx lm pni cx16 x2apic popcnt aes hypervisor lahf_lm
+bogomips : 1185.79
+clflush size : 32
+cache_alignment : 32
+address sizes : 40 bits physical, 48 bits virtual
+power management:
+
+processor : 1
+vendor_id : GenuineIntel
+cpu family : 6
+model : 6
+model name : QEMU Virtual CPU version 2.1.2
+stepping : 3
+microcode : 0x1
+cache size : 4096 KB
+physical id : 1
+siblings : 1
+core id : 0
+cpu cores : 1
+apicid : 1
+initial apicid : 1
+fdiv_bug : no
+f00f_bug : no
+coma_bug : no
+fpu : yes
+fpu_exception : yes
+cpuid level : 4
+wp : yes
+flags : fpu de pse msr pae mce cx8 apic sep mtrr pge mca cmov pse36 mmx fxsr sse sse2 syscall nx lm pni cx16 x2apic popcnt aes hypervisor lahf_lm
+bogomips : 1173.50
+clflush size : 32
+cache_alignment : 32
+address sizes : 40 bits physical, 48 bits virtual
+power management:
+</pre>
+
+== from whonix 12 WS - qubes Q3 "cat /proc/cpuinfo" (**different PC**) ==
+<pre>
+> processor    : 0
+vendor_id    : GenuineIntel
+cpu family    : 6
+model        : 60
+model name    : Intel(R) Core(TM) i7-4710HQ CPU @ 2.50GHz
+stepping    : 3
+microcode    : 0x17
+cpu MHz        : 2494.312
+cache size    : 6144 KB
+physical id    : 0
+siblings    : 8
+core id        : 2
+cpu cores    : 1
+apicid        : 4
+initial apicid    : 4
+fpu        : yes
+fpu_exception    : yes
+cpuid level    : 13
+wp        : yes
+flags        : fpu de tsc msr pae cx8 apic sep cmov pat clflush mmx fxsr sse sse2 ss ht syscall nx lm constant_tsc rep_good nopl eagerfpu pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm ida arat epb pln pts dtherm fsgsbase bmi1 avx2 bmi2 erms xsaveopt
+bugs        :
+bogomips    : 4988.62
+clflush size    : 64
+cache_alignment    : 64
+address sizes    : 39 bits physical, 48 bits virtual
+power management:
+
+> processor    : 1
+vendor_id    : GenuineIntel
+cpu family    : 6
+model        : 60
+model name    : Intel(R) Core(TM) i7-4710HQ CPU @ 2.50GHz
+stepping    : 3
+microcode    : 0x17
+cpu MHz        : 2494.312
+cache size    : 6144 KB
+physical id    : 0
+siblings    : 8
+core id        : 2
+cpu cores    : 1
+apicid        : 4
+initial apicid    : 4
+fpu        : yes
+fpu_exception    : yes
+cpuid level    : 13
+wp        : yes
+flags        : fpu de tsc msr pae cx8 apic sep cmov pat clflush mmx fxsr sse sse2 ss ht syscall nx lm constant_tsc rep_good nopl eagerfpu pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm ida arat epb pln pts dtherm fsgsbase bmi1 avx2 bmi2 erms xsaveopt
+bugs        :
+bogomips    : 4988.62
+clflush size    : 64
+cache_alignment    : 64
+address sizes    : 39 bits physical, 48 bits virtual
+power management:
+
+> processor    : 2
+vendor_id    : GenuineIntel
+cpu family    : 6
+model        : 60
+model name    : Intel(R) Core(TM) i7-4710HQ CPU @ 2.50GHz
+stepping    : 3
+microcode    : 0x17
+cpu MHz        : 2494.312
+cache size    : 6144 KB
+physical id    : 0
+siblings    : 8
+core id        : 2
+cpu cores    : 1
+apicid        : 4
+initial apicid    : 4
+fpu        : yes
+fpu_exception    : yes
+cpuid level    : 13
+wp        : yes
+flags        : fpu de tsc msr pae cx8 apic sep cmov pat clflush mmx fxsr sse sse2 ss ht syscall nx lm constant_tsc rep_good nopl eagerfpu pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm ida arat epb pln pts dtherm fsgsbase bmi1 avx2 bmi2 erms xsaveopt
+bugs        :
+bogomips    : 4988.62
+clflush size    : 64
+cache_alignment    : 64
+address sizes    : 39 bits physical, 48 bits virtual
+power management:
+
+> processor    : 3
+vendor_id    : GenuineIntel
+cpu family    : 6
+model        : 60
+model name    : Intel(R) Core(TM) i7-4710HQ CPU @ 2.50GHz
+stepping    : 3
+microcode    : 0x17
+cpu MHz        : 2494.312
+cache size    : 6144 KB
+physical id    : 0
+siblings    : 8
+core id        : 2
+cpu cores    : 1
+apicid        : 4
+initial apicid    : 4
+fpu        : yes
+fpu_exception    : yes
+cpuid level    : 13
+wp        : yes
+flags        : fpu de tsc msr pae cx8 apic sep cmov pat clflush mmx fxsr sse sse2 ss ht syscall nx lm constant_tsc rep_good nopl eagerfpu pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm ida arat epb pln pts dtherm fsgsbase bmi1 avx2 bmi2 erms xsaveopt
+bugs        :
+bogomips    : 4988.62
+clflush size    : 64
+cache_alignment    : 64
+address sizes    : 39 bits physical, 48 bits virtual
+power management:
+
+> processor    : 4
+vendor_id    : GenuineIntel
+cpu family    : 6
+model        : 60
+model name    : Intel(R) Core(TM) i7-4710HQ CPU @ 2.50GHz
+stepping    : 3
+microcode    : 0x17
+cpu MHz        : 2494.312
+cache size    : 6144 KB
+physical id    : 0
+siblings    : 8
+core id        : 2
+cpu cores    : 1
+apicid        : 4
+initial apicid    : 4
+fpu        : yes
+fpu_exception    : yes
+cpuid level    : 13
+wp        : yes
+flags        : fpu de tsc msr pae cx8 apic sep cmov pat clflush mmx fxsr sse sse2 ss ht syscall nx lm constant_tsc rep_good nopl eagerfpu pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm ida arat epb pln pts dtherm fsgsbase bmi1 avx2 bmi2 erms xsaveopt
+bugs        :
+bogomips    : 4988.62
+clflush size    : 64
+cache_alignment    : 64
+address sizes    : 39 bits physical, 48 bits virtual
+power management:
+
+> processor    : 5
+vendor_id    : GenuineIntel
+cpu family    : 6
+model        : 60
+model name    : Intel(R) Core(TM) i7-4710HQ CPU @ 2.50GHz
+stepping    : 3
+microcode    : 0x17
+cpu MHz        : 2494.312
+cache size    : 6144 KB
+physical id    : 0
+siblings    : 8
+core id        : 2
+cpu cores    : 1
+apicid        : 4
+initial apicid    : 4
+fpu        : yes
+fpu_exception    : yes
+cpuid level    : 13
+wp        : yes
+flags        : fpu de tsc msr pae cx8 apic sep cmov pat clflush mmx fxsr sse sse2 ss ht syscall nx lm constant_tsc rep_good nopl eagerfpu pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm ida arat epb pln pts dtherm fsgsbase bmi1 avx2 bmi2 erms xsaveopt
+bugs        :
+bogomips    : 4988.62
+clflush size    : 64
+cache_alignment    : 64
+address sizes    : 39 bits physical, 48 bits virtual
+power management:
+
+> processor    : 6
+vendor_id    : GenuineIntel
+cpu family    : 6
+model        : 60
+model name    : Intel(R) Core(TM) i7-4710HQ CPU @ 2.50GHz
+stepping    : 3
+microcode    : 0x17
+cpu MHz        : 2494.312
+cache size    : 6144 KB
+physical id    : 0
+siblings    : 8
+core id        : 2
+cpu cores    : 1
+apicid        : 4
+initial apicid    : 4
+fpu        : yes
+fpu_exception    : yes
+cpuid level    : 13
+wp        : yes
+flags        : fpu de tsc msr pae cx8 apic sep cmov pat clflush mmx fxsr sse sse2 ss ht syscall nx lm constant_tsc rep_good nopl eagerfpu pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm ida arat epb pln pts dtherm fsgsbase bmi1 avx2 bmi2 erms xsaveopt
+bugs        :
+bogomips    : 4988.62
+clflush size    : 64
+cache_alignment    : 64
+address sizes    : 39 bits physical, 48 bits virtual
+power management:
+
+> processor    : 7
+vendor_id    : GenuineIntel
+cpu family    : 6
+model        : 60
+model name    : Intel(R) Core(TM) i7-4710HQ CPU @ 2.50GHz
+stepping    : 3
+microcode    : 0x17
+cpu MHz        : 2494.312
+cache size    : 6144 KB
+physical id    : 0
+siblings    : 8
+core id        : 2
+cpu cores    : 1
+apicid        : 4
+initial apicid    : 4
+fpu        : yes
+fpu_exception    : yes
+cpuid level    : 13
+wp        : yes
+flags        : fpu de tsc msr pae cx8 apic sep cmov pat clflush mmx fxsr sse sse2 ss ht syscall nx lm constant_tsc rep_good nopl eagerfpu pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm ida arat epb pln pts dtherm fsgsbase bmi1 avx2 bmi2 erms xsaveopt
+bugs        :
+bogomips    : 4988.62
+clflush size    : 64
+cache_alignment    : 64
+address sizes    : 39 bits physical, 48 bits virtual
+power management:
+</pre>
+
+== KVM vs Qubes ==
+
+=== KVM ===
+
+<pre>
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 6
+model name      : QEMU Virtual CPU version 2.1.2
+flags           : fpu de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pse36 clflush mmx fxsr sse sse2 syscall nx lm pni cx16 x2apic popcnt hypervisor lahf_lm
+</pre>
+
+=== Qubes ===
+
+<pre>
+processor    : 0
+vendor_id    : GenuineIntel
+cpu family   : 6
+model        : 60
+model name   : Intel(R) Core(TM) i7-4710HQ CPU @ 2.50GHz
+flags        : fpu de tsc msr pae cx8 apic sep cmov pat clflush mmx fxsr sse sse2 ss ht syscall nx lm constant_tsc rep_good nopl eagerfpu pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm ida arat epb pln pts dtherm fsgsbase bmi1 avx2 bmi2 erms xsaveopt
+</pre>
+
+= get-edid output =
+
+== EDID ==
+
+{{CodeSelect|code=
+sudo apt-get install read-edid
+}}
+{{CodeSelect|code=
+sudo get-edid ; echo $?
+}}
+
+== Qubes ==
+
+<pre>
+This is read-edid version 3.0.1. Prepare for some fun.
+Attempting to use i2c interface
+Looks like no busses have an EDID. Sorry!
+Attempting to use the classical VBE interface
+
+        Performing real mode VBE call
+        Interrupt 0x10 ax=0x4f00 bx=0x0 cx=0x0
+        Function unsupported
+        Call failed
+
+        VBE version 0
+        VBE string at 0x0 "O"
+
+VBE/DDC service about to be called
+        Report DDC capabilities
+
+        Performing real mode VBE call
+        Interrupt 0x10 ax=0x4f15 bx=0x0 cx=0x0                                                                                                                                      
+        Function unsupported                                                                                                                                                        
+        Call failed                                                                                                                                                                 
+                                                                                                                                                                                    
+Reading next EDID block                                                                                                                                                             
+                                                                                                                                                                                    
+VBE/DDC service about to be called                                                                                                                                                  
+        Read EDID                                                                                                                                                                   
+                                                                                                                                                                                    
+        Performing real mode VBE call
+        Interrupt 0x10 ax=0x4f15 bx=0x1 cx=0x0
+        Function unsupported
+        Call failed
+
+The EDID data should not be trusted as the VBE call failed
+Error: output block unchanged
+I'm sorry nothing was successful. Maybe try some other arguments
+if you played with them, or send an email to Matthew Kern <pyrophobicman@gmail.com>.
+1
+</pre>
+
+== VirtualBox ==
+
+<pre>
+get-edid: get-edid version 2.0.0
+
+        Performing real mode VBE call
+        Interrupt 0x10 ax=0x4f00 bx=0x0 cx=0x0
+        Function supported
+        Call successful
+
+        VBE version 200
+        VBE string at 0xc7f10 "VirtualBox VBE BIOS http://www.virtualbox.org/"
+
+VBE/DDC service about to be called
+        Report DDC capabilities
+
+        Performing real mode VBE call
+        Interrupt 0x10 ax=0x4f15 bx=0x0 cx=0x0
+        Function unsupported
+        Call failed
+
+Reading next EDID block
+
+VBE/DDC service about to be called
+        Read EDID
+
+        Performing real mode VBE call
+        Interrupt 0x10 ax=0x4f15 bx=0x1 cx=0x0
+        Function unsupported
+        Call failed
+
+The EDID data should not be trusted as the VBE call failed
+Error: output block unchanged
+1
+</pre>
+
+== KVM ==
+
+<pre>
+get-edid: get-edid version 2.0.0                                                                                                               
+                                                                                                                                               
+        Performing real mode VBE call                                                                                                          
+        Interrupt 0x10 ax=0x4f00 bx=0x0 cx=0x0                                                                                                 
+halt_sys: file ��y�*+, line -1216758308                                                                                                        
+        Function unsupported
+        Call successful
+
+        VBE version 300
+        VBE string at 0xc4f55 "SeaBIOS VBE(C) 2011"
+
+VBE/DDC service about to be called
+        Report DDC capabilities
+
+        Performing real mode VBE call
+        Interrupt 0x10 ax=0x4f15 bx=0x0 cx=0x0
+halt_sys: file ��y�*+, line -1216720908
+        Function unsupported
+        Call successful
+
+Reading next EDID block
+
+VBE/DDC service about to be called
+        Read EDID
+
+        Performing real mode VBE call
+        Interrupt 0x10 ax=0x4f15 bx=0x1 cx=0x0
+halt_sys: file ��y�*+, line -1216720908
+        Function unsupported
+        Call successful
+
+The EDID data should not be trusted as the VBE call failed
+Error: output block unchanged
+1
+</pre>
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Design]]
