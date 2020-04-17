@@ -1,0 +1,196 @@
+{{#seo:
+|description=mediawiki web development notes, codeselect, select code, short / long / recommended / detailed buttons, mobile frontend, skins, javascript, css
+}}
+{{Header}}
+
+{{CodeSelect|code=
+test
+}}
+
+= Mediawiki Replacement Discussion =
+* See [[Dev/About_Infrastructure#{{project_name}}_homepage_backend]]
+
+= CodeSelect with pipes =
+Use
+
+<pre>
+{{!}}
+</pre>
+
+rather than
+
+<pre>
+|
+</pre>
+
+Or simply have a look at the mediawiki markup for the following example.
+
+<!-- EDITORS NOTE: '{{!}}' is a magic word for '|'.-->
+{{CodeSelect|code=
+Exec=cat file {{!}} grep something
+}}
+
+https://phabricator.whonix.org/T614
+
+= pre tag with white spaces =
+
+Try making the opening tag 
+
+<pre>
+<pre style="white-space: pre-wrap;">
+...
+</pre>
+
+instead of normal <code>pre></code>.
+
+There are a number of [https://www.w3schools.com/cssref/pr_text_white-space.asp other wrapping/whitespace options] if that doesn't work for what you need.
+
+= Locations to Edit =
+
+* https://www.whonix.org/wiki/MediaWiki:Common.css
+* https://www.whonix.org/wiki/MediaWiki:Mobile.css
+* https://www.whonix.org/wiki/MediaWiki:Common.js
+* https://www.whonix.org/wiki/MediaWiki:Mobile.js
+* https://www.whonix.org/wiki/MediaWiki:Foreground.css
+* Mediawiki skin strapping does not use https://www.whonix.org/wiki/MediaWiki:Common.css but <code>/var/www/wiki/skins/strapping/theme.css</code>
+** [https://github.com/{{project_name_short}}/www/blob/master/w/skins/strapping/theme.css /var/www/wiki/skins/strapping/theme.css]
+* https://www.whonix.org/wiki/Widget:Sd-start-short
+* https://www.whonix.org/wiki/Widget:Sd-end-short-start-detailed
+* https://www.whonix.org/wiki/Widget:Sd-end-detailed
+* https://www.whonix.org/wiki/Template:Sd-start-short
+* https://www.whonix.org/wiki/Template:Sd-end-short-start-detailed
+* https://www.whonix.org/wiki/Template:Sd-end-detailed
+
+= Check if scripts are loaded =
+
+Using a dektop browser with mobile skin these scripts get loaded (the bold one contains the mobile.js):
+
+* https://www.whonix.org/w/load.php?debug=false&lang=en&modules=jquery%2Cmediawiki&only=scripts&skin=minerva&version=obJk0fES
+* https://www.whonix.org/w/load.php?debug=false&lang=en&modules=jquery.accessKeyLabel%2Cclient%7Cmediawiki.RegExp%2Cnotify%2Ctemplate%2Cutil%7Cmediawiki.page.startup%7Cmediawiki.template.hogan%7Cmobile.browser%2CmainMenu%2Cmodules%2Coo%2Cview%7Cmobile.loggingSchemas.mobileWebMainMenuClickTracking%7Coojs%7Cskins.minerva.scripts.top&skin=minerva&version=2bcd7ee968a7
+* '''https://www.whonix.org/w/load.php?debug=false&lang=en&modules=jquery.cookie%2Cthrottle-debounce%7Cmediawiki.api%2Ccldr%2Ccookie%2Cexperiments%2CjqueryMsg%2Clanguage%2Cstorage%2Ctoc%2Cuser%2Cviewport%7Cmediawiki.api.user%7Cmediawiki.language.data%2Cinit%7Cmediawiki.libs.pluralruleparser%7Cmediawiki.ui.input%7Cmobile.ajax%2Cbetaoptin%2Ccontext%2Cdrawers%2Cissues%2CmodifiedBar%2Coverlays%2Cpagelist%2Creferences%2Csearch%2Csettings%2Csite%2Cstartup%2Ctoast%2Ctoggle%2Cuser%2Cwatchstar%7Cmobile.editor.api%7Cmobile.issues.images%7Cmobile.loggingSchemas.edit%2CmobileWebLanguageSwitcher%2CmobileWebSearch%7Cmobile.overlay.images%7Cmobile.pagelist.scripts%2Cstyles%7Cmobile.pagesummary.styles%7Cmobile.references.gateway%2Cimages%7Cmobile.toggle.images%7Cskins.minerva.editor%2Cscripts%2Ctoggling%2Cwatchstar%7Cskins.minerva.icons.images.scripts%7Cuser.defaults&skin=minerva&version=4409fb4608cb'''
+* https://www.whonix.org/w/load.php?debug=false&lang=en&modules=mobile.toc%7Cmobile.toc.images%7Cskins.minerva.tablet.scripts&skin=minerva&version=6b1c9eeeb881
+* https://www.whonix.org/w/load.php?debug=false&lang=en&modules=startup&only=scripts&skin=minerva&target=mobile
+
+
+But using the emulated mobile device with the same skin only these get loaded:
+
+* https://www.whonix.org/w/load.php?debug=false&lang=en&modules=jquery%2Cmediawiki&only=scripts&skin=minerva&version=obJk0fES
+* https://www.whonix.org/w/load.php?debug=false&lang=en&modules=startup&only=scripts&skin=minerva&target=mobile
+
+
+search for
+
+<pre>
+sdShowDetailed
+</pre>
+
+the error only occurs when a mobile device is used and the mobile theme is active
+
+= Caching =
+== Varnish ==
+We are using [[Dev/Varnish|Varnish]] [https://github.com/varnishcache/varnish-devicedetect/blob/master/devicedetect.vcl devicedetect.vcl]. When a mobile device is detected (using a known user agent), we transparently add <code>?useformat=mobile</code> to the apache backend request.
+
+== Cookies ==
+<pre>
+curl --cookie test=yes https://www.whonix.org/wiki/Tor_Controller
+</pre>
+
+== Fixing ==
+Sometimes this helps.
+
+https://www.whonix.org/wiki/Tor_Controller?action=purge
+
+https://www.whonix.org/wiki/Tor_Controller?useformat=mobile?action=purge
+
+<pre>
+sudo service apache2 restart && sudo service varnish restart
+</pre>
+
+= Test =
+<pre>
+curl https://www.whonix.org/wiki/Tor_Controller?useformat=mobile > 1
+</pre>
+
+<pre>
+curl --user-agent "android.mobile" https://www.whonix.org/wiki/Tor_Controller?useformat=mobile > 2
+</pre>
+
+<pre>
+curl https://www.whonix.org/wiki/Tor_Controller?useformat=mobile > 3
+</pre>
+
+<pre>
+curl --user-agent "android.mobile" https://www.whonix.org/wiki/Tor_Controller > 4
+</pre>
+
+<pre>
+curl --user-agent "android.mobile" https://www.whonix.org/wiki/Tor_Controller?useformat=mobile > 5
+</pre>
+
+<pre>
+curl https://www.whonix.org/wiki/Tor_Controller?useformat=mobile?useformat=mobile > 6
+</pre>
+
+<pre>
+meld 1 2
+</pre>
+
+= cache clear =
+apc_cache_clear
+
+rm -r /var/www/w/cache/*
+
+varnishadm 'ban req.url ~ "."'
+
+= mediawiki Mobile Frontend =
+There is no Table of Contents (TOC) when using MobileFrontend with javascript disabled.
+
+= banner =
+
+donate
+
+* [[MediaWiki:Sitenotice]]
+* [[Widget:Sitenotice]]
+* [[MediaWiki:Sitenotice_id]]
+
+= misc notes =
+* [[MediaWiki:Signupstart]]
+* [[MediaWiki:Anoneditwarning]]
+* [[MediaWiki:Shoutwiki-loginform-tos]]
+* [[MediaWiki:shoutwiki-must-accept-tos]]
+* [[MediaWiki:Useragreement]]
+
+{{#widget:Terms of Service Agree}}
+{{#widget:Terms of Service Disagree}}
+
+* [[MediaWiki:Cookiewarning-info]]
+* [[MediaWiki:Cookiewarning-moreinfo-label]]
+* [[MediaWiki:Cookiewarning-more-link]]
+* [[MediaWiki:Cookiewarning-ok-label]]
+
+= mediawiki server =
+* https://github.com/{{project_name_short}}/{{project_name_short}}-Wiki
+* https://github.com/{{project_name_short}}/{{project_name_short}}-Wiki/blob/master/LocalSettings.php
+* sudo systemctl restart php7.2-fpm
+* /usr/local/bin/wiki-deploy.sh
+
+= Links =
+* [[Template:Link]]
+* [[Template:Archive_link]]
+
+= pagespeed =
+* https://forums.whonix.org/t/speeding-up-whonix-org-through-caching/8733/3
+* https://www.whonix.org
+* https://www.whonix.org?PageSpeedFilters=+debug
+* https://www.whonix.org?PageSpeed=off
+* https://www.whonix.org/wiki/Hardened-kernel?PageSpeedFilters=-SupportNoScriptEnabled#Upstreaming
+
+= Forum discussion =
+https://forums.whonix.org/t/short-and-detailed-buttons-in-the-wiki-html-help-wanted
+
+= Redirect =
+* https://www.whonix.org/w/index.php?title=Security_Hardening_Checklist&redirect=no
+
+{{Footer}}
+
+[[Category:Design]]
