@@ -1,33 +1,37 @@
 {{Header}}
 {{#seo:
-|description=Protects against guard discovery and related traffic analysis attacks.
+|description=Protects against Tor guard discovery and related traffic analysis attacks.
 }}
 
 = Introduction =
-<blockquote>protects against guard discovery and related traffic analysis attacks.</blockquote>
 
-To better understand vanguards it is helpful to have basic knowledge on [[Tor Entry Guards]]. 
+In his July 2018 blog post [https://blog.torproject.org/announcing-vanguards-add-onion-services Announcing Vanguards for Onion Services], Tor developer Mike Perry described the basic purpose of vanguards: to protect against guard discovery and related traffic analysis attacks. This add-on is useful for general {{project_name}} users, since it affords additional protection for Tor clients and Tor onion services (underline added):
 
-To learn more about vanguards see [https://blog.torproject.org/announcing-vanguards-add-onion-services Announcing Vanguards for Onion Services] blog post by The Tor Project, [https://github.com/mikeperry-tor/vanguards/blob/master/README_SECURITY.md security readme] by vanguards author Tor developer Mike Perry on attacks against onion services and defenses.
+<blockquote>We believe that the most serious threat that v3 onion services currently face is guard discovery. A guard discovery attack enables an adversary to determine the guard node(s) that are in use <u>by a Tor client and/or</u> Tor onion service. Once the guard node is known, traffic analysis attacks that can deanonymize an onion service (or onion service user) become easier.
+...
 
-Additional resources include [https://github.com/mikeperry-tor/vanguards/blob/master/README_TECHNICAL.md vanguard's technical readme] and [https://forums.whonix.org/t/vanguards-additional-protections-for-tor-onion-services/8064 {{project name}} forum vanguards integration development discussion].
+The add-on uses our Control Port Protocol and the corresponding Stem Library to defend against these attacks. The hope is that it will we will be able to study the performance and functionality of this feature and gather feedback before we deploy these changes in Tor for all onion services <u>and clients</u>.</blockquote>
 
-[https://onionbalance.readthedocs.org onionbalance] now available for onion v3 services <ref>
-* https://github.com/DonnchaC/onionbalance/issues/69#issuecomment-58108608
-* https://lists.torproject.org/pipermail/tor-dev/2020-January/014142.html Tor development mailing list - Request for onionbalance v3 pre-alpha testing]
-</ref>, see https://blog.torproject.org/cooking-onions-reclaiming-onionbalance
-
-Quote Tor [https://nvd.nist.gov/vuln/detail/CVE-2020-8516 CVE-2020-8516 Hidden Service deanonymization]:
+From {{Project name}} version 15.0.0.8.7 and above, vanguards is installed by default. It should be noted that a recent Tor vulnerability affecting onion services is [https://lists.torproject.org/pipermail/tor-dev/2020-February/014157.html sufficiently mitigated by vanguards]; see Tor [https://nvd.nist.gov/vuln/detail/CVE-2020-8516 CVE-2020-8516 Hidden Service deanonymization]:
 
 <blockquote>
 The daemon in Tor through 0.4.1.8 and 0.4.2.x through 0.4.2.6 does not verify that a rendezvous node is known before attempting to connect to it, which might make it easier for remote attackers to discover circuit information.
 </blockquote>
 
-[https://lists.torproject.org/pipermail/tor-dev/2020-February/014157.html vanguards fixes this.]
+Readers who wish to learn more about vanguards are recommended to consult the following resources:
+* Basic information about [[Tor Entry Guards]];
+* The [https://blog.torproject.org/announcing-vanguards-add-onion-services Announcing Vanguards for Onion Services] blog post by The Tor Project;
+* The [https://github.com/mikeperry-tor/vanguards/blob/master/README_SECURITY.md security readme] by vanguards author and Tor developer Mike Perry regarding attacks against onion services and related defenses;
+* [https://github.com/mikeperry-tor/vanguards/blob/master/README_TECHNICAL.md Vanguard's technical readme]; and
+* [https://forums.whonix.org/t/vanguards-additional-protections-for-tor-onion-services/8064 {{project name}} forum vanguards integration development discussion].
 
-vanguards is by default in {{Project name}} 15.0.0.8.7 and above.
+Also note that [https://onionbalance.readthedocs.org onionbalance] is now available for onion v3 services <ref>
+* https://github.com/DonnchaC/onionbalance/issues/69#issuecomment-58108608
+* [https://lists.torproject.org/pipermail/tor-dev/2020-January/014142.html Tor development mailing list - Request for onionbalance v3 pre-alpha testing]
+</ref>, see: [https://blog.torproject.org/cooking-onions-reclaiming-onionbalance Cooking with Onions: Reclaiming the Onionbalance]. This means onion service administrators can load balance v3 onion services so they have high availability. 
 
 = Log Analysis =
+
 Quote [https://github.com/mikeperry-tor/vanguards/blob/master/README.md#user-content-what-do-the-logs-mean What do the logs mean?]:
 
 <blockquote>
@@ -44,13 +48,26 @@ Events that are detected by heuristics that still need tuning are at NOTICE leve
 </blockquote>
 
 = Technical Information =
-Useful for both, Tor clients and Tor onion services.
 
-Quote [https://blog.torproject.org/announcing-vanguards-add-onion-services Announcing Vanguards for Onion Services] blog post by The Tor Project (Underline added.):
+The vanguards add-on actually has three components: vanguards, bandguards and rendguards. Mike Perry [https://blog.torproject.org/announcing-vanguards-add-onion-services succinctly describes the role of each subsystem]:
 
-<blockquote>The add-on uses our Control Port Protocol and the corresponding Stem Library to defend against these attacks. The hope is that it will we will be able to study the performance and functionality of this feature and gather feedback before we deploy these changes in Tor for all onion services <u>and clients</u>.</blockquote>
+'''Vanguards'''
 
-<blockquote>We believe that the most serious threat that v3 onion services currently face is guard discovery. A guard discovery attack enables an adversary to determine the guard node(s) that are in use <u>by a Tor client and/or</u> Tor onion service. Once the guard node is known, traffic analysis attacks that can deanonymize an onion service (or onion service user) become easier.</blockquote>
+<blockquote>The core functionality is provided by the Vanguards component which implements the Mesh Vanguards (Proposal 292). This ensures that all onion service circuits are restricted to a set of second and third layer guards, which have randomized rotation times as defined in that proposal. Basically, now all the hops of onion service circuits are pinned to specific nodes instead of sampling random ones from the whole network every time. <br /><br />
+
+This change to fixed nodes for the second and third layer guards is designed to force the adversary to have to run many more nodes, and to execute both an active sybil attack, as well as a node compromise attack. In particular, the addition of second layer guard nodes means that the adversary goes from being able to discover your guard in minutes by running just one middle node, to requiring them to sustain the attack for weeks or even months, even if they run 5% of the network.</blockquote>
+
+'''Bandguards'''
+
+<blockquote>Additionally, the Bandguards component of the add-on also checks for evidence of bandwidth side channel attacks, which may be used by the adversary to aid/amplify traffic analysis attacks. <br /><br />
+
+When these attacks are detected, the circuit is (optionally) closed.</blockquote>
+
+'''Rendguards'''
+
+<blockquote>Finally, the Rendguards component of the add-on performs analysis on the prevalence of rendezvous points on the onion service side. The rendezvous point is chosen by the client when it connects to an onion service, and some attacks rely on the use of a malicious rendezvous point to aid in traffic analysis. <br /><br />
+
+This component tracks the frequency of rendezvous point use, and when it finds overuse, it optionally closes circuits from that rendezvous point and emits a log message.</blockquote>
 
 = Footnotes =
 {{reflist|close=1}}
