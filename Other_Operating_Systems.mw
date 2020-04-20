@@ -171,6 +171,509 @@ root_shell> service netif restart
 Confirm changes by running ifconfig.
 
 ----
+= {{project_name}}-OpenBSD-Workstation =
+
+'''1. Download OpenBSD iso.'''
+
+Go to: https://www.openbsd.org/
+
+
+Download installXX.iso (current version: '''install66.iso''') from https://cdn.openbsd.org/pub/OpenBSD/6.6/amd64/ and the '''SHA256''' and '''SHA256.sig''' files.
+
+
+'''2. Verify OpenBSD iso.'''
+
+In Whonix-Workstation or Debian-based systems.
+Install the signify-openbsd and signify-openbsd-keys packages.
+{{CodeSelect|code=
+sudo apt-get update
+sudo apt-get install signify-openbsd signify-openbsd-keys
+}}
+
+
+The version in buster only contains older keys, so install a newer version of the '''signify-openbsd-keys''' package.
+Temporarily replace your stable repository with testing:
+{{CodeSelect|code=
+sudo sed -i s/buster/testing/g /etc/apt/sources.list.d/debian.list
+}}
+
+{{CodeSelect|code=
+sudo apt-get update
+sudo apt-get reinstall signify-openbsd-keys
+}}
+
+
+Change your repositories back to stable.
+{{CodeSelect|code=
+sudo sed -i s/testing/buster/g /etc/apt/sources.list.d/debian.list
+}}
+
+
+Change directory to where you downloaded install66.iso, SHA256, and SHA256.sig.
+{{CodeSelect|code=
+cd /home/user/Downloads
+}}
+
+
+Verify OpenBSD iso.
+{{CodeSelect|code=
+signify-openbsd -C -p /usr/share/signify-openbsd-keys/openbsd-66-base.pub -x SHA256.sig
+}}
+
+Must show
+{{CodeSelect|code=
+install66.iso: OK
+}}
+
+The other lines can be safely ignored.
+
+
+'''3. Begin installation of OpenBSD.'''
+
+Create, configure and boot your virtual machine from '''install66.iso''' according to [[#Easy|instructions specific to your hypervisor]].
+
+
+'''4. Install OpenBSD.'''
+
+Once the system boots from the iso, you will be prompted by:
+
+{{CodeSelect|code=
+Welcome to the OpenBSD/amd64 6.6 installation program.
+(I)nstall, (U)pgrade, (A)utoinstall, or (S)hell?
+}}
+
+Type I to install and press Enter.
+
+
+
+{{CodeSelect|code=
+Choose your keyboard layout ('?' or 'L' for list) [default]
+}}
+
+Keep default and press Enter.
+
+
+
+{{CodeSelect|code=
+System hostname? (short form, e.g. 'foo')
+}}
+
+Type '''host''' and press Enter.
+
+
+
+{{CodeSelect|code=
+Which network interface do you wish to configure? (or 'done') [xxx0]
+}}
+
+Press Enter.
+
+
+
+{{CodeSelect|code=
+IPv4 address for xxx0? (or 'dhcp' or 'none') [dhcp]
+}}
+
+Note: '''xxx0''' will be something else instead, '''em0''' or specific to your hypervisor.
+
+
+<u>[[{{q_project_name_short}}|{{q_project_name}}]]</u>:
+Enter address of the VM (can be viewed in the qube's settings).
+
+<u>[[{{non q project name short}}|{{non q project name}}]]</u>:
+{{CodeSelect|code=
+10.152.152.12
+}}
+
+
+
+{{CodeSelect|code=
+Netmask for xxx0? [255.255.255.0]
+}}
+
+<u>[[{{q_project_name_short}}|{{q_project_name}}]]</u>:
+{{CodeSelect|code=255.255.255.255}}
+
+<u>[[{{non q project name short}}|{{non q project name}}]]</u>:
+{{CodeSelect|code=255.255.192.0}}
+
+
+
+{{CodeSelect|code=
+IPv6 address for xxx0? (or 'autoconf' or 'none') [none]
+}}
+
+Keep '''none''' and press Enter.
+
+
+
+{{CodeSelect|code=
+Which network interface do you wish to configure? (or 'done') [done]
+}}
+
+Continue.
+
+
+
+{{CodeSelect|code=
+DNS domain name? (e.g. 'example.com') [my.domain]
+}}
+
+Enter '''localdomain'''.
+
+
+
+{{CodeSelect|code=
+DNS nameservers? (IP address list or 'none') [none]
+}}
+
+<u>[[{{q_project_name_short}}|{{q_project_name}}]]</u>:
+Enter address of your Whonix-Gateway (can be viewed in the qube's settings).
+
+<u>[[{{non q project name short}}|{{non q project name}}]]</u>:
+{{CodeSelect|code=10.152.152.10}}
+
+
+{{CodeSelect|code=
+Password for root account? (will not echo)
+}}
+
+Type your desired root password.
+
+
+
+{{CodeSelect|code=
+Start sshd(8) by default? [yes]
+}}
+
+Type '''no''' and press Enter.
+
+
+
+{{CodeSelect|code=
+Do you expect to run the X Window System? [yes]
+}}
+
+Keep default and continue.
+
+
+
+{{CodeSelect|code=
+Do you want the X Window System to be started by xenodm(1)? [no]
+}}
+
+Keep default and continue.
+
+
+
+{{CodeSelect|code=
+Setup a user? (enter a lower-case loginname, or 'no') [no]
+}}
+
+Enter '''user'''.
+
+
+
+{{CodeSelect|code=
+Available disks are: sd0 sd1 sd2
+
+Which disk is the root disk? ('?' for details) [sd0]
+}}
+
+Continue.
+
+
+
+{{CodeSelect|code=
+Use (W)hole disk MBR, whole disk (G)PT or (E)dit? [whole]
+}}
+
+Continue.
+
+
+
+{{CodeSelect|code=
+Use (A)uto layout, (E)dit auto layout, or create (C)ustom layout? [a]
+}}
+
+'''E''' to edit, because /usr will need more space than the default.
+
+
+{{CodeSelect|code=
+sd0>
+}}
+
+Type '''h''' or '''?''' for help.
+
+Type '''p M''' to print the disk layout in megabytes.
+
+Type '''d e''' to remove the /home partition (you will set it up on another disk).
+
+Type '''w''' to write label to disk.
+
+Type '''m d''' to modify the /usr partition and expand it.
+
+
+{{CodeSelect|code=
+offset: [xxxxxxx]
+}}
+
+Keep and press Enter.
+
+
+{{CodeSelect|code=
+size: [xxxxxxx]
+}}
+
+Enter your desired size here, either in bytes or megabytes, at least 5120.0M or more recommended.
+
+
+{{CodeSelect|code=
+FS type: [4.2BSD]
+}}
+
+Keep and press Enter.
+
+
+{{CodeSelect|code=
+mount point: [/usr]
+}}
+
+Keep and press Enter.
+
+'''w''' to write label to disk.
+
+'''p M''' again to print the disk layout in megabytes and make sure the changes were written correctly.
+
+'''q''' to quit and save changes.
+
+
+{{CodeSelect|code=
+Which disk do you wish to initialize? (or 'done') [done]
+}}
+
+Enter '''sd1'''
+
+
+{{CodeSelect|code=
+Use (W)hole disk MBR, whole disk (G)PT or (E)dit? [whole]
+}}
+
+'''E''' to edit.
+
+Type '''Edit 0'''
+
+Type '''A6''' and press Enter.
+
+
+{{CodeSelect|code=
+Do you wish to edit in CHS mode? [n]
+}}
+
+Keep '''n'''.
+
+
+{{CodeSelect|code=
+Partition offset [0 - xxxxxxx]: [0]
+}}
+
+Keep.
+
+
+{{CodeSelect|code=
+Partition size [1 - xxxxxxx]
+}}
+
+Type your desired size or use the maximum and enter.
+
+'''w''' to write changes to disk.
+
+'''quit''' to save changes and exit.
+
+
+{{CodeSelect|code=
+Label editor (enter '?' for help at any prompt)
+}}
+
+'''p M''' to print the disk layout in megabytes.
+
+Type '''a''' to add a partition.
+
+
+{{CodeSelect|code=
+offset: [0]
+}}
+
+Keep.
+
+
+{{CodeSelect|code=
+size: [xxxxxxx]
+}}
+
+Type desired size in megabytes or use the maximum and enter.
+
+
+{{CodeSelect|code=
+FS type: [4.2BSD]
+}}
+
+Keep.
+
+
+{{CodeSelect|code=
+mount point: [none]
+}}
+
+Type '''/home''' and press Enter.
+
+
+{{CodeSelect|code=
+sd1*>
+}}
+
+'''w''' to write changes to disk.
+
+'''q''' to save changes and exit.
+
+
+{{CodeSelect|code=
+Which disk do you wish to initialize? (or 'done') [done]
+}}
+
+Done.
+
+Proceed with the installation.
+
+
+
+{{CodeSelect|code=
+Directory does not contain SHA256.sig. Continue without verification?
+}}
+
+'''yes''' can be typed safely (explained in OpenBSD installation FAQ).
+
+
+
+{{CodeSelect|code=
+What timezone are you in? ('?' for list)
+}}
+
+Enter '''UTC'''.
+
+
+
+{{CodeSelect|code=
+Exit to (S)hell, (H)alt or (R)eboot? [reboot]
+}}
+
+Reboot.
+
+
+
+
+'''5. Configure Whonix-OpenBSD Workstation.'''
+
+Login as root.
+
+
+Connect the Whonix-OpenBSD workstation to the Gateway.
+
+Run {{CodeSelect|code=vi /etc/mygate}}
+
+Press '''a''' to append text and type the address of the Whonix-Gateway.
+
+<u>[[{{non q project name short}}|{{non q project name}}]]</u>:
+{{CodeSelect|code=10.152.152.10}}
+
+Press Esc.
+
+Type ''':w''' to write the file. Type ''':q''' to exit.
+
+
+{{CodeSelect|code=vi /etc/ntpd.conf}}
+
+'''a''' to append text, then comment all lines. They will not be needed as [[Sdwdate#cite_note-1|ntpd is broken behind Whonix-Gateway]].
+
+''':w''' to write the file. ''':q''' to exit.
+
+
+Configure network interface.
+{{CodeSelect|code=ls /etc}}
+
+Should show a file '''hostname.xxx0'''.
+
+
+{{CodeSelect|code=vi /etc/hostname.xxx0}}
+
+Change the cursor position to the end of {{CodeSelect|code=inet [address of VM]}} and hold '''x''' to delete everything after {{CodeSelect|code=inet [address of VM]}}
+Instead '''a'''ppend, enter a new line, and type
+
+<u>[[{{non q project name short}}|{{non q project name}}]]</u>:
+{{CodeSelect|code=netmask 255.255.192.0}}
+
+<u>[[{{q_project_name_short}}|{{q_project_name}}]]</u>:
+{{CodeSelect|code=netmask 255.255.255.255}}
+
+Esc, ''':w''', ''':q'''.
+
+
+Run {{CodeSelect|code=sh /etc/netstart}} to apply the changes.
+
+
+
+'''6. Install system updates.'''
+
+Run {{CodeSelect|code=syspatch}}
+
+Reboot.
+
+
+
+'''7. Optional: Install a desktop environment (Xfce used as example here.)'''
+
+As root:
+{{CodeSelect|code=pkg_add xfce consolekit2 slim slim-themes}}
+
+Configure Xfce.
+{{CodeSelect|code=touch /etc/rc.conf.local /etc/rc.local /root/.xinitrc /home/user/.xinitrc}}
+{{CodeSelect|code=echo "exec /usr/local/bin/ck-launch-session /usr/local/bin/startxfce4" >> /root/.xinitrc}}
+{{CodeSelect|code=echo "exec /usr/local/bin/ck-launch-session /usr/local/bin/startxfce4" >> /home/user/.xinitrc}}
+{{CodeSelect|code=echo 'pkg_scripts="messagebus avahi_daemon"' >> /etc/rc.conf.local}}
+{{CodeSelect|code=echo "/etc/rc.d/slim start" >> /etc/rc.local}}
+
+
+
+'''8. Optional: Install packages to increase usability.'''
+
+As root:
+{{CodeSelect|code=pkg_add bash sudo nano}}
+
+Allow '''user''' to use sudo.
+
+As root, run:
+{{CodeSelect|code=visudo /etc/sudoers}}
+
+Uncomment the line.
+{{CodeSelect|code=%wheel ALL=(ALL) SETENV: ALL}}
+
+Optional: Change shell to bash.
+As root:
+{{CodeSelect|code=chsh -s /usr/local/bin/bash}}
+
+Repeat for user '''user'''.
+
+
+
+'''9.''' Install torsocks.
+{{CodeSelect|code=sudo pkg_add torsocks}}
+
+Tor will be installed as a dependency. To prevent it from automatically starting, comment the line
+{{CodeSelect|code=RunAsDaemon 1}}
+
+in /etc/tor/torrc.
+
+----
 = {{project_name}}-GNU/Linux-Workstation =
 == Easy ==
 {{VM Settings Easy Common}}
