@@ -81,6 +81,32 @@ That boot medium (such as IOS) could be shipped on Whonix Host through a <code>d
 
 Disadvantage of this concept might be that it might be slower than dm-verity. On the other hand the advantage of this concept is that this does not require a OEM image. Also it might be more secure since it does not verify against an OEM image but would verify the individual files. Another advantage is that users are free to install any package and not limited by a readonly root image. Users do not have to wait for the vendor to update the OEM image.
 
+== dm-verity ==
+Once the boot chain is verified, the kernel should verify the rest of the OS with something similar to dm-verity. Verified boot that covers only the boot chain is mostly useless but with some exceptions <ref>For example, Whonix loads apparmor-profile-everything from the initramfs which it will cover.</ref>.
+
+We can have 2 separate partitions for the base system and user-installed apps. Mount the base system partition as read-only and verify it with dm-verity. Mount the apps partition as <code>/apps</code> and <code>chroot</code> into it. The apps partition will not be verified.
+
+For example:
+
+{{CodeSelect|code=
+mount /path/to/unverified_image /apps
+
+for dir in bin sbin usr lib lib64 var etc
+do
+  mkdir "/apps/${dir}"
+  mount -o bind "/${dir}" "/apps/${dir}"
+done
+
+mkdir /apps/{proc,sys,dev}
+mount proc /apps/proc -t proc
+mount sysfs /apps/sys -t sysfs
+mount devtmpfs /apps/dev -t devtmpfs
+mount devpts /apps/dev/pts -t devpts
+
+apt-get install -o Dir=/apps $program
+chroot /apps $program
+}}
+
 = Status =
 * Help welcome to implement this.
 * https://forums.whonix.org/t/no-longer-add-virtual-dvd-drive-to-vm-by-default/9337 needs to be undone or considered. Could auto-add a DVD drive as long as needed.
@@ -95,6 +121,7 @@ Disadvantage of this concept might be that it might be slower than dm-verity. On
 
 = Forum Discussion =
 https://forums.whonix.org/t/enable-linux-kernel-gpg-verification-in-grub-and-or-enable-secure-boot-by-default/7894
+https://forums.whonix.org/t/fs-verity-in-linux-5-4/8911
 
 = Footnotes=
 <references/>
