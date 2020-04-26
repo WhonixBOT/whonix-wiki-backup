@@ -29,57 +29,88 @@ The complete text of the GNU General Public License can also be found online on 
 <!--
 This wiki page is a fork of the Unsafe Browser page, from this exact source <http://git.immerda.ch/?p=amnesia.git;a=blob;f=wiki/src/doc/anonymous_internet/unsafe_browser.mdwn;hb=21aa4cc26d72a02adf3f9818d6beca1a6a03fcd1>.
 -->
+{{Title|title=Logging into Captive Portals‎}} 
 {{Header}}
 {{#seo:
 |description=Captive Portals Login. {{project name}} in WiFi Hotspots.
 |image=https://www.whonix.org/w/images/7/7d/Wireless-lan-152413640.png
 }}
-= Logging in to captive portals =
-== When Using VMs ==
-Many publicly accessible Internet connections (usually available through a wireless network connection) require its users to register and login in order to get access to the Internet. This include both free and paid for services that may be found at Internet cafes, libraries, airports, hotels, universities etc. Normally in these situations, a so called ''captive portal'' intercepts any website request made and redirects the web browser to a login page. None of that works inside {{workstation_product_name}}, so a browser with unrestricted network access is necessary. The browser on the host operating system must be used for this purpose. Note that this means that '''the browser on the host is NOT anonymous''', so use it carefully.
+= Introduction =
 
-== When Using Physical Isolation ==
-There is no unsafe browser on {{gateway_product_name}} installed by default. You could use a third machine, which has access to clearnet or boot the hardware which runs {{gateway_product_name}} with another operating system (from USB), which is not torified.
+Many publicly accessible Internet connections found at cafes, libraries, airports, hotels, universities and other locations require its users to register and login in order to get access to the Internet. This means newly connected users of the (free or paid) Wi-Fi or wired network have their browser redirected to a "captive portal" landing or login page, which requires either authentication, payment, acceptance of end-user license agreements, acceptable use policy, survey completion or other credentials before broader access to network resources is granted. <ref>https://en.wikipedia.org/wiki/Captive_portal</ref> <ref>Captive portals are sometimes used for access to enterprise or residential wired networks, such as business centers, apartments or hotel rooms.</ref>
 
-== Security recommendations ==
-* While this browser can be used unrestrictively for anything, it is ''highly'' recommended to only use it for the purpose stated above, i.e. to access and login on captive portals.
-* Do not run this browser at the same time as the normal, anonymous web browser. This makes it easy to not mistake one browser for the other, which could have catastrophic consequences for your anonymity.
-* Run this browser from a dedicated VM and lock it down with NoScript and isolation programs like FireJail (Linux only).
+== Privacy and Security Concerns ==
 
-== Unsafe Browser ==
-=== Installation ===
-Discouraged!
+In general, captive portals pose a number of privacy and security concerns. Depending on the portal in question, it may be necessary to enter personal information such as an email or social media account, account number (when in a library), hotel room number, or other identifying details. <ref>https://www.eff.org/deeplinks/2017/08/how-captive-portals-interfere-wireless-security-and-privacy</ref> Recent research on Wi-Fi hotspots has revealed: <ref>https://arxiv.org/pdf/1907.02142v1.pdf</ref>
+* Social login providers may share several privacy-sensitive fields - for example LinkedIn shares the full name, email address profile picture, current location and full employment history.
+* The vast majority of hotspots utilize tracking technologies in their captive portals and landing pages - multiple third-party tracking domains and persistent third-party HTTP cookies are common.
+* Personal and unique device information is sometimes shared with third-party domains (even without HTTPS).
+* A majority expose the user's device MAC address.
+* Sometimes personally sensitive information is leaked via HTTP, including full name, email address, phone number, address, postal code, date of birth and age.
+* Some hotspots explicitly link MAC address to collected personal information, allowing long-term user tracking.
 
-This has to be done while you already/still have an internet connection. It cannot be done on the go when you need an internet connection since no unsafe browser is installed by default.
+This research confirms that while VPNs and the adoption of HTTPS on most websites mostly secures users' personal information from malicious hotspot providers, device/user tracking is still a serious privacy threat.
 
-The following instructions are to be applied on {{gateway_product_name}}.
+= Logging into Captive Portals =
 
-Configure user home of user <code>clearnet</code> to <code>/home/clearnet</code> as it is not set by Whonix default.
+== When using VMs ==
+
+It is not possible to access captive portals inside {{workstation_product_name}}. Therefore, in {{non_q_project_name}} it is necessary to use the browser on the host operating system for this purpose, since it has unrestricted network access. In {{q_project_name_short}}, a separate dedicated VM must be used such as a Debian or Fedora AppVM.
+
+It must be stressed that this configuration is <u>not</u> anonymous, so it must be used carefully.
+
+== When using Physical Isolation ==
+
+There is no unsafe browser installed by default on {{gateway_product_name}} (see below for instructions). As a workaround a third machine can be used which has access to clearnet, or the hardware which runs {{gateway_product_name}} can be booted with another operating system (from USB), which is not torified.
+
+== Security Recommendations ==
+
+* While this browser can be used without any restrictions, it is ''strongly'' recommended to only use it for the purpose stated above, that is to access and login on captive portals.
+* Do not run this browser at the same time as the normal, anonymous Tor Browser. Otherwise, it is easy to  mistake one browser for the other, which could have catastrophic consequences for anonymity.
+* It is suggested to run this browser from a dedicated VM and lock it down with NoScript and isolation programs like FireJail (Linux only).
+
+= Unsafe Browser =
+
+== Installation ==
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = This procedure is discouraged!
+}}
+
+These steps must be completed while you still have an internet connection. It cannot be done later on when an Internet connection is required, since no unsafe browser is installed by default.
+{{Box|text=
+The following instructions are applied on {{gateway_product_name}}.
+
+'''1.''' Configure user home of user <code>clearnet</code> to <code>/home/clearnet</code> as it is not set by Whonix default.
 
 {{CodeSelect|code=
 sudo usermod -m -d /home/clearnet clearnet
 }}
 
-Create folder <code>/home/clearnet</code>.
+'''2.''' Create folder <code>/home/clearnet</code>.
 
 {{CodeSelect|code=
 sudo mkdir -p /home/clearnet
 }}
 
-Set owner of folder <code>/home/clearnet</code> to be user <code>clearnet</code>.
+'''3.''' Set owner of folder <code>/home/clearnet</code> to be user <code>clearnet</code>.
 
 {{CodeSelect|code=
 sudo chown -R clearnet:clearnet /home/clearnet
 }}
 
-Install a browser.
+'''4.''' Install a browser.
 
 {{Install_Package|
 package=firefox-esr
 }}
+}}
 
-=== Usage ===
-Start <code>bash</code> as user <code>clearnet</code>. <ref>
+== Usage ==
+
+{{Box|text=
+'''1.''' Start <code>bash</code> as user <code>clearnet</code>. <ref>
 The <code>sudo</code> <code>--set-home</code> parameter is important to prevent file permission issues since a GUI application is to be started under a different user account. Similar to [[Install_Software#GUI_Applications_with_Root_Rights|GUI Applications with Root Rights]].
 
 Quote <code>sudo</code> man page:
@@ -94,37 +125,40 @@ Quote <code>sudo</code> man page:
 sudo --set-home -u clearnet bash
 }}
 
-Change directory into user <code>clearnet</code> home folder.
+'''2.''' Change directory into user <code>clearnet</code> home folder.
 
 {{CodeSelect|code=
 cd ~ 
 }}
 
-Start a browser.
+'''3.''' Start the browser.
 
 {{CodeSelect|code=
 firefox
 }}
+}}
 
-=== Uninstallation ===
-In case you like to remove the unsafe browser, apply the following instructions.
+== Uninstallation ==
+To remove the unsafe browser, apply the following instructions.
 
-Purge <code>firefox-esr</code>.
+{{Box|text=
+'''1.''' Purge <code>firefox-esr</code>.
 
 {{CodeSelect|code=
 sudo apt-get purge firefox-esr
 }}
 
-Autoremove.
+'''2.''' Autoremove.
 
 {{CodeSelect|code=
 sudo apt-get autoremove
 }}
 
-Delete Firefox data directory. Optional!
+'''3.''' ''Optional'': Delete the Firefox data directory.
 
 {{CodeSelect|code=
 rm -r /home/user/clearnet/.mozilla/firefox
+}}
 }}
 
 = License =
