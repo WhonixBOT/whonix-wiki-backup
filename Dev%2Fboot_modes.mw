@@ -1,0 +1,46 @@
+Grub default boot menu entries:
+
+* <code>PERSISTENT mode USER (For daily activities.)</code>
+* <code>LIVE mode USER (For daily activities.)</code>
+* <code>PERSISTENT mode ADMIN (For software installation.)</code>
+* <code>PERSISTENT mode SUPERADMIN (Be very cautious!)</code>
+* <code>Recovery PERSISTENT mode SUPERADMIN (Be very cautious!)</code>
+
+-----
+
+Boot modes considered too unimportant to be added to grub default boot menu:
+
+* <code>LIVE mode ADMIN</code>
+* <code>LIVE mode SUPERADMIN</code>
+* <code>Recovery LIVE mode SUPERADMIN</code>
+
+I don’t see good use cases for these. But could be convinced otherwise with user feedback.
+
+If anyone cares about these, there could be files in <code>/etc/grub.d/</code> folder that add such entries but these files could be non-executable by default. Thereby <code>update-grub</code> would ignore them. To opt-in into such modes, users could just run <code>sudo chmod +x /etc/grub.d/somenumber_name-of-boot-mode</code>.
+
+Also users who really want something special/custom would be able to add whatever they want to <code>/etc/grub.d/</code> folder / grub boot menu.
+
+Also by using grub boot menu editing (key <code>e</code>) at grub boot menu, kernel parameters can be adjusted and any combination would be possible.
+
+
+-----
+
+Use cases for the different modes:
+
+* <code>PERSISTENT mode USER (For daily activities.)</code>: Useful for browsing, e-mail, chat, etc. or just letting an already set up and installed server run. Even upgrading through <code>upgrade-nonroot</code>.
+* <code>LIVE mode USER (For daily activities.)</code>: Same as above but without persistence.
+* <code>PERSISTENT mode ADMIN (For software installation.)</code>: users could run <code>sudo apt install whatever-software-package</code>, then reboot into USER. Editing <code>/etc/apt/sources.list.d</code> [https://github.com/Whonix/apparmor-profile-everything/blob/master/etc/apparmor.d/abstractions/dangerous-files among many other things] prohibited for better security.
+* <code>PERSISTENT mode SUPERADMIN (Be very cautious!)</code>: users could add foreign sources to <code>/etc/apt/sources.list.d</code> or do anything (full freedom), then (optional but advisable) reboot to ADMIN mode, install packages from third party repositories.
+* <code>Recovery PERSISTENT mode SUPERADMIN (Be very cautious!)</code>: The usual recovery mode.
+
+-----
+
+Anti-opposition / "I want the old Whonix back":
+
+Users who don’t like (any, multiple or all) of the new options...
+
+* <code>PERSISTENT mode USER (For daily activities.)</code> [A]
+* <code>LIVE mode USER (For daily activities.)</code> [B]
+* <code>PERSISTENT mode ADMIN (For software installation.)</code> [C]
+
+and who want "the old Whonix" "with unrestricted sudo" (<code>PERSISTENT mode SUPERADMIN</code>) back, who don't want to see any of the new options [A], [B], [C]... These could just make these <code>/etc/grub.d</code> folder / grub menu entries gone by running <code>sudo chmod -x /etc/grub.d/somenumber_name-of-boot-mode</code>. (There could be a script to simplify that.)
