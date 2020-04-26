@@ -1,9 +1,9 @@
 {{Header}}
 {{#seo:
-|description=PERSISTENT mode USER (For daily activities.), LIVE mode USER (For daily activities.), PERSISTENT mode ADMIN (For software installation.), PERSISTENT mode SUPERADMIN (Be very cautious!)
+|description=PERSISTENT mode USER (For daily activities.), LIVE mode USER (For daily activities.), PERSISTENT mode SECUREADMIN (For software installation.), PERSISTENT mode SUPERADMIN (Be very cautious!)
 }}
 {{title|title=
-multiple boot modes for better security: persistent user | live user | persistent admin | persistent superadmin | persistent recovery mode
+multiple boot modes for better security: persistent user | live user | persistent secureadmin | persistent superadmin | persistent recovery mode
 }}
 {{forkme}}
 
@@ -13,13 +13,13 @@ This concept is generic. Works for both, hosts and VMs. Both, Whonix and non-Who
 
 * <code>PERSISTENT mode USER (For daily activities.)</code>
 * <code>LIVE mode USER (For daily activities.)</code>
-* <code>PERSISTENT mode ADMIN (For software installation.)</code>
+* <code>PERSISTENT mode SECUREADMIN (For software installation.)</code>
 * <code>PERSISTENT mode SUPERADMIN (Be very cautious!)</code>
 * <code>Recovery PERSISTENT mode SUPERADMIN (Be very cautious!)</code>
 
 = boot modes considered too unimportant to be added to grub default boot menu =
 
-* <code>LIVE mode ADMIN</code>
+* <code>LIVE mode SECUREADMIN</code>
 * <code>LIVE mode SUPERADMIN</code>
 * <code>Recovery LIVE mode SUPERADMIN</code>
 
@@ -35,8 +35,8 @@ Also by using grub boot menu editing (key <code>e</code>) at grub boot menu, ker
 
 * <code>PERSISTENT mode USER (For daily activities.)</code>: Useful for browsing, e-mail, chat, etc. or just letting an already set up and installed server run. Even upgrading through <code>upgrade-nonroot</code>.
 * <code>LIVE mode USER (For daily activities.)</code>: Same as above but without persistence.
-* <code>PERSISTENT mode ADMIN (For software installation.)</code>: users could run <code>sudo apt install whatever-software-package</code>, then reboot into USER. Editing <code>/etc/apt/sources.list.d</code> [https://github.com/Whonix/apparmor-profile-everything/blob/master/etc/apparmor.d/abstractions/dangerous-files among many other things] prohibited for better security.
-* <code>PERSISTENT mode SUPERADMIN (Be very cautious!)</code>: users could add foreign sources to <code>/etc/apt/sources.list.d</code> or do anything (full freedom), then (optional but advisable) reboot to ADMIN mode, install packages from third party repositories.
+* <code>PERSISTENT mode SECUREADMIN (For software installation.)</code>: users could run <code>sudo apt install whatever-software-package</code>, then reboot into USER. Editing <code>/etc/apt/sources.list.d</code> [https://github.com/Whonix/apparmor-profile-everything/blob/master/etc/apparmor.d/abstractions/dangerous-files among many other things] prohibited for better security.
+* <code>PERSISTENT mode SUPERADMIN (Be very cautious!)</code>: users could add foreign sources to <code>/etc/apt/sources.list.d</code> or do anything (full freedom), then (optional but advisable) reboot to SECUREADMIN mode, install packages from third party repositories.
 * <code>Recovery PERSISTENT mode SUPERADMIN (Be very cautious!)</code>: The usual recovery mode.
 
 = opt-out to get same behavior as old Whonix =
@@ -45,7 +45,7 @@ Users who don’t like (any, multiple or all) of the new options...
 
 * <code>PERSISTENT mode USER (For daily activities.)</code> [A]
 * <code>LIVE mode USER (For daily activities.)</code> [B]
-* <code>PERSISTENT mode ADMIN (For software installation.)</code> [C]
+* <code>PERSISTENT mode SECUREADMIN (For software installation.)</code> [C]
 
 and who want "the old Whonix" "with unrestricted sudo" (<code>PERSISTENT mode SUPERADMIN</code>) back, who don't want to see any of the new options [A], [B], [C]... These could just make these <code>/etc/grub.d</code> folder / grub menu entries gone by running <code>sudo chmod -x /etc/grub.d/somenumber_name-of-boot-mode</code>. (There could be a script to simplify that.)
 
@@ -53,8 +53,8 @@ and who want "the old Whonix" "with unrestricted sudo" (<code>PERSISTENT mode SU
 <pre>
 /etc/grub.d/10_linux                         PERSISTENT mode USER
 /etc/grub.d/11_linux_live                    LIVE mode USER
-/etc/grub.d/12_linux_admin                   PERSISTENT mode ADMIN
-/etc/grub.d/13_linux_admin_live              LIVE mode ADMIN
+/etc/grub.d/12_linux_secureadmin             PERSISTENT mode SECUREADMIN
+/etc/grub.d/13_linux_secureadmin_live        LIVE mode SECUREADMIN
 /etc/grub.d/14_linux_superadmin              PERSISTENT mode SUPERADMIN
 /etc/grub.d/15_linux_superadmin_live         LIVE mode SUPERADMIN
 /etc/grub.d/16_linux_recovery_mode           PERSISTENT mode SUPERADMIN
@@ -66,23 +66,23 @@ Should stay below <code>/etc/grub.d/20_</code> because that is already used by a
 Note: some files will not be created in the first iteration (and not sure ever) - those listed in chapter <code>Boot modes considered too unimportant to be added to grub default boot menu:</code> in my post above.
 
 = Terminology =
-* <code>admin mode</code> vs user <code>admin</code> vs <code>root</code>: When booting into <code>admin mode</code>, the user will be logged in as user <code>admin</code>. In <code>admin mode</code>, when running <code>sudo something</code> the command will effectively run as <code>root</code> (untrusted root).
+* <code>secure admin mode</code> vs user <code>secureadmin</code> vs <code>root</code>: When booting into <code>secure admin mode</code>, the user will be logged in as user <code>secureadmin</code>. In <code>secureadmin mode</code>, when running <code>sudo something</code> the command will effectively run as <code>root</code> (untrusted root).
 * <code>super admin mode</code> vs user <code>super admin</code> vs <code>superroot</code>: When booting into <code>super admin mode</code>, the user will be logged in as user <code>superadmin</code>. In <code>super admin mode</code>, when running <code>sudo something</code> the command will effectively run as <code>superroot</code> (unrestricted root).
 * <code>untrusted root</code>: A command running as <code>root</code> but with restrictions applied by apparmor-profile-everything.
 * <code>unrestricted root</code>: When running <code>sudo something</code>, the behavior will be the same as on most Linux distributions such as Debian where <code>root</code> can do everything that <code>root</code> can usually do on such Linux distributions.
 
-= Capabilities of root vs superroot =
-<code>root</code> will be untrusted root, therefore restricted but can still:
+= Capabilities of secureroot vs superroot =
+<code>secureroot</code> will be untrusted root, therefore restricted but can still:
 
 * install packages
 * change most system settings
 
-<code>root</code> cannot by design:
+<code>secureroot</code> cannot by design:
 
 * change anything that could lead to <code>superroot</code>
 * change the running kernel
 * replace bootloader (only if APT does this due to an upgrade)
-* uninstall certain packages required to enforce the separateion of <code>root</code> and <code>superroot</code> such as for example apparmor-profile-apparmor
+* uninstall certain packages required to enforce the separation of <code>secureroot</code> and <code>superroot</code> such as for example apparmor-profile-apparmor
 
 <code>superroot</code> by design will be able to do everything.
 
