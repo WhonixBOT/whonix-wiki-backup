@@ -397,22 +397,41 @@ sshfs root@127.0.0.1:/ -p 2200 ~/mountgateway
 }}
 
 == SSH into {{workstation_product_name}} ==
+=== Introduction ===
 '''Developers / experts only! Only for debugging!'''
+
+Connection will look like this: host &rarr; ssh &rarr; {{gateway_product_name}} &rarr; ssh &rarr; {{workstation_product_name}}.
 
 These instructions assume connecting from a local host into {{project_name}}, not ssh to a remotely running {{project_name}}.
 
 You can not directly SSH into {{workstation_product_name}}, because {{workstation_product_name}} has only an internal network interface and no NAT interface. Adding one would defeat the purpose of {{project_name}}. (See [[Security Guide]] for details why.)
 
+=== Prerequisite ===
 Required: You mastered the steps "SSH into {{gateway_product_name}}" above.
 
-Connection will look like this: host &rarr; ssh &rarr; {{gateway_product_name}} &rarr; ssh &rarr; {{workstation_product_name}}.
+=== Firewall ===
+On {{workstation_product_name}}:
 
+{{Firewall Settings Workstation}}
+
+Add. Replace <code>80</code> with the actual port you would like to open.
+
+{{CodeSelect|code=
+EXTERNAL_OPEN_PORTS+=" 80 "
+}}
+
+Save.
+
+{{Reload_Firewall_ws}}
+
+=== Setup Workstation ===
 On {{workstation_product_name}}:
 
 {{CodeSelect|code=
 sudo apt-get install openssh-server
 }}
 
+=== Setup Gateway ===
 On the {{gateway_product_name}}:
 
 Or {{Code|user@}}.
@@ -421,6 +440,7 @@ Or {{Code|user@}}.
 /usr/bin/ssh.anondist-orig root@10.152.152.11
 }}
 
+=== Setup Host ===
 Then SSH from the host into {{gateway_product_name}} (host &rarr; {{gateway_product_name}}). From there, SSH into {{workstation_product_name}} ({{gateway_product_name}} &rarr; {{workstation_product_name}}). You can also do that with one command (called SSH hopping).
 
 On the host!
