@@ -68,44 +68,56 @@ The <code>Nginx</code> web server is a recommended alternative to Apache.
 If your needs are limited to hosting static pages, then look no further than <code>micro-httpd</code> which is available from Debian repositories. It is a bare-bones daemon made up of 150 lines of code. <ref>https://wiki.debian.org/WebServers</ref>
 
 == Security Recommendations ==
-* '''Credits''': Some of these instructions are paraphrased from Sarah Jamie Lewis' write-up after running OnionScan<ref>
-https://mascherari.press/why-onionscan-should-worry-you/</ref> on the Onion web. All credit goes to her.<ref>
-https://mascherari.press/thwarting-identity-correlation-attacks/
-</ref> OnionScan<ref>
-https://github.com/s-rah/onionscan
-</ref> is an open source pen-testing suite that exposes misconfiguration errors that expose Hidden Servers. '''Do''' run it before your service goes live. 
 
-* '''Application Level Leaks''': Beware of application level leaks. See [[Protocol-Leak-Protection and Fingerprinting-Protection]] for definition.
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = '''Credits''': Some of these instructions are paraphrased from Sarah Jamie Lewis' write-up after running OnionScan <ref>https://mascherari.press/why-onionscan-should-worry-you/</ref> on the Onion web -- all credit goes to her. <ref>https://mascherari.press/thwarting-identity-correlation-attacks/</ref> [https://github.com/s-rah/onionscan OnionScan] is an open source pen-testing suite that exposes misconfiguration errors that expose Hidden Servers. <u>Do</u> run it before your service goes live. 
+}}
 
-* '''Hide IP''': IP hiding instructions for your specific server software should be applied.
-** This is because a combination of a webserver that forwards IP addresses to web apps such as for example mediawiki would be a discouraged case, since mediawiki by default puts IPs of anonymous editors in the public accessible editor logs. The IP would be 10.152.152.10. That could not be used to identify you, because that is not your real external IP address, but it would identify the server as an onion service behind a {{gateway_product_name}}.<ref>
-Since it is easy to know that the internal LAN IP 10.152.152.10 is usually used by {{gateway_product_name}}.
-</ref>
+'''Table:''' ''Onion Service Security Recommendations''
 
-* '''Server Software Hardening''': If any instructions for hardening the server instructions are available it is recommended to apply them. While using {{project name}} we're quite confident that there are no IP/DNS leaks, but hardening the server software is still recommended but the responsibility of the user.
-
-* '''General Hardening''': In the [[Security Guide]] and in the [[Advanced Security Guide]] you'll find pointers for hardening.
-
-* '''Mitigate DoS attacks''': Its good practice to setup access to your site through reverse proxies to mitigate layer 7 DoS attacks and information leaks about your setup.
-
-* '''Disable Banner'''s: For SSH, FTP, SMTP and HTTP servers which leak info about the a daemon's name and version. If your SSH instance is for private use, use it with an Authenticated Onion Service to protect your server from brute-force and remote exploitation.
-
-* '''Dedicated Onion Address''': Each service you host should get its own dedicated onion address to prevent correlation between multiple instances running in the same VM.
-
-* '''ALPaCA''': An advanced website fingerprinting client/server mitigation named ALPaCA in development that applies server-side padding to requests sent out to Tor Browser. Once ts ready, service operators can run it to protect against this class of correlation attacks.<ref>
-https://github.com/camelids/
-</ref><ref>
-[https://petsymposium.org/2017/papers/issue2/paper54-2017-2-source.pdf Website Fingerprinting Defenses at the Application Layer]
-</ref><ref>
-https://www.esat.kuleuven.be/cosic/?p=6743
-</ref>
-
-* '''vanguards''': protects against guard discovery and related traffic analysis attacks. Soon installed by default in {{project name}}. See [[Vanguards]].
-
-* '''onionbalance''': [https://onionbalance.readthedocs.org onionbalance] can help to prevent de-anonymization of an onion service by protecting it from becoming unavailable through denial of service attacks (DDOS). onionbalance is mentioned in [https://github.com/mikeperry-tor/vanguards/blob/master/README_SECURITY.md security readme] by vanguards author Tor developer Mike Perry on attacks against onion services and defenses. [https://onionbalance.readthedocs.org onionbalance] now available for onion v3 services <ref>
+{| class="wikitable"
+|-
+! scope="col"| '''Domain'''
+! scope="col"| '''Recommendation'''
+|-
+! scope="row"| Application Level Leaks
+| Beware of application level leaks; see [[Protocol-Leak-Protection and Fingerprinting-Protection|Protocol Leak Protection and Fingerprinting Protection]] for a definition.
+|-
+! scope="row"| Hide IP Address
+| 
+* IP hiding instructions for the specific server software should be applied.
+* The reason is because a combination of a webserver that forwards IP addresses to certain web applications such as mediawiki would be a discouraged use case. In mediawiki's case, by default it puts IP addresses of anonymous editors in the public accessible editor logs. The IP address would be <code>10.152.152.10</code>. Although that information cannot be used to identify you because it is not your real external IP address, it would still identify the server as an onion service behind a {{gateway_product_name}}. <ref>Since it is easy to confirm that the internal LAN IP <code>10.152.152.10</code> is normally used by {{gateway_product_name}}.</ref>
+|-
+! scope="row"| Server Software Hardening
+| If any instructions for hardening the server instructions are available it is recommended to apply them, even though {{project name}} is designed to prevent IP/DNS leaks. 
+|-
+! scope="row"| General Hardening
+| Additional pointers for hardening can be found in the Basic Security Guide and Advanced Security Guide sections of the [[Documentation]].
+|-
+! scope="row"| Mitigate DoS Attacks
+| It is good practice to setup access to your site through reverse proxies to mitigate [http://ddosattackprotection.org/blog/layer-7-ddos-attack/ layer 7 DoS attacks] and information leaks about your setup.
+|-
+! scope="row"| Disable Banners
+| Disable banners for SSH, FTP, SMTP and HTTP servers which leak information about the daemon's name and version. If the SSH instance is for private use, use it with an Authenticated Onion Service to protect the server from brute-force and remote exploitation.
+|-
+! scope="row"| Dedicated Onion Address
+| Each service you host should get its own dedicated onion address to prevent correlation between multiple instances running in the same VM.
+|-
+! scope="row"| ALPaCA
+| An advanced website fingerprinting client/server mitigation named ALPaCA is in development that applies server-side padding to requests sent out to Tor Browser. When finalized, service operators can run it to protect against this class of correlation attacks. <ref>https://github.com/camelids/</ref> <ref>
+[https://petsymposium.org/2017/papers/issue2/paper54-2017-2-source.pdf Website Fingerprinting Defenses at the Application Layer]</ref> <ref>https://www.esat.kuleuven.be/cosic/?p=6743</ref>
+|-
+! scope="row"| Vanguards
+| Vanguards protect against guard discovery and related traffic analysis attacks and is installed by default in {{project name}}. <ref>Since {{Project name}} version 15.0.0.8.7</ref> See [[Vanguards]] for further information.
+|-
+! scope="row"| OnionBalance
+| [https://onionbalance.readthedocs.org OnionBalance] can help to prevent de-anonymization of an onion service by protecting it from becoming unavailable through denial of service attacks (DDOS). OnionBalance is mentioned in the [https://github.com/mikeperry-tor/vanguards/blob/master/README_SECURITY.md security readme] by vanguards author and Tor developer Mike Perry where he discusses attacks against onion services and defenses. [https://onionbalance.readthedocs.io/en/latest/v3/tutorial-v3.html OnionBalance] is now available for onion v3 services <ref>
 * https://github.com/DonnchaC/onionbalance/issues/69#issuecomment-58108608
 * https://lists.torproject.org/pipermail/tor-dev/2020-January/014142.html Tor development mailing list - Request for onionbalance v3 pre-alpha testing]
-</ref>, see https://blog.torproject.org/cooking-onions-reclaiming-onionbalance
+</ref>, see: [https://blog.torproject.org/cooking-onions-reclaiming-onionbalance Cooking with Onions: Reclaiming the Onionbalance].
+|}
 
 == Hidden Webserver ==
 ==== {{gateway_product_name}} ====
