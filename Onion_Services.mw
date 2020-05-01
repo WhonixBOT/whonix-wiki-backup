@@ -27,8 +27,8 @@ These applications are talking to Tor control port directed (filtered through [[
 For possible alternatives to onion services, see: [[Hosting_Location_Hidden_Services|Hosting Location Hidden Services]].
 
 == Web Server Software Recommendations ==
-* Avoid the <code>Apache</code> web server. It has much more functionality, leak potential and attack surface than smaller and lighter alternatives.
-** If you are using the Apache web server, see the following footnotes. <ref>
+
+It is best to avoid the <code>Apache</code> web server because it has much more functionality, leak potential and attack surface than smaller and lighter alternatives. If the Apache web server will be used regardless, refer to the following footnotes. <ref>
 It is advised to install [https://packages.debian.org/{{Stable {{project name short}} based on Debian codename}}/libapache2-mod-removeip libapache2-mod-removeip].
 
 {{Install_Package|package=
@@ -36,10 +36,10 @@ libapache2-mod-removeip
 }}
 </ref> <ref>
 (Source: [http://sourceforge.net/p/whonix/discussion/general/thread/407fce8f/?limit=25#478a old forum])
+{{Box|text=
+'''1.''' Stop Apache.
 
-Stop Apache.
-
-In {{Code|ports.conf}}:
+'''2.''' In {{Code|ports.conf}}:
 
 <pre>
 NameVirtualHost 127.0.0.1:80
@@ -47,24 +47,25 @@ Listen 127.0.0.1:80
 ServerName localhost
 </pre>
 
-In {{Code|sites-available/default}}:
+'''3.''' In {{Code|sites-available/default}}:
 <pre>
 </pre>
 
-Start Apache.
+'''4.''' Start Apache and redirect the listening port.
 
-Now Apache is not listening on {{Code|10.152.152.10}}, but only on {{Code|127.0.0.1}}. So now we somehow need to redirect {{Code|10.152.152.10:80}} to {{Code|127.0.0.1:80}}.
+Apache will not be listening on {{Code|10.152.152.10}}, but only on {{Code|127.0.0.1}}. Therefore it is necessary to redirect {{Code|10.152.152.10:80}} to {{Code|127.0.0.1:80}}.
 
-It can be done with a firewall rule or netcat:
+This can be achieved with a firewall rule or netcat:
 
 {{CodeSelect|code=
 sudo ncat -l 10.152.152.10 80 -c 'ncat 127.0.0.1 80'
 }}
+}}
 </ref>
 
-* If your needs are limited to hosting static pages then look no further than <code>micro-httpd</code> available from Debian repos. It is a bare-bones daemon made up of 150 lines of code.<ref>https://wiki.debian.org/WebServers</ref>
+The <code>Nginx</code> web server is a recommended alternative to Apache.
 
-* The <code>Nginx</code> web server is a recommended alternative.
+If your needs are limited to hosting static pages, then look no further than <code>micro-httpd</code> which is available from Debian repositories. It is a bare-bones daemon made up of 150 lines of code. <ref>https://wiki.debian.org/WebServers</ref>
 
 == Security Recommendations ==
 * '''Credits''': Some of these instructions are paraphrased from Sarah Jamie Lewis' write-up after running OnionScan<ref>
