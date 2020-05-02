@@ -120,40 +120,44 @@ If your needs are limited to hosting static pages, then look no further than <co
 |}
 
 == Hidden Webserver ==
+
 === Whonix-Gateway ===
-On your {{gateway_product_name}}:
+
+Perform all the following steps on the {{gateway_product_name}}.
 
 ==== Step 1: Open Tor Configuration ====
-On your {{gateway_product_name}}.
+
+On the {{gateway_product_name}}.
 
 {{Open_/usr/local/etc/torrc.d/50_user.conf}}
 
 ==== Step 2: Edit Tor Configuration ====
+
 {{Box|text=
-On your {{gateway_product_name}}.
+On the {{gateway_product_name}}.
 
-(all {{project name}} platforms)
+This step is necessary for all {{project name}} platforms.
 
-You need to add two settings to <code>/usr/local/etc/torrc.d/50_user.conf</code>.
+Three settings must be added to <code>/usr/local/etc/torrc.d/50_user.conf</code>:
 
 * A <code>HiddenServiceDir</code> configuration directive declaring where onion services files (hostname file and private key file) should be stored.
-* A <code>HiddenServicePort</code> configuration directive declaring,
-** the virtual port and
-** the IP and port of the {{workstation_product_name}} that will run a server service that processing incoming onion service connections.
-* <code>HiddenServiceVersion</code> configuration directive declaring which onion service versino to use (<code>2</code> or <code>3</code>).
+* A <code>HiddenServicePort</code> configuration directive declaring:
+** the virtual port; and
+** the IP and port of the {{workstation_product_name}} that will run a server service that processes incoming onion service connections.
+* <code>HiddenServiceVersion</code> configuration directive declaring which onion service version to utilize (<code>2</code> or <code>3</code>).
 }}
 
 {{Box|text=
-On your {{gateway_product_name}}.
+On the {{gateway_product_name}}.
 
-To do that, add the following three lines.
+To specify necessary settings, add the following three lines.
 
 {{Box|text=
 [[{{q_project_name_short}}|{{q_project_name}}]]: 
 
 {{IP-of-q-ws-AppVM}}
 
-Make sure to replace <code>IP-of-q-ws-AppVM</code> with the actual IP address of your {{workstation_product_name}}.
+Make sure to replace <code>IP-of-q-ws-AppVM</code> with the actual IP address of the {{workstation_product_name}}.
 
 {{CodeSelect|code=
 HiddenServiceDir /var/lib/tor/hidden_service/
@@ -174,9 +178,7 @@ HiddenServiceVersion 3
 }}
 
 {{Box|text=
-(all {{project name}} platforms) 
-
-Save.
+In all {{project name}} platforms, save the changes.
 }}
 
 ==== Step 3: Configure Onion Services Authentication ====
@@ -184,11 +186,11 @@ Save.
 {{Box|text=
 '''Optional''': authenticated onion services.
 
-<u>Onion services authentication is only possible for private onion services</u> with a limited number of visitors. This is impossible for a public onion service. <u>For a public onion service you should skip this step.</u> Each visitor needs to be provided with a key file. This chapter describes the server side. The client side is described below in chapter [[#Onion Service Authentication Client Setup|Onion Service Authentication Client Setup]].
+<u>Onion services authentication is only possible for private onion services</u> with a limited number of visitors. This is impossible for a public onion service. <u>For a public onion service this step should be skipped.</u> Each visitor needs to be provided with a key file. This chapter describes the server side. The client side is described further below in chapter [[#Onion Service Authentication Client Setup|Onion Service Authentication Client Setup]].
 
-With v3 onions addresses it is no longer possible for adversaries to learn about the existence of v3 onion addresses if these are not published. This was different previously with v2 onion addresses. Therefore, what is the purpose of onion services authentication for v3 onions?
+With v3 onions addresses it is no longer possible for adversaries to learn about their existence if they are not published -- this was not the case previously with v2 onion addresses. Therefore, some readers might wonder what is the purpose of onion services authentication for v3 onions.
 
-Onions services authentication for v3 onions exist to eliminate the side risks where the onion address is accidentally leaked. This could be for example due to human error, a bug in the software using the onion address or other yet unknown possibilities. By using onions services authentication the onion service could not be accessed even if the onion address was leaked.
+Authentication for v3 onions exists to eliminate the side risks of the onion address accidentally being leaked. This is feasible due to human error, a bug in the software using the onion address, or other yet unknown possibilities. By using onion services authentication, the onion service could not be accessed even if the onion address was leaked.
 
 Quote: <ref>
 The purpose of Onion Services Authentication has been [https://lists.torproject.org/pipermail/tor-dev/2019-December/014105.html asked about on the Tor Talk Mailing List]. Answers:
@@ -207,13 +209,13 @@ Also, if you have multiple users, having one v3 address with authentication is m
 * less load on your guard(s) / bridge(s), thus more capacity and better experience for your clients / visitors (if you have multiple addresses you need to maintain active introduction point circuits for all of them, publish descriptors, etc.)
 </blockquote>
 
-These instructions are based on [https://tor.stackexchange.com/questions/19221/how-to-setup-client-authorization-for-v3-onion-services this]. <ref>
-But modified since instructions did not create files <code>1.auth_private</code>, <code>1.auth</code> for the user and only echoed these two the shell which most users would not know what to do with.
-</ref> These instruction can be quite difficult but this is not specific to {{Project name}}. These instructions are quite difficult anywhere. [[About#Based_on_Debian|Whonix is based on Debian]] and [[Free_Support_Principle|Free Support Principle]]. <ref>
-The only {{Project name}} specific thing below is <code>str_replace</code>, which is only available in {{Project name}}. A tool which makes string search and replace easier.
+These instructions are based on [https://tor.stackexchange.com/questions/19221/how-to-setup-client-authorization-for-v3-onion-services this reference]. <ref>
+But modified since instructions did not create files <code>1.auth_private</code>, <code>1.auth</code> for the user and only echoed these to the shell which most users would not know what to do with.
+</ref> These instruction can be quite difficult, but this unspecific to {{Project name}}; these instructions are quite difficult anywhere. [[About#Based_on_Debian|Whonix is based on Debian]] and the [[Free_Support_Principle|Free Support Principle]]. <ref>
+The only {{Project name}} specific thing below is <code>str_replace</code>, which is only available in {{Project name}}. This is a tool which makes string search and replace easier.
 </ref>
 
-On your {{gateway_product_name}}.
+On the {{gateway_product_name}}.
 
 Install <code>basez</code>.
 
@@ -221,19 +223,19 @@ Install <code>basez</code>.
 basez
 }}
 
-Create temporary private key.
+Create a temporary private key.
 
 {{CodeSelect|code=
 openssl genpkey -algorithm x25519 -out private-key.pem
 }}
 
-Create temporary public key.
+Create a temporary public key.
 
 {{CodeSelect|code=
 openssl pkey -in private-key.pem -pubout -outform PEM -out public-key.pem
 }}
 
-Create temporary file.
+Create a temporary file.
 
 {{CodeSelect|code=
 cat private-key.pem {{!}} \
@@ -246,25 +248,25 @@ cat private-key.pem {{!}} \
 
 Steps towards <code>1.auth_private</code>.
 
-Set file path variable. Modify the path below in case above you did not use what we use as defaults in these instructions <code>HiddenServiceDir /var/lib/tor/hidden_service/</code>. Otherwise if you used exactly as above, no change required. If you changed, you might want to change <code>hidden_service</code> to something else below.
+Set the file path variable. Only modify the path below if you did not utilize the defaults specified earlier on in these instructions, namely <code>HiddenServiceDir /var/lib/tor/hidden_service/</code>. Otherwise, no change is required. If changes were made, you might want to change <code>hidden_service</code> to something else below.
 
 {{CodeSelect|code=
 file_name="/var/lib/tor/hidden_service/hostname"
 }}
 
-Set onion hostname variable.
+Set the onion hostname variable.
 
 {{CodeSelect|code=
 hostname="$(sudo cat "$file_name")"
 }}
 
-View your onion hostname.
+View the onion hostname.
 
 {{CodeSelect|code=
 echo "$hostname"
 }}
 
-Should show something similar.
+Something similar to the following should appear.
 
 <pre>
 bvwxablxzabj4yudgzgooeg55sys2c3li7w5hhnongdm2p62l7hfnvid.onion
@@ -276,13 +278,13 @@ Create variable <code>onionname</code> without appendix <code>.onion</code>.
 onionname="$(echo "$hostname" {{!}} str_replace .onion "")"
 }}
 
-View your onion name.
+View the onion name.
 
 {{CodeSelect|code=
 echo "$onionname"
 }}
 
-Should show something similar.
+Something similar to the following should appear.
 
 <pre>
 bvwxablxzabj4yudgzgooeg55sys2c3li7w5hhnongdm2p62l7hfnvid
@@ -306,13 +308,13 @@ cat public-key.pem {{!}} \
     tr -d '=' > temp2
 }}
 
-Create final <code>1.auth</code>.
+Create the final <code>1.auth</code>.
 
 {{CodeSelect|code=
 echo -n "descriptor:x25519:" {{!}} cat - temp2 > 1.auth
 }}
 
-Now we have two files.
+Now two files are in existence:
 
 * <code>1.auth</code> which belongs to onion server in folder <code>/var/lib/tor/hidden_service/authorized_clients/</code>.
 * <code>1.auth_private</code> which visitors need to be provided with.
@@ -339,36 +341,39 @@ sudo chown --recursive debian-tor:debian-tor /var/lib/tor/hidden_service
 }}
 
 ==== Step 4: Denial of Service Mitigation Options ====
+
 Documentation for Denial of Service Mitigation Options is incomplete. Contributions are happily considered! 
 
-Requires Tor 0.4.25 and above. See https://forums.whonix.org/t/tor-0-4-25-release-how-can-we-upgrade/8614
+This step requires Tor 0.4.2.5 and above, see: [https://forums.whonix.org/t/tor-0-4-25-release-how-can-we-upgrade/8614 Tor 0.4.25 release how can we upgrade].
 
-See Tor manual. https://2019.www.torproject.org/docs/tor-manual.html.en Search for <code>DENIAL OF SERVICE MITIGATION OPTIONS</code>.
+Also refer to the [https://2019.www.torproject.org/docs/tor-manual.html.en Tor manual] and search for <code>DENIAL OF SERVICE MITIGATION OPTIONS</code>.
 
 Nothing {{Project name}} specific regarding installation from source. As per:
 
 * [[Free_Support_Principle|Free Support Principle]]
 * [[About#Based_on_Debian|Based on Debian]]
 
-See also:
-https://forums.whonix.org/t/onion-services-ddos-defense-tor-0-4-2-5/8644
+See also: [https://forums.whonix.org/t/onion-services-ddos-defense-tor-0-4-2-5/8644 Onion Services DDOS Defense Tor 0.4.2.5]
 
 ==== Step 5: Make Tor Configuration Changes Take Effect ====
-On your {{gateway_product_name}}.
+
+On the {{gateway_product_name}}.
 
 {{Reload Tor}}
 
 ==== Step 6: Retrieve the Onion Hostname ====
-On your {{gateway_product_name}}.
 
-To get your Tor onion service url.
+On the {{gateway_product_name}}.
+
+To retrive your Tor onion service url, run.
 
 {{CodeSelect|code=
 sudo cat /var/lib/tor/hidden_service/hostname
 }}
 
 ==== Step 7: Backup the Tor Onion Service Private Key ====
-On your {{gateway_product_name}}.
+
+On the {{gateway_product_name}}.
 
 {{
 Backups_Tor_Onion_Service_private_key
@@ -377,26 +382,30 @@ Backups_Tor_Onion_Service_private_key
 }}
 
 === Whonix-Workstation ===
-On your {{workstation_product_name}}:
+
+Perform all the following steps on the {{workstation_product_name}}.
+
 ==== Step 1: Install Server Software ====
-On your {{workstation_product_name}}.
 
-Either,
+On the {{workstation_product_name}}.
 
-'''A)''' Run the following commands to install micro-httpd. <u>OR</u>
+Install <u>either</u> <code>micro-httpd</code> or <code>nginx</code>.
+
+'''A)''' Run the following commands to install <code>micro-httpd</code>. <u>OR</u>
 
 {{Install_Package|package=
 micro-httpd
 }}
 
-'''B)''' Run the following commands to install nginx.
+'''B)''' Run the following commands to install <code>nginx</code>.
 
 {{Install_Package|package=
 nginx
 }}
 
 ==== Step 2: Open Whonix-Workstation Firewall Port ====
-On your {{workstation_product_name}}.
+
+On the {{workstation_product_name}}.
 
 {{Firewall Settings Workstation}}
 
@@ -411,11 +420,10 @@ Save.
 {{Reload_Firewall_ws}}
 
 ==== Step 3: Final Notes ====
-Done.
 
-<u>Note</u>, that it may take up to 30 minutes (or so?) until a fresh .onion domain gets reachable.
+The procedure is now complete. 
 
-<u>Note</u>, accessing 127.0.0.1 {{Tor_Browser_Local_Connections}}.
+Please note that it may take up to 30 minutes (or thereabouts) until a fresh .onion domain is reachable. Further, accessing 127.0.0.1 {{Tor_Browser_Local_Connections}}
 
 === Debugging ===
 
@@ -427,7 +435,7 @@ Check permissions.
 sudo ls -la /var/lib/tor/hidden_service/
 }}
 
-In case you manually restored your hidden_service keys as root, Tor will fail to start. The folder must be owned by debian-tor. In that case, fix the permissions.
+In case you manually restored the hidden_service keys as root, Tor will fail to start. The folder must be owned by debian-tor. In that case, fix the permissions.
 
 {{CodeSelect|code=
 sudo chown debian-tor:debian-tor /var/lib/tor/hidden_service/
