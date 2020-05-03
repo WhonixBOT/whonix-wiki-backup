@@ -316,43 +316,56 @@ The anonymity effects are disputed when tunneling Tor over JonDonym; see [[Tunne
 
 == Installation ==
 
-Create a new standalone ProxyVM called JonDo-Gateway.
+{{Box|text=
+'''1.''' Create a new standalone ProxyVM called <code>JonDo-Gateway</code>.
 
-Install JonDo in your new JonDo-Gateway ProxyVM. To do that, the following instructions will install JonDo from JonDo's Debian APT repository:<br />
-https://anonymous-proxy-servers.net/en/help/firststeps2.html Installation method using chapter {{Code2|Using the repository at command line}} is recommended.
+'''2.''' Install JonDonym in the new <code>JonDo-Gateway</code> ProxyVM. 
 
-After you installed JonDo in your JonDo-Gateway ProxyVM, test if JonDo's https proxy is functional.
+Follow [https://anonymous-proxy-servers.net/en/help/firststeps2.html these instructions] to install JonDonym from JonDonymn's Debian APT repository. The {{Code2|Using the repository at command line}} chapter is recommended for installation.
+
+'''3.''' Test if JonDonym's https proxy is functional.
 
 {{CodeSelect|code=
 curl {{Curl Secure}} --proxytunnel --proxy 127.0.0.1:4001 https://check.torproject.org
 }}
 
 <ref>
-Socks proxy test - premium only.
+Socks proxy test - premium accounts only.
 
 {{CodeSelect|code=
 curl {{Curl Secure}} --socks5-hostname socks5h://127.0.0.1:4001 https://check.torproject.org
 }}
 </ref>
 
-You need to enable the extended view.
+'''4.''' Enable the extended view.
 
 <pre>
 Config &rarr; user interface &rarr; extended view.
 </pre>
 
-You must make JonDo listen on all interfaces so it will be reachable from sys-whonix. Under network, __un__check:<br />
+'''5.''' Configure JonDonymn to listen on all interfaces so it will be reachable from <code>sys-whonix</code>. 
+
+Under network, <u>un</u>check:<br />
 <code>[ ] Allow access to JAP/JonDo from localhost only (recommended)</code>
 
-In JonDo-Gateway ProxyVM, {{Firewall Unload Home Folder}}
+'''6.''' In <code>JonDo-Gateway</code> ProxyVM, {{Firewall Unload Home Folder}}
 
-IP Forwarding in the JonDo-Gateway ProxyVM could/should be disabled since it is not required. TODO: document how
+'''7.''' Disable IP Forwarding in the <code>JonDo-Gateway</code> ProxyVM.
 
-Shut down sys-whonix. Set sys-whonix NetVM to JonDo-Gateway. Restart sys-whonix.
+IP Forwarding could/should be disabled, since it is not required. TODO: document how.
 
-In sys-whonix. {{Open_/usr/local/etc/torrc.d/50_user.conf}}
+'''8.''' Shut down <code>sys-whonix</code>. 
 
-Add the following. 10.137.10.1 is just an example. You need to replace 10.137.10.1 with the IP of your JonDo-Gateway ProxyVM. You could run the following command within sys-whonix to find out the IP of your JonDo-Gateway ProxyVM.
+* Next set the <code>sys-whonix</code> NetVM to <code>JonDo-Gateway</code>. 
+* Restart <code>sys-whonix</code>.
+
+'''9.''' Add the IP address of <code>JonDo-Gateway</code>.
+
+In <code>sys-whonix</code>: {{Open_/usr/local/etc/torrc.d/50_user.conf}}
+
+Add the following. 
+
+Note: <code>10.137.10.1</code> is just an example and needs to be replaced with the IP address of the <code>JonDo-Gateway</code> ProxyVM. To discover the IP address of the <code>JonDo-Gateway</code> ProxyVM, run the following command in <code>sys-whonix</code>:
 <code>qubesdb-read /qubes-gateway</code>
 
 <pre>
@@ -361,15 +374,16 @@ HTTPSProxy 10.137.10.1:4001
 
 Save.
 
-{{Reload Tor}}
+'''10.''' {{Reload Tor}}
 
-In sys-whonix, test if Tor is able to the https proxy that JonDo is providing.
+'''11.''' In <code>sys-whonix</code>, test if Tor is able to use the https proxy that JonDonym is providing.
 
 {{CodeSelect|code=
 {{Curl Plain}} {{Curl Secure}} --socks5-hostname socks5h://127.0.0.1:9050 https://check.torproject.org
 }}
 
-Done. Tor will use JonDo as proxy.
+The procedure is complete and Tor will use JonDonym as a proxy.
+}}
 
 = JonDonym as a Tor replacement (JonDoBOX) =
 
