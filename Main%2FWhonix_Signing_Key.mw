@@ -1,0 +1,182 @@
+<!--
+Copyright:
+
+   Copyright (C) Amnesia <amnesia at boum dot org>
+   Copyright (C) 2012 - 2019 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+         
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+      
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to:
+
+    Free Software Foundation, Inc. 
+    51 Franklin St, Fifth Floor
+    Boston, MA 02110-1301, USA.
+
+On Debian GNU/Linux systems, the complete text of the GNU General Public
+License can be found in the /usr/share/common-licenses' directory.
+
+The complete text of the GNU General Public License can also be found online on gnu.org <https://www.gnu.org/licenses/gpl.html>, in {{project_name}} virtual machine images in /usr/share/common-licenses/GPL-3 file or on Github <https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/GPLv3>.
+-->
+<!--
+This wiki page is a fork of the Tails Trusting Tails signing key page, from this exact source <http://git.immerda.ch/?p=amnesia.git;a=blob;f=wiki/src/doc/get/trusting_tails_signing_key.mdwn;hb=63b68fb4970361131cbd1713b40521244e88c204>.
+-->
+{{Title|title=Download the {{project_name}} Signing Key}}
+{{Header}}
+{{#seo:
+|description=Get {{project name}} OpenPGP signing key. Verify {{project_name}} Downloads and/or Source Code.
+|image=https://www.whonix.org/w/images/e/ee/Whonixsigningkey.jpg
+}}
+= Introduction =
+
+Since all {{project_name}} releases are signed with the same key, it is unnecessary to verify the key every time a new release is announced. Trust in the key might gradually increase over time, but cryptographic signatures must still be verified every time a new release is downloaded. 
+
+This page is strongly related to the [[Trust|Placing Trust in {{project_name}}]] page.
+
+= Download the Key =
+<!--
+EDITORS NOTES:
+- Not recommending 'scurl': Because these instructions are done on the host. Perhaps by users that are not yet {{project_name}} users. 'scurl' is not available to them.
+- Not recommending curl: Because it may not be installed on their host. Perhaps Windows users are looking at these instructions.
+- Instructions target regular users. Not from-source-builders.
+-->
+
+{{gpg_init}}
+{{Box|text=
+'''1.''' [[Secure_Downloads|Securely]] download [[Patrick Schleizer]]'s (adrelanos') [[OpenPGP]] key. <ref>
+{{CodeSelect|code=
+curl --tlsv1.2 --proto =https --max-time 180 --output ~/patrick.asc https://www.whonix.org/patrick.asc
+}}
+</ref><br />
+{{Code2|<u>'''{{#widget:Key_Patrick}}'''</u>}}
+
+'''2.''' Store the key as <code>patrick.asc</code>.
+
+'''3.''' Check fingerprints/owners without importing anything. <ref>
+https://forums.whonix.org/t/gpg-show-key-warning-gpg-warning-no-command-supplied-trying-to-guess-what-you-mean/7859
+</ref>
+
+{{CodeSelect|code=
+gpg --keyid-format long --import --import-options show-only --with-fingerprint patrick.asc
+}}
+
+'''4.''' Verify the output.
+
+The output should be identical to the following. 
+
+<pre>
+pub   rsa4096/8D66066A2EEACCDA 2014-01-16 [SC] [expires: 2026-01-23]
+      Key fingerprint = 916B 8D99 C38E AF5E 8ADC  7A2A 8D66 066A 2EEA CCDA
+uid                            Patrick Schleizer <adrelanos@riseup.net>
+sub   rsa4096/10FDAC53119B3FD6 2014-01-16 [A] [expires: 2026-01-23]
+sub   rsa4096/CB8D50BB77BB3C48 2014-01-16 [S] [expires: 2026-01-23]
+sub   rsa4096/3B1E6942CE998547 2014-01-16 [E] [expires: 2026-01-23]
+</pre>
+
+'''5.''' Import the key.
+
+{{CodeSelect|code=
+gpg --import patrick.asc
+}}
+
+The output should confirm the key was imported.
+
+<pre>
+gpg: key 8D66066A2EEACCDA: public key "Patrick Schleizer <adrelanos@riseup.net>" imported
+gpg: Total number processed: 1
+gpg:               imported: 1
+</pre>
+
+''If the {{project_name}} signing key was already imported in the past'', the output should confirm the key is unchanged.
+
+<pre>
+gpg: key 8D66066A2EEACCDA: "Patrick Schleizer <adrelanos@riseup.net>" not changed
+gpg: Total number processed: 1
+gpg:              unchanged: 1
+</pre>
+
+If the following message appears at the end of the output.
+
+<pre>
+gpg: no ultimately trusted keys found
+</pre>
+
+Analyze the other messages as usual. This extra message does not relate to the {{project_name}} signing key itself, but instead usually means the user has not created an OpenPGP key yet, which is of no importance when verifying virtual machine images.
+
+'''6.''' Advanced users can check [[#Web of Trust|Web of Trust]] further below for better security.
+
+'''7.'''  Complete the {{project_name}} verification steps. 
+
+If verifying {{project_name}} images, navigate to the relevant verification page below to finish the process: 
+* [[Verify_the_virtual_machine_images_using_Linux|In Linux: Ubuntu, Debian, {{project_name}} etc. using KGpg]]
+* [[Verify the_virtual_machine_images_using_the_command line|In Linux on the Command Line]]
+* [[Verify_the_virtual_machine_images_using_Windows|In Windows]]
+* [[Verify_the_virtual_machine_images_using_Mac|In macOS]]
+}}
+
+= Advanced Users =
+== Web of Trust ==
+A few people have signed [[Patrick Schleizer]]'s (adrelanos') OpenPGP key in [[OpenPGP#The_OpenPGP_Web_of_Trust|The OpenPGP Web of Trust]].
+
+Jan Dittberner <ref>http://www.dittberner.info/de/content/jan-dittberner</ref> ({{Code2|Debian Developer}}) <ref>https://qa.debian.org/developer.php?login=Jan+Dittberner</ref> signed Patrick's key. So did intrigeri (Tails developer, {{Code2|Debian Developer}}); Peter Palfrader ({{Code2|Debian Developer}}); Richard King; and Michael Carbone (accessnow.org).
+
+Users relying on Debian or one of the many Debian derivatives (like Ubuntu) already trust apt-get, the APT repository of the relevant distribution. This means the Debian keyring can be installed as a trusted source for obtaining Jan's, intrigeri's or Peter's key, to check their signature on Patrick's key.
+{{Box|text=
+'''1.''' [[Update]] the package lists.
+
+{{CodeSelect|code=
+sudo apt-get update
+}}
+
+'''2.''' Install the Debian keyring.
+
+{{CodeSelect|code=
+sudo apt-get install debian-keyring
+}}
+
+'''3.''' Extract a signer's key from the Debian keyring and import it into your own keyring. 
+
+Here is an example using Jan's key.
+
+{{CodeSelect|code=
+gpg --no-default-keyring --keyring /usr/share/keyrings/debian-keyring.gpg --armor --export B2FF1D95CE8F7A22DF4CF09BA73E0055558FB8DD {{!}} gpg --import
+}}
+
+'''4.''' ''Optional:'' Try to establish a better trust path to the signer by checking signatures on the signer's key.
+
+Check signatures on Patrick's key.
+
+{{CodeSelect|code=
+gpg --check-sigs 916B8D99C38EAF5E8ADC7A2A8D66066A2EEACCDA
+}}
+
+The output of the above command should show signatures on Patrick's key, which should include the signer's signature.
+}}
+
+= Further Reading =
+* [https://en.wikipedia.org/wiki/GNU_Privacy_Guard GnuPG wikipedia] - free OpenPGP software.
+* [http://www.apache.org/dev/openpgp.html Apache: How To OpenPGP].
+* [http://www.debian.org/events/keysigning Debian: Keysigning] - a tutorial on signing keys of other people.
+* [http://www.rubin.ch/pgp/weboftrust.en.html rubin.ch: An explanation of the PGP web of trust].
+
+= See Also =
+* [[Trust|Placing Trust in {{project_name}}]]
+* [[OpenPGP|OpenPGP key distribution strategies]]
+
+= License =
+{{License_Amnesia|{{FULLPAGENAME}}}}
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
