@@ -217,26 +217,27 @@ Generally the newer OpenSSH’s will choose the strongest cipher on their own wh
 
 == Firewall Settings and Rules ==
 
-Make specific firewall rules for your ssh activity. Let’s say that you want to connect to a server at 123.45.678 and both your config and the server's config specify port 4675 to communicate over:
+It is necessary to make specific firewall rules for your intended SSH activity. For example, if you wanted to connect to a server at <code>123.45.678</code> and both your configuration and the server's configuration specify port <code>4675</code> to communicate over:
 
 {{CodeSelect|code=
 sudo iptables -A OUTPUT -p tcp -o [interface-name] -s [your client ssh ip] -d [ssh server ip] --dport 4675 --j ACCEPT
 }}
 
 Then to let them respond:
+
 {{CodeSelect|code=
 sudo iptables -A INPUT -p tcp -i [interface-name] -s [ssh server ip] -d [your client ip] --dport 4675 --j ACCEPT
 }}
 
-This assumes a default-deny policy for INPUT and OUTPUT. If you have a default-allow for OUTPUT, then you must add this rule as the last rule in the OUTPUT chain:
+This assumes a default-deny policy for INPUT and OUTPUT. If you have a default-allow for OUTPUT, then the following rule must be added as the last one in the OUTPUT chain:
 
 {{CodeSelect|code=
 sudo iptables -A OUTPUT --j DROP
 }}
 
-This makes it so the outgoing rules you have are the only ones that allow traffic. Iptables parses in order, so when it does not see a rule matching a packet not on your list, it checks each one in the chain until it finds a match with the last rule and drops the packet. Also, SSH only uses TCP protocol, so no UDP rules are explicitly needed.
+This ensures the outgoing rules you have are the only ones that allow traffic. Iptables parses in order, so when it does not see a rule matching a packet not on your list, it checks each one in the chain until it finds a match with the last rule and drops the packet. Also, SSH only uses the TCP protocol, so no UDP rules are explicitly needed.
 
-That should set up your ssh. Some people also recommend re-generating the moduli file that comes in /etc/ssh. If you use the settings above, look at the kex algorithms. We are not using any diffie hellman group exchange kex algos to exchange keys, so you do not have to regenerate the moduli. The chosen kex algo is curve25519.
+This should complete the SSH setup. Some people also recommend re-generating the moduli file that comes in <code>/etc/ssh</code>. If you use the settings above, look at the kex algorithms. Since no diffie hellman group exchange kex algorithms are used to exchange keys, it is unnecessary to regenerate the moduli. The chosen kex algo is curve25519.
 
 = See Also =
 
