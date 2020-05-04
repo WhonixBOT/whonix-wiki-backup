@@ -1,12 +1,14 @@
 {{Header}}
 {{#seo:
-|description=Secure Shell (SSH)
+|description=Secure Shell (SSH): Recommended Client and Server Settings, SSH Hardening Tips
 |image=https://www.whonix.org/w/images/b/b3/SSH.jpg
 }}
 
-{{stub}}
+= Introduction =
 
-SSH is a core tool in a sysadmin's arsenal. It is mainly used to remotely control a machine.
+SSH is a core tool in a sysadmin's arsenal and provides a secure and encrypted connection and method of communication between a client user and a server. It is mainly used to remotely control a machine. In the Linux landscape, the package OpenSSH is one of the most popular and complete choices to enable communication via Secure Shell.
+
+= Hardening Tips =
 
 Use stronger ssh keys.
 
@@ -31,32 +33,43 @@ Configuration SSH servers to listen on non-default ports reduces noise (automate
 Whonix forum discussion:<br />
 https://forums.whonix.org/t/locking-down-your-ssh-client/7896
 
-= See Also =
-* [[Remote Administration]]
+= Secure SSH Client and Server Settings = 
 
-= Footnotes =
-<references />
+There is a client package and a server package, openssh-client and openssh-server. As the time of writing, Debian Buster is using OpenSSH version 7.9. That version will be the focus of these instructions. Covered topics include:
 
-[[Category:Documentation]]
-{{Footer}}
+# Key generation for authentication/sign-in purposes.
+# Suggested secure settings for both the client and server configurations. 
+# A sample set of iptables rules to allow communication between client and server. 
 
-SSH provides a secure and encrypted connection and method of communication between a client user and a server. In the Linux landscape, the package OpenSSH is one of the most popular and complete choices to enable communication via Secure Shell.
-There is a client package and a server package, openssh-client and openssh-server. As of this writing, Debian Buster is using OpenSSH version 7.9. That version will be the focus of these instructions. Covered topics will be: 1. Key generation for authentication/sign-in purposes, 2. Suggested secure settings for both the client and server configurations and 3. a sample set of iptables rules to allow communication between client and server. 
+== Key Generation ==
 
-1. Before you can connect to a server (or host) through SSH, you will need a keypair. This consists of a public key, which you share with the server, and a private key which is used to verify that it is indeed you who is signing in. A passphrase (strongly recommended) can be added to your key which will be asked each time you sign into a server. Once the server has your public key, it is placed into an authorized_keys file. Your private key is not shared with anyone and should be kept in a safe place (typically resides at /home/username/.ssh/private-key) on the client's machine with root permissions (0600). The private key is how the server authenticates your username.
+Before you can connect to a server (or host) through SSH, you will need a keypair. This consists of a public key, which you share with the server, and a private key which is used to verify that it is indeed you who is signing in. A passphrase (strongly recommended) can be added to your key which will be asked each time you sign into a server. Once the server has your public key, it is placed into an authorized_keys file. Your private key is not shared with anyone and should be kept in a safe place (typically resides at /home/username/.ssh/private-key) on the client's machine with root permissions (0600). The private key is how the server authenticates your username.
+
 To generate the SSH keypair, you use a tool called "ssh-keygen" On the commandline type:
   user@host:~$ssh-keygen -o -a 75 -t ed_25519
 The -o produces a key that is compatible with OpenSSH instead of the older style, .pem; the -a refers to the number of rounds of KDF (key derivation function). This strengthens the key against a brute force attack to break the passphrase if the (private) key were to be stolen. A value of 75 to 100 is more than adequate. Remember that the more rounds you specify, the longer it takes to authenticate (sign in). This depends on your CPU, your workload at the time of sign in, the amount of cores, and available memory among other factors. 
+
 The -t specifies what type of key to generate. The choices are: rsa, ecdsa and ed25519. RSA and ECDSA are older keys, and OpenSSH recommends ed25519 as the best choice. 
+
 Upon generation of your keypair, OpenSSH will ask you if the keys should be stored at: /home/your-username/.ssh. Say yes. Permissions will be automatically set in Debian, but there have been reports of wrong permissions on certain other distributions. For reference, the correct permissions are as follows: For the public key, a 0644 is needed, and for the private key 0600 (root) is vital. Having too lax permissions will prevent logins and cause unwanted errors. 
+
 The next step is to copy your key to the server you wan to sign in to. You only need to do this once per each server. The "ssh-copy-id" command works for this task:
-user@host:~$ssh-copy-id -i ~/.ssh/public-key.pub user@host   user is your username and host is the name/address of the server. Only copy the public key. It ends with .pub. The ssh-copy-id utility will check for the correct permissions before it allows the key to be transferred. Once copied to the server, you can now login anytime with:
+user@host:~$ssh-copy-id -i ~/.ssh/public-key.pub user@host   
+
+user is your username and host is the name/address of the server. Only copy the public key. It ends with .pub. 
+
+The ssh-copy-id utility will check for the correct permissions before it allows the key to be transferred. Once copied to the server, you can now login anytime with:
 user@host:~$ssh user@host
+
 If you chose a passphrase for your key, you will be asked to enter it now. That's it. You have successfully generated a keypair and sent your public key to your chosen server. The next step is to set up the configuration. Examples will be given for both client and server. The relevant files are: /etc/ssh/ssh_config and /etc/ssh/sshd_config. The notes in parentheses are mine; in the real configuration files, these are not entered, they're only for clarification
 
-2. Suggested secure settings for client and server configuration files
-/etc/ssh/ssh_config
+== Client and Server Configuration File Settings ==
 
+Suggested secure settings for client and server configuration files.
+
+Client configuration file <code>/etc/ssh/ssh_config</code>:
+
+<pre>
 Host *
 ForwardAgent yes (depends on local environment circumstances)
 AddressFamily inet (ipv4)
@@ -84,10 +97,11 @@ Tunnel no
 #ProxyCommand ssh -q -W %h:%p gateway.example.com
 
 # End of ssh_config file
+</pre>
 
-Now the server part /etc/ssh/sshd_config:
+Now the server part <code>/etc/ssh/sshd_config</code>:
 
-Protocol 2 (Protocol 1 is dangerously outdated!)
+<pre>Protocol 2 (Protocol 1 is dangerously outdated!)
 Port 22 (22 is standard, you can make it anything. On commandline, when connecting as client, use the “-p” option if not port 22; example port 3243; ssh user@host -p 3243)
 AddressFamily inet (means only ipv4, no v6 allowed)
 ListenAddress 0.0.0.0 (-> this is okay because of strict firewall/ AppArmor. For an onion-only server, you listen on 127.0.0.1)
@@ -129,19 +143,44 @@ GatewayPorts no
 #ChrootDirectory none
 
 # End of File sshd_config
+</pre>
 
 Those are the configuration files. Note that the entries preceded by a "#" are not necessary for functional use. They are included only as examples of what is possible with SSH. If you do not have a specific use for any of the commented out options in either configuration file, do not use them at all. The Ciphers, MACs and Kex algorithms are all the strongest possible as of this writing with OpenSSH version 7.9 on Debian Buster. 
-The entries in the config files above are the most important and will establish a functioning, and well guarded setup. Use ed25519 keys only. rsa, and ecdsa are outdated. Use the ssh-keygen command to generate the keys
+The entries in the config files above are the most important and will establish a functioning, and well guarded setup. Use ed25519 keys only. rsa, and ecdsa are outdated. Use the ssh-keygen command to generate the keys.
+
 The "VisualHostKey yes" entry in the ssh_config file makes it so when you login, openssh shows you an ascii generated picture of what the key looks like. In addition to all the other verifications, this is one last line of defense to alert you to a changed or wrong key.
+
 Generally the newer OpenSSH’s will choose the strongest cipher on their own when negotiating a connection, but the config files establish in what order they are parsed. Both sides need to have the same or compatible openssh versions and cipher, mac, and kex algorithm options.
 
-3. Firewall settings and rules
+== Firewall Settings and Rules ==
 
 Make specific firewall rules for your ssh activity. Let’s say that you want to connect to a server at 123.45.678 and both your config and the server's config specify port 4675 to communicate over:
+
+{{CodeSelect|code=
 sudo iptables -A OUTPUT -p tcp -o [interface-name] -s [your client ssh ip] -d [ssh server ip] --dport 4675 --j ACCEPT
-then to let them respond:
+}}
+
+Then to let them respond:
+{{CodeSelect|code=
 sudo iptables -A INPUT -p tcp -i [interface-name] -s [ssh server ip] -d [your client ip] --dport 4675 --j ACCEPT
+}}
+
 This assumes a default-deny policy for INPUT and OUTPUT. If you have a default-allow for OUTPUT, then you must add this rule as the last rule in the OUTPUT chain:
+
+{{CodeSelect|code=
 sudo iptables -A OUTPUT --j DROP
+}}
+
 This makes it so the outgoing rules you have are the only ones that allow traffic. Iptables parses in order, so when it does not see a rule matching a packet not on your list, it checks each one in the chain until it finds a match with the last rule and drops the packet. Also, SSH only uses TCP protocol, so no UDP rules are explicitly needed.
+
 That should set up your ssh. Some people also recommend re-generating the moduli file that comes in /etc/ssh. If you use the settings above, look at the kex algorithms. We are not using any diffie hellman group exchange kex algos to exchange keys, so you do not have to regenerate the moduli. The chosen kex algo is curve25519.
+
+= See Also =
+
+* [[Remote Administration]]
+
+= Footnotes =
+<references />
+
+[[Category:Documentation]]
+{{Footer}}
