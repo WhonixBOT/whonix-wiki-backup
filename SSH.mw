@@ -1,4 +1,4 @@
-{{Title|title=Secure Shell (SSH)}} 
+{{Title|title=Secure Shell (SSH)}}
 {{Header}}
 {{#seo:
 |description=Secure Shell (SSH): Recommended Client and Server Settings, SSH Hardening Tips
@@ -25,7 +25,7 @@ Secure Shell (SSH) is a core tool in a sysadmin's arsenal and provides a secure 
 | [https://packages.debian.org/buster/mosh mosh] might be a useful addition. However, it requires UDP and it is therefore difficult to utilize over Tor, see: [[Tunnel UDP over Tor]].
 |-
 ! scope="row"| SSH Breaks
-| 
+|
 * Any references to SSH breaks in the Snowden archives applied to some outdated ciphers.
 * This has since been addressed by hardened OpenSSH settings (but are not included in {{project_name}}) and upstream disabling vulnerable algorithms. <ref>https://security.stackexchange.com/questions/112802/why-openssh-deprecated-dsa-keys</ref> <ref>https://stribika.github.io/2015/01/04/secure-secure-shell.html</ref>
 |-
@@ -39,8 +39,8 @@ ssh-keygen -t ed25519
 | Configuring SSH servers to listen on non-default ports reduces noise (automated hacking attempts) and may also increase security from less skilled attackers.
 |-
 ! scope="row"| SSH Servers
-| 
-* Prefer SSH servers available through a [[Onion Services|Tor Onion Service]] for stronger encryption and authentication. 
+|
+* Prefer SSH servers available through a [[Onion Services|Tor Onion Service]] for stronger encryption and authentication.
 * Consider using [[Onion_Services#Step_3:_Configure_Onion_Services_Authentication|Onions Services Authentication]].
 * Tor also provides [https://en.wikipedia.org/wiki/Hole_punching_%28networking%29 NAT hole-punching] so it is unnecessary to register with a DNS service or open up the LAN to outside access.
 * If the server is known to the public (non-hidden), single Tor hops can be used for the server, see: [[Non Anonymous Onion Encryption and NAT Traversal]].
@@ -52,17 +52,17 @@ ssh-keygen -t ed25519
 | For additional tips, refer to the Whonix forum discussion: [https://forums.whonix.org/t/locking-down-your-ssh-client/7896 Locking down your SSH client].
 |}
 
-= Secure SSH Client and Server Settings = 
+= Secure SSH Client and Server Settings =
 
 There is a client package and a server package, <code>openssh-client</code> and <code>openssh-server</code>. As the time of writing, Debian Buster is using OpenSSH version 7.9. That version will be the focus of these instructions. Covered topics include:
 
 # Key generation for authentication/sign-in purposes.
-# Suggested secure settings for both the client and server configurations. 
-# A sample set of iptables rules to allow communication between client and server. 
+# Suggested secure settings for both the client and server configurations.
+# A sample set of iptables rules to allow communication between client and server.
 
 == Key Generation ==
 
-Before you can connect to a server (or host) through SSH, a keypair is required. This consists of a public key, which you share with the server, and a private key which is used to verify that you are actually signing in. A passphrase (strongly recommended) can be added to your key which will be asked each time you sign into a server. 
+Before you can connect to a server (or host) through SSH, a keypair is required. This consists of a public key, which you share with the server, and a private key which is used to verify that you are actually signing in. A passphrase (strongly recommended) can be added to your key which will be asked each time you sign into a server.
 
 Once the server has your public key, it is placed into an <code>authorized_keys</code> file. The private key is not shared with anyone and should be kept in a safe place -- it typically resides at <code>/home/username/.ssh/private-key</code> on the client's machine with root permissions (0600). The private key is how the server authenticates your username.
 
@@ -76,29 +76,29 @@ user@host:~$ssh-keygen -o -a 75 -t ed_25519
 }}
 
 * <code>-o</code> produces a key that is compatible with OpenSSH instead of the older style, .pem;
-* <code>-a</code> refers to the number of rounds of KDF (key derivation function). This strengthens the key against a brute force attack to break the passphrase if the (private) key were to be stolen. A value of 75 to 100 is more than adequate. Remember that the more rounds that are specified, the longer it takes to authenticate (sign in). This depends on your CPU, your workload at the time of sign in, the amount of cores, and available memory among other factors. 
-* <code>-t</code> specifies what type of key to generate. The choices are: rsa, ecdsa and ed25519. RSA and ECDSA are older keys, and OpenSSH recommends ed25519 as the best choice. 
+* <code>-a</code> refers to the number of rounds of KDF (key derivation function). This strengthens the key against a brute force attack to break the passphrase if the (private) key were to be stolen. A value of 75 to 100 is more than adequate. Remember that the more rounds that are specified, the longer it takes to authenticate (sign in). This depends on your CPU, your workload at the time of sign in, the amount of cores, and available memory among other factors.
+* <code>-t</code> specifies what type of key to generate. The choices are: rsa, ecdsa and ed25519. RSA and ECDSA are older keys, and OpenSSH recommends ed25519 as the best choice.
 
 '''2.''' Store the SSH keypair.
 
-Upon generation of your keypair, OpenSSH will ask if the keys should be stored at: <code>/home/your-username/.ssh</code>; reply <code>yes</code>. Permissions will be automatically set in Debian, but there have been reports of wrong permissions on certain other distributions. For reference, the correct permissions are as follows: 
+Upon generation of your keypair, OpenSSH will ask if the keys should be stored at: <code>/home/your-username/.ssh</code>; reply <code>yes</code>. Permissions will be automatically set in Debian, but there have been reports of wrong permissions on certain other distributions. For reference, the correct permissions are as follows:
 
-* for the public key, a <code>0644</code> is needed; and 
-* for the private key <code>0600</code> (root) is vital. 
+* for the public key, a <code>0644</code> is needed; and
+* for the private key <code>0600</code> (root) is vital.
 
-Having too lax permissions will prevent logins and cause unwanted errors. 
+Having too lax permissions will prevent logins and cause unwanted errors.
 
 '''3.''' Copy the key to the server you want to sign into.
 
 This only needs to be done per server. The <code>ssh-copy-id</code> command works for this task, run.
 
 {{CodeSelect|code=
-user@host:~$ssh-copy-id -i ~/.ssh/public-key.pub user@host   
+user@host:~$ssh-copy-id -i ~/.ssh/public-key.pub user@host
 }}
 
-<code>user</code> is your username and host is the name/address of the server. Only copy the public key. It ends with <code>.pub</code>. 
+<code>user</code> is your username and host is the name/address of the server. Only copy the public key. It ends with <code>.pub</code>.
 
-The ssh-copy-id utility will check for the correct permissions before it allows the key to be transferred. 
+The ssh-copy-id utility will check for the correct permissions before it allows the key to be transferred.
 
 '''4.''' Login to the server.
 
@@ -108,14 +108,14 @@ Once copied to the server, you can now login anytime with:
 user@host:~$ssh user@host
 }}
 
-If you chose a passphrase for your key, you will be asked to enter it now. 
+If you chose a passphrase for your key, you will be asked to enter it now.
 
-The keypair generation procedure is now complete. You have successfully generated a keypair and sent your public key to your chosen server. 
+The keypair generation procedure is now complete. You have successfully generated a keypair and sent your public key to your chosen server.
 }}
 
 == Client and Server Configuration File Settings ==
 
-The next step is to set up secure settings for the client and server configuration files. Examples will be given for both client and server. The relevant files are: <code>/etc/ssh/ssh_config</code> and <code>/etc/ssh/sshd_config</code>. 
+The next step is to set up secure settings for the client and server configuration files. Examples will be given for both client and server. The relevant files are: <code>/etc/ssh/ssh_config</code> and <code>/etc/ssh/sshd_config</code>.
 
 {{mbox
 | type    = notice
@@ -209,7 +209,7 @@ GatewayPorts no
 
 === Notes ===
 
-Those are the completed SSH configuration files. Please note that the entries preceded by a "#" are not necessary for functional use; they are included only as examples of what is possible in SSH. If you do not have a specific use for any of the commented out options in either configuration file, do not use them at all. 
+Those are the completed SSH configuration files. Please note that the entries preceded by a "#" are not necessary for functional use; they are included only as examples of what is possible in SSH. If you do not have a specific use for any of the commented out options in either configuration file, do not use them at all.
 
 The Ciphers, MACs and Kex algorithms are all the strongest possible at the time of writing with OpenSSH version 7.9 on Debian buster. The entries in the configuration files above are the most important and will establish a functional and well-guarded setup. Use ed25519 keys only -- rsa and ecdsa are outdated. Use the <code>ssh-keygen</code> command to generate the keys.
 
