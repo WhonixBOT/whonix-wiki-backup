@@ -164,48 +164,107 @@ Tunnel no
 
 <code>/etc/ssh/sshd_config</code>:
 
-<pre>Protocol 2 (Protocol 1 is dangerously outdated!)
-Port 22 (22 is standard, you can make it anything. On commandline, when connecting as client, use the “-p” option if not port 22; example port 3243; ssh user@host -p 3243)
-AddressFamily inet (means only ipv4, no v6 allowed)
-ListenAddress 0.0.0.0 (-> this is okay because of strict firewall/ AppArmor. For an onion-only server, you listen on 127.0.0.1)
-#ListenAddress :: (comment out if ipv6 is disabled via sysctl or iptables or both)
-HostKey /etc/ssh/ssh_host_ed25519_key (location of server private key)
-# Strongest ciphers:
-Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes256-ctr
-Most secure MACs:
-# MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-512,hmac-sha2-256-etm@openssh.com
-Secure Kex algos:
-# KexAlgorithms curve25519-sha256@libssh.org,curve25519-sha256,ecdh-sha2-nistp521,ecdh-sha2-nistp384
-Logging (Optional- okay to leave commented out)
-#SyslogFacility AUTH (leave commented out if you do not require logging)
-#LogLevel INFO (unless you need logging, leave commented out)
-LoginGraceTime 2m (how long does the prompt stay if client has a passphrase to enter)
-PermitRootLogin prohibit-password | no (safer to deny root obviously. With keypairs, the "prohibit-password" option accomplishes the same thing so root is denied)
-PasswordAuthentication no (use public keys ed25519 so no password authentication. A passphrase is optional for the key, but that is not part of this option. This option refers to old style password-only authentication (not secure))
-StrictModes yes
-MaxAuthTries 3 (number of allowed login attempts, if there is a passphrase associated with the key)
-MaxSessions 4 (number of allowed sessions with the same client)
-PubkeyAuthentication yes (always use public keys, not passwords)
-UsePAM yes
-#AllowAgentForwarding yes (circumstance specific. This refers to the ssh-agent. Useful when running a local instance and client/server exist on same machine)
-#AllowTcpForwarding (be careful with this. Avoid forwarding if you can. If you do not forward tcp, leave this commented out)
-TCPKeepAlive yes (dependent on connection and network. Sometimes useful, sometimes not. An okay default is to say “no” and if it turns out you need it, then do “yes.”)
-X11Forwarding no (Forwarding X11 is not a good idea)
-PrintMotd no
-#PrintLastLog yes (this prints the "Last login: Mon Dec 5 08:21:15 2019 from 192.33.4444" message)
-#UseLogin no
-#PermitUserEnvironment no
-ClientAliveInterval (second amount to keep connection alive)
-UseDNS no
-AllowUsers user (this is a whiteapace separated list of allowed user login names. Only user names on this list will be allowed to login)
-#Banner /etc/issue.net
-AcceptEnv LANG LC_*
-#Subsystem sftp /usr/lib/openssh/sftp-server
-GatewayPorts no
-#PermitTunnel no
-#ChrootDirectory none
+<pre>
+## Protocol 1 is dangerously outdated!
+Protocol 2
 
-# End of File sshd_config
+## 22 is standard, you can make it anything. On commandline, when connecting as client, use the “-p” option if not port 22; example port 3243; ssh user@host -p 3243
+Port 22
+
+## means only ipv4, no v6 allowed
+AddressFamily inet
+
+## this is okay because of strict firewall/ AppArmor. For an onion-only server, you listen on 127.0.0.1
+ListenAddress 0.0.0.0
+
+## comment out if ipv6 is disabled via sysctl or iptables or both
+## comment in if ipv6 should be enabled
+#ListenAddress ::
+
+## location of server private key
+HostKey /etc/ssh/ssh_host_ed25519_key
+
+## Strongest ciphers:
+Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes256-ctr
+
+## Most secure MACs:
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-512,hmac-sha2-256-etm@openssh.com
+
+## Secure Kex algos:
+KexAlgorithms curve25519-sha256@libssh.org,curve25519-sha256,ecdh-sha2-nistp521,ecdh-sha2-nistp384
+
+## Logging - optional - okay to leave commented out
+#SyslogFacility AUTH (leave commented out if you do not require logging)
+
+# unless you need logging, leave commented out
+#LogLevel INFO
+
+# how long does the prompt stay if client has a passphrase to enter
+LoginGraceTime 2m
+
+# With keypairs, the "prohibit-password" option accomplishes the same thing so root is denied
+
+PermitRootLogin prohibit-password
+
+# Safer to deny root obviously
+#PermitRootLogin no
+
+## use public keys ed25519 so no password authentication. A passphrase is optional for the key, but that is not part of this option. This option refers to old style password-only authentication (not secure)
+PasswordAuthentication no
+
+StrictModes yes
+
+## number of allowed login attempts, if there is a passphrase associated with the key
+MaxAuthTries 3
+
+## number of allowed sessions with the same client
+MaxSessions 4
+
+## always use public keys, not passwords
+PubkeyAuthentication yes
+
+UsePAM yes
+
+## circumstance specific. This refers to the ssh-agent. Useful when running a local instance and client/server exist on same machine
+#AllowAgentForwarding yes
+
+## be careful with this. Avoid forwarding if you can. If you do not forward tcp, leave this commented out
+#AllowTcpForwarding
+
+## dependent on connection and network. Sometimes useful, sometimes not. An okay default is to say “no” and if it turns out you need it, then do “yes.”
+TCPKeepAlive yes
+
+## Forwarding X11 is not a good idea
+X11Forwarding no
+
+PrintMotd no
+
+## this prints the "Last login: Mon Dec 5 08:21:15 2019 from 192.33.4444" message
+#PrintLastLog yes
+
+#UseLogin no
+
+#PermitUserEnvironment no
+
+## second amount to keep connection alive
+ClientAliveInterval
+
+UseDNS no
+
+## this is a white space separated list of allowed user login names. Only user names on this list will be allowed to login
+AllowUsers user
+
+#Banner /etc/issue.net
+
+AcceptEnv LANG LC_*
+
+#Subsystem sftp /usr/lib/openssh/sftp-server
+
+GatewayPorts no
+
+#PermitTunnel no
+
+#ChrootDirectory none
 </pre>
 
 === Notes ===
