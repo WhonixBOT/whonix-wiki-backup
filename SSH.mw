@@ -54,7 +54,7 @@ ssh-keygen -t ed25519
 
 = Secure SSH Client and Server Settings = 
 
-There is a client package and a server package, openssh-client and openssh-server. As the time of writing, Debian Buster is using OpenSSH version 7.9. That version will be the focus of these instructions. Covered topics include:
+There is a client package and a server package, <code>openssh-client</code> and <code>openssh-server</code>. As the time of writing, Debian Buster is using OpenSSH version 7.9. That version will be the focus of these instructions. Covered topics include:
 
 # Key generation for authentication/sign-in purposes.
 # Suggested secure settings for both the client and server configurations. 
@@ -62,27 +62,58 @@ There is a client package and a server package, openssh-client and openssh-serve
 
 == Key Generation ==
 
-Before you can connect to a server (or host) through SSH, you will need a keypair. This consists of a public key, which you share with the server, and a private key which is used to verify that it is indeed you who is signing in. A passphrase (strongly recommended) can be added to your key which will be asked each time you sign into a server. Once the server has your public key, it is placed into an authorized_keys file. Your private key is not shared with anyone and should be kept in a safe place (typically resides at /home/username/.ssh/private-key) on the client's machine with root permissions (0600). The private key is how the server authenticates your username.
+Before you can connect to a server (or host) through SSH, a keypair is required. This consists of a public key, which you share with the server, and a private key which is used to verify that you are actually signing in. A passphrase (strongly recommended) can be added to your key which will be asked each time you sign into a server. 
 
-To generate the SSH keypair, you use a tool called "ssh-keygen" On the commandline type:
-  user@host:~$ssh-keygen -o -a 75 -t ed_25519
-The -o produces a key that is compatible with OpenSSH instead of the older style, .pem; the -a refers to the number of rounds of KDF (key derivation function). This strengthens the key against a brute force attack to break the passphrase if the (private) key were to be stolen. A value of 75 to 100 is more than adequate. Remember that the more rounds you specify, the longer it takes to authenticate (sign in). This depends on your CPU, your workload at the time of sign in, the amount of cores, and available memory among other factors. 
+Once the server has your public key, it is placed into an <code>authorized_keys</code> file. The private key is not shared with anyone and should be kept in a safe place -- it typically resides at <code>/home/username/.ssh/private-key</code> on the client's machine with root permissions (0600). The private key is how the server authenticates your username.
 
-The -t specifies what type of key to generate. The choices are: rsa, ecdsa and ed25519. RSA and ECDSA are older keys, and OpenSSH recommends ed25519 as the best choice. 
+{{Box|text=
+'''1.''' Generate the SSH keypair.
 
-Upon generation of your keypair, OpenSSH will ask you if the keys should be stored at: /home/your-username/.ssh. Say yes. Permissions will be automatically set in Debian, but there have been reports of wrong permissions on certain other distributions. For reference, the correct permissions are as follows: For the public key, a 0644 is needed, and for the private key 0600 (root) is vital. Having too lax permissions will prevent logins and cause unwanted errors. 
+Use a tool called "ssh-keygen". On the command line, type.
 
-The next step is to copy your key to the server you wan to sign in to. You only need to do this once per each server. The "ssh-copy-id" command works for this task:
+{{CodeSelect|code=
+user@host:~$ssh-keygen -o -a 75 -t ed_25519
+}}
+
+* <code>-o</code> produces a key that is compatible with OpenSSH instead of the older style, .pem;
+* <code>-a</code> refers to the number of rounds of KDF (key derivation function). This strengthens the key against a brute force attack to break the passphrase if the (private) key were to be stolen. A value of 75 to 100 is more than adequate. Remember that the more rounds that are specified, the longer it takes to authenticate (sign in). This depends on your CPU, your workload at the time of sign in, the amount of cores, and available memory among other factors. 
+* <code>-t</code> specifies what type of key to generate. The choices are: rsa, ecdsa and ed25519. RSA and ECDSA are older keys, and OpenSSH recommends ed25519 as the best choice. 
+
+'''2.''' Store the SSH keypair.
+
+Upon generation of your keypair, OpenSSH will ask if the keys should be stored at: <code>/home/your-username/.ssh</code>. Reply yes. Permissions will be automatically set in Debian, but there have been reports of wrong permissions on certain other distributions. For reference, the correct permissions are as follows: 
+
+* for the public key, a <code>0644</code> is needed; and 
+* for the private key <code>0600</code> (root) is vital. 
+
+Having too lax permissions will prevent logins and cause unwanted errors. 
+
+'''3.''' Copy the key to the server you want to sign into.
+
+This only needs to be done per server. The "ssh-copy-id" command works for this task, run.
+
+{{CodeSelect|code=
 user@host:~$ssh-copy-id -i ~/.ssh/public-key.pub user@host   
+}}
 
-user is your username and host is the name/address of the server. Only copy the public key. It ends with .pub. 
+<code>user</code> is your username and host is the name/address of the server. Only copy the public key. It ends with <code>.pub</code>. 
 
-The ssh-copy-id utility will check for the correct permissions before it allows the key to be transferred. Once copied to the server, you can now login anytime with:
+The ssh-copy-id utility will check for the correct permissions before it allows the key to be transferred. 
+
+'''4.''' Login to the server.
+
+Once copied to the server, you can now login anytime with:
+
+{{CodeSelect|code=
 user@host:~$ssh user@host
+}}
 
-If you chose a passphrase for your key, you will be asked to enter it now. That's it. You have successfully generated a keypair and sent your public key to your chosen server. The next step is to set up the configuration. Examples will be given for both client and server. The relevant files are: /etc/ssh/ssh_config and /etc/ssh/sshd_config. The notes in parentheses are mine; in the real configuration files, these are not entered, they're only for clarification
+If you chose a passphrase for your key, you will be asked to enter it now. That's it. You have successfully generated a keypair and sent your public key to your chosen server. 
+}}
 
 == Client and Server Configuration File Settings ==
+
+The next step is to set up the configuration. Examples will be given for both client and server. The relevant files are: <code>/etc/ssh/ssh_config</code> and <code>/etc/ssh/sshd_config</code>. The notes in parentheses are mine; in the real configuration files, these are not entered, they are only present for clarification.
 
 Suggested secure settings for client and server configuration files.
 
