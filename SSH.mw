@@ -122,6 +122,51 @@ The next step is to set up secure settings for the client and server configurati
 
 [https://forums.whonix.org/t/locking-down-your-ssh-client/7896/9 Review needed!] See also https://manpages.debian.org/ssh_config
 
+<code>/etc/ssh/ssh_config</code>:
+
+<pre>
+Host *
+
+## depends on local environment circumstances
+ForwardAgent yes
+
+## ipv4
+AddressFamily inet
+
+IdentityFile ~/.ssh/id_ed25519
+IdentitiesOnly yes
+
+Port 22
+Protocol 2
+ForwardX11 no
+PubkeyAuthentication yes
+StrictHostKeyChecking ask
+VisualHostKey yes
+HashKnownHosts yes
+User user
+Host host
+SendEnv LANG LC_*
+
+## Strongest ciphers:
+Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes256-ctr
+
+## Most secure MACs:
+MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-512,hmac-sha2-256-etm@openssh.com
+
+## Secure Kex algos:
+KexAlgorithms curve25519-sha256@libssh.org,curve25519-sha256,ecdh-sha2-nistp521,ecdh-sha2-nistp384
+
+Tunnel no
+#TunnelDevice any:any
+#PermitLocalCommand no
+#ProxyCommand ssh -q -W %h:%p gateway.example.com
+</pre>
+
+=== Server Configuration File ===
+{{Testers-Only}}
+
+[https://forums.whonix.org/t/locking-down-your-ssh-client/7896/9 Review needed!] See also https://manpages.debian.org/sshd_config
+
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text    = 
@@ -176,51 +221,6 @@ cp /etc/ssh/sshd_config /etc/ssh/sshd_config_backup
 }}
 
 View the backup file <code>/etc/ssh/ssh_config_backup</code> with a text editor to check if the backup was successful.
-
-<code>/etc/ssh/ssh_config</code>:
-
-<pre>
-Host *
-
-## depends on local environment circumstances
-ForwardAgent yes
-
-## ipv4
-AddressFamily inet
-
-IdentityFile ~/.ssh/id_ed25519
-IdentitiesOnly yes
-
-Port 22
-Protocol 2
-ForwardX11 no
-PubkeyAuthentication yes
-StrictHostKeyChecking ask
-VisualHostKey yes
-HashKnownHosts yes
-User user
-Host host
-SendEnv LANG LC_*
-
-## Strongest ciphers:
-Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes256-ctr
-
-## Most secure MACs:
-MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-512,hmac-sha2-256-etm@openssh.com
-
-## Secure Kex algos:
-KexAlgorithms curve25519-sha256@libssh.org,curve25519-sha256,ecdh-sha2-nistp521,ecdh-sha2-nistp384
-
-Tunnel no
-#TunnelDevice any:any
-#PermitLocalCommand no
-#ProxyCommand ssh -q -W %h:%p gateway.example.com
-</pre>
-
-=== Server Configuration File ===
-{{Testers-Only}}
-
-[https://forums.whonix.org/t/locking-down-your-ssh-client/7896/9 Review needed!] See also https://manpages.debian.org/sshd_config
 
 <code>/etc/ssh/sshd_config</code>:
 
