@@ -165,7 +165,7 @@ Tunnel no
 === Server Configuration File ===
 {{Testers-Only}}
 
-[https://forums.whonix.org/t/locking-down-your-ssh-client/7896/9 Review needed!] See also https://manpages.debian.org/sshd_config
+[https://forums.whonix.org/t/locking-down-your-ssh-client/7896/9 Review needed!] See also [https://manpages.debian.org/sshd_config sshd configuration file man page].
 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
@@ -180,14 +180,24 @@ Warnings:
 
 Prerequisite knowledge;
 
-* how to open a terminal emulator
+* how to open a terminal (emulator) such as xfce4-terminal
 * how to open two terminal emulators or multiple terminal emulator tabs at the same time
+
+Open at least two SSH connections in two different terminal (tabs). One is used as a backup should SSH connection be accidentally closed in the middle of the setup.
 
 View the fingerprint of the server's ed25519 public key. Fine hosting providers will also show the server fingerprint in the server web interface.
 
 {{CodeSelect|code=
 ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
 }}
+
+Restart the sshd server.
+
+{{CodeSelect|code=
+sudo systemctl restart sshd
+}}
+
+Existing SSH connection should not be interrupted by Debian default. Then open a new terminal (tab) and see if you can still SSH to the server. If yes, proceed.
 
 When using the config file below, you might see the following warning. IP address and SHA256 hash will be different.
 
@@ -223,7 +233,15 @@ cp /etc/ssh/sshd_config /etc/ssh/sshd_config_backup
 
 View the backup file <code>/etc/ssh/ssh_config_backup</code> with a text editor to check if the backup was successful.
 
-<code>/etc/ssh/sshd_config</code>:
+Clear contents of <code>/etc/ssh/sshd_config</code>.
+
+{{CodeSelect|code=
+echo "" | sudo tee /etc/ssh/sshd_config
+}}
+
+Open file <code>/etc/ssh/sshd_config</code> with root rights.
+
+Paste the following contents.
 
 <pre>
 ## Protocol 1 is dangerously outdated!
@@ -351,6 +369,21 @@ AcceptEnv LANG LC_*
 
 #ChrootDirectory none
 </pre>
+
+Save.
+
+Restart the ssh server. All existing SSH connections will remain open.
+
+{{CodeSelect|code=
+sudo systemctl restart sshd
+}}
+
+Keep the ssh connection open.
+
+Open another terminal (tab) and try to SSH to the server.
+
+* If it works: great.
+* If it does not work: use your still opening
 
 === Notes ===
 
