@@ -173,7 +173,10 @@ Tunnel no
 ## Protocol 1 is dangerously outdated!
 Protocol 2
 
-## 22 is standard, you can make it anything. On commandline, when connecting as client, use the “-p” option if not port 22; example port 3243; ssh user@host -p 3243
+## 22 is standard, you can make it anything.
+## On commandline, when connecting as client,
+## use the “-p” option if not port 22;
+## example port 3243; ssh user@host -p 3243
 Port 22
 
 ## means only ipv4, no v6 allowed
@@ -199,7 +202,7 @@ MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-512,hmac-sha2-256-etm@openssh.com
 KexAlgorithms curve25519-sha256@libssh.org,curve25519-sha256,ecdh-sha2-nistp521,ecdh-sha2-nistp384
 
 ## Logging - optional - okay to leave commented out
-#SyslogFacility AUTH (leave commented out if you do not require logging)
+#SyslogFacility AUTH
 
 # unless you need logging, leave commented out
 #LogLevel INFO
@@ -220,14 +223,16 @@ PermitRootLogin prohibit-password
 ## This option refers to old style password-only authentication (not secure)
 PasswordAuthentication no
 
-## The default is yes.
-#StrictModes yes
+# Change to yes to enable challenge-response passwords (beware issues with
+# some PAM modules and threads)
+ChallengeResponseAuthentication no
 
 ## number of allowed login attempts, if there is a passphrase associated with the key
 MaxAuthTries 3
 
 ## number of allowed sessions with the same client
-MaxSessions 4
+## TODO: why would we modify that?
+#MaxSessions 4
 
 ## Specifies whether public key authentication is allowed. The default is yes.
 ## always use public keys, not passwords
@@ -250,11 +255,14 @@ UsePAM no
 ## Useful when running a local instance and client/server exist on same machine
 AllowAgentForwarding no
 
-## be careful with this. Avoid forwarding if you can.
-## If you do not forward tcp, leave this commented out
-#AllowTcpForwarding
+## Be careful with this. Avoid forwarding if you can.
+## If you do not forward tcp, leave this commented out.
+## Default is yes.
+AllowTcpForwarding no
 
-## dependent on connection and network. Sometimes useful, sometimes not. An okay default is to say “no” and if it turns out you need it, then do “yes.”
+## dependent on connection and network.
+## Sometimes useful, sometimes not.
+## And okay default is to say “no” and if it turns out you need it, then do “yes.”
 TCPKeepAlive yes
 
 ## Forwarding X11 is not a good idea
@@ -270,7 +278,7 @@ PrintMotd no
 #PermitUserEnvironment no
 
 ## second amount to keep connection alive
-ClientAliveInterval
+#ClientAliveInterval 0
 
 UseDNS no
 
@@ -282,8 +290,6 @@ AllowUsers user
 AcceptEnv LANG LC_*
 
 #Subsystem sftp /usr/lib/openssh/sftp-server
-
-GatewayPorts no
 
 #PermitTunnel no
 
