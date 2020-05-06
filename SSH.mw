@@ -168,34 +168,43 @@ Tunnel no
 | text    = 
 Warnings:
 
-* Changing sshd config can prevent future successful SSH connections to your servers.
-* It is probably best to set this only up for new servers or if you do not mind to re-install the server should you lock yourself out.
-* If a server console interface (ability to run repair commands from server host web admin interface) is available, it's certainly much less risky to make huge changes to ssh config.
-* Don't proceed without a backup of the server and knowledge how to restore the server should anything go wrong.
+* Changing the sshd configuration can prevent future successful SSH connections to your servers.
+* It is probably best to only set this up for new servers or if you do not mind re-installing the server should you lock yourself out.
+* If a server console interface (ability to run repair commands from server host web administrator interface) is available, it is certainly far less risky to make huge changes to the ssh configuration.
+* Do not proceed without a backup of the server and knowledge of how to restore the server should anything go wrong.
 }}
 
-Prerequisite knowledge;
+Prerequisite knowledge:
 
-* how to open a terminal (emulator) such as xfce4-terminal
-* how to open two terminal emulators or multiple terminal emulator tabs at the same time
+* How to open a terminal (emulator) such as xfce4-terminal.
+* How to open two terminal emulators or multiple terminal emulator tabs at the same time.
 
-Open at least two SSH connections in two different terminal (tabs). One is used as a backup should SSH connection be accidentally closed in the middle of the setup.
+{{Box|text=
+'''1.''' Open at least two SSH connections in two different terminal (tabs). 
 
-View the fingerprint of the server's ed25519 public key. Fine hosting providers will also show the server fingerprint in the server web interface.
+One is used as a backup should the SSH connection be accidentally closed in the middle of the setup.
+
+'''2.''' View the fingerprint of the server's ed25519 public key. 
+
+Fine hosting providers will also show the server fingerprint in the server web interface.
 
 {{CodeSelect|code=
 ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
 }}
 
-Restart the sshd server.
+'''3.''' Restart the sshd server.
 
 {{CodeSelect|code=
 sudo systemctl restart sshd
 }}
 
-Existing SSH connection should not be interrupted by Debian default. Then open a new terminal (tab) and see if you can still SSH to the server. If yes, proceed.
+Existing SSH connections should not be interrupted by Debian default. 
 
-When using the config file below, you might see the following warning. IP address and SHA256 hash will be different.
+'''4.''' Open a new terminal (tab) and see if you can still SSH to the server. 
+
+If yes, proceed.
+
+'''5.''' ''Note:'' When using the configuration file below, the following warning might appear. IP address and SHA256 hash will be different.
 
 <pre>
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -215,27 +224,27 @@ ED25519 host key for xxx.xxx.xxx.xxx has changed and you have requested strict c
 Host key verification failed.
 </pre>
 
-Will look similar to the following.
+It will look similar to the following.
 
 <pre>
 256 SHA256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649 root@node (ED25519)
 </pre>
 
-Make a backup of your old SSH config.
+'''6.''' Make a backup of the old SSH configuration file.
 
 {{CodeSelect|code=
 cp /etc/ssh/sshd_config /etc/ssh/sshd_config_backup
 }}
 
-View the backup file <code>/etc/ssh/ssh_config_backup</code> with a text editor to check if the backup was successful.
+'''7.''' View the backup file <code>/etc/ssh/ssh_config_backup</code> with a text editor to check if the backup was successful.
 
-Clear contents of <code>/etc/ssh/sshd_config</code>.
+'''8.''' Clear contents of <code>/etc/ssh/sshd_config</code>.
 
 {{CodeSelect|code=
 echo "" {{!}} sudo tee /etc/ssh/sshd_config
 }}
 
-Open file <code>/etc/ssh/sshd_config</code> with root rights.
+'''9.''' Open file <code>/etc/ssh/sshd_config</code> with root rights.
 
 Paste the following contents.
 
@@ -366,9 +375,9 @@ AcceptEnv LANG LC_*
 #ChrootDirectory none
 </pre>
 
-Save.
+Save the file.
 
-Restart the ssh server. All existing SSH connections will remain open.
+'''10.''' Restart the ssh server. All existing SSH connections will remain open.
 
 {{CodeSelect|code=
 sudo systemctl restart sshd
@@ -376,10 +385,11 @@ sudo systemctl restart sshd
 
 Keep the ssh connection open.
 
-Open another terminal (tab) and try to SSH to the server.
+'''11.''' Open another terminal (tab) and try to SSH to the server.
 
-* If it works: great.
-* If it does not work: use your still opening
+* If it works, the process is complete.
+* If it does not work, use your still open terminal to check for configuration errors before trying again.
+}}
 
 === Notes ===
 
