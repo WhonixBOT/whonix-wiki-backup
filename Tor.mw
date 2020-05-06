@@ -210,6 +210,148 @@ MapAddress bbbbbb6qtmqg65g6.onion 127.0.0.1
 
 {{Reload_Tor}}
 
+== Build Tor from Source Code ==
+
+Unless indicated otherwise all these steps are performed inside {{gateway_product_name}} ({{q_project_name}}: <code>sys-whonix</code>).
+
+{{Box|text=
+'''1.''' Add Debian buster source repository.
+
+{{CodeSelect|code=
+echo "deb-src tor+https://deb.debian.org/debian buster main" | sudo tee /etc/apt/sources.list.d/debian-source.list
+}}
+
+'''2.''' Update the package lists.
+
+{{CodeSelect|code=
+sudo apt update
+}}
+
+'''3.''' Install build dependencies for Tor.
+
+{{CodeSelect|code=
+sudo apt-get build-dep tor
+}}
+
+'''4.''' Fetch the signing key.
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = The following command using gpg with <code>--recv-keys</code> is not recommended for security reasons and is often non-functional. This is not a {{project name}}-specific issue. The OpenPGP public key should be downloaded from the web instead; see also [[Secure_Downloads|Secure Command Line / Tor Browser Downloads]]. This procedure is currently undocumented and can be resolved as per the Free Support Principle. Documentation contributions will be happily considered.
+}}
+
+{{CodeSelect|code=
+gpg --keyserver keys.gnupg.net --recv-keys 7A02B3521DC75C542BA015456AFEE6D49E92B601
+}}
+
+'''5.''' Download the Tor source code archive.
+
+In this example, Tor version 0.4.2.5 is used. Change the Tor version to match your preference.
+
+{{CodeSelect|code=
+scurl-download https://dist.torproject.org/tor-0.4.2.5.tar.gz
+}}
+
+'''6.'''Download the Tor source code OpenPGP signature.
+
+{{CodeSelect|code=
+scurl-download https://dist.torproject.org/tor-0.4.2.5.tar.gz.asc
+}}
+
+'''7.''' Verify the Tor source code OpenPGP signature.
+
+{{CodeSelect|code=
+gpg --verify tor-0.4.2.5.tar.gz.asc
+}}
+
+Should show.
+
+<pre>
+gpg: assuming signed data in 'tor-0.4.2.5.tar.gz'
+gpg: Signature made Mon 09 Dec 2019 06:21:51 PM UTC
+gpg:                using RSA key 7A02B3521DC75C542BA015456AFEE6D49E92B601
+gpg: Good signature from "Nick Mathewson <nickm@alum.mit.edu>" [unknown]
+gpg:                 aka "Nick Mathewson <nickm@wangafu.net>" [unknown]
+gpg:                 aka "Nick Mathewson <nickm@freehaven.net>" [unknown]
+gpg:                 aka "Nick Mathewson <nickm@torproject.org>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 2133 BC60 0AB1 33E1 D826  D173 FE43 009C 4607 B1FB
+     Subkey fingerprint: 7A02 B352 1DC7 5C54 2BA0  1545 6AFE E6D4 9E92 B601
+</pre>
+
+'''8.''' Extract the Tor source code archive.
+
+{{CodeSelect|code=
+tar xvzf tor-0.4.2.5.tar.gz
+}}
+
+Change directory in the Tor source code folder.
+
+{{CodeSelect|code=
+cd tor-0.4.2.5/
+}}
+
+'''9.''' Configure and build Tor.
+
+Run configure.
+
+{{CodeSelect|code=
+./configure
+}}
+
+Build.
+
+{{CodeSelect|code=
+make
+}}
+
+The build should now be finished.
+
+'''10.''' Check the version of the software just built.
+
+{{CodeSelect|code=
+./src/app/tor --version
+}}
+
+Should show.
+
+<pre>Tor version 0.4.2.5.</pre>
+
+'''11.''' ''Qubes users only:'' copy the newly built tor binary to {{workstation_product_name}} TemplateVM.
+
+{{CodeSelect|code=
+qvm-copy ./src/app/tor
+}}
+
+'''12.''' Stop Tor.
+
+{{CodeSelect|code=
+sudo systemctl stop tor
+}}
+
+'''13.''' Copy the newly built Tor to the system.
+
+{{CodeSelect|code=
+sudo cp ./src/app/tor /usr/sbin/tor
+}}
+
+And copy again.
+
+{{CodeSelect|code=
+sudo cp ./src/app/tor /usr/bin/tor
+}}
+
+'''14.''' Restart Tor.
+
+{{CodeSelect|code=
+sudo systemctl start tor
+}}
+
+The process of installing Tor from source code is now complete. 
+}}
+
 == Entry Guards ==
 {{Anchor|Manual Rotation of Tor Guards}}
 {{Anchor|Security and Performance Related Issues}}
