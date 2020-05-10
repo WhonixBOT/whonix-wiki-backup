@@ -112,37 +112,41 @@ If the reader shares the {{project_name}} opinion that [[SSL|Transport Layer Sec
 
 == Conceptual Challenges in Software Digital Signatures Verification ==
 
-There are many educational shortcomings related to verification of software digital signatures. There are many implicit assumptions which are seldom spelled out. Realistically, expecting users to successfully verify software signatures and to notice attacks by advanced adversaries is very much likely to fail unless properly educated before the attack started.
+Many educational shortcomings exist with respect to verification of software digital signatures. In the relevant literature, a number of implicit assumptions are made which are seldom spelled out. Unless users are properly educated beforehand, it is unrealistic to expect the majority can successfully verify software signatures and simultaneously notice attacks by advanced adversaries.
 
-Writing on an internet website "please download our signing key and verify our software signatures" has only limited usefulness. Whonix.org providing software signatures is just an example. This is the same for any software that provides software signatures.
+When digitally signed software is made available, most often the relevant website will simply state the signing key should be downloaded in order to verify software signature(s). This approach has limited usefulness and whonix.org is not alone in this regard -- the same is true for any software that provides software signatures.
 
-Diligence in software signatures cannot be offered by vendors (those who offer software for download). Vendors can only offer software signatures. Diligence in verification of software signatures is something that only users can demand from themselves.
+Due diligence in verification of software signatures falls wholly upon users, and cannot be offered by vendors who make software and associated signatures available for download. The reason is the threat model of software signature verification is intimately linked with the [[#System Security Level|system security level]]; this section attempts to make this explicit.
 
-This is because of the threat model of software signature verification. The implicit assumption behind it are the different [[#System Security Level|system security level]]. Implicit meaning, that the threat model is seldom explicitly spelled out and explained to users. This chapter attempts to make this explicit.
+=== Threat Model Assumptions ===
 
-In this threat model, signing keys and software signatures are considered a higher security level. Everything the user can see on a website is on a lower security level. This is because there are not [[Dev/OpenPGP Signed Website|(OpenPGP) signed websites]] anywhere yet. And [[SSL|TLS]] is considered a lower security level too than verification of digital software signatures.
+In this threat model, signing keys and software signatures are considered to provide a higher security level. On the other hand, everything the user can see on a website (including instructions) is on a lower security level because [[Dev/OpenPGP Signed Website|(OpenPGP) signed websites]] do not exist yet. Further [[SSL|TLS]] provides a lower security level than verification of digital software signatures.
 
-Let's assume there was a software. It's main website would be reachable over TLS. (In this very example TLS vs non-TLS does not even matter.) Due to file size and economic shortcommings it however is not possible to host software downloads on the same server. Software downloads are being offered on a mirror network, i.e. by third parties. In such an example it could be argued that mirrors are less trusted than the main project website. In that case if the main website offered a signing key then a malicious file shipped by a third party mirror could be detected if software signature verification was utilized by the user.
+Consider an example of signed software that is available on a random website that is secured by TLS (in this very example TLS vs non-TLS does not even matter). In this hypothetical case, due to the software's file size and economic shortcomings it is impossible to host the software downloads on the same server. Instead, downloads are offered on a mirror network operated by third parties. In such an example it could be argued that mirrors are less trusted than the main project website. In the event the main website offered a signing key, but a malicious file was shipped by a third party mirror, then it could be detected if software signature verification was utilized by the user.
 
-In case of other projects among which {{Project name}} is again just an example, everything, i.e. the software downloads, signing key and software signatures are provided by the same server over [[SSL|TLS]] (and in case of Whonix also over [[Forcing_.onion_on_Whonix.org|.onion]], see also [[Download Security]]). No project however can promise that its server will never be compromised, see [[Trust#Distrusting_Infrastructure|Distrusting Infrastructure]] for details.
+In other cases the software downloads, signing key and software signatures are all provided by the same server over [[SSL|TLS]]; this is the situation for {{project_name}} and other projects. <ref>{{project_name}} also offers all three components over [[Forcing_.onion_on_Whonix.org|.onion]]; see also [[Download Security]].</ref> While this may appear more secure than the first example, no project can guarantee that its server will never be compromised; see [[Trust#Distrusting_Infrastructure|Distrusting Infrastructure]] for further details.
 
-Therefore blindly trusting whatever the project website says about software signature verification is a very bad idea. The threat model is to keep in mind, the question to ask is: What if the website I am currently seeing is already compromised? What if whatever the server is saying about instructions on how to verify software signatures, which signing key should be used has not sorely written by the vendor but maliciously modified by a third party? Advanced adversaries might after they compromised a project web server show fake website contents only to users they want to specifically target.
+The preceding discussion makes it clear that is unwise to blindly trust whatever a project website says about software signature verification. Relevant threat model questions include:
+* What if the website I am currently viewing is already compromised? 
+* What if a malicious third party has already modified instructions concerning how to verify signatures or which signing key should be used?
+Also, after compromising a project web server, advanced adversaries are capable of showing fake website contents to specifically targeted users.
 
-There are various attacks, various malicious modifications of the project website possible for an attacker:
+=== Potential Adversary Attacks ===
 
-* Remove any mention of software signature verification and replace software downloads with malicious counterparts.
-** Users who never heard about software verification would have no chance to notice this and get compromised.
-** Users who already previously understood the threat model of digital software verification and wanted to enforce "always software signatures verification security level" would ask for software signatures and stay safe.
-* Mention a potential lie such as "from now on, software signatures are no longer required. This is now automatic, because ...".
-** Users who are gullible would believe this and get compromised.
-** Diligent users would search for a digitally signed message by the vendor confirming this. And if not found, report the issue and stay safe.
-* Replace the genuine signing key and software signatures with a signing key and software signatures created by the attacker.
-** Users who did not previously receive the singing key and who did not do further research the plausibility of having received the correct signing key would not notice this and get compromised.
+Competent adversaries are capable of various attacks, including malicious modifications of a project website. Consider the following vectors:
+* Removal of any mention of software signature verification and replacement of software downloads with malicious counterparts.
+** Users who have never heard about software verification would fail to notice this, leading to compromise.
+** Users who already understood the threat model of digital software verification and wanted to enforce the security level "always use software signatures verification" would ask for software signatures and remain safe.
+* Insertion of false information such as "From now on, software signatures are no longer required. This process is now automated, because ...".
+** Gullible users would believe this statement and be compromised.
+** Diligent users would search for a digitally signed message by the vendor confirming this change. If it was not found, they would report the issue and remain safe.
+* Replacing the genuine signing key and software signatures with a signing key and software signatures created by the adversary.
+** Users who did not previously receive the singing key and who did not do further research the plausibility of having received the correct signing key would fail to not notice this and be compromised.
 ** Diligent users would follow the recommendations in earlier chapters on this page and therefore stay safe.
 
-To counter these threats, user diligence is required as a sanity check.
+To counter these threats, user intelligence and due diligence is necessary as a sanity check.
 
-Due to the complexity of this issue and the very low awareness, it is unlikely that a significant amount of users is enforcing "always software signatures verification security level". The concept of these security levels explicitly spelled out has never been seen before by the author of this chapter. Required knowledge is far too much. Usability of tools used for manual verification of software signatures is far too bad. [[Dev/SecureDownloader|Better technical solutions are required but these do not exist.]]
+Due to the complexity of this issue and very low user awareness, it is unlikely the majority of users are enforcing the "always use software signatures verification" security level. To date, the author of this section has not seen the security level concept explicitly described elsewhere, probably because the relevant  information is not widely known. Unfortunately, the existing tools used for manual verification of software signatures have poor usability and [[Dev/SecureDownloader|better technical solutions]] that are required do not exist.
 
 = Attacks in the Wild =
 
