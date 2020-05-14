@@ -2,7 +2,7 @@
 title=VPN Tunnel Setup Examples
 }}
 {{#seo:
-|description=Instructions on how to combine VPN tunnels with Tor
+|description=Instructions on how to combine VPN tunnels with Tor in {{project_name}}
 |image=https://www.whonix.org/w/images/7/70/Dykeroad-41832640.jpg
 }}
 {{Tunnels_Introduction}}
@@ -17,26 +17,51 @@ The examples given below were mainly for testing purposes. You may setup account
 
 == Riseup.net Quick VPN Command Line Test ==
 
-Known to support TCP, UDP, SSL.
+[https://riseup.net/ Riseup] is known to support TCP, UDP and [[SSL|TLS]].
 
-(1) You need a riseup.net account.<br />
-(2) You need to know your riseup account name.<br />
-(3) Go to riseup.net &rarr; help &rarr; VPN and obtain your VPN secret. (VPN password)<br />
-(4) Look inside the [https://help.riseup.net/vpn riseup VPN help page] for [https://help.riseup.net/en/riseup-ca <code>RiseupCA.pem</code>] and download it.<br />
-(5) Open a terminal. (konsole) Get into the same folder, you stored <code>RiseupCA.pem</code>.<br />
-(6) Install openvpn.
+{{Box|text=
+'''1.''' Create a [https://account.riseup.net/user/new new Riseup account].
+
+Note an account can only be created with an [https://support.riseup.net/en/topics/10340-invite-code/posts invite code].
+
+'''2.''' Obtain your VPN secret (VPN password).
+
+The [https://riseup.net/ca/vpn/vpn-red/vpn-secret VPN secret] is a special password that is used instead of the regular password to access the [https://riseup.net/en/vpn Riseup VPN]:
+
+* login to <code>account.riseup.net</code>
+* click Passwords on the left sidebar
+* click the Service Passwords tab
+
+'''3.''' Download the Riseup CA certificate.
+
+The "CA certificate" is used by the local program to confirm the identity of servers you connect to. Download it from [https://riseup.net/es/security/network-security/riseup-ca this page] or click this link: [https://riseup.net/es/security/network-security/riseup-ca/RiseupCA.pem RiseupCA.pem].
+
+'''4.''' Open a terminal.
+
+Navigate to the folder where <code>RiseupCA.pem</code> was saved.
+
+'''5.''' Install [https://openvpn.net/ OpenVPN].
+
 {{CodeSelect2|code=
 sudo apt-get update && sudo apt-get install openvpn
 }}
-(7) The following line from the riseup OpenVPN help page<ref>https://help.riseup.net/en/openvpn-linux</ref> won't work for user &rarr; Tor &rarr; VPN &rarr; Internet, because the Tor network does not support UDP.<br />
+
+'''6.''' Test the connection from the command line.
+
+The following line from the Riseup OpenVPN for Linux page <ref>https://riseup.net/en/vpn/vpn-red/linux</ref> will not work for the connection: <code>user</code> &rarr; <code>Tor</code> &rarr; <code>VPN</code> &rarr; <code>Internet</code>, because the Tor network does not support UDP.
+
 {{CodeSelect2|code=
-sudo openvpn --client --dev tun --auth-user-pass --remote vpn.riseup.net 1194 --ca RiseupCA.pem
+sudo openvpn --client --dev tun --auth-user-pass --remote vpn.riseup.net 1194 --keysize 256 --auth SHA256 --cipher AES-256-CBC --ca RiseupCA.pem
 }}
-The following line works for user &rarr; Tor &rarr; VPN &rarr; Internet.<br />
+
+Instead, use the following functional command utilizing TCP for the connection: <code>user</code> &rarr; <code>Tor</code> &rarr; <code>VPN</code> &rarr; <code>Internet</code>.
+
 {{CodeSelect2|code=
-sudo openvpn --client --dev tun --auth-user-pass --remote vpn.riseup.net 1194 --ca RiseupCA.pem --proto tcp
+sudo openvpn --client --dev tun --auth-user-pass --remote vpn.riseup.net 1194 --keysize 256 --auth SHA256 --cipher AES-256-CBC --ca RiseupCA.pem --proto tcp
 }}
-(8) For DNS, see [[#Riseup DNS]] below.
+
+'''7.''' For DNS, see [[#Riseup DNS|Riseup DNS]] below.
+}}
 
 == Riseup.net riseup.conf ==
 
