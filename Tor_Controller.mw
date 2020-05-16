@@ -12,9 +12,9 @@ __FORCETOC__
 
 = Introduction =
 
-Two primary Tor Controller options are available: [[#Nyx|nyx]] and [[#tor-ctrl|tor-ctrl]]. Both programs come pre-installed in {{project_name}}, but [[#Nyx|nyx]] is recommended.
+[[#Nyx|nyx]] is the primary Tor Controller option that comes pre-installed in {{project_name}}.
 
-Note: [[#Vidalia|Vidalia]] has been deprecated and is no longer packaged in Debian.
+Note: [[#Vidalia|Vidalia]] and [[#tor-ctrl|tor-ctrl]] have been deprecated and are no longer packaged in Debian.
 
 = onioncircuits =
 <blockquote>
@@ -129,139 +129,6 @@ This is caused by the [[whonixcheck]] function {{Code2|check_tor_socks_port_reac
 If you are directly connecting to the public Tor network without a Tor Bridge, the real IP and Nickname of the Guard should be visible instead. <ref>https://forums.whonix.org/t/how-to-check-if-i-configured-bridges-correctly-and-the-bridges-are-working-properly/4371/5</ref>
 
 |}
-
-= tor-ctrl =
-
-== On {{gateway_product_name}} ==
-
-tor-ctrl <ref>https://github.com/{{project_name_short}}/tor-ctrl</ref> comes bundled with {{project_name}} by default.
-
-To get a new circuit, run.
-
-{{CodeSelect|code=
-tor-ctrl -a /var/run/tor/control.authcookie -c "signal newnym"
-}}
-
-{{CodeSelect|code=
-tor-ctrl -v -a /var/run/tor/control.authcookie -c "signal newnym"
-}}
-
-See also.
-
-{{CodeSelect|code=
-man tor-ctrl
-}}
-
-== On {{workstation_product_name}} ==
-
-=== Interactive Tor Control Connection ===
-Connect to the Tor control socket.
-
-{{CodeSelect|code=
-socat - UNIX-CONNECT:/var/run/tor/control
-}}
-
-Run the following command. <ref name=nologin-required>
-No login required due to [[Dev/Control_Port_Filter_Proxy|Control Port Filter Proxy]] filtered access.
-</ref>
-
-{{CodeSelect|code=
-signal NEWNYM
-}}
-
-The output should show.
-
-<pre>
-250 OK
-</pre>
-
-=== Command Line Tor Control Command ===
-Run the following command. <ref name=nologin-required />
-
-{{CodeSelect|code=
-cmd="signal NEWNYM" && ( echo "$cmd" && sleep 1 ) {{!}} socat - UNIX-CONNECT:/var/run/tor/control
-}}
-
-The output should show.
-
-<pre>
-250 OK
-</pre>
-
-=== tor-ctrl ===
-
-Repeat this command every time a new circuit is desired.
-
-Run {{Code2|tor-ctrl}} (installed by default) with {{Code2|signal NEWNYM}}. <ref name=nologin-required />
-
-{{CodeSelect|code=
-bash -x tor-ctrl -p notrequired -c "signal NEWNYM"
-}}
-
-If the following output appears at the bottom.
-
-<pre>
-+ VERSION=v1
-+ TORCTLIP=127.0.0.1
-+ TORCTLPORT=9051
-+ TOR_COOKIE=/var/run/tor/control.authcookie
-+ SLEEP_AFTER_CMD=1
-+ VERBOSE=0
-+ getopts :a:c:s:p:P:f:vh Option
-+ case $Option in
-+ PASSWORD=notrequired
-+ getopts :a:c:s:p:P:f:vh Option
-+ case $Option in
-+ CMD='signal NEWNYM'
-+ getopts :a:c:s:p:P:f:vh Option
-+ '[' -e '' ']'
-+ '[' 'signal NEWNYM' '!=' '' ']'
-+ checkprogs
-+ programs=telnet
-+ '[' notrequired = '' ']'
-+ for p in $programs
-+ command -v telnet
-+ '[' 0 '!=' 0 ']'
-+ cmdpipe signal NEWNYM
-+ login
-+ '[' notrequired = '' ']'
-+ sendcmd 'AUTHENTICATE "notrequired"'
-+ echo 'AUTHENTICATE "notrequired"'
-+ sleep 1
-+ telnet 127.0.0.1 9051
-+ myecho
-++ cat
-+ sendcmd signal NEWNYM
-+ echo signal NEWNYM
-+ sleep 1
-+ sendcmd QUIT
-+ echo QUIT
-+ sleep 1
-+ STR='Trying 127.0.0.1...
-Connected to 127.0.0.1.
-Escape character is '\''^]'\''.
-250 OK
-250 OK
-250 closing connection'
-+ vecho 'Trying 127.0.0.1...
-Connected to 127.0.0.1.
-Escape character is '\''^]'\''.
-250 OK
-250 OK
-250 closing connection'
-+ '[' 0 -ge 1 ']'
-+ echo 'Trying 127.0.0.1...
-Connected to 127.0.0.1.
-Escape character is '\''^]'\''.
-250 OK
-250 OK
-250 closing connection'
-++ grep -c '^250 '
-+ '[' 3 = 3 ']'
-+ exit 0
-</pre>
-
-Then the process succeeded. ({{Code2|exit 1}} is a bug in {{Code2|tor-ctrl}}, because it does not understand the double {{Code2|250 OK}}.)
 
 = Alternatives =
 
@@ -378,6 +245,145 @@ New Identity is not yet perfect and there are open bugs; this is not a {{project
 In general for greater security, it is better to completely close Tor Browser and restart it. In [[{{q project name short}}|{{q project name}}]], the safest option is using a {{workstation_product_name}} [[Qubes/DisposableVM|DisposableVM]] and closing it and recreating a new one after critical activities.
 
 = Deprecated =
+
+== tor-ctrl ==
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = tor-ctrl has been deprecated because it is not supported upstream. See: [https://forums.whonix.org/t/tor-ctrl-tor-control-port-command-line-tool/8074 tor-ctrl - Tor control port command line tool]. <ref>https://github.com/Whonix/tor-ctrl</ref>
+}}
+
+=== On {{gateway_product_name}} ===
+
+tor-ctrl <ref>https://github.com/{{project_name_short}}/tor-ctrl</ref> was formerly bundled in {{project_name}} by default.
+
+To get a new circuit, run.
+
+{{CodeSelect|code=
+tor-ctrl -a /var/run/tor/control.authcookie -c "signal newnym"
+}}
+
+{{CodeSelect|code=
+tor-ctrl -v -a /var/run/tor/control.authcookie -c "signal newnym"
+}}
+
+See also.
+
+{{CodeSelect|code=
+man tor-ctrl
+}}
+
+=== On {{workstation_product_name}} ===
+
+==== Interactive Tor Control Connection ====
+Connect to the Tor control socket.
+
+{{CodeSelect|code=
+socat - UNIX-CONNECT:/var/run/tor/control
+}}
+
+Run the following command. <ref name=nologin-required>
+No login required due to [[Dev/Control_Port_Filter_Proxy|Control Port Filter Proxy]] filtered access.
+</ref>
+
+{{CodeSelect|code=
+signal NEWNYM
+}}
+
+The output should show.
+
+<pre>
+250 OK
+</pre>
+
+==== Command Line Tor Control Command ====
+Run the following command. <ref name=nologin-required />
+
+{{CodeSelect|code=
+cmd="signal NEWNYM" && ( echo "$cmd" && sleep 1 ) {{!}} socat - UNIX-CONNECT:/var/run/tor/control
+}}
+
+The output should show.
+
+<pre>
+250 OK
+</pre>
+
+==== New Circuits ====
+
+Repeat this command every time a new circuit is desired.
+
+Run {{Code2|tor-ctrl}} (installed by default) with {{Code2|signal NEWNYM}}. <ref name=nologin-required />
+
+{{CodeSelect|code=
+bash -x tor-ctrl -p notrequired -c "signal NEWNYM"
+}}
+
+If the following output appears at the bottom.
+
+<pre>
++ VERSION=v1
++ TORCTLIP=127.0.0.1
++ TORCTLPORT=9051
++ TOR_COOKIE=/var/run/tor/control.authcookie
++ SLEEP_AFTER_CMD=1
++ VERBOSE=0
++ getopts :a:c:s:p:P:f:vh Option
++ case $Option in
++ PASSWORD=notrequired
++ getopts :a:c:s:p:P:f:vh Option
++ case $Option in
++ CMD='signal NEWNYM'
++ getopts :a:c:s:p:P:f:vh Option
++ '[' -e '' ']'
++ '[' 'signal NEWNYM' '!=' '' ']'
++ checkprogs
++ programs=telnet
++ '[' notrequired = '' ']'
++ for p in $programs
++ command -v telnet
++ '[' 0 '!=' 0 ']'
++ cmdpipe signal NEWNYM
++ login
++ '[' notrequired = '' ']'
++ sendcmd 'AUTHENTICATE "notrequired"'
++ echo 'AUTHENTICATE "notrequired"'
++ sleep 1
++ telnet 127.0.0.1 9051
++ myecho
+++ cat
++ sendcmd signal NEWNYM
++ echo signal NEWNYM
++ sleep 1
++ sendcmd QUIT
++ echo QUIT
++ sleep 1
++ STR='Trying 127.0.0.1...
+Connected to 127.0.0.1.
+Escape character is '\''^]'\''.
+250 OK
+250 OK
+250 closing connection'
++ vecho 'Trying 127.0.0.1...
+Connected to 127.0.0.1.
+Escape character is '\''^]'\''.
+250 OK
+250 OK
+250 closing connection'
++ '[' 0 -ge 1 ']'
++ echo 'Trying 127.0.0.1...
+Connected to 127.0.0.1.
+Escape character is '\''^]'\''.
+250 OK
+250 OK
+250 closing connection'
+++ grep -c '^250 '
++ '[' 3 = 3 ']'
++ exit 0
+</pre>
+
+Then the process succeeded. ({{Code2|exit 1}} is a bug in {{Code2|tor-ctrl}}, because it does not understand the double {{Code2|250 OK}}.)
 
 == Vidalia ==
 {{mbox
