@@ -22,9 +22,15 @@ As of OnionShare 2 it is also possible to run the program in Receive mode. This 
 
 <blockquote>In addition to the “Share Files” and “Receive Files” tabs, OnionShare 2.2 introduces the “Publish Website” tab. You drag all of the files that make up your website into the OnionShare window and click “Start sharing.” It will start a web server to host your static website and give you a .onion URL. This website is only accessible from the Tor network, so people will need Tor Browser to visit it. People who visit your website will have no idea who you are – they won’t have access to your IP address, and they won’t know your identity or your location. And, so long as your website visitors are able to access the Tor network, the website can’t be censored.</blockquote>
 
-{{onion-grater-warning}}
+== OnionShare Version ==
+
+At the time of writing, Debian buster supports v1.3.2 of OnionShare. This means the following instructions  will only enable files to be shared or received anonymously using legacy v2 onion addresses; this is a known [https://lists.torproject.org/pipermail/tor-dev/2020-May/014322.html security risk].
+
+Users with higher security needs should follow the [[#OnionShare_Installation_from_GitHub|optional instructions]] to manually install a later version of OnionShare from GitHub (v2.2 at the time of writing) to enable v3 onion connections.
 
 = Whonix VM Configuration =
+{{onion-grater-warning}}
+
 {{Box|text=
 {{Anchor|onion-grater}}
 '''1.''' Extend the onion-grater whitelist in {{gateway_product_name}} (<code>sys-whonix</code>).
@@ -88,7 +94,7 @@ To test OnionShare is running correctly:
 
 * You can check “Create stealth onion services” (Client Auth) to make OnionShare operations more secure - however, this currently only works with legacy 'v2' (shorter) style onions. Support for Client Auth with v3/prop224/next-gen onions will be possible in a future release. 
 ** Note: Using Stealth mode makes it harder for the end user to connect to the share, because they must first edit their torrc file. Please see the [https://github.com/micahflee/onionshare/wiki/Stealth-Onion-Services official documentation] for further information.
-* By default, if the version of Tor in use is 0.3.5.7 or higher (as it is in {{project name}}), OnionShare will use next-gen or 'v3' (sometimes referred to as prop224) onion addresses by default. These are recognizable by their longer address. You can enable Legacy Mode in the settings if for some reason you want to use the shorter (but less secure) v2 onion addresses.
+* By default, if OnionShare 2.0 or higher is installed and the version of Tor in use is 0.3.5.7 or higher (as it is in {{project name}}), OnionShare will use next-gen or 'v3' (sometimes referred to as prop224) onion addresses by default. <ref>https://github.com/micahflee/onionshare/wiki/Linux-Distribution-Support</ref> These are recognizable by their longer address. You can enable Legacy Mode in the settings if for some reason you want to use the shorter (but less secure) v2 onion addresses.
 
 == How-to: Use OnionShare ==
 
@@ -124,6 +130,91 @@ AppArmor profiles are available to better contain OnionShare, but they have not 
 Advanced users are encouraged to help progress the [https://github.com/micahflee/onionshare/issues/686 open OnionShare AppArmor ticket] and help complete this wiki section. Successes or failures can also be reported in the [http://forums.{{project_onion}}/c/apparmor {{project name}} AppArmor forum].
 
 TODO: Test profiles and expand this section.
+
+= Appendix =
+
+== OnionShare Installation from GitHub ==
+{{Box|text=
+'''1.''' ''Optional'': Create a separate {{workstation_product_name}} ([[{{q project name short}}|{{q project name}}]]: <code>anon-onionshare</code> AppVM).
+
+Note: This is not strictly necessary, but best practice is to separate anonymous activities of a different nature in distinct VMs (AppVMs). <ref>[[{{q_project_name_short}}|{{q_project_name}}]] users should note the <code>{{whonix-ws}}</code> TemplateVM will pull in over 70Mb of dependencies at step 6. Consider creating a separate, cloned <code>{{whonix-ws}}</code> TemplateVM for this purpose beforehand.</ref>
+
+In [[{{q project name short}}|{{q project name}}]], to clone the existing <code>anon-whonix</code>: 
+
+<code>Qube Manager</code> &rarr; <code>Right-click on anon-vm</code> &rarr; <code>Select "<u>C</u>lone qube"</code> &rarr; <code>Rename to "anon-onionshare"</code>
+
+'''2.''' Install git in {{workstation_product_name}} (<code>anon-onionshare</code>).
+
+Open a terminal (Konsole) in {{workstation_product_name}} (<code>anon-onionshare</code>) and navigate to the persistent home directory. 
+
+{{CodeSelect|code=
+cd /home/user
+}}
+
+Next install git which is not available by default in the VM (AppVM). <ref>The git installation will not persist in [[{{q_project_name_short}}|{{q_project_name}}]] following reboot. This method avoids polluting the <code>{{whonix-ws}}</code> TemplateVM upon which it is based.</ref>
+
+{{CodeSelect|code=
+sudo apt-get install git
+}}
+
+'''3.''' Clone the OnionShare directory.
+
+This will pull the OnionShare source code directly from GitHub.
+
+{{CodeSelect|code=
+git clone https://github.com/micahflee/onionshare.git
+}}
+
+Next navigate to the OnionShare directory.
+
+{{CodeSelect|code=
+cd onionshare
+}}
+
+'''4.''' Retrieve the OnionShare PGP signing key.
+
+This step retrieves the OnionShare developer's PGP key using its long key ID. <ref>The OnionShare core developer is Micah Lee. The key ID has been taken directly from https://micahflee.com/ -- [https://micahflee.com/micah.asc micah.asc]</ref>
+
+{{CodeSelect|code=
+gpg --keyserver pool.sks-keyservers.net --recv-keys 0x927F419D7EC82C2F149C1BD1403C2657CD994F73
+}}
+
+'''5.''' Examine and verify the git tags and commit.
+
+These steps list the available git tags, and verifies the latest version and its commit (v2.0 at the time of writing).
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Good signature messages should appear for each verify command below. Do not proceed if signatures are bad! In that case, remove the OnionShare directory and repeat step 3.
+}}
+{{CodeSelect|code=
+git tag
+}}
+
+{{CodeSelect|code=
+git verify-tag v2.2
+}}
+
+{{CodeSelect|code=
+git verify-commit v2.2^{commit}
+}}
+
+[[{{q_project_name_short}}|{{q_project_name}}]] users should shut down <code>anon-onionshare</code> prior to the next step.
+
+'''6.''' Install OnionShare dependencies.
+
+Several dependencies must be installed in {{workstation_product_name}} (<code>{{whonix-ws}}</code> TemplateVM) for OnionShare to work correctly. Locate the {{Code2|BUILD.md}} file in the OnionShare repository and run the necessary apt-get commands in the "Debian-like distros" section.
+
+For example, for OnionShare 2 run in a terminal (Konsole). <ref>https://github.com/micahflee/onionshare/blob/master/BUILD.md#gnulinux</ref>
+
+{{CodeSelect|code=
+sudo apt install -y python3-flask python3-stem python3-pyqt5 python3-crypto python3-socks python-nautilus tor obfs4proxy python3-pytest build-essential fakeroot python3-all python3-stdeb dh-python python3-flask-httpauth python3-distutils
+}}
+
+[[{{q_project_name_short}}|{{q_project_name}}]] users should shutdown the <code>{{whonix-ws}}</code> TemplateVM after dependencies have installed, and restart the <code>anon-onionshare</code> AppVM.
+}}
+
+After installation is finished, follow the steps from the [[#Whonix_VM_Configuration|Whonix VM Configuration]] section.
 
 = Footnotes =
 {{reflist|close=1}}
