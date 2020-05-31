@@ -150,7 +150,7 @@ Many of these will be possible once the use of in-VM kernels is simplified and p
 
 == All Platforms ==
 
-In 2019, [[Point_Release|point releases]] were announced on 10 September, 22 and 23 November. <ref>https://forums.whonix.org/t/whonix-virtualbox-15-0-0-4-9-point-release/8076</ref> <ref>https://forums.whonix.org/t/whonix-kvm-15-0-0-4-9-point-release/8096</ref> <ref>https://forums.whonix.org/t/whonix-virtualbox-15-0-0-6-6-point-release/8524</ref> <ref>https://forums.whonix.org/t/whonix-kvm-15-0-0-7-1-point-release/8540</ref> In 2020, point releases were announced on 16 February, 27 February, 19 and 21 March. <ref>https://forums.whonix.org/t/whonix-kvm-kicksecure-15-0-0-8-7-released-a-qunatum-leap-forward/8921</ref> <ref>https://forums.whonix.org/t/whonix-virtualbox-15-0-0-8-9-point-release-vanguards-tcp-isn-leak-protection-extensive-hardening/8994</ref> <ref>https://forums.whonix.org/t/whonix-virtualbox-15-0-0-9-4-point-release/9157</ref> <ref>https://forums.whonix.org/t/qubes-whonix-15-templatevms-4-0-1-202003070901-point-release/9159</ref>
+In 2019, [[Point_Release|point releases]] were announced on 10 September, 22 and 23 November. <ref>https://forums.whonix.org/t/whonix-virtualbox-15-0-0-4-9-point-release/8076</ref> <ref>https://forums.whonix.org/t/whonix-kvm-15-0-0-4-9-point-release/8096</ref> <ref>https://forums.whonix.org/t/whonix-virtualbox-15-0-0-6-6-point-release/8524</ref> <ref>https://forums.whonix.org/t/whonix-kvm-15-0-0-7-1-point-release/8540</ref> In 2020, point releases were announced on 16 February, 27 February, 19 and 21 March, and 29 May. <ref>https://forums.whonix.org/t/whonix-kvm-kicksecure-15-0-0-8-7-released-a-qunatum-leap-forward/8921</ref> <ref>https://forums.whonix.org/t/whonix-virtualbox-15-0-0-8-9-point-release-vanguards-tcp-isn-leak-protection-extensive-hardening/8994</ref> <ref>https://forums.whonix.org/t/whonix-virtualbox-15-0-0-9-4-point-release/9157</ref> <ref>https://forums.whonix.org/t/qubes-whonix-15-templatevms-4-0-1-202003070901-point-release/9159</ref> <ref>https://forums.whonix.org/t/whonix-virtualbox-15-0-1-3-4-point-release/9616</ref> <ref>https://github.com/Whonix/Whonix/compare/15.0.0.9.4-developers-only...15.0.1.3.4-developers-only</ref>
 
 Notable changes are listed below. Note that an in-place upgrade is <u>not</u> recommended for KVM -- significant changes have been made to the host settings that require the current machines and virtual networks to be replaced with updated ones. Refer to the [[KVM]] wiki for detailed installation instructions.
 
@@ -191,6 +191,12 @@ Notable changes are listed below. Note that an in-place upgrade is <u>not</u> re
 ** Do not autostart <code>privoxy.service</code> in Qubes TemplateVM.
 * first-boot-skel: fixed <code>/etc/skel/.bashrc</code> to <code>/home/user/.bashrc</code> handling if the home folder is completely empty.
 * Disabled the Tor Browser security slider question at first start because it is [https://forums.whonix.org/t/broken-security-slider/8675 broken]. <ref>Also: check for noexec, remount exec and work on [https://github.com/Whonix/tb-updater/compare/224ab0e448e5c3c349e6f2518aea7d1f4ccf9c08...52933f4b607ca2e724c9f39e59576ac731bbf4a7 Qubes DispVM exec / noexec].</ref>
+* Fixed some anon-connection-wizard “unknown connection tag” messages in Whonix-Gateway.
+* Disabled <code>proc-hidepid</code> due to pkexec issues.
+* Removed <code>command-not-found</code> from the default package installation, since it is not working out of the box which leads to confusing error messages. <ref>It is also not compatible with apt speedup, see: [https://forums.whonix.org/t/speeding-up-apt-update-with-acquire-languages-none-and-contents-deb-defaultenabled-false-its-so-much-faster/8894/1 Speeding up "apt update" with Acquire::Languages=none and Contents-deb::DefaultEnabled=false - It's so much faster!]</ref> <ref>For instructions on how to use <code>command-not-found</code>, see [[Command-not-found|here].</ref>
+* Ensured consistent parsing of <code>/usr/local/etc/name.d</code> for applications by Whonix that also parse <code>/etc/name.d</code>. Parsing <code>/rw/config/name.d</code> is still possible for compatibility but will be deprecated.
+* Fixed adduser -- no longer writing to <code>/nonexistent</code>.
+* Set the environment variable <code>QMLSCENE_DEVICE=softwarecontext</code> (in VirtualBox, and also after upgrades in KVM) to workaround a [https://github.com/monero-project/monero-gui/issues/2878 VM-specific Monero bug].
 
 === Builds ===
 
@@ -204,13 +210,16 @@ Notable changes are listed below. Note that an in-place upgrade is <u>not</u> re
 
 === Developer Notes ===
 
-* Added anon-base-files to whonix-host-xfce-kvm-freedom.
-* Added hardened-malloc to hardened-packages-dependencies-cli.
-* Removed unneeded dependency live-config-systemd.
+* Added <code>anon-base-files</code> to <code>whonix-host-xfce-kvm-freedom</code>.
+* Added <code>hardened-malloc</code> to <code>hardened-packages-dependencies-cli</code>.
+* Removed unneeded dependency <code>live-config-systemd</code>.
 * anon-base-files:
 ** Do not create a home folder during postinst.
 ** Leave user <code>user</code> creation to Qubes.
 ** Fixed and actually use <code>--no-create-home</code>.
+* No longer depend on logrotate.
+* [https://forums.whonix.org/t/whonix-development-news/9251 Whonix Development News]
+* Significant progress regarding Whonix-Host development.
 
 === Documentation ===
 
@@ -223,6 +232,7 @@ Notable changes are listed below. Note that an in-place upgrade is <u>not</u> re
 * Rebranded Whonix as a research project. <ref>https://forums.whonix.org/t/whonix-experimental-for-how-long/5206/6</ref> <ref>Old: “Whonix is experimental software. Do not rely on it for strong anonymity.” New: “Whonix is a research project.”</ref>
 * Added [[Vanguards|vanguards documentation]]. <ref>[https://forums.whonix.org/t/vanguards-additional-protections-for-tor-onion-services/8064/11 vanguards - Additional protections for Tor Onion Services]</ref>
 * Added [[Security-misc|security-misc documentation]] of [https://github.com/Whonix/security-misc#enhances-misc-security-settings stable security features], testing security features and experimental security features.
+* Documented [[VM_Fingerprinting|VM Fingerprinting]] threats and defenses.
 
 === Improved Functionality and Usability ===
 
@@ -232,8 +242,8 @@ Notable changes are listed below. Note that an in-place upgrade is <u>not</u> re
 * Display the pulseaudio plugin by default.
 * Added arc-theme, gnome-themes-extra, gnome-themes-extra-data and gtk2-engines-murrine for better visual presentation and a more modern look.
 * Set SUDO_EDITOR="mousepad" if: mousepad is installed and the environment variable SUDO_EDITOR has not already been set.
-* Updated Tor Browser to version 9 and later versions of this series.
-* Updated Tor to version 0.4.2.6-1. <ref>tor_0.4.2.6-1~d10.buster+1_amd64.deb from deb.torproject.org</ref> <ref>[https://forums.whonix.org/t/tor-0-4-25-release-how-can-we-upgrade/8614 Tor 0.4.25 release how can we upgrade]</ref> <ref>[https://forums.whonix.org/t/onion-services-ddos-defense-tor-0-4-2-5/8644 Onion Services DDOS Defense Tor 0.4.2.5]</ref>
+* Upgraded Tor Browser to version 9 and later versions of this series.
+* Upgraded Tor to version 0.4.2.6-1 and then again to version 0.4.3.5 in a later release. <ref>tor_0.4.2.6-1~d10.buster+1_amd64.deb from deb.torproject.org</ref> <ref>[https://forums.whonix.org/t/tor-0-4-25-release-how-can-we-upgrade/8614 Tor 0.4.25 release how can we upgrade]</ref> <ref>[https://forums.whonix.org/t/onion-services-ddos-defense-tor-0-4-2-5/8644 Onion Services DDOS Defense Tor 0.4.2.5]</ref>
 * Full <code>/etc/torrc.d/*.conf</code> configuration snippet drop-in folder support. <ref>[https://forums.whonix.org/t/torrc-d-is-comming/4041/72 torrc.d cleaner]</ref>
 * [[Tor#Configuration_Check|anon-verify]]:
 ** Report extraneous Tor configuration files (files that do not end with file extension .conf).
@@ -265,6 +275,14 @@ Notable changes are listed below. Note that an in-place upgrade is <u>not</u> re
 * usability-misc: 
 ** Added a [https://github.com/Whonix/usability-misc/compare/bd68a636e96fed2183468fa2dff11aa41077506e...b2906d2ff19252aa133bb28ae025c5e011e17a50#diff-6c843b512a028989c8d03bfca584de4c dpkg-noninteractive] wrapper script.
 ** Improved the speed of "apt update" processes. <ref>[https://forums.whonix.org/t/speeding-up-apt-update-with-acquire-languages-none-and-contents-deb-defaultenabled-false-its-so-much-faster/8894/2 Speeding up "apt update" with Acquire::Languages=none and Contents-deb::DefaultEnabled=false - It's so much faster!].</ref>
+* Install Monero GUI by default in Whonix-Workstation.
+* Updated Tor Browser to v9.0.10
+* Added links to search engines to the Whonix landing page in Tor Browser.
+* Added new command line tools <code>onion-grater-add</code> / <code>onion-grater-remove</code> which will allow to simplify instructions that require <code>onion-grater</code> configuration changes.
+* Split most of <code>/usr/share/tor/tor-service-defaults-torrc</code> into <code>/etc/torrc.d</code> drop-in configuration snippets.
+* Hide verbose output messages during boot to improve startup speed (logs are still available in the journal).
+* Changed the desktop background images to better distinguish Whonix-Gateway from Whonix-Workstation and vice versa.
+* Upgraded packages by [https://www.debian.org/distrib/packages packages.debian.org]
 
 === Kernel and Related Hardening ===
 
@@ -396,7 +414,12 @@ Other security enhancements:
 ** Added <code>xserver-xorg-video-vmware</code> to <code>kicksecure-desktop-environment-essential-gui</code> because it is required by VirtualBox Graphics Controller VMSVGA for auto resize and resize through VirtualBox settings menu.
 ** Again set the VirtualBox Graphics Controller to VMSVGA (equivalent to “VirtualBox → click a VM → Settings → Display → Graphics Controller → VMSVGA → OK”). <ref>Quote [https://www.virtualbox.org/manual/ch03.html VirtualBox manual]: <blockquote>VMSVGA: Use this graphics controller to emulate a VMware SVGA graphics device. This is the default graphics controller for Linux guests.</blockquote></ref> <ref>This has better desktop resolution in CLI (virtual terminal) mode. When it was previously disabled, this led to a [https://forums.whonix.org/t/black-screen-on-15-0-0-6-6-and-15-0-0-7-1/8554 black screen] on <code>15.0.0.6.6</code> and <code>15.0.0.7.1</code>.</ref>
 ** Increased Whonix VirtualBox Whonix-Gateway video RAM to 128 MB since the previous assignment of only 16 MB RAM can cause resize issues.
-** Updated VirtualBox and VirtualBox guest addition to <code>6.1.4</code>.
+** Updated VirtualBox and VirtualBox guest addition to <code>6.1.4</code>. The VirtualBox guest addition has been further upgraded to <code>6.1.6</code> in a later Whonix release.
+* Added a workaround for the bug causing the VirtualBox screen resolution to be too small; the screen resolution is now [https://forums.whonix.org/t/make-screen-resolution-1920x1080-by-default-for-all-vms/9143 1920x1080 by default for all VMs].
+* Configured three (instead of four) virtual CPU cores by default as this can improve stability. <ref>https://www.virtualbox.org/ticket/19500</ref>
+* Enabled the Debian stable-updates repository by default. <ref>https://forums.whonix.org/t/enable-debian-stable-updates-repository-by-default/9382</ref>
+* Consolidated Whonix packages. <ref>https://forums.whonix.org/t/consolidating-whonix-packages/1945</ref>
+* Installed fewer unneeded packages such as rsyslog (see footnote). <ref>https://forums.whonix.org/t/whonix-default-packages-review-mmdebstrap-varriant-related-risk-of-regressions/9254</ref>
 
 = Footnotes =
 {{reflist|close=1}}
