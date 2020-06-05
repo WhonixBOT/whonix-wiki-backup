@@ -388,6 +388,70 @@ Test key that can be entered into browser.
 XAJKD2BRVOI4C4IHK2OWF3EKIJNVIDBVCP2IM2Z2ZHPN456HNRZA
 </pre>
 
+== onion_client_auth_add ==
+https://gitlab.com/whonix/anon-gw-anonymizer-config/-/blob/master/etc/onion-grater-merger.d/30_whonix-default.yml would need extensive modification.
+
+<pre>
+---
+- exe-paths:
+    - '*'
+  users:
+    - '*'
+  hosts:
+    - '*'
+  commands:
+    SIGNAL:
+      - 'NEWNYM'
+    GETINFO:
+      - 'status/circuit-established'
+      - 'version'
+      - pattern: 'net/listeners/socks'
+        response:
+        - pattern:     '250-net/listeners/socks=".*"'
+          replacement: '250-net/listeners/socks="127.0.0.1:9150"'
+      - 'consensus/valid-after'
+      - 'consensus/valid-until'
+      - 'consensus/fresh-until'
+      - pattern: 'circuit-status'
+        response:
+        - pattern:     '250+circuit-status='
+          replacement: '250+circuit-status='
+        - pattern:     '250 OK'
+          replacement: '250 OK'
+        - pattern:     '(.+)'
+          replacement: 'redacted'
+    GETCONF:
+      - pattern: 'bridge'
+        response:
+        - pattern:     '(.+)'
+          replacement: '250 Bridge'
+    SETEVENT:
+      - 'stream'
+  confs:
+    __owningcontrollerprocess:
+  events:
+    STATUS_CLIENT:
+      response:
+        - pattern:     '(.+)'
+          replacement: 'redacted'
+    SIGNAL:
+      response:
+        - pattern:     '(.+)'
+          replacement: 'redacted'
+    STREAM:
+      response:
+        - pattern:     '(.+)'
+          replacement: 'redacted'
+    CONF_CHANGED:
+      response:
+        - pattern:     '(.+)'
+          replacement: 'redacted'
+    STATUS_SERVER:
+      response:
+        - pattern:     '(.+)'
+          replacement: 'redacted'
+</pre>
+
 = Comparison of Control Port Filters  =
 == roflcoptor by subgraph os ==
 [https://github.com/subgraph/roflcoptor roflcoptor] by subgraph os
