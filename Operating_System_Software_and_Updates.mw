@@ -78,7 +78,41 @@ While standard upgrades are easier, image re-installation is less likely to suff
 == Reset Configuration Files to Vendor Default ==
 If there was a [[Operating_System_Software_and_Updates#Changed_Configuration_Files|Changed Configuration File]] and you accidentially pressed the wrong action (not installed instead of install) or changed your mind, it is possible to reset the configuration file to vendor defaults.
 
-TODO
+Use [https://manpages.debian.org <code>debsums</code>] to show a list of changed and missing configuration files.
+
+{{CodeSelect|code=
+sudo debsums -ce {{!}} debsums -ce
+}}
+
+Might show something like this.
+
+<pre>
+sdwdate: /etc/sdwdate.d/30_default.conf
+</pre>
+
+This means:
+
+<pre>
+package-name: changed-configuration-file
+</pre>
+
+To re-install:
+
+(Replace <code>package-name</code> with the actual name of the package such as <code>sdwdate</code>.)
+
+{{CodeSelect|code=
+apt-get -o Dpkg::Options::=--force-confnew,confmiss install --reinstall package-name
+}}
+
+Should show something like this:
+
+<pre>
+Setting up sdwdate (3:10.4-1) ...
+Configuration file '/etc/sdwdate.d/30_default.conf', does not exist on system.
+Installing new config file as you requested.
+</pre>
+
+Re-run <code>sudo debsums -ce</code> and see if only configuration files are changed which you intend to be changed.
 
 == Non-functional Onion Services ==
 {{Non-functional Onion Services}}
