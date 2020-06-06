@@ -100,6 +100,45 @@ Support for configuration files in that folder was created because of [[Qubes]],
 
 Configuration of Tor is a special case, see [[Tor#Configuration|Tor configuration]].
 
+== Reset Configuration Files to Vendor Default ==
+If there was a [[Operating_System_Software_and_Updates#Changed_Configuration_Files|Changed Configuration File]] and you accidentially pressed the wrong action (not installed instead of install) or changed your mind, it is possible to reset the configuration file to vendor defaults.
+
+Use [https://manpages.debian.org <code>debsums</code>] to show a list of changed and missing configuration files.
+
+{{CodeSelect|code=
+sudo debsums -ce {{!}} debsums -ce
+}}
+
+Might show something like this.
+
+<pre>
+sdwdate: /etc/sdwdate.d/30_default.conf
+</pre>
+
+This means:
+
+<pre>
+package-name: changed-configuration-file
+</pre>
+
+To re-install:
+
+(Replace <code>package-name</code> with the actual name of the package such as <code>sdwdate</code>.)
+
+{{CodeSelect|code=
+apt-get -o Dpkg::Options::=--force-confnew,confmiss install --reinstall package-name
+}}
+
+Should show something like this:
+
+<pre>
+Setting up sdwdate (3:10.4-1) ...
+Configuration file '/etc/sdwdate.d/30_default.conf', does not exist on system.
+Installing new config file as you requested.
+</pre>
+
+Re-run <code>sudo debsums -ce</code> and see if only configuration files are changed which you intend to be changed.
+
 = Qubes Persistence =
 In the Qubes TemplateVM model, <ref>[https://www.qubes-os.org/getting-started AppVMs (qubes) and TemplateVMs].</ref> any changes made to a [https://github.com/QubesOS/qubes-issues/issues/2489 root filesystem of a TemplateBasedVM] are lost upon reboot. This is advantageous for several reasons: it saves time and disk space, and allows faster, centralized updates for applications that are usually found inside the root filesystem. However, certain directories are designed to persist between reboots in order to store files and settings. These directories are stored in <code>/rw</code>, include <code>/home/user</code> and <code>/usr/local</code> as well as additional directories defined by "bind directory" settings. <ref>[https://www.qubes-os.org/doc/bind-dirs/ How to make any file in a TemplateBasedVM persistent using bind-dirs].</ref>
 
