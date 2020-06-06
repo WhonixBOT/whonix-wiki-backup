@@ -34,53 +34,26 @@ sudo apt-get install gparted
 }}
 }}
 == VirtualBox ==
-In case more disk space is required for your virtual hard disk, the good news is that you are still a [[VirtualBox]] user. {{project name}} is nothing special; it is just another VM image. Any suggestions you find for VirtualBox will similarly work for {{project_name}}.
-
-This process is moderately difficult because there is no easy upstream solution (such as a GUI). Further, you have a VMDK disk instead of a VDI disk. <ref>VMDK is the standard for <code>ova</code> images (exported virtual appliances).</ref> There is also no better (free, open source) virtualizer with this feature. However, most users can successfully complete this process and it is easier if {{project name}} is built from source. <ref>Search the file whonix_createvm for *VMNAME="{{workstation_product_name_short}}"* and *VMSIZE="50G"*. Increase *VMSIZE="50G"* for example to *VMSIZE="100G"*.</ref> In case you are using the download version, it is a bit more difficult.
-
-Unfortunately, at the time of writing <code>vboxmanage modifyhd <uuid|filename> --resize <size in mb></code> does not support VMDK images yet. The situation may have subsequently changed.
+In case more disk space is required for your virtual hard disk, the good news is that you are still a [[VirtualBox]] user. {{project name}} is nothing special; it is just another VM image. Any suggestions you find for VirtualBox will similarly work for {{project_name}}. [[Free Support Principle]] applies.
 
 {{Box|text=
 '''1.''' On the host: Make a clone of all states of your existing virtual machine in case something goes wrong.
 
-'''2.''' On the host: Delete all existing snapshots.
+'''2.''' On the host: Delete all existing VM snapshots.
 
 '''3.''' On the host: Find the folder of your virtual hdd.
 
-{{CodeSelect|code=
-vboxmange list hdds
-}}
-
-[[Category:Documentation]]
-'''4.''' On the host: Switch to that folder.
-
-'''5.''' On the host: Convert from VMDK to VDI.
-
-{{CodeSelect|code=
-VBoxManage clonehd "{{workstation_product_name_short}}-disk1.vmdk" --format vdi "{{workstation_product_name_short}}-disk1.vdi"
-}}
-
-'''6.''' Check the syntax.
-
-{{CodeSelect|code=
-VBoxManage modifyhd
-}}
-
-'''7.''' On the host: Grow the disk.
+'''4.''' On the host: Grow the disk.
 
 {{CodeSelect|code=
 VBoxManage modifyhd "{{workstation_product_name_short}}-disk1.vdi" --resize 100000
 }}
 
-'''8.''' On the host: <code>VirtualBox VM settings</code> &rarr; <code>mass storage</code>.
+'''5.''' Boot up and check if it is still working.
 
-Remove the old <code>.vmdk</code>, add the new <code>.vdi</code>.
+'''6.''' Up to this point only the physical size was increased, but the filesystem has not been changed. Shut down again.
 
-'''9.''' Boot up and check if it is still working.
-
-'''10.''' Up to this point only the physical size was increased, but the filesystem has not been changed. Shut down again.
-
-'''11.''' Inside VM: You have to boot from a boot cd (Ubuntu Precise *DVD* did work) and use a tool like gparted to grow the filesystem. 
+'''7.''' Inside VM: You have to boot from a boot cd (Ubuntu Precise *DVD* did work) and use a tool like gparted to grow the filesystem. 
 
 Start a terminal.
 
@@ -88,7 +61,7 @@ Start a terminal.
 lxsudo gparted
 }}
 
-'''12.''' Inside VM: Increase the filesystem. Apply and shut down.
+'''8.''' Inside VM: Increase the filesystem. Apply and shut down.
 
 The procedure is complete.
 }}
