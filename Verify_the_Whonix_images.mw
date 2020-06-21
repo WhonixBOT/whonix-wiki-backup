@@ -27,27 +27,41 @@ __FORCETOC__
 = Signify Signatures =
 Advanced users only!
 
-Sparely documented.
+[https://forums.whonix.org/t/signify-openbsd/7842/5 It is impossible to sign images (<code>.ova</code> / <code>libvirt.tar.xz</code>) directly.] You can only verify the <code>.sha512sums</code> hash sum file using <code>signify-openbsd</code> and then verify the image against the <code>sha512</code> sum.
 
-1) [[Whonix_Signing_Key#Download_the_signify_Key|Download the signify Key]].
+1) [[Whonix_Signing_Key#Download_the_signify_Key|Download the signify Key]] and save it as <code>keyname.pub</code>.
 
 2) {{Install Package|
 package=signify-openbsd
 }}
 
-[https://forums.whonix.org/t/signify-openbsd/7842/5 Impossible to sign images (<code>.ova</code> / <code>libvirt.tar.xz</code>) directly.] You can only verify the <code>.sha512sums</code> hash sum file using <code>signify-openbsd</code> when then verify the image against the <code>sha512</code> sum.
+3) Download the <code>.sha512sums</code> and <code>.sha512sums.sig</code> files.
 
-{{Project name}} VirtualBox CLI:
+4) Verify the <code>.sha512sums</code> file with <code>signify-openbsd</code>:
 
-* https://download.whonix.org/ova/15.0.1.3.4/Whonix-CLI-15.0.1.3.4.ova
-* https://download.whonix.org/ova/15.0.1.3.4/Whonix-CLI-15.0.1.3.4.sha512sums.sig
-* https://download.whonix.org/ova/15.0.1.3.4/Whonix-CLI-15.0.1.3.4.sha512sums
+{{CodeSelect|code=
+signify-openbsd -Vp keyname.pub -m Whonix-*.sha512sums
+}}
 
-{{Project name}} VirtualBox XFCE:
+If the file is correct, it will output:
 
-* https://download.whonix.org/ova/15.0.1.3.4/Whonix-XFCE-15.0.1.3.4.ova
-* https://download.whonix.org/ova/15.0.1.3.4/Whonix-XFCE-15.0.1.3.4.sha512sums
-* https://download.whonix.org/ova/15.0.1.3.4/Whonix-XFCE-15.0.1.3.4.sha512sums.sig
+{{CodeSelect|code=
+Signature Verified
+}}
+
+If the file is not correct, it will output an error.
+
+5) Compare the hash of the image file with the hash in the <code>.sha512sums</code> file.
+
+{{CodeSelect|code=
+sha512sum -c Whonix-*.sha512sums
+}}
+
+If the file is correct, it will output:
+
+{{CodeSelect|code=
+Whonix-CLI-15.0.1.3.4.ova: OK
+}}
 
 Forum discussion:<br />
 https://forums.whonix.org/t/signify-openbsd/7842
