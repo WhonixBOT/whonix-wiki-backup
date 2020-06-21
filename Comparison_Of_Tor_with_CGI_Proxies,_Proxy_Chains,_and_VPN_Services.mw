@@ -298,32 +298,90 @@ Due to these serious disadvantages, it is not worthwhile discussing other securi
 
 = Tor and Proxy Chains Comparison =
 
-== Aren't 10 proxies (proxychains) better than Tor with only 3 hops? - proxychains vs Tor ==
-Maybe you've seen the funny picture "I am behind 10 proxies, so what?". Nevermind.
+== Isn't Seven Proxies (Proxy Chains) better than Tor with only Three Hops?: Proxy Chains vs. Tor ==
 
-10 open proxies are not as secure as Tor. Many people are not aware of that.
+Some readers might be familiar with the Internet meme: "Good luck, I'm behind 7 proxies", which is sarcastic retort sometimes used when somebody threatens to report you to authorities, or claims they can identify your location. <ref>https://knowyourmeme.com/memes/good-luck-im-behind-7-proxies</ref>
 
-As outlined [[#Comparison of Tor and Proxies|above]], proxies are not very secure.
+In short, multiple proxies used in combination are not more secure than Tor; many people are unaware of this fact. As outlined [[#Tor and Proxies Comparison|above]], proxies are not very secure.
 
-With Tor the first hop won't see the IP of the last hop because it can't decrypt the message for the second hop. If one hop can be trusted, the connection is secure. (See [https://trac.torproject.org/projects/tor/wiki/doc/TorFAQ#WhichTornodeknowswhat Which Tor node knows what?] and the onion design.)
+In contrast, the Tor design ensures the first hop (Tor relay) is unable to see the IP address of the last hop because it cannot decrypt the message for the second hop. If one hop can be trusted, then the connection is secure; see [https://trac.torproject.org/projects/tor/wiki/doc/TorFAQ#WhichTornodeknowswhat Which Tor node knows what?] and the onion design to learn more. The information available to each of the three Tor relays is summarized below.
 
-Even if you are using "elite" or "anonymous" proxies... Or even Socks Proxies...
+'''Table:''' ''Tor Node (Relay) Information Awareness'' <ref>https://trac.torproject.org/projects/tor/wiki/doc/TorFAQ#WhichTornodeknowswhat</ref>
 
-* All connections between you and all proxies are unencrypted.
-* This has nothing to do with SSL, but for demonstration, let's assume you are connecting to an SSL protected web server.
-* In human understandable form, this is a sketch how the package for the first proxy in your chain of 5 would look like:
-* Hey Proxy1, can you please forward "forward to Proxy3; forward to Proxy4; forward to Proxy5; forward to https://encrypted.google.com 'c8e8df895c2cae-some-garbage-here-(encrypted)-166bad027fdf15335b'" to Proxy2? Thanks!
-* You see, your actual transmission will be safely encrypted and can be only decrypted by the https protected webserver, but every proxy will see its predecessor IP and all successor IP's.
-* There is no way to encrypt that information, no way to make your own onion. The proxy protocols (http(s), socks4(a)/5) do not support encryption.
+{| class="wikitable"
+|-
+! scope="col"| '''Category'''
+! scope="col"| '''User'''
+! scope="col"| '''Bridge Node/Entry Guard'''
+! scope="col"| '''Middle Node'''
+! scope="col"| '''Exit Node'''
+|-
+! scope="row"| Tor user's IP/location
+| Yes
+| Yes
+| No
+| No
+|-
+! scope="row"| IP of bridge node or entry guard
+| Yes
+| Yes
+| Yes
+| No
+|-
+! scope="row"| Message for bridge node or entry guard
+| Yes
+| Yes
+| No
+| No
+|-
+! scope="row"| IP of middle node 
+| Yes
+| Yes
+| Yes
+| Yes
+|-
+! scope="row"| Message for middle node
+| Yes
+| No
+| Yes
+| No
+|-
+! scope="row"| IP of exit node
+| Yes
+| No
+| Yes
+| Yes
+|-
+! scope="row"| Message for exit node 
+| Yes
+| No
+| No
+| Yes
+|-
+! scope="row"| IP of destination server
+| Yes
+| No
+| No
+| Yes
+|-
+! scope="row"| Message for destination server 
+| Yes
+| No
+| No
+| Yes
+|}
 
-As you would have to trust any of them the IP of all its successors... The second question about open proxies is, who hosts them?
+Proxies have serious weaknesses, even when SOCKS proxies or "elite"/"anonymous" proxies are utilized. Firstly, all connections between the user and all proxies in the chain are unencrypted. This holds true irrespective of the use of SSL/TLS. For demonstration purposes, assume a user is connecting to an SSL/TLS protected web server. In human terms, this is basic sketch of how the package for the first proxy in the proxy chain would appear:
+* Proxy1, please forward "forward to Proxy3; forward to Proxy4; forward to Proxy5; forward to https://encrypted.google.com 'c8e8df895c2cae-some-garbage-here-(encrypted)-166bad027fdf15335b'" to Proxy2? 
+Notably, the actual transmission is safely encrypted and can only be decrypted by the HTTPS protected webserver, but every proxy will see its predecessor IP address and all successor IP addresses. There is simply no way to encrypt that information in an attempt to mirror Tor onion functions. The proxy protocols (HTTP(S), SOCKS4(a)/5) do not support encryption.
 
-* most of them are a simple misconfiguration, the owners are not aware of it and do not want the public to use them
-* many of them are compromised machines (worm infected)
-* some are honeypots, logging or exploiting (dns spoofing, protocol spoofing, ssl spoofing)
-* few of them are from generous people who just want your best and give you anonymity (similar to most Tor server admins)
+It is clear that proxy chains require trust to be placed in every successor proxy concerning the IP address. However, placing trust in open proxies is also misguided for the following reasons:
+* Most are a simple misconfiguration; the owners are not aware of the situation and did not intend on public access in the first place.
+* Many are compromised machines (worm infected).
+* Some are honeypots that engage in logging or active exploits (DNS spoofing, protocol spoofing, SSL/TLS spoofing).
+* Few are provided by generous people who only have good intentions in providing the best possible anonymity (similar to most Tor server administrators).
 
-This must not apply for proxychains of SSH and/or encrypted VPN servers - has not been researched yet. But you can not get so many SSH and/or VPN servers for free (without hacking of course) and/or anonymous payment anyway.
+The above factors may not apply for proxy chains of SSH and/or encrypted VPN servers, but this has not been researched yet. Nevertheless, it is not possible to access numerous SSH and/or VPN servers for free (without hacking) and/or anonymous payment.
 
 = Tor and VPN Services Comparison =
 
