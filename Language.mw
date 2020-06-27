@@ -11,116 +11,80 @@ The system language used in {{project name}} is easily changed. The technical st
 
 = System =
 
+These instructions are sourced from the [https://wiki.debian.org/ChangeLanguage Debian wiki]. In XFCE, it is unnecessary to install additional language packs.
+
 == All Languages ==
 
 {{Box|text=
-'''1.''' Open a terminal.
+'''1.''' Open a terminal ([[{{q_project_name_short}}|{{q_project_name}}]]: in TemplateVM).
 
 <code>Start menu</code> &rarr; <code>Applications</code> &rarr; <code>System</code> &rarr; <code>Terminal</code>
 
-'''2.''' [[Update]] the package lists.
+'''2.''' Check the language environment variable.
+
+Run. <ref>The Debian wiki notes: <blockquote>First, you have to set EnvironmentVariables such as LANG, LANGUAGE, LC_CTYPE, LC_MESSAGES to your local language. Usually LANG (or LC_ALL) is sufficient.</blockquote></ref>
 
 {{CodeSelect|code=
-sudo apt-get update
+env {{!}} grep LANG
 }}
 
-'''3.''' Search for available language packs.
+The output should show.
 
-{{CodeSelect|code=
-apt-cache search kde-l10n
-}}
+<pre>LANG=en_US.UTF-8</pre>
 
-Or [http://packages.debian.org/search?keywords=kde-l10n&searchon=names&suite=stable&section=all search the Debian package archive].
+'''3.''' Determine the code for your language and country.
 
-'''4.''' Install a language pack. 
+Before re-configuring the locale to your local language it is necessary to identify the two letter code for your language and country:
 
-In the example below, replace <i>-ar</i> with the preferred language.
+* <u>Language</u>: the two-letter ISO 639-1 language code is found in the fourth column (639-1) [https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes here]. For example, Japanese is <code>ja</code>, Korean is <code>ko</code>, German is <code>de</code> and so on.
+* <u>Country</u>: [https://www.iso.org/obp/ui/#search this website] ("Country Codes") identifies country codes. For example, Japan is <code>JP</code>, Korea is <code>KR</code>, Germany is <code>DE</code> and so on.
 
-{{CodeSelect|code=
-sudo apt-get install kde-l10n-ar
-}}
+It is now possible to combine these codes to determine the language to export. For example, Japanese is <code>ja_JP.UTF-8</code>, Korean is <code>ko_KR.UTF-8</code>, German is <code>de_DE.UTF-8</code> and so on.
 
-'''5.''' Change the KDE setting.
+'''4.''' Reconfigure locales.
 
-<code>Start menu</code> &rarr; <code>Applications</code> &rarr; <code>System</code> &rarr; <code>System Settings</code> &rarr; <code>Locale</code> &rarr; <code>Languages</code> &rarr; <code>Change Language</code>
-}}
-== Russian ==
-
-{{Box|text=
-'''1.''' Open a terminal.
-
-<code>Start menu</code> &rarr; <code>Applications</code> &rarr; <code>System</code> &rarr; <code>Terminal.</code>
-
-'''2.''' Reconfigure locales.
+Reconfigure locales with the following command.
 
 {{CodeSelect|code=
 sudo dpkg-reconfigure locales
 }}
 
-From the list of enabled and available locales, uncheck/disable everything except for English and Russian.
+A window will prompt for the preferred the locale(s) to be made available. Select the preferred option(s) with the space bar -- multiple locales can be chosen.
 
-<pre>
-en_US.UTF-8 UTF-8
-ru_RU.UTF-8 UTF-8
-</pre>
-
-Note: If any other locales are enabled, <i>???????</i> (question mark) characters will appear instead of Cyrillic script when typing in the terminal.
-
-'''3.''' Reboot {{workstation_product_name}}.
+'''5.''' Reboot {{workstation_product_name}}.
 
 This is required for the changes to take effect.
+
+'''Figure:''' ''Japanese Locale in {{project_name}}''
+[[image:Anonwhonixjapanese.png]]
 }}
 
-== Korean ==
+== Fonts ==
 
-Note: The steps below were originally outlined in the [https://sourceforge.net/p/whonix/discussion/general/thread/fff34595/ {{project name}} forums] by an anonymous poster. That thread can be used for follow-up support questions.
-{{Box|text=
-'''1.''' Open a terminal.
-
-<code>Start menu</code> &rarr; <code>Applications</code> &rarr; <code>System</code> &rarr; <code>Terminal</code>
-
-'''2.''' Update the package lists.
-
-{{CodeSelect|code=
-sudo apt-get update
-}}
-
-'''3.''' View the available language packs.
-
-{{CodeSelect|code=
-apt-cache search kde-i18n
-}}
-
-'''4.''' Install the Korean language pack.
-
-{{CodeSelect|code=
-sudo apt-get install kde-l10n-ko
-}}
-
-'''5.''' Install Korean fonts.
-
+Depending on the locale, it may be necessary to install [https://wiki.debian.org/Fonts additional fonts] so characters present correctly system-wide ([[{{q_project_name_short}}|{{q_project_name}}]]: in TemplateVM):
+* [https://packages.debian.org/stable/fonts/ Debian stable fonts packages].
+* TrueType (TTF) and OpenType (OTF) fonts are generally recommended. These packages start with <code>fonts-</code>.
+* For Korean fonts, an anonymous [https://sourceforge.net/p/whonix/discussion/general/thread/fff34595/ {{project name}} forums] contributor previously recommended the following additional packages: <code>fonts-unfonts-core</code> (Korean TrueType fonts) and nabi (Korean X input method). After restarting the {{workstation_product_name}} and starting nabi, the Korean script should be available system-wide for writing and reading. <ref>
 {{CodeSelect|code=
 sudo apt-get install fonts-unfonts-core
 }}
 
-Open system settings and set <code>eungulim</code> as KDE's font.
-
-'''6.''' Open a terminal and reconfigure locales.
-
-{{CodeSelect|code=
-sudo dpkg-reconfigure locales
-}}
-
-Set <code>ko KR.UTF-8 UTF-8</code> as the default locale.
-
-'''7.''' Install nabi.
-
 {{CodeSelect|code=
 sudo apt-get install nabi
+}}</ref>
+
+For example to install Japanese TrueType fonts:
+
+{{CodeSelect|code=
+sudo apt-get update
 }}
 
-Restart the {{workstation_product_name}} and start nabi. The Korean script is now available system-wide for writing and reading.
+{{CodeSelect|code=
+sudo apt-get install fonts-ipaexfont
 }}
+
+'''Figure:''' ''Japanese Font Installation in {{project_name}}''
+[[image:Anonwhonixjapanesefont.png]]
 
 = Tor Browser =
 
