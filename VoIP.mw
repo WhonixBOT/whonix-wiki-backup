@@ -290,6 +290,183 @@ Mumble (and mumble-server) connections pass through Tor's TransPort, but this sh
 
 Security-conscious, free software developers consider browsers as a poor and dangerous option for implementing privacy-critical software. Browsers have a large attack surface (numerous security holes) and lack adequate process isolation, which can lead to the theft of private encryption keys if malicious code is run.
 
+= Asterisk VoIP Server over OpenVPN in Tor Hidden Service =
+
+== Introduction ==
+
+This is chrooted configuration but if someone really need to start that kind of network, please isolate servers in virtual machines.
+
+Also update CPU microcode against Spectre and Meltdown vulnerabilities.
+
+
+I illustrate simply setup:
+
+172.16.0.2/10.8.0.1 OpenVPN Server bhyve VM.
+
+172.16.0.3/10.8.0.20 OpenVPN Client with Apache bhyve VM.
+
+172.16.0.4/10.8.0.30 OpenVPN Client with Asterisk bhyve VM.
+
+172.16.0.5/10.8.0.40 OpenVPN Client with UnrealIRCd bhyve VM.
+
+… and so on.
+
+
+Setup static IP addresses in ccd directory for these servers.
+
+
+Generate encryption keys with OpenSSL.
+
+== OpenVPN Server openvpn.conf configuration file: ==
+
+{{CodeSelect|code=
+
+mode server
+tls-server
+dev tun
+proto tcp-server
+port 1194
+ 
+server 10.8.0.0 255.255.0.0
+ 
+ca /vpn/ca.crt
+cert /vpn/server.crt
+key /vpn/server.key
+dh /vpn/dh2048.pem
+tls-crypt /vpn/ta.key
+ 
+cipher AES-256-CBC
+auth SHA3-512
+ 
+log /var/log/openvpn.log
+status /var/log/openvpn-status.log
+ 
+user nobody
+group nobody
+persist-key
+persist-tun
+chroot /usr/local/etc/openvpn/jail
+auth-nocache
+ 
+# If you want to allow clients to communicate between themselves e.g. start own services like UnrealIRCd Servers.
+client-to-client
+client-config-dir /ccd
+
+}}
+
+== OpenVPN Clients client.conf configuration file: ==
+
+{{CodeSelect|code=
+
+client
+remote-cert-tls server
+dev tun
+ 
+<connection>
+remote youroniondomain.onion 1194 tcp-client
+socks-proxy 127.0.0.1 9050
+</connection>
+ 
+cipher AES-256-CBC
+auth SHA3-512
+ 
+user nobody
+group nogroup
+persist-key
+persist-tun
+chroot /etc/openvpn/jail
+auth-nocache
+ 
+log /var/log/openvpn/openvpn.log
+status /var/log/openvpn/openvpn-status.log
+ 
+<ca>
+</ca>
+ 
+<cert>
+</cert>
+ 
+<key>
+</key>
+ 
+<tls-crypt>
+</tls-crypt>
+
+}}
+
+== Tor Hidden Service torrc configuration file: ==
+
+{{CodeSelect|code=
+
+HiddenServiceDir /usr/local/torhs/hiddenservice/
+HiddenServicePort 1194 127.0.0.1:1194
+
+}}
+
+== Tor clients torrc configuration file: ==
+
+{{CodeSelect|code=
+
+SOCKSPort 9050
+
+}}
+
+== Asterisk sip.conf configuration file: ==
+
+{{CodeSelect|code=
+
+[general]
+transport=udp
+port=5060
+bindaddr=10.8.0.1
+disallow=all
+allow=ulaw
+allow=alaw
+allow=gsm
+directmedia=no
+nat=yes
+localnet=10.8.0.0/255.255.255.0
+ 
+[friends_internal](!)
+type=friend
+host=dynamic
+context=from-internal
+disallow=all
+allow=ulaw
+allow=alaw
+allow=gsm
+ 
+[demo-alice](friends_internal)
+secret=password
+ 
+[demo-bob](friends_internal)
+secret=password
+
+}}
+
+== Asterisk extensions.conf configuration file: ==
+
+{{CodeSelect|code=
+
+[from-internal]
+exten=>6001,1,Dial(SIP/demo-alice,20)
+exten=>6002,1,Dial(SIP/demo-bob,20)
+
+}}
+
+== Quantum Resistant OpenVPN ==
+
+You can use modified OpenSSL.
+
+
+[https://openquantumsafe.org/ OPEN QUANTUM SAFE - Software for prototyping quantum-resistant cryptography]
+
+
+[https://github.com/open-quantum-safe/liboqs liboqs]
+
+[https://github.com/open-quantum-safe/openssl OQS-OpenSSL]
+
+
 = Warnings =
 
 == Skype ==
