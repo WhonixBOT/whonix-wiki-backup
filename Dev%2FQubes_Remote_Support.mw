@@ -140,25 +140,33 @@ Patrick said: I would discourage that. Challanges:
 
 = Proof of Concept =
 == ssh into Qubes dom0 ==
-In dom0. Install socat.
+1) In dom0. Install socat.
 
 <pre>
 sudo qubes-dom0-update socat
 </pre>
 
-In dom0. Install server software.
+2) In dom0. Install server software.
 
 <pre>
 sudo qubes-dom0-update openssh-server
 </pre>
 
+3) Use [[SSH#Server_Configuration_File|this]] file as <code>/etc/ssh/sshd_config</code>.
+
+4)
+
 <pre>
 sudo systemctl enable sshd
 </pre>
 
+5) 
+
 <pre>
 sudo systemctl start sshd
 </pre>
+
+6)
 
 <pre>
 sudo systemctl status sshd
@@ -166,11 +174,15 @@ sudo systemctl status sshd
 
 In dom0. Setup qrexec rpc.
 
+7)
+
 {{Open with root rights|
 filename=/etc/qubes-rpc/local.ssh
 }}
 
 Add.
+
+8)
 
 <pre>
 #!/bin/sh
@@ -178,6 +190,8 @@ exec socat STDIO TCP-CONNECT:localhost:22
 </pre>
 
 Save.
+
+9)
 
 In dom0. Setup qrexec policy.
 
@@ -193,27 +207,17 @@ sys-net dom0 allow
 
 Save.
 
-Start listener in server VM.
+10)
 
-{{Open with root rights|
-filename=/rw/config/rc.local
-}}
-
-Add only required when doing this in sys-net for servers that should be reachable directly from outside world.
+Start listener in <code>sys-whonix</code> VM.
 
 <pre>
-iptables -I INPUT -p tcp --dport 22 -j ACCEPT
-</pre>
-
-Add.
-
-<pre>
-socat TCP-LISTEN:22,fork EXEC:"qrexec-client-vm dom0 local.ssh"
+sudo socat TCP-LISTEN:22,fork EXEC:"qrexec-client-vm dom0 local.ssh"
 </pre>
 
 Save.
 
-Done.
+11) Done.
 
 == Secure SSH Config ==
 Refer to [[SSH]].
