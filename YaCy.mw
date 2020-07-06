@@ -14,36 +14,62 @@ This means it is unnecessary to rely upon centralized professional search engine
 
 = How-to: =
 == Install ==
-{{Third Party Repository}}
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = '''Warning:''' 
+* It is currently impossible to securely install YaCy because the associated repository is not signed; see [https://github.com/yacy/yacy_search_server/issues/124 here] for further details.
+* The official [https://wiki.yacy.net/index.php/En:DebianInstall installation instructions] are non-functional for Debian buster.
+* The following method is functional but insecure. It should <u>only</u> be attempted in a standalone {{workstation_product_name}} ([[{{q_project_name_short}}|{{q_project_name}}]]: {{workstation_product_name}} TemplateVM).
+}}
 
 {{Box|text=
-'''1.''' Check the YaCy key fingerprint.
-
-Before adding the repository, <ref>http://debian.yacy.net/</ref> <ref>https://wiki.yacy.net/index.php/En:DebianInstall</ref> fetch the key and verify <ref>http://debian.yacy.net/yacy_orbiter_key.asc</ref> the fingerprint. <u>Always check the fingerprint for yourself</u>.
-
-'''2.''' Add YaCy apt signing key.
-
-{{apt-key
-|filename=/etc/apt/trusted.gpg.d/yacy-pubkey.gpg
-|fingerprint=8BD752501CB62448A30EA3EA1F968B3903D886E7
-}}
-
-'''3.''' Add YaCy repository.
-
-{{CodeSelect|code=
-echo 'deb http://debian.yacy.net ./' > /etc/apt/sources.list.d/yacy.list 
-}}
-
-{{Update}}
+'''1.''' Update.
 
 {{CodeSelect|code=
 sudo apt-get update
 }}
 
-'''4.''' Install <code>openjdk-7-jre-headless</code> and <code>yacy</code> -- see footnote. <ref>The YaCy homepage states that OpenJDK8 is required for Linux, while the install instructions point to OpenJDK7. If problems are experienced, then try installing [https://packages.debian.org/sid/openjdk-8-jre-headless OpenJDK8] which is available as an experimental package.</ref>
+'''2.''' Install <code>openjdk-11-jre-headless</code>. <ref><code>openjdk-7-jre-headless</code> referenced in the YaCy installation instructions is not available in the stable Debian buster repository.</ref>
 
 {{CodeSelect|code=
-sudo apt-get install openjdk-7-jre-headless yacy
+sudo dpkg --configure -a
+}}
+
+{{CodeSelect|code=
+sudo apt-get install -y openjdk-11-jre-headless
+}}
+
+'''3.''' Confirm the latest YaCy package.
+
+Navigate to http://latest.yacy.net/ to identify the latest available YaCy software package. At the time of writing, this was <code>yacy_v1.922_20191013_9964.tar.gz</code>.
+
+'''4.''' Download and install the YaCy package.
+
+[[{{q_project_name_short}}|{{q_project_name}}]] note: <code>wget</code> is restricted in the {{workstation_product_name}} TemplateVM. It is necessary to download the package with Tor Browser and move it manually to the TemplateVM.
+
+In {{non_q_project_name}}, run (replace the package with the latest available version).
+
+{{CodeSelect|code=
+wget http://latest.yacy.net/yacy_v1.922_20191013_9964.tar.gz
+}}
+
+'''5.''' Decompress the tar archive. 
+
+{{CodeSelect|code=
+tar xfz yacy_v1.922_20191013_9964.tar.gz
+}}
+
+'''6.''' Launch YaCy.
+
+[[{{q_project_name_short}}|{{q_project_name}}]]note: launch YaCy in a standalone <code>anon-whonix-YaCy</code> AppVM.
+
+{{CodeSelect|code=
+cd yacy
+}}
+
+{{CodeSelect|code=
+./startYACY.sh
 }}
 
 To read more on managing YaCy, consult the [http://www.yacy-websuche.de/wiki/index.php/En:DebianInstall#Important_File_Locations official documentation].
