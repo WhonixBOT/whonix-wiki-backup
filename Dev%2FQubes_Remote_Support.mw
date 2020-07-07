@@ -198,94 +198,8 @@ Session: Session terminated at 'Mon Jul  6 18:20:01 2020'.
 
 = Proof of Concept =
 == ssh into Qubes dom0 ==
-1) In dom0. Install packages.
-
-<pre>
-sudo qubes-dom0-update socat openssh-server x2goserver x2goserver-xsession
-</pre>
-
-<ref>
-sftp-server required.
-
-<pre>
-Unable to find the sftp-server binary. Neither bundled, nor found in $PATH nor additional directories.
-
-If you are using a Linux-based operating system, please ask your system administrator to install the package containing the sftp-server binary. Common names are openssh, openssh-server or openssh-sftp-server depending upon distribution. 
-
-If the sftp-server binary is installed on your system, please report a bug mentioning its path on: 
-
-https://wiki.x2go.org/doku.php/wiki:bugs
-</pre>
-</ref>
-
-3) dom0 SSH server configuration
-
-In dom0.
-
-Optional.
-
-<s>Use [[SSH#Server_Configuration_File|this]] file as <code>/etc/ssh/sshd_config</code>.</s> <ref>
-Currently broken due to x2go bugs.
-</ref>
-
-4) enable sshd
-
-In dom0.
-
-<pre>
-sudo systemctl enable sshd
-</pre>
-
-5) start sshd
-
-In dom0.
-
-<pre>
-sudo systemctl start sshd
-</pre>
-
-6) check sshd status
-
-In dom0.
-
-<pre>
-sudo systemctl status sshd
-</pre>
-
-7) dom0 qrexec rpc setup
-
-In dom0. Setup qrexec rpc.
-
-{{Open with root rights|
-filename=/etc/qubes-rpc/local.ssh
-}}
-
-Add.
-
-<pre>
-#!/bin/sh
-exec socat STDIO TCP-CONNECT:localhost:22
-</pre>
-
-Save.
-
-8) dom0 qrexec policy setup
-
-In dom0.
-
-{{Open with root rights|
-filename=/etc/qubes-rpc/policy/local.ssh
-}}
-
-Add.
-
-<pre>
-sys-net dom0 allow
-</pre>
-
-Save.
-
-8) <code>sys-whonix</code> software installation
+=== sys-whonix setup ===
+x) <code>sys-whonix</code> software installation
 
 In <code>sys-whonix</code> VM. Install ssh and x2go.
 
@@ -293,7 +207,7 @@ In <code>sys-whonix</code> VM. Install ssh and x2go.
 sudo apt --no-install-recommends install openssh-client x2goclient
 </pre>
 
-9) <code>sys-whonix</code> <code>socat</code> listener setup
+x) <code>sys-whonix</code> <code>socat</code> listener setup
 
 In <code>sys-whonix</code> VM. Start <code>socat</code> listener.
 
@@ -302,64 +216,6 @@ sudo socat TCP-LISTEN:22,fork EXEC:"qrexec-client-vm dom0 local.ssh"
 </pre>
 
 Save.
-
-x) Create SSH key.
-
-In <code>remote-support-provider</code> VM.
-
-<pre>
-ssh-keygen -t ed25519
-</pre>
-
-x) View id_ed25519 public key.
-
-In <code>remote-support-provider</code> VM.
-
-<pre>
-cat /home/user/.ssh/id_ed25519.pub
-</pre>
-
-x) ssh client configuration hardening
-
-In <code>remote-support-provider</code> VM.
-
-Optional.
-
-<s>Harden <code>/etc/ssh/ssh_config</code> as per [[SSH#Client_Configuration_File|here]].</s> <ref name=brokenx2go />
-
-x) dom0 ssh authorized_keys setup
-
-In <code>remote-support-provider</code> VM.
-
-Contents of <code>sys-whonix</code> <code>/home/user/.ssh/id_ed25519.pub</code> need to be transferred to dom0.
-
-In dom0. As user. Not root!
-
-<pre>
-qubes-copy-from-vm sys-whonix /home/user/.ssh/id_ed25519.pub
-</pre>
-
-In dom0. As user. Not root!
-
-<pre>
-mkdir ~/.ssh
-</pre>
-
-In dom0. As user. Not root!
-
-<pre>
-mv id_ed25519.pub ~/.ssh/authorized_keys
-</pre>
-
-In dom0. As user. Not root! <ref>
-<code>chmod og-rwx ~/.ssh/authorized_keys</code> was insufficient, sshd would refuse with insecure permissions error message.
-
-<code>chmod --recursive og-rwx ~/.ssh</code> was insufficient probably because file was owned by root, not user.
-</ref>
-
-<pre>
-sudo chmod --recursive og-rwx ~/.ssh
-</pre>
 
 x) setup onion v3
 
@@ -389,7 +245,152 @@ In <code>sys-whonix</code> VM.
 sudo systemctl reload tor@default
 </pre>
 
-x) Done.
+=== remote-support-provider setup ===
+x) Create SSH key.
+
+In <code>remote-support-provider</code> VM.
+
+<pre>
+ssh-keygen -t ed25519
+</pre>
+
+x) View id_ed25519 public key.
+
+In <code>remote-support-provider</code> VM.
+
+<pre>
+cat /home/user/.ssh/id_ed25519.pub
+</pre>
+
+x) ssh client configuration hardening
+
+In <code>remote-support-provider</code> VM.
+
+Optional.
+
+<s>Harden <code>/etc/ssh/ssh_config</code> as per [[SSH#Client_Configuration_File|here]].</s> <ref name=brokenx2go />
+
+=== dom0 setup ===
+x) In dom0. Install packages.
+
+<pre>
+sudo qubes-dom0-update socat openssh-server x2goserver x2goserver-xsession
+</pre>
+
+<ref>
+sftp-server required.
+
+<pre>
+Unable to find the sftp-server binary. Neither bundled, nor found in $PATH nor additional directories.
+
+If you are using a Linux-based operating system, please ask your system administrator to install the package containing the sftp-server binary. Common names are openssh, openssh-server or openssh-sftp-server depending upon distribution. 
+
+If the sftp-server binary is installed on your system, please report a bug mentioning its path on: 
+
+https://wiki.x2go.org/doku.php/wiki:bugs
+</pre>
+</ref>
+
+x) dom0 SSH server configuration
+
+In dom0.
+
+Optional.
+
+<s>Use [[SSH#Server_Configuration_File|this]] file as <code>/etc/ssh/sshd_config</code>.</s> <ref>
+Currently broken due to x2go bugs.
+</ref>
+
+x) enable sshd
+
+In dom0.
+
+<pre>
+sudo systemctl enable sshd
+</pre>
+
+x) start sshd
+
+In dom0.
+
+<pre>
+sudo systemctl start sshd
+</pre>
+
+x) check sshd status
+
+In dom0.
+
+<pre>
+sudo systemctl status sshd
+</pre>
+
+x) dom0 qrexec rpc setup
+
+In dom0. Setup qrexec rpc.
+
+{{Open with root rights|
+filename=/etc/qubes-rpc/local.ssh
+}}
+
+Add.
+
+<pre>
+#!/bin/sh
+exec socat STDIO TCP-CONNECT:localhost:22
+</pre>
+
+Save.
+
+x) dom0 qrexec policy setup
+
+In dom0.
+
+{{Open with root rights|
+filename=/etc/qubes-rpc/policy/local.ssh
+}}
+
+Add.
+
+<pre>
+sys-whonix dom0 allow
+</pre>
+
+Save.
+
+x) dom0 ssh authorized_keys setup
+
+Contents of <code>remote-support-provider</code> file <code>/home/user/.ssh/id_ed25519.pub</code> need to be transferred to dom0 <code>/home/user/.ssh/id_ed25519.pub</code>.
+
+In <code>remote-support-provider</code> VM.
+
+In dom0. As user. Not root!
+
+<pre>
+qubes-copy-from-vm sys-whonix /home/user/.ssh/id_ed25519.pub
+</pre>
+
+In dom0. As user. Not root!
+
+<pre>
+mkdir ~/.ssh
+</pre>
+
+In dom0. As user. Not root!
+
+<pre>
+mv id_ed25519.pub ~/.ssh/authorized_keys
+</pre>
+
+In dom0. As user. Not root! <ref>
+<code>chmod og-rwx ~/.ssh/authorized_keys</code> was insufficient, sshd would refuse with insecure permissions error message.
+
+<code>chmod --recursive og-rwx ~/.ssh</code> was insufficient probably because file was owned by root, not user.
+</ref>
+
+<pre>
+sudo chmod --recursive og-rwx ~/.ssh
+</pre>
 
 = Footnotes =
 <references />
