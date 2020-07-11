@@ -222,13 +222,34 @@ sudo apt --no-install-recommends install openssh-client x2goclient
 
 x) <code>sys-whonix</code> <code>socat</code> listener setup
 
-In <code>sys-whonix</code> VM. Start <code>socat</code> listener.
-
-TODO: use Qubes TcpConnect instead
-
+In <code>sys-whonix</code> VM. Start <code>socat</code> listener. <ref>
+Previously functional socat method.
 <pre>
 sudo socat TCP-LISTEN:22,fork EXEC:"qrexec-client-vm dom0 local.ssh"
 </pre>
+</ref> <ref>
+<pre>
+user@host:~$ qvm-connect-tcp 
+Usage: /usr/bin/qvm-connect-tcp [localport]:[vmname]:[port]
+Bind localport to another VM port using the qubes.ConnectTCP RPC service.
+</pre>
+</ref> <ref>
+Symptom inside <code>sys-whonix</code> VM if refused/missing dom0 qrexec policy in dom0.
+
+<pre>
+2020/07/11 13:20:25 socat[2807] E waitpid(): child 2808 exited with status 126
+</pre>
+</ref>
+
+<pre>
+qvm-connect-tcp 22:dom0:22
+</pre>
+
+Should show:
+
+<blockquote>
+Binding TCP 'dom0:22' to 'localhost:22'...
+</blockquote>
 
 x) setup onion v3
 
