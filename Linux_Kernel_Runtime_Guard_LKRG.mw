@@ -159,7 +159,9 @@ These configuration sysctl might be outdated. Please refer to [https://bitbucket
 
 <u>Note</u>: All the possible configuration changes in this section are optional.
 
-Legend: <ref>https://www.openwall.com/lists/lkrg-users/2019/02/19/1</ref>
+Legend: <ref>
+https://www.openwall.com/lists/lkrg-users/2019/02/19/1
+</ref>
 
 * <code>CI</code> - Code Integrity
 * <code>ED</code> - Exploit Detection
@@ -187,38 +189,27 @@ sudo sysctl -a {{!}} grep lkrg
 }}
 |-
 ! scope="row"| Hardening - CI Panic - Crash Kernel when Code Integrity Violation
-| It is possible to further improve the security provided by LKRG, but this can potentially lead to decreased system stability. Users that are willing to make this trade-off can opt-in to the following setting. LKRG developers have not enabled the following sysctl option by default since it can result in kernel panics and system crashes, or occasional false positives (integrity violations and/or exploits are detected when they don't really exist). See the [https://www.openwall.com/lkrg/ LKRG homepage]. This might be the reason why LKRG developers did not yet enable kernel panic on CI failure by default. 
+| It is possible to further improve the security provided by LKRG, but this can potentially lead to decreased system stability. Users that are willing to make this trade-off can opt-in to the following setting. LKRG developers have not enabled the following sysctl option by default since it can result in kernel panics and system crashes, or occasional false positives (integrity violations and/or exploits are detected when they don't really exist). See the [https://www.openwall.com/lkrg/ LKRG homepage]. This might be the reason why LKRG developers did not yet enable kernel panic on CI failure by default.
 
-Kernel panic on code integrity <code>CI</code> failure (<code>lkrg.ci_panic</code>) - two options are available:
-
-* <code>0</code> - do NOT crash the kernel on CI failure (default)
-* <code>1</code> - crash the kernel (call <code>panic()</code>) on CI failure
-
-The following command enables kernel panic on CI failure non-persistently until reboot.
-
-{{CodeSelect|code=
-sudo sysctl -w lkrg.force_run=1
-}}
-
-The following procedure enables this feature persistently after reboot.
+To enable any (LKRG) sysctl persistently after reboot.
 
 {{Open_with_root_rights|filename=
 /etc/sysctl.d/50_user.conf
 }}
 
-Paste.
+Paste (LKRG) sysctl settings such as.
 
 {{CodeSelect|code=
-lkrg.ci_panic=1
+lkrg.profile_enforce=3
 }}
 
 Save.
 
-The procedure of enabling CI panic is complete.
+The procedure of persistently changing sysctl settings is complete.
 |-
 ! scope="row"| Hardening - UMH Lock
 | Better do not use for now. Breaks Whonix Firewall. <ref>
-Full lock down of the kernel's usermodehelper interface (<code>lkrg.umh_lock</code>). This might break things if your distro uses UMH to invoke any programs. Two options are available:
+Full lock down of the kernel's usermodehelper interface (<code>lkrg.umh_validate</code>). This might break things if your distro uses UMH to invoke any programs. Two options are available:
 
 * <code>0</code> - do NOT lock down the UMH interface fully, but allow to execute only LKRG's whitelisted programs (default)
 * <code>1</code> - lock down the UMH interface fully
