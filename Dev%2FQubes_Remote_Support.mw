@@ -76,9 +76,9 @@ On remote support provider machine.
 * dom0 <code>qvm-run</code> <code>sys-whonix</code> restart Tor <ref name=tor-reload-bug>
 reload should be sufficient but probably some bug in Tor required restart instead.
 </ref>
-* dom0 <code>qvm-start</code> <code>remote-support-provider-server-vm</code>
-* dom0 <code>qvm-run</code> <code>remote-support-provider-server-vm</code> install openssh-server
-* make openssh-server reachable through <code>.onion</code> running in <code>sys-whonix</code>
+* dom0 <code>qvm-start</code> <code>remote-support-provider-server</code> VM
+* dom0 <code>qvm-run</code> <code>remote-support-provider-server</code> VM install openssh-server
+* make openssh-server reachable through <code>.onion</code> running inside <code>sys-whonix</code> VM
 * dom0 <code>wormhole send</code> <code>connection.zip</code>
 ** write wormhole code into script variable
 * <code>connection.zip</code> contains
@@ -88,7 +88,7 @@ reload should be sufficient but probably some bug in Tor required restart instea
 ** ssh key
 * tell remote support receiver out of band (telephone, chat, e-mail) the wormhole code
 * wait for remote support receiver to start the remote support receiver tool and to enter the wormhole code
-* in <code>remote-support-provider-server-vm</code>: x2go connect to remote support receiver localhost:port [reverse ssh]
+* inside <code>remote-support-provider-server</code> VM: x2go connect to remote support receiver localhost:port [reverse ssh]
 
 == remote support receiver ==
 On remote support receiver machine.
@@ -217,7 +217,7 @@ Useful for debugging.
 
 x) <code>sys-whonix</code> software installation
 
-In <code>sys-whonix</code> VM. Install ssh and x2go.
+Inside <code>sys-whonix</code> VM. Install ssh and x2go.
 
 <pre>
 sudo apt --no-install-recommends install openssh-client x2goclient
@@ -226,7 +226,7 @@ sudo apt --no-install-recommends install openssh-client x2goclient
 
 x) <code>sys-whonix</code> <code>qvm-connect-tcp</code> listener setup
 
-In <code>sys-whonix</code> VM. Start <code>socat</code> listener. <ref>
+Inside <code>sys-whonix</code> VM. Start <code>socat</code> listener. <ref>
 Previously functional socat method.
 <pre>
 sudo socat TCP-LISTEN:22,fork EXEC:"qrexec-client-vm dom0 local.ssh"
@@ -259,7 +259,7 @@ Binding TCP 'dom0:22' to 'localhost:22'...
 
 x) setup onion v3
 
-In <code>sys-whonix</code> VM.
+inside <code>sys-whonix</code> VM.
 
 Add onion v3 service configuration to Tor config <code>/usr/local/etc/torrc.d/50_user.conf</code>
 
@@ -271,7 +271,7 @@ HiddenServiceVersion 3
 
 x) restart Tor
 
-In <code>sys-whonix</code> VM.
+Inside <code>sys-whonix</code> VM.
 
 <ref name=tor-reload-bug />
 
@@ -281,7 +281,7 @@ sudo systemctl restart tor@default
 
 x) get onion v3 domain name
 
-In <code>sys-whonix</code> VM.
+Inside <code>sys-whonix</code> VM.
 
 <pre>
 sudo cat /var/lib/tor/remote_service/hostname
@@ -302,7 +302,7 @@ sudo apt install --no-install-recommends openssh-client x2goclient
 
 x) Create SSH key.
 
-In <code>remote-support-provider</code> VM.
+Inside <code>remote-support-provider</code> VM.
 
 <pre>
 ssh-keygen -t ed25519
@@ -310,7 +310,7 @@ ssh-keygen -t ed25519
 
 x) View id_ed25519 public key.
 
-In <code>remote-support-provider</code> VM.
+Inside <code>remote-support-provider</code> VM.
 
 <pre>
 cat /home/user/.ssh/id_ed25519.pub
@@ -318,7 +318,7 @@ cat /home/user/.ssh/id_ed25519.pub
 
 x) ssh client configuration hardening
 
-In <code>remote-support-provider</code> VM.
+Inside <code>remote-support-provider</code> VM.
 
 Optional. <ref>
 Currently broken.
@@ -502,7 +502,7 @@ x) dom0 ssh authorized_keys setup
 
 Contents of <code>remote-support-provider</code> file <code>/home/user/.ssh/id_ed25519.pub</code> need to be transferred to dom0 <code>/home/user/.ssh/id_ed25519.pub</code>.
 
-In <code>remote-support-provider</code> VM.
+Inside <code>remote-support-provider</code> VM.
 
 In dom0. As user. Not root!
 
@@ -541,7 +541,7 @@ After making an SSH server available in Qubes dom0 as per above instructions it 
 === ssh ===
 Test this first.
 
-In <code>remote-support-provider</code> VM.
+Inside <code>remote-support-provider</code> VM.
 
 Qubes dom0 requires the SSH key being added to Qubes dom0 <code>~/.ssh/authorized_keys</code> as documented earlier on this page.
 
@@ -587,7 +587,7 @@ All times are created with an external stopwatch and should have +/- 2 seconds h
 ** x2go session type terminal:
 *** connection speed setting "modem":
 **** Establishing a connection takes 90 seconds.
-**** There is an two seconds delay between a keypress on in <code>remote-support-provider</code> VM until it gets visible in the remote terminal.
+**** There is an two seconds delay between a keypress on inside <code>remote-support-provider</code> VM until it gets visible in the remote terminal.
 **** Running a simple command such as <code>ls -la</code> in a folder with 60 files takes 18 seconds until results are drawn.
 **** from opening the x2go viewer to having the full desktop contents drawn it takes 180 seconds
 *** connection speed setting "WAN":
@@ -598,7 +598,7 @@ All times are created with an external stopwatch and should have +/- 2 seconds h
 ** This is [[Remote_Administration#Test_Results|much faster]] with [[Non-Qubes-Whonix]] when following instructions for [[Remote_Administration#SSH_into_Whonix_.E2.84.A2|SSH into Whonix]] with [[Remote_Administration#Graphical|x2go]]. This might be because Qubes R4.0 dom0 is based Fedora 25 which ships an older version of x2go. It could also be because the x2go version of Qubes dom0 Fedora 25 is older than the x2go version in Debian buster based Whonix 15. The speed issues might be fixed with the release of Qubes R4.1 which will come with a more newer dom0 version of Fedora and thereby with a newer version of x2go.
 * Qubes R4.1
 ** Running a simple command such as <code>ls -la</code> takes 1 second until results are drawn.
-** There is an 1 seconds delay between a keypress on in <code>remote-support-provider</code> VM until it gets visible in the remote terminal.
+** There is an 1 seconds delay between a keypress on inside <code>remote-support-provider</code> VM until it gets visible in the remote terminal.
 ** Click Xfce start menu: 2 seconds
 ** clock in systray (shows seconds) update: every 1 or 2 seconds
 ** There is a bug where I have no idea if caused by Qubes R4.1 testing version or x2go or a combination of it. When pressing any key it sometimes happen that this key is auto-repeat "jammed". I.e. "a" becomes "aaaaaaaaaaaaaaa" (no exact counting).
