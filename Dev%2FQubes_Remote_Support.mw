@@ -211,7 +211,7 @@ Unable to execute: rdesktop  -g 800x600
 
 = Proof of Concept =
 == ssh into Qubes dom0 ==
-=== sys-whonix setup ===
+=== remote-support-receiver sys-whonix setup ===
 <ref>
 Useful for debugging.
 
@@ -257,17 +257,29 @@ Should show:
 Binding TCP 'dom0:22' to 'localhost:22'...
 </blockquote>
 
-x) setup onion v3
+x) setup authenticated onion v3
+
+<ref>
+See [[#Archive|archive]] for unauthenticated onion v3.
+</ref>
 
 Inside <code>sys-whonix</code> VM.
 
-Add onion v3 service configuration to Tor config <code>/usr/local/etc/torrc.d/50_user.conf</code>
-
 <pre>
-HiddenServiceDir /var/lib/tor/remote_service/
-HiddenServicePort 22 127.0.0.1:22
-HiddenServiceVersion 3
+sudo virtport=22 hsport=22 hsname=remote_support client=1 anon-auth-autogen
 </pre>
+
+Will show.
+
+<blockquote>
+INFO: Created torconffile '/usr/local/etc/torrc.d/43_remote_support_hs_autogen.conf'.<br />
+INFO: Reloading Tor.<br />
+INFO: Giving Tor 5 seconds to create hidden service file.<br />
+INFO: Installed ".auth" file (public key) '/var/lib/tor_autogen/remote_support/1.auth' to '/var/lib/tor_autogen/remote_support/1.auth' to allow client '1' to access hsname 'remote_support' onion_url 'xxx.onion'.<br />
+INFO: Reloading Tor again to activate ".auth" (public key) file for client '1'.<br />
+INFO: You need to provide client '1' with ".auth_private" file (private key) '/var/lib/tor_autogen/remote_support/1.auth_private'.<br />
+INFO: Visitors that use Whonix could store '/var/lib/tor_autogen/remote_support/1.auth_private' in '/home/user/1.auth_private' and then run 'sudo sourcefile=/home/user/1.auth_private anon-server-to-client-install'.<br />
+</blockquote>
 
 x) restart Tor
 
