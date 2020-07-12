@@ -296,39 +296,42 @@ Security-conscious, free software developers consider browsers as a poor and dan
 
 == Introduction ==
 
-This is chrooted configuration but if someone really need to start that kind of network, please isolate servers in virtual machines.
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = This entry was contributed by [https://forums.whonix.org/u/Norbert_Szczybelski Norbert Szczybelski]. For questions and further information, refer to the forum discussion: [https://forums.whonix.org/t/how-to-setup-asterisk-voip-server-over-openvpn-in-tor-hidden-service/3410 How To setup Asterisk VoIP server over OpenVPN in Tor hidden service.]
+}}
 
-Also update CPU microcode against Spectre and Meltdown vulnerabilities.
+Asterisk is: <ref>https://en.wikipedia.org/wiki/Asterisk_%28PBX%29</ref>
+<blockquote>... a software implementation of a private branch exchange (PBX). In conjunction with suitable telephony hardware interfaces and network applications, Asterisk is used to establish and control telephone calls between telecommunication endpoints, such as customary telephone sets, destinations on the public switched telephone network (PSTN), and devices or services on voice over Internet Protocol (VoIP) networks.</blockquote>
 
+Since Asterisk is open source and supports several standard VoIP protocols, it can be configured in {{project_name}} to enable the PC to run as a server for a VoIP service.
 
-I illustrate simply setup:
+Official Asterisk wiki documentation can be found [https://wiki.asterisk.org/wiki/display/AST/Home here].
 
+== Configuration Overview ==
 
-172.16.0.2/10.8.0.1 OpenVPN Server - bhyve VM on server.
+Configuration files are outlined below for:
+* OpenVPN server
+* OpenVPN clients
+* Tor hidden service
+* Tor clients
+* Asterisk SIP protocol
+* Asterisk extensions
 
-172.16.0.3/10.8.0.10 OpenVPN Client with Apache - bhyve VM on server.
+Note: this is a chrooted configuration. If necessary, servers can also be isolated in virtual machines. Be sure to also update CPU microcode to protect against the Spectre and Meltdown vulnerabilities.
 
-172.16.0.4/10.8.0.20 OpenVPN Client with Asterisk - bhyve VM on server.
+As an illustration, simply set up:
 
-172.16.0.5/10.8.0.30 OpenVPN Client with UnrealIRCd - bhyve VM on server.
-
+* 172.16.0.2/10.8.0.1 OpenVPN Server - bhyve VM on server.
+* 172.16.0.3/10.8.0.10 OpenVPN Client with Apache - bhyve VM on server.
+* 172.16.0.4/10.8.0.20 OpenVPN Client with Asterisk - bhyve VM on server.
+* 172.16.0.5/10.8.0.30 OpenVPN Client with UnrealIRCd - bhyve VM on server.
 ...
+* 172.31.0.9/10.8.10.10 OpenVPN Client with Apache - bhyve VM on client.
+* 192.168.38.37/10.8.10.20 OpenVPN Client with UnrealIRCd - bhyve VM on client.
 
-172.31.0.9/10.8.10.10 OpenVPN Client with Apache - bhyve VM on client.
-
-192.168.38.37/10.8.10.20 OpenVPN Client with UnrealIRCd - bhyve VM on client.
-
-
-… and so on.
-
-
-Setup static IP addresses in ccd directory for OpenVPN Client servers.
-
-
-Generate encryption keys with OpenSSL.
-
-
-Contributed by [https://forums.whonix.org/u/Norbert_Szczybelski Norbert Szczybelski]. Forum discussion: [https://forums.whonix.org/t/how-to-setup-asterisk-voip-server-over-openvpn-in-tor-hidden-service/3410 How To setup Asterisk VoIP server over OpenVPN in Tor hidden service.]
+And so on. Next, set up static IP addresses in ccd directory for OpenVPN Client servers. Finally, generate encryption keys with OpenSSL (modified OpenSSL can be utilized for quantum-resistant cryptography).
 
 == OpenVPN Server openvpn.conf configuration file ==
 
