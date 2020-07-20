@@ -191,11 +191,11 @@ sudo reboot
 Ensure KVM's / QEMU's default networking is enabled and has started. <ref>https://forums.whonix.org/t/kvm-networking-broken/644</ref> <ref>https://wiki.debian.org/KVM#Troubleshooting</ref>
 
 {{CodeSelect|code=
-virsh -c qemu:///system net-autostart default
+sudo virsh -c qemu:///system net-autostart default
 }}
 
 {{CodeSelect|code=
-virsh -c qemu:///system net-start default
+sudo virsh -c qemu:///system net-start default
 }}
 
 == Build from Scratch ==
@@ -362,39 +362,39 @@ The supplied XML files serve as a description for libvirt and define the propert
 If the definition of the {{project name}} internal network fails because the virtual bridge "virbr2" already exists, edit the Whonix_internal*.xml file and change the name to one that does not exist, for example "virbr3" (all existing bridge adapters can be listed with "sudo brctl show").
 
 {{CodeSelect|code=
-virsh -c qemu:///system net-define {{project_name_short}}_external*.xml
+sudo virsh -c qemu:///system net-define {{project_name_short}}_external*.xml
 }}
 
 {{CodeSelect|code=
-virsh -c qemu:///system net-define {{project_name_short}}_internal*.xml
+sudo virsh -c qemu:///system net-define {{project_name_short}}_internal*.xml
 }}
 
 * The names are located inside the <code>{{project_name_short}}_external*.xml</code> and <code>{{project_name_short}}_internal*.xml</code> files.
 
 {{CodeSelect|code=
-virsh -c qemu:///system net-autostart {{project_name_short}}-External
+sudo virsh -c qemu:///system net-autostart {{project_name_short}}-External
 }}
 
 {{CodeSelect|code=
-virsh -c qemu:///system net-start {{project_name_short}}-External
+sudo virsh -c qemu:///system net-start {{project_name_short}}-External
 }}
 
 {{CodeSelect|code=
-virsh -c qemu:///system net-autostart {{project_name_short}}-Internal
+sudo virsh -c qemu:///system net-autostart {{project_name_short}}-Internal
 }}
 
 {{CodeSelect|code=
-virsh -c qemu:///system net-start {{project_name_short}}-Internal
+sudo virsh -c qemu:///system net-start {{project_name_short}}-Internal
 }}
 
 '''2.''' Import the {{project name}} Gateway and Workstation images.
 
 {{CodeSelect|code=
-virsh -c qemu:///system define {{gateway_product_name_short}}*.xml
+sudo virsh -c qemu:///system define {{gateway_product_name_short}}*.xml
 }}
 
 {{CodeSelect|code=
-virsh -c qemu:///system define {{workstation_product_name_short}}*.xml
+sudo virsh -c qemu:///system define {{workstation_product_name_short}}*.xml
 }}
 }}
 
@@ -517,21 +517,21 @@ If you want to remove {{project name}} KVM VMs, {{project name}} network and {{p
 '''1.''' Power off the VM you want to shut down. <ref>The command line can also be used to make sure the VM has been shut down.</ref>
 
 {{CodeSelect|code=
-virsh -c qemu:///system destroy {{gateway_product_name_short}}
+sudo virsh -c qemu:///system destroy {{gateway_product_name_short}}
 }}
 
 {{CodeSelect|code=
-virsh -c qemu:///system destroy {{workstation_product_name_short}}
+sudo virsh -c qemu:///system destroy {{workstation_product_name_short}}
 }}
 
 '''2.''' Remove KVM VM settings.
 
 {{CodeSelect|code=
-virsh -c qemu:///system undefine {{gateway_product_name_short}}
+sudo virsh -c qemu:///system undefine {{gateway_product_name_short}}
 }}
 
 {{CodeSelect|code=
-virsh -c qemu:///system undefine {{workstation_product_name_short}}
+sudo virsh -c qemu:///system undefine {{workstation_product_name_short}}
 }}
 
 '''3.''' Shut down KVM Network {{Code2|{{project_name_short}}}}.
@@ -539,21 +539,21 @@ virsh -c qemu:///system undefine {{workstation_product_name_short}}
 <u>Warning:</u> {{project_name}} 14 and earlier versions used the network names "external" and "internal". This means the command must be changed accordingly. Try "virsh -c qemu:///system net-list" to list them all.
 
 {{CodeSelect|code=
-virsh -c qemu:///system net-destroy {{project_name_short}}-External
+sudo virsh -c qemu:///system net-destroy {{project_name_short}}-External
 }}
 {{CodeSelect|code=
-virsh -c qemu:///system net-destroy {{project_name_short}}-Internal
+sudo virsh -c qemu:///system net-destroy {{project_name_short}}-Internal
 }}
 
 '''4.''' Remove Network {{Code2|{{project_name_short}}}}.
 
-<u>Warning:</u> {{project_name}} 14 and earlier versions used the network names "external" and "internal". This means the command must be changed accordingly. Try "virsh -c qemu:///system net-list" to list them all.
+<u>Warning:</u> {{project_name}} 14 and earlier versions used the network names "external" and "internal". This means the command must be changed accordingly. Try "sudo virsh -c qemu:///system net-list" to list them all.
 
 {{CodeSelect|code=
-virsh -c qemu:///system net-undefine {{project_name_short}}-External
+sudo virsh -c qemu:///system net-undefine {{project_name_short}}-External
 }}
 {{CodeSelect|code=
-virsh -c qemu:///system net-undefine {{project_name_short}}-Internal
+sudo virsh -c qemu:///system net-undefine {{project_name_short}}-Internal
 }}
 
 '''5.''' Delete the images. 
@@ -663,7 +663,7 @@ sudo virsh net-destroy Whonix-Internal
 }}
 
 {{CodeSelect|code=
-virsh -c qemu:///system net-start Whonix-Internal
+sudo virsh -c qemu:///system net-start Whonix-Internal
 }}
 
 '''5.''' Use <code>sudo ifconfig</code> to confirm if dynamic IP assignment is functional.
@@ -680,19 +680,19 @@ If the VM has snapshots that you wish to preserve, the snapshot xml-files of the
 '''1.''' List snapshot names of the VM.
 
 {{CodeSelect|code=
-virsh snapshot-list --name $dom
+sudo virsh snapshot-list --name $dom
 }}
 
 '''2.''' Dump each snapshot you want to back-up.
 
 {{CodeSelect|code=
-virsh snapshot-dumpxml $dom $name > file.xml 
+sudo virsh snapshot-dumpxml $dom $name > file.xml 
 }}
 
 '''3.''' Restore snapshots at the destination.
 
 {{CodeSelect|code=
-virsh snapshot-create --redefine $dom file.xml
+sudo virsh snapshot-create --redefine $dom file.xml
 }}
 
 '''4.''' ''Optional:'' Identify which snapshot is the current one.
@@ -700,13 +700,13 @@ virsh snapshot-create --redefine $dom file.xml
 On the source VM, run.
 
 {{CodeSelect|code=
-virsh snapshot-current --name $dom
+sudo virsh snapshot-current --name $dom
 }}
 
 On the destination, run.
 
 {{CodeSelect|code=
-virsh snapshot-current $dom $name
+sudo virsh snapshot-current $dom $name
 }}
 }}
 == Nested KVM Virtualization ==
@@ -921,7 +921,7 @@ export VISUAL=kwrite
 Edit.
 
 {{CodeSelect|code=
-virsh -c qemu:///system edit {{gateway_product_name_short}}
+sudo virsh -c qemu:///system edit {{gateway_product_name_short}}
 }}
 
 == Disable Microphone Input ==
@@ -958,7 +958,7 @@ In order to debug a Linux kernel that is running as a KVM guest, the <code>-s</c
 '''1.''' Open the XML configuration.
 
 {{CodeSelect|code=
-virsh edit $guestvm
+sudo virsh edit $guestvm
 }}
 
 Here, <code>$guestvm</code> is the name of the VM that is managed via virt-manager. This will bring up the XML configuration of the VM in your editor. 
