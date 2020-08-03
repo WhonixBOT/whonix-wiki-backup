@@ -1,9 +1,54 @@
-{{Verify_the_virtual_machine_images_using_the_command_line
+<!--
+Copyright:
 
-|download_signing_link=
+   Whonix Verify_the_virtual_machine_images_using_the_command_line wiki page Copyright (C) Amnesia <amnesia at boum dot org>
+   Whonix Verify_the_virtual_machine_images_using_the_command_line wiki page Copyright (C) 2012 - 2020 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+         
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+      
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to:
+
+    Free Software Foundation, Inc. 
+    51 Franklin St, Fifth Floor
+    Boston, MA 02110-1301, USA.
+
+On Debian GNU/Linux systems, the complete text of the GNU General Public
+License can be found in the /usr/share/common-licenses' directory.
+
+The complete text of the GNU General Public License can also be found online on gnu.org <https://www.gnu.org/licenses/gpl.html>, in Whonix virtual machine images in /usr/share/common-licenses/GPL-3 file or on Github <https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/GPLv3>.
+-->
+<!--
+The Whonix Verify_the_virtual_machine_images_using_the_command_line wiki page is forked from the Tails Verify the ISO image using the command line  page, from this exact source <http://git.immerda.ch/?p=amnesia.git;a=blob;f=wiki/src/doc/get/verify_the_iso_image_using_the_command_line.html;hb=ec769a098398fc009b617d9f0aef56310497e518>.
+-->
+{{Title|title=Verify Virtual Machine Images on the Command Line}}
+{{Header}}
+{{#seo:
+|description=Instructions for OpenPGP Verification of Whonix on the Command Line
+}}
+{{always verify signatures reminder}}
+
+In order to verify the Whonix image, GnuPG must be installed. GnuPG is the common OpenPGP implementation for Linux: it is installed by default in Debian, Ubuntu, Whonix and many other distributions.
+
+{{Box|text=
+'''1.''' Import the signing key.
+
+Refer the the more secure, detailed [[Whonix Signing Key]] instructions.
+
 {{Code2|<u>'''{{#widget:Key_Patrick}}'''</u>}}
 
-|download_signature_link=
+'''2.''' Download the cryptographic (OpenPGP) signature corresponding to the virtual machine image you want to verify.
+
+'''3.''' Save the signature in the same folder as the virtual machine image.
+
 '''{{Project name}} VirtualBox CLI:'''
 
 * https://download.whonix.org/ova/{{VersionNew}}/Whonix-CLI-{{VersionNew}}.ova
@@ -20,13 +65,23 @@ This expands the download table with links to signatures.
 If you enabled noscript / disabled javascript this will not be necessary.
 </ref>
 
-|cd_directory=
+'''4.''' Start the cryptographic verification.
+
+This process can take several minutes.
+
+{{CodeSelect|code=
 cd [the directory in which you downloaded the .ova and the .asc]
+}}
 
-|gpg_verify_cmd_gw=
+{{CodeSelect|code=
 gpg --verify-options show-notations --verify Whonix-*.ova.asc Whonix-*.ova
+}}
 
-|gpg_verify_success_gw=
+'''5.''' Check the output of the verification step.
+
+<u>If the virtual machine image is correct</u>, the output will inform that the signature is good:
+
+{{CodeSelect|code=
 gpg: Signature made Mon 19 Jan 2015 11:45:41 PM CET using RSA key ID 77BB3C48
 gpg: Good signature from "Patrick Schleizer <adrelanos@riseup.net>" [unknown]
 gpg: Signature notation: issuer-fpr@notations.openpgp.fifthhorseman.net=6E979B28A6F37C43BE30AFA1CB8D50BB77BB3C48
@@ -35,8 +90,45 @@ gpg: WARNING: This key is not certified with a trusted signature!
 gpg:          There is no indication that the signature belongs to the owner.
 Primary key fingerprint: 916B 8D99 C38E AF5E 8ADC  7A2A 8D66 066A 2EEA CCDA
      Subkey fingerprint: 6E97 9B28 A6F3 7C43 BE30  AFA1 CB8D 50BB 77BB 3C48
-
-|signature_notation_gw=
-gpg: Signature notation: file@name={{project_name_short}}-{{VersionNew}}.ova
-
 }}
+
+This output might be followed by a warning as follows.
+{{Template:GnuPG-Warning}}
+
+{{gpg_signature_timestamp}}
+
+The first line includes the signature creation timestamp; see the example below.
+
+<pre>
+gpg: Signature made Mon 19 Jan 2015 11:45:41 PM CET using RSA key ID 77BB3C48
+</pre>
+
+{{GnuPG_file_names}}
+
+From Whonix version 9.6 onwards the {{Code2|file@name}} OpenPGP notation automatically includes the file name. This helps to confirm that the file name has not been tampered with; see the example below.
+
+{{CodeSelect|code=
+gpg: Signature notation: file@name={{project_name_short}}-{{VersionNew}}.ova
+}}
+
+<u>If the Virtual Machine image is not correct</u>, the output will inform that the signature is bad:
+
+<pre>
+gpg: Signature made Sun Nov 25 21:48:54 2012 UTC
+gpg:                using RSA key 77BB3C48
+gpg: BAD signature from "Patrick Schleizer <adrelanos@riseup.net>"
+</pre>
+
+{{do_not_continue_on_gpg_verification_errors}}
+}}
+{{Template:GnuPG-Troubleshooting}}
+
+= Footnotes =
+{{reflist|close=1}}
+
+= License =
+{{License_Amnesia|{{FULLPAGENAME}}}}
+
+{{Footer}}
+
+[[Category:Documentation]]
