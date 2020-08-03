@@ -1,0 +1,157 @@
+<!--
+Copyright:
+
+   Copyright (C) Amnesia <amnesia at boum dot org>
+   Copyright (C) 2012 - 2020 ENCRYPTED SUPPORT LP <adrelanos@riseup.net>
+   
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3 of the License, or
+   (at your option) any later version.
+         
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+      
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to:
+
+    Free Software Foundation, Inc. 
+    51 Franklin St, Fifth Floor
+    Boston, MA 02110-1301, USA.
+
+On Debian GNU/Linux systems, the complete text of the GNU General Public
+License can be found in the /usr/share/common-licenses' directory.
+
+The complete text of the GNU General Public License can also be found online on gnu.org <https://www.gnu.org/licenses/gpl.html>, in {{project_name}} virtual machine images in /usr/share/common-licenses/GPL-3 file or on Github <https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/GPLv3>.
+-->
+<!--
+This wiki page is a fork of the Tails Trusting Tails signing key page, from this exact source <http://git.immerda.ch/?p=amnesia.git;a=blob;f=wiki/src/doc/get/trusting_tails_signing_key.mdwn;hb=63b68fb4970361131cbd1713b40521244e88c204>.
+-->
+{{Title|title=Download the Signing Key for {{project_name}} KVM}}
+{{Header}}
+{{#seo:
+|description=Get {{project name}} KVM signing key. Verify {{project_name}} KVM.
+}}
+= Introduction =
+
+Since all {{project_name}} KVM releases are signed with the same key, it is unnecessary to verify the key every time a new release is announced. Trust in the key might gradually increase over time, but cryptographic signatures must still be verified every time a new release is downloaded. 
+
+This page is strongly related to the [[Trust|Placing Trust in {{project_name}}]] page.
+
+{{Anchor|Download the Key}}
+
+= Download the OpenPGP Key =
+<!--
+EDITORS NOTES:
+- Not recommending 'scurl': Because these instructions are done on the host. Perhaps by users that are not yet {{project_name}} users. 'scurl' is not available to them.
+- Not recommending curl: Because it may not be installed on their host. Perhaps Windows users are looking at these instructions.
+- Instructions target regular users. Not from-source-builders.
+-->
+
+{{Box|text=
+{{gpg_init}}
+}}
+
+{{Box|text=
+'''1.''' [[Secure_Downloads|Securely]] download [[HulaHoop]]'s [[OpenPGP]] key. <ref>
+{{CodeSelect|code=
+curl {{Curl Secure}} --max-time 180 --output ~/hulahoop.asc https://www.whonix.org/hulahoop.asc
+}}
+</ref><br />
+{{Code2|<u>'''{{#widget:Key_HulaHoop}}'''</u>}}
+
+'''2.''' Store the key as <code>hulahoop.asc</code>.
+
+'''3.''' Check fingerprints/owners without importing anything. <ref>
+https://forums.whonix.org/t/gpg-show-key-warning-gpg-warning-no-command-supplied-trying-to-guess-what-you-mean/7859
+</ref>
+
+{{CodeSelect|code=
+gpg --keyid-format long --import --import-options show-only --with-fingerprint hulahoop.asc
+}}
+
+'''4.''' Verify the output.
+
+The output should be identical to the following. 
+
+<pre>
+pub   rsa4096/50C78B6F9FF2EC85 2018-11-26 [SCEA]
+      Key fingerprint = 04EF 2F66 6D36 C354 058B  9DD4 50C7 8B6F 9FF2 EC85
+uid                            HulaHoop
+sub   rsa4096/EB27D2F8CEE41ACC 2018-11-26 [SEA]
+</pre>
+
+'''5.''' Import the key.
+
+{{CodeSelect|code=
+gpg --import hulahoop.asc
+}}
+
+The output should confirm the key was imported.
+
+<pre>
+gpg: key 0x50C78B6F9FF2EC85: public key "HulaHoop" imported
+gpg: Total number processed: 1
+gpg:               imported: 1
+</pre>
+
+''If the {{project_name}} signing key was already imported in the past'', the output should confirm the key is unchanged.
+
+<pre>
+gpg: key 0x50C78B6F9FF2EC85: "HulaHoop" not changed
+gpg: Total number processed: 1
+gpg:              unchanged: 1
+</pre>
+
+If the following message appears at the end of the output.
+
+<pre>
+gpg: no ultimately trusted keys found
+</pre>
+
+Analyze the other messages as usual. This extra message does not relate to the {{project_name}} signing key itself, but instead usually means the user has not created an OpenPGP key yet, which is of no importance when verifying virtual machine images.
+
+'''6.''' Advanced users can check [[#Web of Trust|Web of Trust]] further below for better security.
+
+'''7.'''  Complete the {{project_name}} verification steps. 
+
+If verifying {{project_name}} images, navigate to the relevant verification page below to finish the process:
+
+* [[KVM/Verify the_virtual_machine_images_using_the_command line|In Linux on the Command Line]]
+}}
+
+= Advanced Users =
+{{Anchor|Web of Trust}}
+== OpenPGP Web of Trust ==
+HulaHoop's OpenPGP key can be verified through [[OpenPGP#The_OpenPGP_Web_of_Trust|The OpenPGP Web of Trust]]. {{project name}} [[Patrick Schleizer]]'s (adrelanos') has OpenPGP signed {{project name}} KVM developer HulaHoop's OpenPGP key.
+
+First, acquire Patrick's signing key through instructions: [[Main/Whonix Signing Key|{{project name}} Main OpenPGP Signing Key]]
+
+TODO
+
+== Download the signify Key ==
+Not yet available.
+
+= Further Reading =
+* [https://en.wikipedia.org/wiki/GNU_Privacy_Guard GnuPG wikipedia] - free OpenPGP software.
+* [http://www.apache.org/dev/openpgp.html Apache: How To OpenPGP].
+* [http://www.debian.org/events/keysigning Debian: Keysigning] - a tutorial on signing keys of other people.
+* [http://www.rubin.ch/pgp/weboftrust.en.html rubin.ch: An explanation of the PGP web of trust].
+
+= See Also =
+* [[Verify_the_Whonix_images|Verify Whonix Images]]
+* [[Verifying Software Signatures]]
+* [[Trust|Placing Trust in {{project_name}}]]
+* [[OpenPGP|OpenPGP key distribution strategies]]
+
+= License =
+{{License_Amnesia|{{FULLPAGENAME}}}}
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
