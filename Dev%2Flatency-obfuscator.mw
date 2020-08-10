@@ -1,0 +1,41 @@
+= Latency-Obfuscator =
+
+== Summary ==
+This package is supposed to implement the mitigation discussed in https://phabricator.whonix.org/T530 using tc netem. Package WIP at https://github.com/HulaHoop0/latency-obfuscator
+
+Packet latency (as observed by an adversary outside Tor) drops significantly when the CPU is stressed as can be observed in ICMP and TCP traffic. This is caused by c-state transitions. Non-solutions: Running a stress process with a high nice-level or disabling c-state because both solutions would heavily impact battery life and CPU temperature. 
+
+The chosen solution is to add a random delay per packet to mask the this effect for best results.
+
+
+== Implementation Details ==
+
+* Use of /etc/NetworkManager/dispatcher.d hooks to run the tc command whenever any NIC goes up: https://askubuntu.com/questions/1111652/network-manager-script-when-interface-up
+
+* No need to react to "down" events because tc remains running in cases where the NIC goes down then up again. It declares "Error: Exclusivity flag on, cannot modify." in that situation when the command is re-run again.
+
+
+== Relevant Commands and Testing ==
+
+* Setup a VPN connection in Whonix WS then run ping <foo>.com
+
+* Simulate CPU load  with:
+{{CodeSelect|code=
+stress -c 4
+}}
+You will notice latency markedly dropping and staying there.
+
+* Run this command for mitigation. It will mask the latency patterns induced by the <code>stress</code> command:
+{{CodeSelect|code=
+tc qdisc add dev eth0 root netem slot 75ms 200ms packets 1
+}}
+
+* To test with TCP ping: 
+{{CodeSelect|code=
+sudo hping3 -A -n -p 80 www.google.com
+}}
+
+*To detach tc from the interface
+{{CodeSelect|code=
+tc qdisc delete dev eth0 root
+}}
