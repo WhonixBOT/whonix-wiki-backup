@@ -92,20 +92,6 @@ https://forums.whonix.org/t/persistent-tor-entry-guard-relays-can-make-you-track
 
 {{project_name}} developer HulaHoop recently approached Tor researcher, Tariq Elahi, to discuss how exposure to malicious guards in multi-Workstation scenarios could be measured. It was discovered that 1 guard/client per internet-connected program (not identity!) is the safest possible configuration. In fact, the probability of a network adversary observing a user's activities is lower than the default scenario, whereby one Tor Entry Guard is relied upon for all applications.
 
-A newer development however might conflict with this. The blog post by [https://www.torproject.org/ The Tor Project], [https://blog.torproject.org/new-low-cost-traffic-analysis-attacks-mitigations New low cost traffic analysis attacks and mitigations] ([https://forums.whonix.org/t/new-low-cost-traffic-analysis-attacks-and-mitigations/8708 forum discussion]) discusses [[Fingerprint#Website_Traffic_Fingerprinting|website fingerprinting]]. Quote:
-
-<blockquote>
-In terms of mitigating the use of these vectors in attacks against Tor, here's our recommendations for various groups in our community:
-
-Users: Do multiple things at once with your Tor client
-</blockquote>
-
-As an educated guess, these approaches fit on a sliding scale, from most defensive to least:
-
-* A) Increase Protection from Malicious Entry Guards, <u>or</u>
-* B) Do multiple things at once with your Tor client for better protection against [[Fingerprint#Website_Traffic_Fingerprinting|website fingerprinting]].
-* C) Default Tor user setup - just Tor Browser traffic and nothing else.
-
 To apply this Increase Protection from Malicious Entry Guards configuration, follow these steps:
 
 # Import a {{gateway_product_name}} into the hypervisor that has never been started.
@@ -114,7 +100,7 @@ To apply this Increase Protection from Malicious Entry Guards configuration, fol
 # After Tor has connected, shutdown {{gateway_product_name}} and take another snapshot - the naming convention should match the intended activity, such as "Email".
 # This snapshot should be used with <u>all</u> {{workstation_product_name}} snapshots related to/called "Email", whether it is identity "John Doe", "Jane Doe" and so on. Note the Workstations should also be generated separately from a clean baseline.
 
-When a separate activity is required such as IRC, users should revert to the {{gateway_product_name}} snapshot (labelled "Original"), then repeat the same steps. That is, allow it to boot and connect to Tor, shut it down, then take a snapshot entitled "IRC".
+When a separate activity is required such as IRC, users should revert to the {{gateway_product_name}} snapshot (labelled "Original"), then repeat the same steps. That is, allow it to boot and connect to Tor, shut it down, then take a snapshot entitled "IRC". Note that if a webpage IRC chat client is used, then this should be done from "Browsing" snapshot.
 
 If you need to run multiple applications at the same time, then consider cloning the VMs.
 <ref>
@@ -152,6 +138,25 @@ They could share the same guard if it gets picked randomly. The likelihood of th
 Indeed, communication between the VMs is needed. Perhaps a mediation agent that could help facilitate the list matching process?
 
 I am quite interested in this now. Perhaps we should talk more about this over chat if that will help.
+
+Tariq
+</pre>
+</ref> This should not be confused with Website Fingerprinting and related defenses.
+<ref>
+<pre>
+The Tor blog post speaks about website fingerprinting, which is done without the cooperation of a malicious guard or compromising any other Tor infrastructure. Defending against a malicious guard is the attack you have considered. The two are independent and have different properties and usefulness as an adversarial tool.
+
+I describe each here to fix our descriptions of the two things.
+
+A malicious guard can compromise all circuits that go through it, _if_ the honest client also picks (or is somehow manipulated into picking) a malicious exit. Then all traffic on this circuit is compromised with certainty. The rate of success for the adversary is proportional to how much bandwidth she can afford and deploy.
+
+A website fingerprinting adversary can observe and try to identify all Tor traffic flowing out of the client's machine on the way to the guard. The rate of success for the adversary is proportional to how good the website classifier she has.
+
+The first attack is straight forward. Deploy nodes and enjoy the compromises. The second attack is not so clear. For the former, the compromised guard node can separate out the different flows since it can inspect Tor application level information. For the latter, the problem is that the adversary only has network level information and must do the work of first separating out the flows into individual website accesses. Otherwise WF does not work. The advice that the Tor blog post is giving is to make this separation job harder for the adversary and hence render the WF less effective (i.e. very low accuracy).
+
+In the case that the app is a web browser then the Tor blog post makes sense, but you could take their advice and _also_ do the 1 app per 1 guard proposal, and get the best of both worlds.
+
+There is another consideration, WF works because there is a stable fingerprint to learn (in this case the website that does not change too much _and_ the adversary can generate training data by accessing this website). Is this the case of the apps (other than web browser) you have in mind? Will there be a stable traffic pattern for the adversary to learn? Do you want to hide the fact that the app is being used versus the party that is being communicating with? I think that the blog post is talking about a very narrow problem. Furthermore, there is not yet side consensus on 1) how well WF is actually working in the real world (versus very well known effectiveness or malicious guards) and 2) what the best and practical defences are (where randomly doing lots of stuff at once sounds mostly impractical if not automated and expensive in bandwidth).
 
 Tariq
 </pre>
