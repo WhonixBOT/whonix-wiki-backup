@@ -31,8 +31,8 @@ This page aims to track and document advanced attacks <ref>https://phabricator.w
 |}
 
 = Attack Methodology =
-
-'''Table:''' ''Advanced Deanonymization Methods''
+== Advanced Remote Deanonymization Methods ==
+'''Table:''' ''Advanced Remote Deanonymization Methods''
 
 {| class="wikitable" style="text-align: center; background-color: #fff"
 |- style="background-color: #f9f9f9"
@@ -40,32 +40,18 @@ This page aims to track and document advanced attacks <ref>https://phabricator.w
 | style="height: 35px;width: 170px"|
 | '''CPU-induced Network Latency''' <ref>https://phabricator.whonix.org/T530</ref>
 | '''TCP ISNs and Temperature-induced Clock Skews''' <ref>https://phabricator.whonix.org/T543</ref>
-| '''DRAMA Cross-CPU Attacks''' <ref>https://phabricator.whonix.org/T541</ref>
-| '''Cross-VM CPU Cache Attacks''' <ref>https://phabricator.whonix.org/T539</ref> <ref>[https://cmaurice.fr/pdf/ndss17_maurice.pdf Hello from the Other Side: SSH over Robust Cache Covert Channels in the Cloud]: a newer covert channel attack that requires the same condition of a shared CPU cache.</ref>
 | '''Keyboard/Mouse Input Fingerprinting''' <ref>https://phabricator.whonix.org/T542</ref>
 |-
 
 | style="height: 27px;background-color: #f9f9f9"| '''Attack Class'''
 | Covert Channel (network)
 | Covert Channel (network)
-| Covert (local) and Side Channel
-| Covert (local) and Side Channel 
 | Behavioral Tracking
-|-
-
-| style="height: 27px;background-color: #f9f9f9"| '''Local Compromise Required'''
-| No
-| No
-| Yes
-| Yes
-| No
 |-
 
 | style="height: 27px;background-color: #f9f9f9"| '''Attack Summary'''
 | CPU load induces a noticeable latency in ICMP network packets. <ref>https://lists.torproject.org/pipermail/tor-talk/2016-July/041807.html</ref>
 | CPU load skews the clock crystal frequency; these changes are detectable in the TCP ISN field.
-| Timing of access to the shared memory bank permits data leaks, as well as snooping on keystrokes.
-| Measurement of the shared CPU cache access latency; this leaks timing data concerning cryptographic processes.
 | Timing of/between keystrokes and mouse movement speed/angles creates a unique individual pattern.
 |-
 
@@ -74,37 +60,73 @@ This page aims to track and document advanced attacks <ref>https://phabricator.w
 https://phabricator.whonix.org/T530#20163 / [[Dev/latency-obfuscator]]
 </ref>
 | Rewrite TCP ISNs to conceal timer skews.
-| Block clflush and tsc instructions, as well as removing all timers. Further, avoid the multi-threading of VMs, or alternatively use non-interleaved NUMA with pinned vCPUs.
-| Pin vCPUs to separate pCPUs, block tsc instructions, and remove all timers.
 | Abstract keyboard/mouse input into a network layer and the injection of random delays. <ref>Removing fine-grained timers also helps in this situation.</ref>
 |-
 
 | style="height: 27px;background-color: #f9f9f9"| '''{{project_name}} [[KVM]] Mitigation''' 
 | style="background-color: {{Blue}}"| not needed <ref name=T530 />
 | style="background-color: {{Green}}"| Production <ref name=tirdad>https://forums.whonix.org/t/tcp-isn-cpu-information-leak-protection-tirdad/8552</ref>
-| {{No}} <ref>Measure reverted to enable spectre/meltdown guest mitigations</ref>
-| style="background-color: {{Green}}"| Production
 | style="background-color: {{Green}}"| Production <ref name=kloak>[[kloak]]</ref>
 |-
 
 | style="height: 27px;background-color: #f9f9f9"| '''{{project_name}} [[VirtualBox]] Mitigation''' 
 | style="background-color: {{Blue}}"| not needed <ref name=T530 />
 | style="background-color: {{Green}}"| Production <ref name=tirdad/>
-| {{No}}
-| {{No}}
 | style="background-color: {{Green}}"| Production <ref name=kloak />
 |-
 
 | style="height: 27px;background-color: #f9f9f9"| '''[[{{q project name short}}|{{q project name}}]] Mitigation''' 
 | style="background-color: {{Blue}}"| not needed <ref name=T530 />
 | {{No}} <ref name=qubes>[https://forums.whonix.org/t/qubes-whonix-security-disadvantages-help-wanted/8581 Qubes-Whonix Security Disadvantages - Help Wanted!]</ref>
-| {{No}}
-| {{No}}
 | {{No}} <ref name=qubes />
 |-
 
 |}
 
+== Advanced Local Deanonymization Methods ==
+'''Table:''' ''Advanced Local Deanonymization Methods''
+
+{| class="wikitable" style="text-align: center; background-color: #fff"
+|- style="background-color: #f9f9f9"
+
+| style="height: 35px;width: 170px"|
+| '''DRAMA Cross-CPU Attacks''' <ref>https://phabricator.whonix.org/T541</ref>
+| '''Cross-VM CPU Cache Attacks''' <ref>https://phabricator.whonix.org/T539</ref> <ref>[https://cmaurice.fr/pdf/ndss17_maurice.pdf Hello from the Other Side: SSH over Robust Cache Covert Channels in the Cloud]: a newer covert channel attack that requires the same condition of a shared CPU cache.</ref>
+|-
+
+| style="height: 27px;background-color: #f9f9f9"| '''Attack Class'''
+| Covert (local) and Side Channel
+| Covert (local) and Side Channel 
+|-
+
+| style="height: 27px;background-color: #f9f9f9"| '''Attack Summary'''
+| Timing of access to the shared memory bank permits data leaks, as well as snooping on keystrokes.
+| Measurement of the shared CPU cache access latency; this leaks timing data concerning cryptographic processes.
+|-
+
+| style="height: 27px;background-color: #f9f9f9"| '''Mitigation'''
+| Block clflush and tsc instructions, as well as removing all timers. Further, avoid the multi-threading of VMs, or alternatively use non-interleaved NUMA with pinned vCPUs.
+| Pin vCPUs to separate pCPUs, block tsc instructions, and remove all timers.
+|-
+
+| style="height: 27px;background-color: #f9f9f9"| '''{{project_name}} [[KVM]] Mitigation''' 
+| {{No}} <ref>Measure reverted to enable spectre/meltdown guest mitigations</ref>
+| style="background-color: {{Green}}"| Production
+|-
+
+| style="height: 27px;background-color: #f9f9f9"| '''{{project_name}} [[VirtualBox]] Mitigation''' 
+| {{No}}
+| {{No}}
+|-
+
+| style="height: 27px;background-color: #f9f9f9"| '''[[{{q project name short}}|{{q project name}}]] Mitigation''' 
+| {{No}}
+| {{No}}
+|-
+
+|}
+
+== Other Advanced Deanonymization Attacks ==
 There are numerous other advanced attacks which have not been included in the above table. The reason is they have easy fixes, such as avoiding some [[KVM#Unsafe_Features|unsafe hypervisor features]].
 
 = Other Deanonymization Vectors =
