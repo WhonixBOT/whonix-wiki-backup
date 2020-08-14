@@ -5,12 +5,11 @@
 |image=https://www.whonix.org/w/images/7/75/Approved-29149640.png
 }}
 
-= Verify Whonix Images in Windows using Gpg4win =
+= Introduction =
 {{always verify signatures reminder}}
 
-[https://gnupg.org/ GnuPG] is a complete and free implementation of [[OpenPGP]] that allows users to encrypt and sign data and communications. [http://www.gpg4win.org/ Gpg4win] is a graphical front end for GnuPG that is used for file and email encryption in Windows. The verification process for the Whonix images begins with securely downloading and verifying the <code>gpg4win</code> package. Once completed users can use GPG from the command-line to verify the {{project_name}} images.
+[https://gnupg.org/ GnuPG] is a complete and free implementation of [[OpenPGP]] that allows users to encrypt and sign data and communications. [http://www.gpg4win.org/ Gpg4win] is a graphical front end for GnuPG that is used for file and email encryption in Windows. The verification process for the Whonix images begins with securely downloading and verifying the <code>gpg4win</code> package. Once completed GPG can be used from the command-line to verify the {{project_name}} images.
 
-== Overview ==
 The following guide provides steps to: 
 # Import the Intevation CA certificate.
 # Install SignTool.
@@ -18,16 +17,22 @@ The following guide provides steps to:
 # Download the Whonix signing key.
 # Verify the Whonix images.
 
+= Verify Whonix Images in Windows using Gpg4win =
+
 {{Download_and_Verify_GPG4win_in_Windows}}
 
 == Download the {{project_name}} Signing Key ==
-{{Box|text=
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = This entry is strongly related to the [[Trust|Placing Trust in {{project_name}}]] page.
+}}
+
 Since all {{project_name}} releases are signed with the same key, it is unnecessary to verify the key every time a new release is announced. Trust in the key might gradually increase over time, but cryptographic signatures must still be verified every time a new release is downloaded. 
-<br></br>
-This page is strongly related to the [[Trust|Placing Trust in {{project_name}}]] page.
 
-Note: With the exception of step 1 all commands should be run from C:\Users\<user_name\Downloads
-
+<u>Note</u>: With the exception of step 1 all commands should be run from <code>C:\Users\<user_name\Downloads</code>
+{{Box|text=
 '''1.''' If not already completed, have GnuPG initialize your user data folder.
 
 {{CodeSelect|code=
@@ -41,7 +46,7 @@ curl --tlsv1.2 --proto =https --max-time 180 --output ~/patrick.asc https://www.
 </ref><br />
 {{Code2|<u>'''{{#widget:Key_Patrick}}'''</u>}}
 
-'''3.''' Store the key as C:\Users\<user_name>\Downloads\patrick.asc
+'''3.''' Store the key as <code>C:\Users\<user_name>\Downloads\patrick.asc</code>
 
 '''4.''' Check fingerprints/owners without importing anything.
 
@@ -76,7 +81,7 @@ gpg: no ultimately trusted keys found
 </pre>
 <u>Output 86 signatures.</u>
 
-The above <i>"86 signatures not checked due to missing keys"</i> can be safely ignored since it does not relate to the signing key itself.
+The above message <i>"86 signatures not checked due to missing keys"</i> can be safely ignored since it does not relate to the signing key itself.
 
 <u>Output already imported.</u>
 
@@ -99,21 +104,22 @@ Analyze the other messages as usual. This extra message does not relate to the {
 
 == Verify the {{project_name}} Images ==
 {{Box|text=
-If <i>not</i> already completed download both Whonix.ova image and the corresponding OpenGPG signature which will be used to verify the image. Both the signature and .ova image should be downloaded into the same directory. 
+'''1.''' If <i>not</i> already completed, download both <code>Whonix.ova</code> images and the corresponding OpenGPG signature which will be used to verify the image. 
 
-* Download the {{project_name}} VM image and signature from [[VirtualBox/XFCE|VirtualBox/XFCE Table]].
- 
+Both the signature and .ova image should be downloaded into the same directory. 
+
+* Download the {{project_name}} VM image and signature from [[VirtualBox/XFCE|VirtualBox/XFCE Table]]; or
 * Download the {{project_name}} VM Image and Signature from [[VirtualBox/CLI|VirtualBox/CLI Table]].
 
-Then, start the cryptographic verification, it can take several minutes. 
+'''2.''' Start the cryptographic verification; this process can take several minutes. 
 
-In Windows command prompt, change to the directory with the Whonix.ova and corresponding signature file.
+At the Windows command prompt, change to the directory with the <code>Whonix.ova</code> and corresponding signature file.
 
 {{CodeSelect|code=
 cd C:\Users\<user_name>\<directory_name>
 }}
 
-Next, verify the Whonix.ova image.
+'''3.''' Verify the <code>Whonix.ova</code> image.
 
 {{CodeSelect|code=
 gpg --verify-options show-notations --verify Whonix*.ova.asc Whonix*.ova
@@ -144,21 +150,21 @@ gpg: Signature made Mon 19 Jan 2015 11:45:41 PM CET using RSA key ID 77BB3C48
 
 {{GnuPG_file_names}}
 
-To help you check, that the file name has not been tampered with, beginning from {{project_name}} version 9.6 and above, by convention, the {{Code2|file@name}} OpenPGP notation includes the file name.
+To help users confirm that the file name has not been tampered with, beginning with {{project_name}} version 9.6 and above the {{Code2|file@name}} OpenPGP notation includes the file name.
 
 {{do_not_continue_on_gpg_verification_errors}}
+
+'''4.''' When {{project_name}} verification is complete, continue with the [[VirtualBox/XFCE|VirtualBox]] installation.
 }}
 
-==== When {{project_name}} verification is completed, continue with [[VirtualBox/XFCE|VirtualBox]] installation ====
+= Troubleshooting =
 
-== Troubleshooting ==
-{{Box|text=
-==== SignTool is not recognized as an internal or external command, operable program or batch file ====
+== SignTool is not recognized as an internal or external command, operable program or batch file ==
 
 This error means the SignTool executable is not accessible through <code>cmd.exe</code>.A common cause for this error is SignTool was not installed in the users [https://john-dugan.com/path-variable-in-windows/?PageSpeed=noscript PATH]. To fix this issue add <code>signtool.exe</code> to your system PATH.<ref> [https://www.godaddy.com/help/windows-cmd-signtool-is-not-recognized-as-an-internal-or-external-command-operable-program-or-batch-file-19987 https://www.godaddy.com/help/windows-cmd-signtool-is-not-recognized-as-an-internal-or-external-command-operable-program-or-batch-file-19987]</ref> 
 
 Note: This solution is temporary and works only until you close the command prompt. When the command prompt is restarted <code>signtool.exe</code> must be added to the system PATH again.
-
+{{Box|text=
 '''1.''' Open a command prompt.
 
 In the Windows Start menu, run.
@@ -176,7 +182,7 @@ x86 systems:  C:\Program Files (x86)\Windows Kits\<windows_version>\bin\x86
 x64 systems:  C:\Program Files (x86)\Windows Kits\<windows_version>\bin\x64
 </pre>
 
-Run following command to add "path\to\signtool.exe" to your system PATH. Also be sure to add the Windows version to the path. 
+Run the following command to add "path\to\signtool.exe" to your system PATH. Also be sure to add the Windows version to the path. 
  
 {{CodeSelect|code=  
 set PATH="path to signtool.ext";%PATH%
@@ -191,8 +197,9 @@ set PATH="C:\Program Files (x86)\Windows Kits\<windows_version>\bin\x64";%PATH%
 '''Figure:''' ''SignTool not recognized''
 
 [[image:signtool_command_not_recognized.png]]
+}}
 
-==== 'SignTool' A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider ====
+== 'SignTool' A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider ==
 
 This error message will be received if the <code>/pa</code> switch is not used with SignTool. This is because the default SignTool verify <code>some_file.exe</code> command uses the Windows Driver Verification Policy. <ref> See stackoverflow for more on this. [https://stackoverflow.com/questions/11230091/whys-my-root-certificate-not-trusted]</ref> In order for the file to verify properly the <code>/pa</code> switch must be used so SignTool uses the Default Authentication Verification Policy.
 
@@ -200,11 +207,10 @@ This error message will be received if the <code>/pa</code> switch is not used w
 
 [[image:signtool_error_root_certificate_not_trusted.png]] 
 
-==== Encountering GPG Errors ====
+== Encountering GPG Errors ==
 When a GPG error is encountered, first try a web search for the relevant error. The [https://security.stackexchange.com security stackexchange website] can also help to resolve GPG problems. Describe the problem thoroughly, but be sure it is GPG-related and not specific to {{project_name}}. 
 
 More help resources are available on the [[Support]] page.
-}}
 
 = Footnotes =
 {{reflist|close=1}}
