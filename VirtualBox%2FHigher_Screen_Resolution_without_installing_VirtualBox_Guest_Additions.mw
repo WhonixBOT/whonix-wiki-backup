@@ -1,26 +1,43 @@
 {{Title|title=Higher Screen Resolution without VirtualBox Guest Additions}}
 {{Header}}
 {{#seo:
-|description=Higher Screen Resolution without installing VirtualBox guest additions
+|description=Higher Screen Resolution without Installing VirtualBox Guest Additions
 |image=https://www.whonix.org/w/images/5/55/Anaglyph-102548640.jpg
 }}
 [[image:Anaglyph-102548640.jpg|thumb]]
-= Higher Screen Resolution without installing VirtualBox guest additions =
-'''This is still experimental.''' As in tested by few people. You should always be able to undo these changes. Doesn't hurt to always have a recent backup, just in case. This is an alternative to using [[VirtualBox/Guest Additions|VirtualBox Guest Additions]] for higher screen resolution. See also [[#Security Considerations]].
 
-To get higher screen resolution without installing VirtualBox guest additions, create a file called, say {{Code2|/etc/X11/xorg.conf.d/00-virtualbox-monitor.conf}}.
+= Introduction =
 
-If there's no such directory, you need to create it first:
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = This procedure is experimental and has not been widely tested.
+}}
+
+This procedure is an alternative to using [[VirtualBox/Guest Additions|VirtualBox Guest Additions]] for a higher screen resolution. See also: [[#Security Considerations|Security Considerations]].
+
+Before attempting this procedure it is recommended to have a recent backup in case problems are encountered. However, it should be possible to undo these changes.
+
+= Higher Screen Resolution without VirtualBox Guest Additions =
+
+To achieve a higher screen resolution without installing VirtualBox guest additions, complete the following steps. 
+
+{{Box|text=
+'''1.''' Create a relevant configuration file. 
+
+For example, create a file called <code>/etc/X11/xorg.conf.d/00-virtualbox-monitor.conf</code>.
+
+Create the directory if it does not already exist.
 
 {{CodeSelect|code=
 sudo mkdir -p /etc/X11/xorg.conf.d
 }}
 
-{{Open with root rights|filename=
+'''2.''' {{Open with root rights|filename=
 /etc/X11/xorg.conf.d/00-virtualbox-monitor.conf
 }}
 
-With the following contents:
+'''3.''' Add the following contents. 
 
 {{CodeSelect|code=
 Section "Device"
@@ -47,37 +64,58 @@ Section "Screen"
 EndSection
 }}
 
-And {{Code2|restart lightdm}}<ref name=restart-lightdm /> or reboot.
+'''4.''' Run {{Code2|restart lightdm}} <ref name=restart-lightdm /> or reboot.
 
-This will make {{project_name}} come up in 1600x1200 mode by default.
+{{project_name}} will now be set to <code>1600x1200</code> mode by default.
 
-You can change the default mode by changing the "{{Code2|PreferredMode}}" option in the "{{Code2|Monitor}}" section. You can dynamically switch modes from the command line with "{{Code2|xrandr --output default --mode [whatever]}}", and you can see a list of available modes with plain "{{Code2|xrandr}}".
+'''5.''' ''Optional:'' Change the default resolution mode.
 
-You can also change screen resolution using the KDE graphical user interface, go to Start Menu &rarr; System Settings &rarr; Display and Monitor. If you want some screen resolution that is not listed there (e.g. 1440x900), you can can try the next on your host:
+If a default resolution mode other than <code>1600x1200</code> is preferred, then change the "{{Code2|PreferredMode}}" option in the "{{Code2|Monitor}}" section. 
+
+It is possible to dynamically switch modes from the command line with "{{Code2|xrandr --output default --mode [resolution value]}}". To view a list of available modes, run "{{Code2|xrandr}}".
+
+'''6.''' ''Optional:'' Change the screen resolution using the KDE graphical user interface.
+
+* <code>Start Menu</code> &rarr; <code>System Settings</code> &rarr; <code>Display and Monitor</code>. 
+
+If the preferred screen resolution is not listed (e.g. <code>1440x900</code>), try running this command on the host.
 
 {{CodeSelect|code=
 vboxmanage setextradata "VM Name" "CustomVideoMode1" "1440x900x32"
 }}
 
-If you do not see your Start Menu button anymore (because it is outside the screen), you can start Konsole and manually start System Settings by running {{Code2|systemsettings}}.
+If the Start Menu button is not visible (because it is outside the screen), then start Konsole and manually start System Settings by running {{Code2|systemsettings}}.
+}}
 
 ==Ubuntu==
 
-If Ubuntu 14.04 has a screen resolution of 640x480 you may be able to get 1024x768 by simply by running xdiagnose and changing any setting under Debug. Marking them all or unmarking "Enable automatic crash reporting", are reported to work. Reboot.
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = This procedure was recommended for an earlier version of Ubuntu (14.04). Functionality in later versions has not been confirmed (e.g. Ubuntu 20.04).
+}}
+
+If Ubuntu has a screen resolution of <code>640x480</code>, it may be possible to achieve <code>1024x768</code> by:
+# Running ''xdiagnose''.
+# Changing any setting under Debug -- marking them all or unmarking "Enable automatic crash reporting" were previously reported to work.
+# Reboot.
 
 = Security Considerations =
-* It [https://trac.torproject.org/projects/tor/ticket/7255 might] be better not to maximize the [[Tor Browser]] window.
-* To prevent accidentally maximizing a window, it is recommend to deactivate the following option: {{Code2|KDE &rarr; System Settings &rarr; Screen Edges &rarr; Uncheck: Maximize Windows by dragging them to the top of the screen.}}
-* It might also be better not to use the same screen resolution as on your host.
+
+Follow these steps to minimize anonymity threats:
+* To [[Tor_Browser#Why_do_I_have_White_Bars_around_my_Tor_Browser_Content.3F|prevent fingerprinting]] it is safest to not maximize the [[Tor Browser]] window. <ref>https://trac.torproject.org/projects/tor/ticket/7255</ref> <ref>https://trac.torproject.org/projects/tor/ticket/14429</ref>
+* To prevent accidentally maximizing a window, it is recommended to deactivate the following option: <code>KDE</code> &rarr; <code>System Settings</code> &rarr; <code>Screen Edges</code> &rarr; ''Uncheck:'' <code>Maximize Windows by dragging them to the top of the screen</code>.
+* It might also be safer to not use the same screen resolution as the host.
 
 = Troubleshooting =
-If this doesn't work for you for some reason or if you want to revert these changes, simply delete {{Code2|/etc/X11/xorg.conf.d/00-virtualbox-monitor.conf}}.
+
+If this procedure does not work or you want to revert the changes, delete <code>/etc/X11/xorg.conf.d/00-virtualbox-monitor.conf</code>.
 
 {{CodeSelect|code=
 sudo rm /etc/X11/xorg.conf.d/00-virtualbox-monitor.conf
 }}
 
-And {{Code2|restart lightdm}}<ref name=restart-lightdm>
+Next, run {{Code2|restart lightdm}} <ref name=restart-lightdm>
 {{CodeSelect|code=
 sudo service lightdm stop
 }}
@@ -87,22 +125,25 @@ sudo service lightdm start
 }}
 </ref> or reboot.
 
-= Technical Stuff =
+= Technical Information =
+
 == EDID ==
-By anonymous user.
+
+An anonymous user stated:
 <blockquote>
 The reason you can't just get higher resolutions using {{Code2|xrandr}} "{{Code2|--newmode}}" and "{{Code2|--addmode}}" without an xorg.conf file appears to be that VirtualBox is not providing EDID information to the default VESA driver. The driver therefore makes the conservative assumption that it can't drive the "monitor" with the high clock rates needed for larger display sizes. The above config file tells the driver that it can use an effectively infinite range of clock rates.
 </blockquote>
 
-See [[Protocol-Leak-Protection_and_Fingerprinting-Protection#VirtualBox|VirtualBox get-edid output]].
+Also see: [[Protocol-Leak-Protection_and_Fingerprinting-Protection#VirtualBox|VirtualBox get-edid output]].
 
 == How to use xserver-xorg-video-modesetting? ==
-* No reply from maintainers of the [https://packages.debian.org/source/jessie/xserver-xorg-video-modesetting xserver-xorg-video-modesetting] package.
-* No reply from [https://lists.debian.org/debian-user/2013/05/msg00745.html debian-user mailing list].
-* Maybe helpful:
-** http://wiki.gentoo.org/wiki/Xorg/Configuration#Kernel_modesetting
-** https://wiki.debian.org/KernelModesetting
-** http://manpages.debian.org/modesetting
+
+Questions directed to the maintainers of the [https://packages.debian.org/source/jessie/xserver-xorg-video-modesetting xserver-xorg-video-modesetting] package and the [https://lists.debian.org/debian-user/2013/05/msg00745.html debian-user mailing list] went unanswered.
+
+Interested readers might find the following resources helpful:
+* [https://wiki.gentoo.org/wiki/Xorg/Configuration#Kernel_modesetting Gentoo wiki: Kernel modesetting]
+* [https://wiki.debian.org/KernelModesetting Debian wiki: Kernel ModeSetting]
+* [https://manpages.debian.org/modesetting Debian manpages: ModeSetting]
 
 = Footnotes =
 {{reflist|close=1}}
