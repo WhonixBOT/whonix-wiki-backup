@@ -432,7 +432,25 @@ As well as gathering the IP address and/or the HTTP referrer field of the comput
 
 Most modern browsers integrate an optional function to block cookies, but the option has to be first set by the user.  [[Tor Browser]], which comes bundled with {{project_name}}, has activated cookie blocking by default. Firefox has also adopted Tor Browser's [https://www.bleepingcomputer.com/news/software/another-tor-browser-feature-makes-it-into-firefox-first-party-isolation/ first party isolation] feature since version 55, meaning cookies are separated on a per-domain basis. Advertisement trackers are unable to see all the cookies stored on a user's computer (only the cookie for the currently viewed domain), meaning they cannot aggregate persistent cookie data for profiling. 
 
-In 2019, Firefox also implemented [https://blog.mozilla.org/blog/2019/06/04/firefox-now-available-with-enhanced-tracking-protection-by-default/ Enhanced Tracking Protection] by default as part of the 'Standard' setting in the browser. This blocks known third-party tracking cookies based on the Disconnect list. This functionality was extended in Firefox 79 ('Enhanced Tracking Protection v2.0') to prevent [https://developer.mozilla.org/en-US/docs/Mozilla/Firefox/Privacy/Redirect_Tracking_Protection#Redirect_tracking_defined redirect tracking], a technique which involves trackers being loaded as a first party and therefore being allowed to store cookies. In the future, it is expected that more functions will become available to administrate preferences and acquired cookie collections.
+In 2019, Firefox also implemented [https://blog.mozilla.org/blog/2019/06/04/firefox-now-available-with-enhanced-tracking-protection-by-default/ Enhanced Tracking Protection] by default as part of the 'Standard' setting in the browser. This blocks known third-party tracking cookies based on the Disconnect list. This functionality was extended in Firefox 79 ('Enhanced Tracking Protection v2.0') to mitigate [[#Redirect_Tracking|Redirect Tracking]] (see below), a technique which involves trackers being loaded as a first party and therefore being allowed to store cookies. In the future, it is expected that more functions will become available to administrate preferences and acquired cookie collections.
+
+== Redirect Tracking ==
+
+Mozilla succinctly describes this novel threat: <ref name=redirect_tracking>https://blog.mozilla.org/security/2020/08/04/firefox-79-includes-protections-against-redirect-tracking/</ref>
+
+<blockquote>When we browse the web we constantly navigate between websites; we might search for “best running shoes” on a search engine, click a result to read reviews, and finally click a link to buy a pair of shoes from an online store. In the past, each of these websites could embed resources from the same tracker, and the tracker could use its cookies to link all of these page visits to the same person. To protect your privacy ETP 1.0 blocks trackers from using cookies when they are embedded in a third party context, but still allows them to use cookies as a first party because blocking first party cookies causes websites to break. Redirect tracking takes advantage of this to circumvent third-party cookie blocking. <br /> <br />
+
+Redirect trackers work by forcing you to make an imperceptible and momentary stopover to their website as part of that journey. So instead of navigating directly from the review website to the retailer, you end up navigating to the redirect tracker first rather than to the retailer. This means that the tracker is loaded as a first party and therefore is allowed to store cookies. The redirect tracker associates tracking data with the identifiers they have stored in their first-party cookies and then forwards you to the retailer.</blockquote>
+
+To illustrate the threat, consider somebody browsing an online website advertising computer hardware who decides to click a link to purchase a laptop from a suitable retailer. The browser will quickly navigate to the relevant website and the hardware product page loads. Without realizing it, the customer may have been tracked via several steps:
+
+# The website advertising the computer hardware had the appropriate URL to redirect to the specific retailer.
+# An embedded redirect tracker intercepted the click and sent the customer to their website instead.
+# The tracker saves the intended destination  the retailer’s URL  that the customer thought they were directly visiting.
+# After the redirect tracker is loaded as a first party, it can access its cookies. This means information is stored about which website the customer came from and where they are headed, along with cookie identifiers (allowing tracking across the Internet).
+# The customer is automatically redirected to their original destination after the tracking data is saved.
+
+Fortunately Firefox 79+ partially addresses this behavior via its Enhanced Tracking Protection. Every 24 hours any cookies and site data stored by known trackers are cleared, preventing trackers from building a long-term profile of user activity. However, temporary tracking is available within that 24 hour window and a host of unknown trackers may still pose a profiling threat. <ref name=redirect_tracking />
 
 = DNS Name Resolution =
 
