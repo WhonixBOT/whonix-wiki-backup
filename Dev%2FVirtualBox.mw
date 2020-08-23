@@ -115,6 +115,8 @@ Time of writing <code>23 July 2020</code>.
 
 Goal: Upgrading the VirtualBox host software to its recent release <code>6.1.12</code> with functional VirtualBox guest additions.
 
+Other [[Download|supported platforms]] such as [[Qubes-Whonix]] or [[KVM|{{Project name}} KVM]] are unaffected.
+
 This is currently very difficult due to many issues of which none is caused by {{Project name}}. The purpose of this chapter is to document the upcoming implementation for those wondering why it has been implemented this way and perhaps hearing if there are any better alternatives. Here is a summary of these issues:
 
 [[#VirtualBox Unavailable in Debian stable and backports due to Debian Stable Security Maintenance Issues|VirtualBox is unavailable in Debian stable and backports due to Debian stable security maintenance Issues]].
@@ -161,9 +163,20 @@ To be able to continue providing [[VirtualBox|{{Project name}} for VirtualBox]],
 * This is
 ** to allow {{Project name}} developers test newer versions of VirtualBox host software before these are installed on user's computer and,
 ** to allow updating VirtualBox host software and VirtualBox guest additions at the same time, using compatible versions.
-* It is yet to be researched/developed how/if existing {{Project name}} VirtualBox builds can be upgraded and whether that would be an automated (by {{Project name}} a package) or manual (user has to do) process.
-* It is yet to be researched/developed how to make use of <code>/usr/share/virtualbox/VBoxGuestAdditions.iso</code>, i.e. mount, install, update, and automate this process using a script shipped by default in {{Project name}}.
-* Other [[Download|supported platforms]] such as [[Qubes-Whonix]] or [[KVM|{{Project name}} KVM]] are unaffected.
+* It is yet to be researched/developed how/if existing {{Project name}} VirtualBox builds can be upgraded and whether that would be an automated (by {{Project name}} a package) or manual (user has to do) process. When that happens, this will be mentioned in {{Project name}} news, [[Stay Tuned]].
+* Package [https://gitlab.com/whonix/vm-config-dist vm-config-dist] will run [https://gitlab.com/whonix/vm-config-dist/-/blob/master/usr/bin/vbox-guest-installer vbox-guest-installer] (by Whonix developers) during upgrade.
+
+# <code>vbox-guest-installer</code> (by Whonix developers) will check if any of the packages <code>virtualbox-guest-x11</code>, <code>virtualbox-guest-utils</code> or <code>virtualbox-guest-dkms</code> are still installed and recommend to uninstall those if still installed.
+# And also check if package <code>virtualbox-guest-additions-iso</code> is installed and recommend to install it if not yet installed.
+# If these two conditions are met it will continue.
+# Next is deletion of folder <code>/var/cache/vm-config-dist/vbox-guest-additions-extracted-iso</code> and <code>/var/cache/vm-config-dist/vbox-guest-additions-extracted-makeself</code> if these are already existing from a previous run.
+# It then follows extraction of <code>/usr/share/virtualbox/VBoxGuestAdditions.iso</code> to folder <code>/var/cache/vm-config-dist/vbox-guest-additions-extracted-iso</code>
+# Making <code>/var/cache/vm-config-dist/vbox-guest-additions-extracted-iso/VBoxLinuxAdditions.run</code> executable.
+# Change directory into <code>/var/cache/vm-config-dist/vbox-guest-additions-extracted-iso</code>.
+# Executing <code>./VBoxLinuxAdditions.run --check</code>.
+# Extracting <code>./VBoxLinuxAdditions.run</code> to folder <code>/var/cache/vm-config-dist/vbox-guest-additions-extracted-makeself</code>.
+# Change directory into folder <code>/var/cache/vm-config-dist/vbox-guest-additions-extracted-makeself</code>.
+# Executing <code>./install.sh force force</code>.
 
 Forum discussion: https://forums.whonix.org/t/challenges-upgrading-virtualbox-to-6-1-12-on-debian-buster-installation-from-upstream-virtualbox-org-apt-repository/9984
 
