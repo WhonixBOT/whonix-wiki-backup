@@ -132,19 +132,53 @@ grep -r -i getconf
 </pre>
 
 = Debugging Inspiration =
-Quickly install files from package to system.
-
+== Enable onion-grater Debug Mode ==
 <pre>
-sudo make install
+sudoedit /lib/systemd/system/onion-grater.service.d/30_cpfpy.conf
 </pre>
 
+Find the following line.
+
+<pre>
+ExecStart=/usr/lib/onion-grater --listen-interface eth1
+</pre>
+
+Comment out. I.e. make that.
+
+<pre>
+#ExecStart=/usr/lib/onion-grater --listen-interface eth1
+</pre>
+
+Or remove that line.
+
+Comment in:
+
+<pre>
+ExecStart=/usr/lib/onion-grater --listen-interface eth1 --debug
+</pre>
+
+Alternatively might be interesting:
+
+(Same as above but enable complain mode which permits everything (insecure in production).)
+
+<pre>
+ExecStart=/usr/lib/onion-grater --listen-interface eth1 --complain
+</pre>
+
+Or...
+
+<pre>
+ExecStart=/usr/lib/onion-grater --listen-interface eth1 --complain --debug
+</pre>
+
+== onion-grater ==
 Restart onion-grater after making changes to it.
 
 <pre>
 sudo service onion-grater restart
 </pre>
 
-Watch onion-grater's log on {{gateway_product_name}} while using it.
+Watch onion-grater's log on {{gateway_product_name}} while using it in a separate terminal tab.
 
 <pre>
 sudo journalctl -f -u onion-grater
@@ -156,20 +190,7 @@ Watch kern.log for eventual iptables log messages, run this on {{gateway_product
 tail -f /var/log/kern.log
 </pre>
 
-To see what's being send to onion-grater's port, run this on {{gateway_product_name}}.
-
-Non-Qubes:
-
-<pre>
-sudo tcpdump -i eth1 -l -s0 -w - tcp dst port 9051 | strings
-</pre>
-
-Qubes: (Note: replace <code>vif18.0</code>.)
-
-<pre>
-sudo tcpdump -i vif18.0 -l -s0 -w - tcp dst port 9051 | strings
-</pre>
-
+== connect to onion-grater from gateway ==
 To connect to onion-grater from a [[{{non q project name short}}|{{non q project name}}]]-Gateway.
 
 <pre>
@@ -181,6 +202,8 @@ To connect to onion-grater from a [[{{q project name short}}|{{q project name}}]
 <pre>
 nc $(qubesdb-read /qubes-netvm-gateway) 9051
 </pre>
+
+== connect to onion-grater from workstation ==
 
 On the {{workstation_product_name}} you should be able to run.
 
@@ -230,6 +253,23 @@ Command.
 
 <pre>
 QUIT
+</pre>
+
+== tcpdump - Less Important ==
+Only in case of suspected fundamental issues with low level networking.
+
+To see what's being send to onion-grater's port, run this on {{gateway_product_name}}.
+
+Non-Qubes:
+
+<pre>
+sudo tcpdump -i eth1 -l -s0 -w - tcp dst port 9051 | strings
+</pre>
+
+Qubes: (Note: replace <code>vif18.0</code>.)
+
+<pre>
+sudo tcpdump -i vif18.0 -l -s0 -w - tcp dst port 9051 | strings
 </pre>
 
 = onion-grater enable debug mode =
