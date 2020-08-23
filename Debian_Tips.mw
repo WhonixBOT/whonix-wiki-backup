@@ -27,65 +27,86 @@ Readers who are interested in running {{project name}} for Debian inside Virtual
 
 = Download and Verification =
 
-The recommended way to verify the Debian Signing key is to use the [[OpenPGP|web of trust]], which is more secure, but not available to everyone.
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = The following method should work for Debian and any Debian derivative.
+}}
 
-This chapter documents an alternative and supplementary way to verify the Debian Signing key using an existing installation such as Ubuntu, which is already trusted, for example because you bought it from a reseller or got it from a friend who verified it.
+The recommended way to verify the Debian Signing key is to use the [[OpenPGP|web of trust]]. This is more secure, but not available to everyone.
 
-We'll be using a 64-bit network installation (netinst) CD for the following examples but you can use other forms (CD, DVD) and architectures (x86-64) if desired.
+This chapter documents an alternative and supplementary way to verify the Debian Signing key. It utilizes an existing installation such as Ubuntu, which is already trusted; for example one bought from a reseller or provided by a friend who verified it.
 
-'''Should work for Debian and any Debian derivative.'''
+In the following example the 64-bit network installation (netinst) CD is used, but other forms (CD, DVD) and architectures (<code>x86-64</code>) can be substituted if necessary.
 
-(1) [https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/ Debian Stable ({{Stable_project_version_based_on_Debian_codename}}) amd64 folder]
+{{Box|text=
+'''1.''' Navigate to the [https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/ Debian Stable ({{Stable_project_version_based_on_Debian_codename}}) <code>amd64</code> folder].
 
-'''IMPORTANT:''' For compatibility with laptops download the [https://cdimage.debian.org/cdimage/unofficial/non-free/cd-including-firmware/current/amd64/iso-dvd/ install images] containing the non-free device firmware. This is usually necessary for WiFi, suspend and 3D graphics to work.
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = <u>Important</u>: For compatibility with laptops download the [https://cdimage.debian.org/cdimage/unofficial/non-free/cd-including-firmware/current/amd64/iso-dvd/ install images] containing the non-free device firmware. This is usually necessary for WiFi, suspend and 3D graphics functionality.
+}}
 
-(2) Download.
+'''2.''' Download necessary files.
+
+At the time of writing, Debian 10.5 was the latest available ISO image. Change the version to below to reflect any later release:
 
 * <code>SHA512SUMS</code>
-* <code>SHA512SUMS.sign </code>
-* <code>debian-10.2.0-amd64-netinst.iso</code>
+* <code>SHA512SUMS.sign</code>
+* <code>debian-10.5.0-amd64-netinst.iso</code>
 
-(3) Install the debian-keyring package, which contains the signing key. <ref>
-[https://www.debian.org/CD/verify Debian Verify]
-</ref> Downloading the debian-keyring package from the repository, let apt-get verify its integrity.
+'''3.''' Install the <code>debian-keyring</code> package, which contains the signing key. <ref>
+[https://www.debian.org/CD/verify Verifying authenticity of Debian CDs]
+</ref> 
+
+Downloading the <code>debian-keyring</code> package from the repository will allow <code>apt-get</code> to verify its integrity.
 
 {{CodeSelect|code=
 sudo apt-get install debian-keyring
 }}
 
-(4) Open a terminal and get into the folder where you downloaded SHA512SUMS and SHA512SUMS.sign (and TODO ).
+'''4.''' Open a terminal.
 
-(5) Verify the SHA512SUMS file.
+Navigate to the folder where the <code>SHA512SUMS</code>, <code>SHA512SUMS.sign</code> and <code>debian-10.5.0-amd64-netinst.iso</code> files were downloaded.
+
+'''5.''' Verify the <code>SHA512SUMS</code> file.
 
 {{CodeSelect|code=
 gpg --no-default-keyring --keyring /usr/share/keyrings/debian-role-keys.gpg --verify SHA512SUMS.sign
 }}
 
-(6) Must show.
+'''6.''' Confirm the signature is valid.
+
+The output must show.
 
 <pre>
 gpg: Good signature
 </pre>
 
-Otherwise something is wrong.
+Otherwise something went wrong.
 
-This might be followed by a warning saying:
+This output might be followed by a warning saying:
 
 <pre>
 gpg: WARNING: This key is not certified with a trusted signature!
 gpg:          There is no indication that the signature belongs to the owner.
 </pre>
 
-This doesn't alter the validity of the signature according to the key you downloaded. This warning rather has to do with the trust that you put in key.
+This warning does not alter the validity of the signature according to the key you downloaded. Instead, this warning relates to the trust that you place in the key.
 
-(7) Verify that the .iso matches the signed SHA512SUMS file:
+'''7.''' Verify that the .iso matches the signed SHA512SUMS file.
+
 {{CodeSelect|code=
-sha512sum -c SHA512SUMS {{!}} grep TODO
+sha512sum -c SHA512SUMS {{!}} grep debian-10.5.0-amd64-netinst.iso
 }}
-must show:
+
+The output must show.
+
  TODO: OK
 
-(8) Done.
+The procedure is complete.
+}}
 
 = Install =
 
