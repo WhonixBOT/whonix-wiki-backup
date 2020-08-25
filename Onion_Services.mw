@@ -235,135 +235,31 @@ Also, if you have multiple users, having one v3 address with authentication is m
 * less load on your guard(s) / bridge(s), thus more capacity and better experience for your clients / visitors (if you have multiple addresses you need to maintain active introduction point circuits for all of them, publish descriptors, etc.)
 </blockquote>
 
-These instructions are based on [https://tor.stackexchange.com/questions/19221/how-to-setup-client-authorization-for-v3-onion-services this reference]. <ref>
-But modified since instructions did not create files <code>1.auth_private</code>, <code>1.auth</code> for the user and only echoed these to the shell which most users would not know what to do with.
-</ref> These instruction can be quite difficult, but this unspecific to {{Project name}}; these instructions are quite difficult anywhere. [[About#Based_on_Debian|Whonix is based on Debian]] and the [[Free_Support_Principle|Free Support Principle]]. <ref>
-The only {{Project name}} specific thing below is <code>str_replace</code>, which is only available in {{Project name}}. This is a tool which makes string search and replace easier.
-</ref>
-
 On the {{gateway_product_name}}.
 
-Install <code>basez</code>.
-
-{{Install Package|package=
-basez
-}}
-
-Create a temporary private key.
-
 {{CodeSelect|code=
-openssl genpkey -algorithm x25519 -out private-key.pem
+sudo anon-auth-autogen
 }}
 
-Create a temporary public key.
+Read the output.
 
-{{CodeSelect|code=
-openssl pkey -in private-key.pem -pubout -outform PEM -out public-key.pem
-}}
-
-Create a temporary file.
-
-{{CodeSelect|code=
-cat private-key.pem {{!}} \
-    grep -v " PRIVATE KEY" {{!}} \
-    basez --base64pem --decode {{!}} \
-    tail --bytes 32 {{!}} \
-    basez --base32 {{!}} \
-    tr -d '=' > temp1
-}}
-
-Steps towards <code>1.auth_private</code>.
-
-Set the file path variable. Only modify the path below if you did not utilize the defaults specified earlier on in these instructions, namely <code>HiddenServiceDir /var/lib/tor/hidden_service/</code>. Otherwise, no change is required. If changes were made, you might want to change <code>hidden_service</code> to something else below.
-
-{{CodeSelect|code=
-file_name="/var/lib/tor/hidden_service/hostname"
-}}
-
-Set the onion hostname variable.
-
-{{CodeSelect|code=
-hostname="$(sudo cat "$file_name")"
-}}
-
-View the onion hostname.
-
-{{CodeSelect|code=
-echo "$hostname"
-}}
-
-Something similar to the following should appear.
+Example output. Will differ in your case.
 
 <pre>
-bvwxablxzabj4yudgzgooeg55sys2c3li7w5hhnongdm2p62l7hfnvid.onion
+INFO: Created torconffile '/usr/local/etc/torrc.d/43_hidden_service_hs_autogen.conf'.
+INFO: Reloading Tor.
+INFO: Giving Tor 5 seconds to create hidden service file.
+INFO: Installed ".auth" file (public key) '/var/lib/tor_autogen/hidden_service/1.auth' to '/var/lib/tor_autogen/hidden_service/1.auth' to allow client '1' to access hsname 'hidden_service' onion_url 'r3yzyxa2iptypjd2db7wl2ju62kyl5aq7mjmwl3wj4eim2y7kafztiid.onion'.
+INFO: Reloading Tor again to activate ".auth" (public key) file for client '1'.
+INFO: You need to provide client '1' with ".auth_private" file (private key) '/var/lib/tor_autogen/hidden_service/1.auth_private'.
+INFO: Visitors that use Whonix could store '/var/lib/tor_autogen/hidden_service/1.auth_private' in '/home/user/1.auth_private' and then run 'sudo sourcefile=/home/user/1.auth_private anon-server-to-client-install'.
 </pre>
 
-Create variable <code>onionname</code> without appendix <code>.onion</code>.
+In above example the onion hostname is <code>r3yzyxa2iptypjd2db7wl2ju62kyl5aq7mjmwl3wj4eim2y7kafztiid.onion</code> without any apostrophe ("<code>'</code>") at the beginning or end.
 
-{{CodeSelect|code=
-onionname="$(echo "$hostname" {{!}} str_replace .onion "")"
-}}
+Send the ".auth_private" file (private key) file <code>/var/lib/tor_autogen/hidden_service/1.auth_private</code> to the intended visitor of the authenticated onion v3 service. You will need to use sudo/root to be able to copy that file. Related: [[File Transfer]].
 
-View the onion name.
-
-{{CodeSelect|code=
-echo "$onionname"
-}}
-
-Something similar to the following should appear.
-
-<pre>
-bvwxablxzabj4yudgzgooeg55sys2c3li7w5hhnongdm2p62l7hfnvid
-</pre>
-
-Create final <code>1.auth_private</code>.
-
-{{CodeSelect|code=
-echo -n "$onionname:descriptor:x25519:" {{!}} \
-    cat - temp1 > 1.auth_private
-}}
-
-Steps towards <code>1.auth</code>.
-
-{{CodeSelect|code=
-cat public-key.pem {{!}} \
-    grep -v " PUBLIC KEY" {{!}} \
-    basez --base64pem --decode {{!}} \
-    tail --bytes 32 {{!}} \
-    basez --base32 {{!}} \
-    tr -d '=' > temp2
-}}
-
-Create the final <code>1.auth</code>.
-
-{{CodeSelect|code=
-echo -n "descriptor:x25519:" {{!}} cat - temp2 > 1.auth
-}}
-
-Now two files are in existence:
-
-* <code>1.auth</code> which belongs to onion server in folder <code>/var/lib/tor/hidden_service/authorized_clients/</code>.
-* <code>1.auth_private</code> which visitors need to be provided with.
-
-It is of course possible to use different file names.
-
-Create folder <code>/var/lib/tor/hidden_service/authorized_clients/</code>.
-
-{{CodeSelect|code=
-sudo mkdir -p /var/lib/tor/hidden_service/authorized_clients/
-}}
-
-Copy <code>1.auth</code> to folder <code>/var/lib/tor/hidden_service/authorized_clients/</code>.
-
-{{CodeSelect|code=
-sudo cp 1.auth /var/lib/tor/hidden_service/authorized_clients/
-}}
-
-Fix owner permissions.
-
-{{CodeSelect|code=
-sudo chown --recursive debian-tor:debian-tor /var/lib/tor/hidden_service
-}}
+The visitor should follow instructions for the client side as described further below in chapter [[#Onion Service Authentication Client Setup|Onion Service Authentication Client Setup]].
 }}
 
 ==== Step 4: Denial of Service Mitigation Options ====
