@@ -16,13 +16,13 @@ __TOC__
 == Introduction ==
 If you install custom applications and do not explicitly take precaution against {{Code2|identity correlation through Tor circuit sharing}}, you risk that different activities, let's say Web (Chromium or similar) or IRC (mIRC or similar) go through the same Tor circuit and exit relay. Even though you would still be anonymous, i.e. the Tor exit relay would still not know your real IP/location, they can easily correlate those activities issued by different applications to the same pseudonym.
 
-The following graphic illustrates the difference of using Tor <code>SocksPort</code>'s compared to using Tor's TransPort. Using dedicated Tor <code>SocksPort</code>'s per application results in taking different routes through the Tor network per application. Not necessarily all nodes (first, second, third) get replaced by Tor. Sometimes just the first, sometimes just the second, sometimes just the third, and sometimes multiple nodes change.
+The following graphic illustrates the difference of using Tor <code>SocksPort</code>'s compared to using Tor's <code>TransPort</code>. Using dedicated Tor <code>SocksPort</code>'s per application results in taking different routes through the Tor network per application. Not necessarily all nodes (first, second, third) get replaced by Tor. Sometimes just the first, sometimes just the second, sometimes just the third, and sometimes multiple nodes change.
 
 [[Image:stream_isolation.1.0.jpg|frame|none|alt=|Stream Isolation Graphic]]
 
-{{project_name}} implements protection against {{Code2|identity correlation through Tor circuit sharing}} for preinstalled applications, however, for better privacy, you are still advised to understand a bit of the technical background. Since Tor version 0.2.3, different Socks,- Dns-, or TransPorts go through different Tor circuits, therefore preventing {{Code2|identity correlation}}. {{project_name}} configures most applications that come preinstalled with {{project_name}} to use different <code>SocksPort</code>, thus no {{Code2|identity correlation}} is at risk. {{project_name}} uses either socks proxy settings to direct various applications to different <code>SocksPort</code>s or [https://github.com/{{project_name_short}}/uwt uwt] (more information below).
+{{project_name}} implements protection against {{Code2|identity correlation through Tor circuit sharing}} for preinstalled applications, however, for better privacy, you are still advised to understand a bit of the technical background. Since Tor version 0.2.3, different Socks,- Dns-, or <code>TransPort</code>s go through different Tor circuits, therefore preventing {{Code2|identity correlation}}. {{project_name}} configures most applications that come preinstalled with {{project_name}} to use different <code>SocksPort</code>, thus no {{Code2|identity correlation}} is at risk. {{project_name}} uses either socks proxy settings to direct various applications to different <code>SocksPort</code>s or [https://github.com/{{project_name_short}}/uwt uwt] (more information below).
 
-Any other traffic (i.e. custom installed applications, misc applications, such as {{Code2|nslookup}}, go through Tor's Dns-, and/or TransPort (can be optionally disabled, see below).
+Any other traffic (i.e. custom installed applications, misc applications, such as {{Code2|nslookup}}, go through Tor's Dns-, and/or <code>TransPort</code> (can be optionally disabled, see below).
 
 == List ==
 Applications in {{project_name}} that are either prepared or fully pre-configured to prevent {{Code2|identity correlation through Tor circuit sharing}}:
@@ -271,8 +271,8 @@ The required socks proxy settings are setup by various {{project_name}} configur
 
 * Example, each time you run a uwt wrapped application, i.e. simply type {{Code2|apt-get}} in console, the uwt wrapper {{Code|/usr/bin/apt-get}} will run. It adds uwt before apt-get. For curiosity check {{Code|nano /usr/bin/apt-get}}. Essentially, the uwt wrapper then runs {{Code|/usr/bin/uwt /usr/bin/apt-get.anondist-orig}}. That is also the case for all other uwt wrapped applications.
 * If you ever want or must run a uwt wrapped application without uwt, do not run for example {{Code|apt-get}} in console, do run {{Code|apt-get.anondist-orig}}. Use cases could be if you want to connect to localhost. If you know what you are doing, you should also be able to deactivate any uwt wrappers you dislike, see [[#Deactivate_uwt_Stream_Isolation_Wrapper]].
-* When running {{Code2|/usr/bin/apt-get.anondist-orig}} it directly goes through Tor's DnsPort and through Tor's TransPort and not through its own <code>SocksPort</code>.
-* uwt looks if the command contains the words {{Code2|localhost}} or {{Code2|127.0.0.1}}, if that is the case, uwt will not be used. The command will be run without uwt. Thus, if a localhost connection is falsely detected it will leak, but only through Tor's DnsPort and through Tor's TransPort, which should be acceptable.
+* When running {{Code2|/usr/bin/apt-get.anondist-orig}} it directly goes through Tor's <code>DnsPort</code> and through Tor's <code>TransPort</code> and not through its own <code>SocksPort</code>.
+* uwt looks if the command contains the words {{Code2|localhost}} or {{Code2|127.0.0.1}}, if that is the case, uwt will not be used. The command will be run without uwt. Thus, if a localhost connection is falsely detected it will leak, but only through Tor's <code>DnsPort</code> and through Tor's <code>TransPort</code>, which should be acceptable.
 
 Isolate by destination address: Let's assume SSH goes over port 22 and you want to connect to different SSH servers and do not want an observer to be able to correlate that activity to the same pseudonym. If the SSH servers run on different IP's isolate by destination address might help.
 
@@ -299,9 +299,9 @@ If you install custom software on {{workstation_product_name}}, that uses the in
 
 A [[#list]] of applications which come pre-installed with {{project_name}} are pre-configured to prevent {{Code2|identity correlation through circuit sharing}}.
 
-Traffic going through TransPort by default is [[whonixcheck]] when testing the TransPort. If that is of concern to you, it can be disabled in whonixcheck, see [[Advanced Security Guide#Prevent polluting TransPort]].
+Traffic going through <code>TransPort</code> by default is [[whonixcheck]] when testing the <code>TransPort</code>. If that is of concern to you, it can be disabled in whonixcheck, see [[Advanced Security Guide#Prevent polluting TransPort|prevent polluting <code>TransPort</code>]].
 
-All custom installed application's TCP traffic is routed through Tor's TransPort and all their DNS requests through Tor's DnsPort. This means different activities or "identities" in different applications (say browser, IRC, email) end up being routed through the same circuit, thus {{Code2|identity correlation}} is at risk. <ref>What about UDP? See [[Tor#UDP]].</ref>
+All custom installed application's TCP traffic is routed through Tor's <code>TransPort</code> and all their DNS requests through Tor's <code>DnsPort</code>. This means different activities or "identities" in different applications (say browser, IRC, email) end up being routed through the same circuit, thus {{Code2|identity correlation}} is at risk. <ref>What about UDP? See [[Tor#UDP]].</ref>
 
 To protect against this, you have to set up per-application SOCKS ports in {{gateway_product_name}}.
 
@@ -321,12 +321,12 @@ Additional comments regarding the Torify HOWTO:
 
 * Warnings about protocol related warnings you must honor. You are still better off with {{project_name}}, as it offers best possible [[Protocol-Leak-Protection and Fingerprinting-Protection]].
 * {{project name}} setup provides protection against IP leaks through [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Protocolleaks protocol leaks].
-* If you do not correctly torify either no connections will be possible or traffic will either continue going through Tor's TransPort (unless you disable that, as explained below).
+* If you do not correctly torify either no connections will be possible or traffic will either continue going through Tor's <code>TransPort</code> (unless you disable that, as explained below).
 * If you redirect more than one application to the same <code>SocksPort</code>, {{Code2|identity correlation}} is at risk.
-* DNS related [https://trac.torproject.org/projects/tor/wiki/doc/TorFAQ#IkeepseeingthesewarningsaboutSOCKSandDNSandinformationleaks.ShouldIworry warnings] still apply, though to a lesser extent - an attack could only make correlations but still couldn't figure out your IP. You can prevent that by commenting out (<code>#</code> in front) DnsPort in {{Code2|/usr/local/etc/torrc.d/50_user.conf}} on the {{gateway_product_name}} and by removing the DNS redirection firewall rule from {{W_Firewall}}.
+* DNS related [https://trac.torproject.org/projects/tor/wiki/doc/TorFAQ#IkeepseeingthesewarningsaboutSOCKSandDNSandinformationleaks.ShouldIworry warnings] still apply, though to a lesser extent - an attack could only make correlations but still couldn't figure out your IP. You can prevent that by commenting out (<code>#</code> in front) <code>DnsPort</code> in {{Code2|/usr/local/etc/torrc.d/50_user.conf}} on the {{gateway_product_name}} and by removing the DNS redirection firewall rule from {{W_Firewall}}.
 ** Do not use a [https://trac.torproject.org/projects/tor/wiki/doc/SupportPrograms#DNS local DNS resolver], as all DNS requests would be executed by the same circuit.
 * Other leaks, such as applications not honoring the proxy settings / wrapper, ICMP or UDP leaks do not apply to {{project_name}}.
-* The SafeSocks setting is for rejecting unsafe variants of socks that might cause DNS leaks. The {{project_name}} design model mitigates DNS leaks by redirecting all requests to Tor's DnsPort. Enabling this setting would give marginal benefit in this situation but would complicate debugging.
+* The SafeSocks setting is for rejecting unsafe variants of socks that might cause DNS leaks. The {{project_name}} design model mitigates DNS leaks by redirecting all requests to Tor's <code>DnsPort</code>. Enabling this setting would give marginal benefit in this situation but would complicate debugging.
 
 === Better Protection ===
 For best protection against {{Code2|identity correlation}}:
@@ -337,7 +337,7 @@ Deactivate KDE / GNOME - application wide proxy settings...
 
 * Because those proxy settings are not application specific, but rather force all KDE / GNOME applications through the same <code>SocksPort</code> (no KDE / GNOME applications which use the internet preinstalled by default), deactivating those KDE / GNOME - wide proxy settings gives better control about stream isolation.
 
-To deactivate TransPort and DnsPort...
+To deactivate <code>TransPort</code> and <code>DnsPort</code>...
 
 {{Firewall_Settings}}
 
