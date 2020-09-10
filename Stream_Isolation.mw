@@ -295,30 +295,19 @@ Connections to different Tor [[Onion Services]] are automatically stream isolate
 == How to mitigate identity correlation ==
 
 === Basic Protection ===
-If you install custom software on {{workstation_product_name}}, that uses the internet, and want to prevent {{Code2|identity correlation through Tor circuit sharing}} (which you should do), you have to manually configure them. This is not a {{project_name}} specific problem. <ref>If you used to use only one <code>SocksPort</code> with the [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO common torification methods], the [https://lists.torproject.org/pipermail/tor-talk/2012-March/023535.html same thing happened].</ref> Read also [[Install Software|Software installation on {{workstation_product_name}}]].
+If you install custom software on {{workstation_product_name}}, that uses the internet, and want to prevent {{Code2|identity correlation through Tor circuit sharing}} (which you should do), you have to manually configure them. This is not a {{project_name}} specific problem. <ref>
+If you used to use only one <code>SocksPort</code> with the [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO common torification methods], the [https://lists.torproject.org/pipermail/tor-talk/2012-March/023535.html same thing happened].
+</ref> Read also [[Install Software|Software installation on {{workstation_product_name}}]].
 
 A [[#list]] of applications which come pre-installed with {{project_name}} are pre-configured to prevent {{Code2|identity correlation through circuit sharing}}.
 
 Traffic going through <code>TransPort</code> by default is [[whonixcheck]] when testing the <code>TransPort</code>. If that is of concern to you, it can be disabled in whonixcheck, see [[whonixcheck_Hardening#Prevent_Polluting_TransPort|prevent polluting <code>TransPort</code>]].
 
-All custom installed application's TCP traffic is routed through Tor's <code>TransPort</code> and all their DNS requests through Tor's <code>DnsPort</code>. This means different activities or "identities" in different applications (say browser, IRC, email) end up being routed through the same circuit, thus {{Code2|identity correlation}} is at risk. <ref>What about UDP? See [[Tor#UDP]].</ref>
+All custom installed application's TCP traffic is routed through Tor's <code>TransPort</code> and all their DNS requests through Tor's <code>DnsPort</code>. This means different activities or "identities" in different applications (say browser, IRC, email) end up being routed through the same circuit, thus {{Code2|identity correlation}} is at risk. <ref>
+What about UDP? See [[Tor#UDP]].
+</ref>
 
-To protect against this, you have to set up configure applications to use dedicated Tor <code>SocksPort</code>.
-
-On {{gateway_product_name}} there are already a lot custom socks ports prepared for use with custom installed applications <ref>
-Tor configuration file </code>/etc/torrc.d/70_workstation.conf</code> <code>%include</code>s file <code>/usr/share/tor/tor-service-defaults-torrc.anondist</code>.
-</ref>:
-<code>10.152.152.10</code>
-
-* Without {{Code2|IsolateDestAddr}} and without {{Code2|IsolateDestPort}}: <code>SocksPort</code> <code>9153</code> to <code>9159</code>
-* With {{Code2|IsolateDestAddr}}, but without {{Code2|IsolateDestPort}}: <code>SocksPort</code> <code>9160</code> to <code>9169</code>
-* Without {{Code2|IsolateDestAddr}}, but with {{Code2|IsolateDestPort}}: <code>SocksPort</code>: <code>9170</code> to <code>9179</code>
-* With {{Code2|IsolateDestAddr}} and with {{Code2|IsolateDestPort}}: <code>SocksPort</code>: <code>9180</code> to <code>9189</code>
-* If those are not enough, you can add your own.
-
-What are {{Code2|IsolateDestAddr}} and {{Code2|IsolateDestPort}}? You can learn about them in the [https://www.torproject.org/docs/tor-manual.html.en Tor manual]. See also [https://lists.torproject.org/pipermail/tor-talk/2012-May/024403.html tor-talk mailing list: Tor's stream isolation features defaults]. Usually, unless you know better, you are better off not using {{Code2|IsolateDestAddr}} or {{Code2|IsolateDestPort}}.
-
-You can point your applications, where you want to prevent {{Code2|identity correlation though circuit sharing}}, to those <code>SocksPort</code>s. Each custom installed application has to be torified, for directions how to do that use the [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO Torify HOWTO].
+To protect against this, you have to set up configure applications to use a dedicated Tor <code>SocksPort</code>. Each custom installed application has to be directed to a dedicated Tor <code>SocksPort</code>, for directions how to do that use the [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO Torify HOWTO]. Generally, this can be done either by configuring the application's proxy settings or by using a socksifier such as <code>torsocks</code>. What is better, configure the application's proxy settings or using a socksifier? There can be no generalized answer as this is highly application specific.
 
 Additional comments regarding the Torify HOWTO:
 
@@ -330,6 +319,26 @@ Additional comments regarding the Torify HOWTO:
 ** Do not use a [https://trac.torproject.org/projects/tor/wiki/doc/SupportPrograms#DNS local DNS resolver], as all DNS requests would be executed by the same circuit.
 * Other leaks, such as applications not honoring the proxy settings / wrapper, ICMP or UDP leaks do not apply to {{project_name}}.
 * The SafeSocks setting is for rejecting unsafe variants of socks that might cause DNS leaks. The {{project_name}} design model mitigates DNS leaks by redirecting all requests to Tor's <code>DnsPort</code>. Enabling this setting would give marginal benefit in this situation but would complicate debugging.
+
+On {{gateway_product_name}} there are already a lot custom socks ports prepared for use with custom installed applications <ref>
+Tor configuration file </code>/etc/torrc.d/70_workstation.conf</code> <code>%include</code>s file <code>/usr/share/tor/tor-service-defaults-torrc.anondist</code>.
+</ref>:
+
+* Without {{Code2|IsolateDestAddr}} and without {{Code2|IsolateDestPort}}: <code>SocksPort</code> <code>9153</code> to <code>9159</code>
+* With {{Code2|IsolateDestAddr}}, but without {{Code2|IsolateDestPort}}: <code>SocksPort</code> <code>9160</code> to <code>9169</code>
+* Without {{Code2|IsolateDestAddr}}, but with {{Code2|IsolateDestPort}}: <code>SocksPort</code>: <code>9170</code> to <code>9179</code>
+* With {{Code2|IsolateDestAddr}} and with {{Code2|IsolateDestPort}}: <code>SocksPort</code>: <code>9180</code> to <code>9189</code>
+* If those are not enough, you can add your own.
+
+What are {{Code2|IsolateDestAddr}} and {{Code2|IsolateDestPort}}? You can learn about them in the [https://www.torproject.org/docs/tor-manual.html.en Tor manual]. See also [https://lists.torproject.org/pipermail/tor-talk/2012-May/024403.html tor-talk mailing list: Tor's stream isolation features defaults]. Usually, unless you know better, you are better off not using {{Code2|IsolateDestAddr}} or {{Code2|IsolateDestPort}}.
+
+{{Box|text=
+'''Generic instructions for configuring custom installed applications for stream isolation for less than 7 custom applications'''
+
+# [[Install Software|Install]] custom application.
+# Configure application to use a Tor <code>SocksPort</code> according to [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO Torify HOWTO] by either configuring the application's proxy settings or by using a socksifier such as <code>torsocks</code>.
+
+}}
 
 === Better Protection ===
 For best protection against {{Code2|identity correlation}}:
