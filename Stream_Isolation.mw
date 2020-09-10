@@ -331,7 +331,7 @@ Additional comments regarding the Torify HOWTO:
 * The SafeSocks setting is for rejecting unsafe variants of socks that might cause DNS leaks. The {{project_name}} design model mitigates DNS leaks by redirecting all requests to Tor's <code>DnsPort</code>. Enabling this setting would give marginal benefit in this situation but would complicate debugging.
 
 On {{gateway_product_name}} there are already a lot custom socks ports prepared for use with custom installed applications <ref>
-Tor configuration file </code>/etc/torrc.d/70_workstation.conf</code> <code>%include</code>s file <code>/usr/share/tor/tor-service-defaults-torrc.anondist</code>.
+Tor configuration file <code>/etc/torrc.d/70_workstation.conf</code> <code>%include</code>s file <code>/usr/share/tor/tor-service-defaults-torrc.anondist</code>.
 </ref>:
 
 * Without {{Code2|IsolateDestAddr}} and without {{Code2|IsolateDestPort}}: <code>SocksPort</code> <code>9153</code> to <code>9159</code>
@@ -374,7 +374,18 @@ Better generic instructions for this cannot be provided since this is applicatio
 torsocks application-name
 }}
 
-There is no need to specify any proxy IP address, port number, protocol.
+There is no need to specify any proxy IP address, port number, protocol. <ref>
+This is because <code>torsocks</code> configuration file [https://github.com/{{project_name_short}}/uwt/blob/master/etc/tor/torsocks.conf.anondist <code>/etc/tor/torsocks.conf.anondist</code>] is preconfigured with setting <code>IsolatePID 1</code>.
+
+<pre>
+# Set Torsocks to use an automatically generated SOCKS5 username/password based
+# on the process ID and current time, that makes the connections to Tor use a
+# different circuit from other existing streams in Tor on a per-process basis.
+# If set, the SOCKS5Username and SOCKS5Password options must not be set.
+# (Default: 0)
+IsolatePID 1
+</pre>
+</ref>
 }}
 
 === Better Protection ===
