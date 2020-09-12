@@ -1,33 +1,56 @@
-{{Title|title=Signify (by OpenBSD Developers) Cryptographically Sign and Verify Files}}
+{{Title|title=Signify: Cryptographically Sign and Verify Files}}
 {{Header}}
 {{#seo:
-|description=HowTo: use Signify on Debian (based) Distributions
+|description=HowTo: Use Signify on Debian (based) Distributions
 |image=https://www.whonix.org/w/images/6/65/Signify1323.jpg
 }}
+__FORCETOC__
+[[image:Signify1323.jpg|thumb]]
+= Introduction =
 
-<ref>
-Installing package <code>qrencode</code> is optional and only needed if you intent to create QR codes.
-</ref>
+Written in 2014 for OpenBSD, signify is a tool to cryptographically sign and verify files: <ref name=signify>https://isopenbsdsecu.re/mitigations/signify/</ref>
+<blockquote>It only supports a single algorithm, Ed25519, created by djb and his gang. It’s fast, immune to timing attacks by design, produce deterministic signatures, uses small keys and produce small signatures, … it does look like a sound choice.</blockquote>
+
+Signify's main benefits is that it has a small codebase and is not based on GnuPG. On the downside, there is no revocation mechanism <ref>Meaning if the key is stolen, people can only be informed the key should not be trusted anymore.</ref> and the trust path relies on getting the key directly from a trusted developer. <ref name=signify />
+
+Signify's usage is not just limited to OpenBSD and the tool has also been been packaged in Debian.  <ref>https://packages.debian.org/buster/signify-openbsd</ref> To learn more about signify, refer to [https://flak.tedunangst.com/post/signify this blog post] by the original author.
+
+= Installation and Usage =
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = In the steps below, installing package <code>qrencode</code> is optional and only needed if you intend to create QR codes.
+}}
+
+{{Box|text=
+'''1.''' Install signify.
 
 {{Install_Package
 |package=signify-openbsd qrencode
 }}
 
-Create key. Needs to be done only once. Unless desired to use multiple keys, in which case different key names should be used. In the following example, <code>keyname</code> is used as example key name.
+'''2.''' Create a key. 
+
+This only needs to be done once unless multiple keys are desired; in that case different key names should be used. In the following example, <code>keyname</code> is used as the sample key name.
 
 {{CodeSelect|code=
 signify-openbsd -G -p keyname.pub -s keyname.sec
 }}
 
-Alternatively add a key comment. Replace <code>comments here</code> with the actual comment but keep the <code>"</code>. Comment could be a name, position, website, e-mail address and/or anything else.
+'''3.''' ''Optional:'' Add a key comment. 
+
+Replace <code>comments here</code> with the actual comment but keep the <code>"</code>. The comment could be a name, position, website, e-mail address and/or anything else.
 
 {{CodeSelect|code=
 signify-openbsd -G -p keyname.pub -s keyname.sec -c "comments here"
 }}
 
-The private key file <code>keyname.sec</code> needs to stay private, i.e. never share <code>keyname.sec</code> with anyone as this would defeat the purpose of signing files!
+<u>Note</u>: 
+* The private key file <code>keyname.sec</code> needs to stay private -- never share <code>keyname.sec</code> with anyone as this would defeat the purpose of signing files!
+* The public key file <code>keyname.pub</code> can be shared with anyone.
 
-The public key file <code>keyname.pub</code> can be shared with anyone.
+'''4.''' Utilize signify.
 
 To sign a file <code>message.txt</code> (which has to be created by the user beforehand).
 
@@ -35,7 +58,7 @@ To sign a file <code>message.txt</code> (which has to be created by the user bef
 signify-openbsd -S -s keyname.sec -m message.txt
 }}
 
-Will create a signature file <code>message.txt.sig</code>.
+This will create a signature file <code>message.txt.sig</code>.
 
 To verify a file <code>message.txt</code> with signature file <code>message.txt.sig</code>.
 
@@ -43,7 +66,7 @@ To verify a file <code>message.txt</code> with signature file <code>message.txt.
 signify-openbsd -V -p keyname.pub -m message.txt
 }}
 
-Optional. To create a QR code for the public key.
+'''5.''' ''Optional:'' Create a QR code for the public key.
 
 {{CodeSelect|code=
 qrencode -r keyname.pub -o keyname.pub.png
@@ -51,12 +74,13 @@ qrencode -r keyname.pub -o keyname.pub.png
 
 File <code>keyname.pub.png</code> would be the QR code of the public key.
 
-[https://manpages.debian.org/signify-openbsd signify-openbsd Manual Page]
+Refer to the Debian [https://manpages.debian.org/signify-openbsd signify-openbsd Manual Page] for further options.
 
 <ref>
 * https://www.openbsd.org/papers/bsdcan-signify.html
 * https://forums.whonix.org/t/signify-openbsd/7842
 </ref>
+}}
 
 = Footnotes =
 {{reflist|close=1}}
