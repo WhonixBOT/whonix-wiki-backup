@@ -719,7 +719,37 @@ Customization is [[Tor Browser#DVM Template|discouraged]]! To start Tor Browser 
 See the warning above if intending to launch either <code>torbrowser</code> or <code>update-torbrowser</code> in the DVM Template.
 
 {{Box|text=
-'''1.''' Open a terminal emulator in {{workstation_product_name}} DVM Template <code>{{whonix-ws}}-dvm</code>.
+'''1.''' Start {{workstation_product_name}} TemplateVM /<code>{{whonix-ws}}</code>).
+
+'''2.''' Disable Tor Browser Downloader DispVM Service. <ref>
+* This is to prevent mounting <code>/var/cache/tb-binary/.tb</code> to <code>/home/user/.tb</code>.
+* <code>/lib/systemd/system/tb-updater-dispvm.service</code>
+* <code>/usr/lib/tb-updater/dispvm</code>
+
+The following will not work.
+
+{{CodeSelect|code=
+sudo mkdir -p /usr/local/lib/systemd/system/
+}}
+
+{{CodeSelect|code=
+sudo ln -s /dev/null /usr/local/lib/systemd/system/tb-updater-dispvm.service
+}}
+
+This is probably because Qubes mounts /usr/local too late to be regarded by systemd.
+</ref>
+
+{{CodeSelect|code=
+sudo systemctl mask tb-updater-dispvm.service
+}}
+
+'''3.''' Shutdown TemplateVM.
+
+{{CodeSelect|code=
+sudo poweroff
+}}
+
+'''4.''' Open a terminal emulator in {{workstation_product_name}} DVM Template <code>{{whonix-ws}}-dvm</code>.
 
 Run in dom0 terminal emulator.
 
@@ -727,7 +757,7 @@ Run in dom0 terminal emulator.
 qvm-run -a {{whonix-ws}}-dvm xfce4-terminal
 }}
 
-'''2.''' Open Tor Browser Starter / Tor Browser Downloader (by {{project name}} developers) configuration file.
+'''5.''' Open Tor Browser Starter / Tor Browser Downloader (by {{project name}} developers) configuration file.
 
 In {{workstation_product_name}} DVM Template <code>{{whonix-ws}}-dvm</code>:
 
@@ -741,7 +771,7 @@ sudo mkdir -p /usr/local/etc/torbrowser.d
 /usr/local/etc/torbrowser.d/50_user.conf
 }}
 
-'''3.''' Paste.
+'''6.''' Paste.
 
 <pre>
 tb_qubes_dvm_template() {
@@ -749,37 +779,23 @@ tb_qubes_dvm_template() {
 }
 </pre>
 
-'''4.''' Save.
+'''7.''' Save.
 
-'''5.''' Disable Tor Browser Downloader DispVM Service. <ref>
-* This is to prevent mounting <code>/var/cache/tb-binary/.tb</code> to <code>/home/user/.tb</code>.
-* <code>/lib/systemd/system/tb-updater-dispvm.service</code>
-* <code>/usr/lib/tb-updater/dispvm</code>
-</ref>
-
-{{CodeSelect|code=
-sudo mkdir -p /usr/local/lib/systemd/system/
-}}
-
-{{CodeSelect|code=
-sudo ln -s /dev/null /usr/local/lib/systemd/system/tb-updater-dispvm.service
-}}
-
-'''6.''' Done.
+'''8.''' Done.
 
 Running Tor Browser Starter / Tor Browser Downloader (by {{project name}} developers) in DVM Template is now possible. <ref>
 When running <code>torbrowser</code> (Tor Browser Starter by {{project name}} developers) in DVM Template it will first copy <code>/var/cache/tb-binary/.tb/tor-browser</code> to user home folder <code>/home/user/.tb/tor-browser</code>. (Folder <code>/var/cache/tb-binary/.tb/tor-browser</code> was previously created by Tor Browser Downloader (by {{project name}} developers).) Second, it will start the Tor Browser binary from folder <code>/home/user/.tb/tor-browser</code>.
 </ref>
 
-'''4.''' Shut down DVM Template.
+'''9.''' Shut down DVM Template.
 
 {{CodeSelect|code=
 sudo poweroff
 }}
 
-'''5.''' Start Disposable VM.
+'''10.''' Start Disposable VM.
 
-TODO: incomplete because of /var/cache/tb-binary/.tb being mounted to /home/user/.tb in DispVM. This needs to be disabled too.
+TODO: Untested.
 }}
 
 === Option 2: ''cd /var/cache/tb-binary/.tb/tor-browser/Browser'' Method ===
