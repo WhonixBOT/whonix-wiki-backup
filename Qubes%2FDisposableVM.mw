@@ -37,17 +37,17 @@ While DispVMs ensure that files do not persist without user intervention, the do
 {{Qubes persistence}}
 
 == The Layered DisposableVM System ==
-Qubes uses a two-layered approach to DispVMs. At the core of the system is a ''TemplateVM'' upon which a ''[https://www.qubes-os.org/doc/glossary/#disposablevm-template DVM Template]'' is based. Every time a new DispVM is launched it is based on the ''DVM Template'' - hence, two layers. In a standard [[{{q_project_name_short}}|{{q_project_name}}]] installation:
+Qubes uses a two-layered approach to DispVMs. At the core of the system is a ''TemplateVM'' upon which a ''[https://www.qubes-os.org/doc/glossary/#disposablevm-template DisposableVM Template]'' is based. Every time a new DispVM is launched it is based on the ''DisposableVM Template'' - hence, two layers. In a standard [[{{q_project_name_short}}|{{q_project_name}}]] installation:
 
 * The {{workstation_product_name}} default TemplateVM is <code>{{whonix-ws}}</code>. 
-* The {{workstation_product_name}} default DVM Template is called <code>{{whonix-ws-dvm}}</code>.
+* The {{workstation_product_name}} default DisposableVM Template is called <code>{{whonix-ws-dvm}}</code>.
 * Each {{workstation_product_name}} default DispVM (<code>disp1, disp2, ...</code>) is based on <code>{{whonix-ws-dvm}}</code>. 
 
-Once a DVM Template is created, its <i>/home/user/</i> directory can be customized <ref>https://www.qubes-os.org/doc/dispvm-customization/</ref> independently of the TemplateVM. In this special case, the DVM Template will continue to inherit changes from the base TemplateVM's root filesystem (like package updates), but user files in <i>/home/user/</i> will persist independently.
+Once a DisposableVM Template is created, its <i>/home/user/</i> directory can be customized <ref>https://www.qubes-os.org/doc/dispvm-customization/</ref> independently of the TemplateVM. In this special case, the DisposableVM Template will continue to inherit changes from the base TemplateVM's root filesystem (like package updates), but user files in <i>/home/user/</i> will persist independently.
 
-It is possible to have multiple DVM Templates and DispVMs at the same time. <i>Any</i> TemplateBasedVM can be enabled for use as a template for DispVMs, by setting its [https://www.qubes-os.org/doc/disposablevm-customization/ <code>template_for_dispvms</code>] property.
+It is possible to have multiple DisposableVM Templates and DispVMs at the same time. <i>Any</i> TemplateBasedVM can be enabled for use as a template for DispVMs, by setting its [https://www.qubes-os.org/doc/disposablevm-customization/ <code>template_for_dispvms</code>] property.
 
-In Qubes R4, [[{{q_project_name_short}}|{{q_project_name}}]] {{VersionShort}}'s default DVM Template (<code>{{whonix-ws-dvm}}</code>) can be easily created [[#Setup|using salt]] and will have this property set.
+In Qubes R4, [[{{q_project_name_short}}|{{q_project_name}}]] {{VersionShort}}'s default DisposableVM Template (<code>{{whonix-ws-dvm}}</code>) can be easily created [[#Setup|using salt]] and will have this property set.
 
 == DisposableVM Traffic Stream Isolation ==
 
@@ -76,7 +76,7 @@ DispVMs work especially well with {{gateway_product_name}}. <ref>Because each VM
 * See additional footnote. <ref>The solution to the first problem is only allowing [https://github.com/QubesOS/qubes-issues/issues/904 in-RAM execution of DisposableVMs], but this is not planned for implementation in the short-term. There is no perfect solution to the second problem. That said, there is an actual unstated security-privacy trade-off by running this configuration. Theoretically, an ephemeral {{gateway_product_name}} ProxyVM is only able to be infected for a single session (via the ''/home'', ''/usr/local'' and ''/rw'' directories), since it is discarded upon shutdown. This provides a counterbalance to the increased threat of malicious guards, as [https://tails.boum.org/blueprint/persistent_Tor_state/ {{project name}} becomes more "Tails-like"].</ref>
 |-
 ! scope="row"| Named DisposableVMs: Manual Shutdown
-| Unlike DispVMs spawned from the {{project name}} default DVM Template,<ref>See [[#User_Tips|DispVM Shutdown]] for more on this.</ref> named DispVMs do <u>not</u> automatically shutdown when the first user process is terminated. If a fresh Named DispVM is needed, users must first shutdown the named DispVM and start a new DispVM instance. <ref>This is because named DispVMs are created using a similar method to that which is used to create TemplateBasedAppVMs. This means that named DispVMs -- in <u>some</u> respects -- exhibit behavior similar to that of a TemplateBasedAppVM. For example, behavior such as persistent VM settings across restarts; this includes, but is not limited to settings like --netvm, --autostart and --label to name a few. Before starting a new named DispVM instance, first verify in Qube Manager that the VM is fully shutdown.</ref> Failure to do so could lead to session data from previous activities persisting until the DispVM is properly shutdown.
+| Unlike DispVMs spawned from the {{project name}} default DisposableVM Template,<ref>See [[#User_Tips|DispVM Shutdown]] for more on this.</ref> named DispVMs do <u>not</u> automatically shutdown when the first user process is terminated. If a fresh Named DispVM is needed, users must first shutdown the named DispVM and start a new DispVM instance. <ref>This is because named DispVMs are created using a similar method to that which is used to create TemplateBasedAppVMs. This means that named DispVMs -- in <u>some</u> respects -- exhibit behavior similar to that of a TemplateBasedAppVM. For example, behavior such as persistent VM settings across restarts; this includes, but is not limited to settings like --netvm, --autostart and --label to name a few. Before starting a new named DispVM instance, first verify in Qube Manager that the VM is fully shutdown.</ref> Failure to do so could lead to session data from previous activities persisting until the DispVM is properly shutdown.
 |-
 ! scope="row"| Spawning DisposableVMs
 | 
@@ -90,11 +90,11 @@ qvm-open-in-dvm
 * The reason is because DispVMs inherit their NetVMs from the calling VM, or the calling VM's <code>dispvm_netvm</code> setting (if different). The <code>dispvm_netvm</code> setting can be configured per VM via: <code>dom0</code> &rarr; <code>Qube Manager</code> &rarr; <code>VM Settings</code> &rarr; <code>Advanced</code> &rarr; <code>NetVM for DisposableVM</code> <ref>On the command line (dom0), run. {{CodeSelect|code=qvm-prefs -s vmname dispvm_netvm sys-whonix}} </ref> <br />
 * If the calling VM is connected to {{gateway_product_name}}, this step is not necessary and the DispVM's traffic will be routed over Tor. See: [https://github.com/QubesOS/qubes-issues/issues/1954 {{project name}} default NetVM settings fixes].
 |-
-! scope="row"| Tor Browser in a DVM Template
-| Do not start Tor Browser in a DVM Template! For reasons why, see: [[Tor_Browser/Advanced_Users#Running_Tor_Browser_in_Qubes_TemplateVM|Running Tor Browser in Qubes TemplateVM]]. Only start Tor Browser in TemplateBased AppVMs or DispVMs, see: [[#Start_Tor_Browser_in_a_DisposableVM|Start Tor Browser in a DisposableVM]].
+! scope="row"| Tor Browser in a DisposableVM Template
+| Do not start Tor Browser in a DisposableVM Template! For reasons why, see: [[Tor_Browser/Advanced_Users#Running_Tor_Browser_in_Qubes_TemplateVM|Running Tor Browser in Qubes TemplateVM]]. Only start Tor Browser in TemplateBased AppVMs or DispVMs, see: [[#Start_Tor_Browser_in_a_DisposableVM|Start Tor Browser in a DisposableVM]].
 |-
-! scope="row"| Tor Browser Updater in a DVM Template
-| Do not start Tor Browser Updater in a DVM Template! For reasons why, see: [[Tor_Browser/Advanced_Users#tb-updater_in_Qubes_DVM_Template|tb-updater in Qubes DVM Template]]. Instead, run [[#Keep Tor Browser Up-to-date|Tor Browser Downloader]] by {{project name}} developers in {{workstation_product_name}} TemplateVM (<code>{{whonix-ws}}</code>).
+! scope="row"| Tor Browser Updater in a DisposableVM Template
+| Do not start Tor Browser Updater in a DisposableVM Template! For reasons why, see: [[Tor_Browser/Advanced_Users#tb-updater_in_Qubes_DVM_Template|tb-updater in Qubes DisposableVM Template]]. Instead, run [[#Keep Tor Browser Up-to-date|Tor Browser Downloader]] by {{project name}} developers in {{workstation_product_name}} TemplateVM (<code>{{whonix-ws}}</code>).
 |-
 ! scope="row"| Tor Browser Version
 | 
@@ -103,8 +103,8 @@ qvm-open-in-dvm
 |-
 ! scope="row"| Verify DisposableVM Status
 |
-* Use caution when spawning a DispVM for the first time when it is based on a freshly created DVM Template. This [https://github.com/QubesOS/qubes-issues/issues/3574 Qubes bug] can lead to the DVM Template starting instead of the DispVM. <ref>https://forums.whonix.org/t/whonix-14-starting-a-whonix-14-dispvm-actually-starts-the-templatebasedvm-instead/5579</ref> <ref>After creation of a new DVM Template, all VMs spawned from the DVM Template should be DispVMs by design. This includes the first start and all subsequent starts thereafter. While this is expected behavior, it is safest to confirm the DispVM was correctly spawned on each occasion it is used.</ref> There could be serious consequences if an application like Tor Browser was started in a DVM Template and used extensively for web browsing. Compromise of the DVM Template would mean all DispVMs spawned from it would be similarly compromised; see [[Tor_Browser/Advanced_Users#Running_Tor_Browser_in_Qubes_TemplateVM|Running Tor Browser in Qubes TemplateVM]]. <br />
-* To check the freshly started VM is a DispVM, verify it is named <i>[disp xxxx]</i> where <i>xxxx</i> is the number assigned to that DispVM. If the DVM Template was started instead, then it should be shut down immediately. If the DVM Template is ever inadvertently used for a dangerous activity like web browsing, then delete it and create a new one.
+* Use caution when spawning a DispVM for the first time when it is based on a freshly created DisposableVM Template. This [https://github.com/QubesOS/qubes-issues/issues/3574 Qubes bug] can lead to the DisposableVM Template starting instead of the DispVM. <ref>https://forums.whonix.org/t/whonix-14-starting-a-whonix-14-dispvm-actually-starts-the-templatebasedvm-instead/5579</ref> <ref>After creation of a new DisposableVM Template, all VMs spawned from the DisposableVM Template should be DispVMs by design. This includes the first start and all subsequent starts thereafter. While this is expected behavior, it is safest to confirm the DispVM was correctly spawned on each occasion it is used.</ref> There could be serious consequences if an application like Tor Browser was started in a DisposableVM Template and used extensively for web browsing. Compromise of the DisposableVM Template would mean all DispVMs spawned from it would be similarly compromised; see [[Tor_Browser/Advanced_Users#Running_Tor_Browser_in_Qubes_TemplateVM|Running Tor Browser in Qubes TemplateVM]]. <br />
+* To check the freshly started VM is a DispVM, verify it is named <i>[disp xxxx]</i> where <i>xxxx</i> is the number assigned to that DispVM. If the DisposableVM Template was started instead, then it should be shut down immediately. If the DisposableVM Template is ever inadvertently used for a dangerous activity like web browsing, then delete it and create a new one.
 |-
 ! scope="row"| {{gateway_product_name}} Linkability
 | The Tor Project developer Teor has stated that [[Tor]] caches {{Code|DNS, HS descriptors, pre-emptive circuits, etc.}} <ref>https://lists.torproject.org/pipermail/tor-dev/2016-October/011591.html</ref> which may lead to linkage between AppVMs and DispVMs sharing the same {{gateway_product_name}}. The extent to which this is a threat for {{project name}} users has now been documented; see [[Multiple_{{workstation_product_name_short}}|Multiple {{workstation_product_name}}]].
@@ -113,11 +113,11 @@ qvm-open-in-dvm
 = Setup =
 <u>Note:</u> Examples below reference GUI steps whenever possible, but Qube Manager configuration options in R4 are limited in comparison to earlier releases. <ref>For instance, DispVM networking can no longer be set from Qube Manager.</ref> Where relevant, additional command line commands are listed in the footnotes.
 
-== Create a {{project name}} Default DVM Template based on {{workstation_product_name}} ==
+== Create a {{project name}} Default DisposableVM Template based on {{workstation_product_name}} ==
 
 # [[Qubes/Update|Update]] [[{{q_project_name_short}}|{{q_project_name}}]].
 # Open a dom0 terminal: <code>Qubes App Launcher (blue/grey "Q")</code> &rarr; <code>System Tools</code> &rarr; <code>Xfce Terminal</code>
-# Create <code>{{whonix-ws-dvm}}</code> DVM Template.
+# Create <code>{{whonix-ws-dvm}}</code> DisposableVM Template.
 
 {{CodeSelect|code=
 sudo qubesctl state.sls qvm.whonix-ws-dvm
@@ -158,9 +158,9 @@ TODO - Investigate use cases for this procedure:
 
 == Customization ==
 
-=== DVM Templates ===
+=== DisposableVM Templates ===
 
-Extra caution must be exercised when customizing a DVM Template. <ref>Qubes documentation: [https://www.qubes-os.org/doc/disposablevm-customization/ DisposableVM Customization].</ref> From a privacy perspective, it is ideal to have a DVM Template that is indistinguishable from any other {{workstation_product_name}}. If changes are made to the DVM Template, these may link all of the DispVMs via a uniquely generated fingerprint should they be compromised independently. Risky changes include, but are not limited to:
+Extra caution must be exercised when customizing a DisposableVM Template. <ref>Qubes documentation: [https://www.qubes-os.org/doc/disposablevm-customization/ DisposableVM Customization].</ref> From a privacy perspective, it is ideal to have a DisposableVM Template that is indistinguishable from any other {{workstation_product_name}}. If changes are made to the DisposableVM Template, these may link all of the DispVMs via a uniquely generated fingerprint should they be compromised independently. Risky changes include, but are not limited to:
 
 * Installation of obscure programs;
 * Uncommon configuration settings; or 
@@ -168,20 +168,20 @@ Extra caution must be exercised when customizing a DVM Template. <ref>Qubes docu
 
 Always keep in mind the DispVM will likely be exposed to the greatest Internet threats.
 
-Tor Browser is specifically designed to prevent website fingerprinting or identification based on the user's browser [[Fingerprint|fingerprint]]. It is safest to run Tor Browser in its stock configuration so the fingerprint is [[Data_Collection_Techniques#Fingerprinting_and_Anonymity|less unique]], due to commonality with the larger Tor Browser user pool. Each individual browser change can significantly worsen the fingerprint because of the associated entropy, <ref>33 bits of entropy will identify one individual out of several billion.</ref> so only make alterations if the impacts are known. See also: [[Tor_Browser/Advanced_Users#tb-updater_in_Qubes_DVM_Template|tb-updater in Qubes DVM Template]].
+Tor Browser is specifically designed to prevent website fingerprinting or identification based on the user's browser [[Fingerprint|fingerprint]]. It is safest to run Tor Browser in its stock configuration so the fingerprint is [[Data_Collection_Techniques#Fingerprinting_and_Anonymity|less unique]], due to commonality with the larger Tor Browser user pool. Each individual browser change can significantly worsen the fingerprint because of the associated entropy, <ref>33 bits of entropy will identify one individual out of several billion.</ref> so only make alterations if the impacts are known. See also: [[Tor_Browser/Advanced_Users#tb-updater_in_Qubes_DVM_Template|tb-updater in Qubes DisposableVM Template]].
 
 A decision must be made in advance whether to disable JavaScript by default. There is a [[Tor_Browser#Security_vs_Usability_Trade-off|usability-security trade-off]] to consider: fingerprinting and usability is worsened by disabled JavaScript, but this provides better protection against vulnerabilities. Conversely, enabled JavaScript improves usability and increases the risk of exploitation, but the browser fingerprint is (likely) more common.
 
-=== Tor Browser in DVM Template ===
+=== Tor Browser in DisposableVM Template ===
 
-For most users, Tor Browser customizations in the DVM Template or TemplateVM are discouraged. Advanced users who wish to customize the DVM template despite the risks should follow [[Tor_Browser/Advanced_Users#DVM_Template_Customization|these steps]].
+For most users, Tor Browser customizations in the DisposableVM Template or TemplateVM are discouraged. Advanced users who wish to customize the DVM template despite the risks should follow [[Tor_Browser/Advanced_Users#DVM_Template_Customization|these steps]].
 
-=== Applications other than Torbrowser in DVM Template ===
+=== Applications other than Torbrowser in DisposableVM Template ===
 
 {{mbox
 | type      = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text    = Customization is completely optional. Only files in <i>/home/user</i> (or more generally, in <i>/rw</i>) can be customized in a DVM Template.
+| text    = Customization is completely optional. Only files in <i>/home/user</i> (or more generally, in <i>/rw</i>) can be customized in a DisposableVM Template.
 }}
 {{Box|text=
 '''1.''' Launch the application in the DVM template.
@@ -219,10 +219,10 @@ Or use Qube Manager:
 The changes will be available when the DispVM is restarted.
 }}
 
-== Delete a DVM Template ==
-If a DVM Template has been customized and it is necessary to revert these changes, a DVM Template can be deleted the same way as any other VM.
+== Delete a DisposableVM Template ==
+If a DisposableVM Template has been customized and it is necessary to revert these changes, a DisposableVM Template can be deleted the same way as any other VM.
 
-Note the DVM Template cannot be deleted while it is the default DispVM of another VM, otherwise an error message appears. In that case, follow tips found [https://github.com/QubesOS/qubes-issues/issues/3993 here] on how to manually change the default DispVM of VMs to another setting, then repeat the procedure.
+Note the DisposableVM Template cannot be deleted while it is the default DispVM of another VM, otherwise an error message appears. In that case, follow tips found [https://github.com/QubesOS/qubes-issues/issues/3993 here] on how to manually change the default DispVM of VMs to another setting, then repeat the procedure.
 
 <code>dom0</code> &rarr; <code>Qube Manager</code> &rarr; <code>right-click '{{whonix-ws-dvm}}'</code> &rarr; <code>left-click 'Delete qube'</code>
 <ref>Or on the command line (dom0), run. {{CodeSelect|code=qvm-remove <vmname>}}</ref>
@@ -262,21 +262,21 @@ update-torbrowser
 update-torbrowser --input gui
 }}
 
-Shutdown the DVM Template: <ref>
+Shutdown the DisposableVM Template: <ref>
 On the command line (dom0), run.
 {{CodeSelect|code=
 qvm-shutdown {{whonix-ws-dvm}}
 }}
 or<br />
-DVM Template command line (domU), run. {{CodeSelect|code=
+DisposableVM Template command line (domU), run. {{CodeSelect|code=
 sudo poweroff
 }}
 </ref>
 
 <code>dom0</code> &rarr; <code>Qube Manager</code> &rarr; <code>right-click on '{{whonix-ws-dvm}}'</code> &rarr; <code>click 'Shutdown qube'</code>
 
-== Update a DVM Template ==
-Changes to the underlying TemplateVM (<code>{{whonix-ws}}</code>) are detected automatically and the DVM Template is updated without user intervention. That means package updates that are applied to <code>{{whonix-ws}}</code> are also applied to the <code>{{whonix-ws-dvm}}</code>.
+== Update a DisposableVM Template ==
+Changes to the underlying TemplateVM (<code>{{whonix-ws}}</code>) are detected automatically and the DisposableVM Template is updated without user intervention. That means package updates that are applied to <code>{{whonix-ws}}</code> are also applied to the <code>{{whonix-ws-dvm}}</code>.
 
 = Usage =
 DispVMs are well-suited for risky and largely independent activities, like web browsing or opening untrusted files. In contrast, AppVMs might be better suited for activities necessitating file persistence, like email clients with local email storage.
@@ -374,7 +374,7 @@ qvm-run --dispvm={{whonix-ws-dvm}} xfce4-terminal
 }}
 
 = TODO =
-* TODO document how to use multiple DVM Templates - https://forums.whonix.org/t/is-anyone-interested-in-using-multiple-dvm-templates-based-on-whonix-ws-dvm/5757/5
+* TODO document how to use multiple DisposableVM Templates - https://forums.whonix.org/t/is-anyone-interested-in-using-multiple-dvm-templates-based-on-whonix-ws-dvm/5757/5
 
 = Footnotes =
 {{reflist|close=1}}
