@@ -36,32 +36,17 @@ There are three primary Tor options for {{project name}} developers and each of 
 
 = Tor Config Files =
 == Current Implementation ==
-'''<u>TODO: Update required. Changed in {{project name}} 14.</u>'''
+'''<u>TODO: Update required.</u>'''
 
 The implementation is as it follows.
 
-* <code>/etc/tor/torrc</code> holds minimal content, so we don't have to update it ever again
-* Instructions in <code>/etc/tor/torrc</code> say don't edit use <code>/usr/local/etc/torrc.d/50_user.conf</code> instead.
-* <s>We should never update <code>/etc/tor/torrc</code> because that would lead to an <code>interactive dpkg conflict resolution dialog</code></s> <ref name=dpkg-conflict-resolution-dialog>
-<code>interactive dpkg conflict resolution dialog</code> exampleː
-<pre>
-Configuration file `/etc/tor/torrc'
- ==> Modified (by you or by a script) since installation.
- ==> Package distributor has shipped an updated version.
-   What would you like to do about it ?  Your options are:
-    Y or I  : install the package maintainer's version
-    N or O  : keep your currently-installed version
-      D     : show the differences between the versions
-      Z     : background this process to examine the situation
- The default action is to keep your current version.
-*** interfaces (Y/I/N/O/D/Z) [default=N] ? N
-</pre>
-</ref> <ref>
-<s>Because, <code>/etc/tor/torrc</code> comes with an out commented <code>#DisableNetwork 0</code></s> which gets commented in by <code>whonixsetup</code>, i.e. <code>whonixsetup</code> changes that line to <code>DisableNetwork 0</code>, which dpkg will consider as user modification.</ref>, because that would be bad from an usability perspective. Such an <code>interactive dpkg conflict resolution dialog</code> confuses quite some users. Also from a security perspective, if the user chooses <code>Y or I</code> (install the package maintainer's version), the user may lose its (security) settings such for example its proxy and/or obfuscated bridges settings.
+* <code>/etc/tor/torrc</code> holds minimal content, so ideally it will need as few updates as possible or never again in the future. The only effective command is <code>%include /etc/torrc.d/</code> which results in parsing folder [https://github.com/Whonix/anon-gw-anonymizer-config/tree/master/etc/torrc.d <code>/etc/torrc.d</code>].
+* The lexical high file [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/etc/torrc.d/95_whonix.conf <code>/etc/torrc.d/95_whonix.conf</code>] instructions to <code>%include /usr/local/etc/torrc.d/</code>.
+* Instructions in <code>/etc/tor/torrc</code> and [[Tor|documentation]] instructs users to not edit that file and use use <code>/usr/local/etc/torrc.d/50_user.conf</code> instead.
 * <code>/etc/tor/torrc.examples</code> contains configuration examples.
-* {{project name}} Tor settings go into <code>/usr/share/tor/tor-service-defaults-torrc</code>.
-* Users will ignore <code>/usr/share/tor/tor-service-defaults-torrc</code>, because this file is barely advertised and barely popular.
-* <code>/usr/share/tor/tor-service-defaults-torrc</code> can be updated without any conflicts with user modifications.
+* Some {{project name}} Tor settings unfortunately still go into [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/usr/share/tor/tor-service-defaults-torrc.anondist <code>/usr/share/tor/tor-service-defaults-torrc</code>] due to [https://phabricator.whonix.org/T947 Qubes-Whonix eth1 static networking] feature not being implemented yet.
+* Most users probably ignore <code>/usr/share/tor/tor-service-defaults-torrc</code>, because this file is barely advertised and barely popular.
+* <code>/usr/share/tor/tor-service-defaults-torrc</code> can be modified by Qubes-Whonix [https://github.com/Whonix/qubes-whonix/blob/master/usr/lib/qubes-whonix/replace-ips <code>replace-ips</code>] without any conflicts with user modifications or [[Configuration_Files#dpkg_interactive_conflict_resolution_dialog|<code>dpkg interactive conflict resolution dialog</code>]].
 * https://github.com/{{project_name_short}}/anon-gw-anonymizer-config
 
 == Rejected Alternatives ==
