@@ -2,13 +2,25 @@
 {{Header}}
 {{#seo:
 |title=apparmor-profile-everything
-|description=AppArmor for everything. APT, systemd, init, all systemd units, all applications. Mandatory Access Control. Security Hardening.
+|description=Full System AppArmor Policy
 |image=https://www.whonix.org/w/images/thumb/7/79/Mandatoryaccesscontrol.jpg/705px-Mandatoryaccesscontrol.jpg
 }}
 
-AppArmor for everything. APT, systemd, init, all systemd units, all applications. Mandatory Access Control. Security Hardening.
+This is an AppArmor policy to confine all user space processes on the system which allows one to enforce a strong security model and follow principle of least privilege. An AppArmor policy for the init, systemd is loaded in the initramfs which then applies to all other processes. Specific policies for many system services/applications are also enforced.
 
-{{stub}}
+This follows design ideas already present in other operating systems such as Android and attempts to make something similar available on desktop Linux.
+
+In addition to locking down user space, this also protects the kernel as it restricts access to kernel interfaces like <code>/proc</code> or <code>/sys</code>, making kernel pointer and other leaks much less likely.
+
+This does not and cannot confine the kernel or initramfs.
+
+This is expected to be used in combination with other security technologies such as a hardened kernel, strong sandboxing architecture, verified boot and so on.
+
+apparmor-profile-everything supports different boot modes: aadebug and superroot. aadebug allows certain permissions necessary for advanced debugging and superroot relaxes the policy substantially, even making bypasses possible. It is highly recommended to stick to the default boot mode.
+
+It also contains a wrapper to restrict apt as apt requires permissions that may be abused to circumvent the policy. When updating or installing applications, you must use the rapt command.
+
+This is still in development and breakage is likely. This should only be used by developers for now.
 
 * https://github.com/Whonix/apparmor-profile-everything
 * https://forums.whonix.org/t/using-apparmor-profile-everything-on-debian-buster/8650
