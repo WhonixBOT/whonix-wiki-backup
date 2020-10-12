@@ -5,7 +5,9 @@
 |description=Sandboxed Application Launcher
 }}
 
-sandbox-app-launcher is an application launcher that starts each app inside its own restrictive sandbox. It runs each app as its own user, in a bubblewrap sandbox and confined by apparmor.
+= Overview =
+
+sandbox-app-launcher is an application launcher that starts each app inside its own restrictive sandbox. It runs each app as its own user, in a bubblewrap sandbox and confined by AppArmor.
 
 The directory, <code>/shared</code>, is shared across all app sandboxes to transfer files across.
 
@@ -27,6 +29,38 @@ Currently a WIP and not for actual use.
 
 * https://github.com/Whonix/sandbox-app-launcher
 * https://forums.whonix.org/t/system-wide-sandboxing-framework/9008
+
+= Design =
+
+Bubblewrap allows us to make use of namespaces and seccomp. All apps are run in mount, PID, cgroup and UTS namespaces (IPC namespaces are planned but are not currently implemented due to limitations in Xorg). Fine-grained filesystem restrictions are implemented via mount namespaces and AppArmor. Seccomp blocks certain syscalls which can greatly reduce kernel attack surface among other things.
+
+All apps by default use a seccomp whitelist to block dangerous and unused syscalls. In addition, we filter the arguments of some syscalls to:
+
+* Block unused socket families.
+* Block any dangerous or unused ioctls such as TIOCSTI (can be used in sandbox escapes), TIOCSETD (can increase kernel attack surface by loading vulnerable line disciplines), SIOCGIFHWADDR (can retrieve the user’s MAC address), etc.
+* Implement W^X (explained in detail further below).
+
+Apparmor also gives fine-grained controls over IPC signals, D-Bus, UNIX sockets, ptrace and more.
+
+= D-Bus =
+
+D-Bus is common avenue for sandbox escapes <ref>One such example is: https://github.com/netblue30/firejail/issues/796</ref>. We mitigate this by denying access to the system bus and only allowing access to the session bus. This is safe since each app runs as their own user with their own session bus, ensuring no IPC between sandboxes.
+
+= PulseAudio =
+
+PulseAudio was also not written with isolation in mind <ref>https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/Developer/AccessControl/</ref> so access to it is blacklisted from within the sandbox however this will break a lot of things so we may use a more robust solution such as [https://gitlab.freedesktop.org/pipewire/pipewire PipeWire] in the future.
+
+= X11 =
+
+X11 has no GUI isolation <ref>https://theinvisiblethings.blogspot.com/2011/04/linux-security-circus-on-gui-isolation.html</ref> so it's trivial to escape sandboxes with it. We don't protect against this right now but we're planning to switch to Wayland or if that's not an option, use a nested X11 server like Xpra.
+
+= Dynamic Native Code Execution =
+
+Dynamic native code execution is generally a security issue since it allows an attacker to execute new arbitrary code so we prevent it by enforcing strict W^X in both memory and the filesystem. Seccomp is used to prevent creating memory mappings that are both writable and executable and transitioning a writable memory mapping to executable. AppArmor is used to prevent executing programs from writable directories. This will force the attacker to utilize the already existing code (e.g. ROP/JOP) which is much more limited and difficult. The main things that legitimately require this are JIT engines in browsers.
+
+= Malware Persistence =
+
+The only places malware can persist inside the sandbox are the home directory or shared storage (if enabled as read-write) and it can only ever be executed if W^X is disabled. Everything else is mounted read-only or as a tmpfs.
 
 = References =
 {{reflist|close=1}}
