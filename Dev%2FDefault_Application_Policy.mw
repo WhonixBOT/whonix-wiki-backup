@@ -154,14 +154,43 @@ Download here:
 https://www.gnu.org/software/guix/download/
 
 Verification and install instructions:
-https://www.gnu.org/software/guix/manual/html_node/Binary-Installation.html
+https://guix.gnu.org/manual/en/html_node/Binary-Installation.html
 
 No compilation required. A signed binary tarball is distributed. The binary installation tarball can be (re)produced and verified simply by running the following command in the Guix source tree:
 
+<pre>
 make guix-binary.system.tar.xz
+</pre>
 
 Full manual:
 https://www.gnu.org/software/guix/manual/guix.html
+
+There is also an installation script:
+
+https://git.savannah.gnu.org/cgit/guix.git/plain/etc/guix-install.sh
+
+At time of writing, the installation script does not pass the {{TUF3}} threat model. <ref>
+{{TUF}}
+</ref> <ref>
+The following source code using gpg for verification of software signature is vulnerable to rollback attacks and indefinite freeze attacks.
+
+<pre>
+    gpg --verify "${bin_ver}.tar.xz.sig" >/dev/null 2>&1
+    if [[ "$?" -eq 0 ]]; then
+        _msg "${PAS}Signature is valid."
+        popd >/dev/null
+    else
+        _err "${ERR}could not verify the signature."
+        exit 1
+    fi
+</pre>
+
+See also [https://gitlab.com/whonix/gpg-bash-lib gpg-bash-lib].
+
+The installation script is also vulnerable to endless data attacks and slow retrieval attacks.
+
+Minor: It uses wget which has a [https://lists.gnu.org/archive/html/bug-wget/2012-07/msg00015.html buggy TLS certificate verification] instead of [[Secure_Downloads|secure curl]].
+</ref>
 
 '''Any ready-made repositories available that we can start using? Like, if one manages to install Guix on Debian or {{project_name}}, what packages can be installed? How does that work in practice?'''
 
