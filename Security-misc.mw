@@ -37,6 +37,17 @@ sudo systemctl start permission-hardening.service
 }}
 
 === Show dpkg-statoverride List ===
+SUID disabling is based on the standard Debian tool <code>dpkg-statoverride</code> ([https://manpages.debian.org/dpkg-statoverride man page]). It is a tool to reliably override ownership and mode of files.
+
+SUID disabling would be incomplete if it did not use <code>dpkg-statoverride</code>. This is because when a package is upgraded or re-installed, <code>dpkg</code> would reset the original file permissions. I.e. re-enable SUID. To prevent a race condition (malware abusing SUID before SUID can re-disable), <code>dpkg-statoverride</code> is being used.
+
+It might be helpful to view the list of overwritten dpkg file permissions.
+
+{{CodeSelect|code=
+dpkg-statoverride --list
+}}
+
+Note that even when not using SUID disabling at all, Debian (and a few other packages) by default adds a few dpkg statoverwrites by themselves. Not all entries in the list of dpkg statoverwrites are the caused by SUID disabling. Therefore SUID disabling maintains its own lists of changes. It records permissions before it applies any changes as well as records the new permissions set by SUID disabling. In case of any issues it might however be useful to check the list of file permission changes enforced by <code>dpkg-statoverride</code>.
 
 === View List of Debian Default File Permissions Before SUID Disabling ===
 File <code>/var/lib/permission-hardening/existing_mode/statoverride</code> records modes before changing them using permission hardening.
