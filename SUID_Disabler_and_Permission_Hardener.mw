@@ -20,6 +20,33 @@ SUID Disabler and Permission Hardener configuration folders are <code>/etc/permi
 * [https://github.com/Whonix/security-misc/blob/master/usr/lib/security-misc/permission-hardening-undo <code>/usr/lib/security-misc/permission-hardening-undo</code>].
 * [https://github.com/Whonix/security-misc/blob/master/lib/systemd/system/permission-hardening.service systemd unit file]
 
+SUID Disabler and Permission Hardener searches the following folders for SUID/SGID binaries/libraries and disables all except these which are white listed in the configuration file. The following list of folders was copied from default configuration file at time of writing.
+
+<pre>
+## Remove all SUID/SGID binaries/libraries.
+
+/bin/ nosuid
+/usr/bin/ nosuid
+/usr/local/bin/ nosuid
+/sbin/ nosuid
+/usr/sbin/ nosuid
+/usr/local/sbin/ nosuid
+/lib/ nosuid
+/lib32/ nosuid
+/lib64/ nosuid
+/usr/lib/ nosuid
+/usr/lib32/ nosuid
+/usr/lib64/ nosuid
+/usr/local/lib/ nosuid
+/usr/local/lib32/ nosuid
+/usr/local/lib64/ nosuid
+</pre>
+
+It does not search the whole hard drive because:
+
+* No known Debian packages or other software following the file hierarchy standard installs SUID/SGID binaries/libraries into other disk locations. Since installation of new malicious root owned SUID/SGID binaries/libraries would require root this is outside of the threat model. An attacker capable of creating malicious root owned SUID/SGID binaries/libraries in non-standard disk locations already owns the system. The purpose of SUID Disabler is to avoid malicious/compromised non-root accounts from escalation to root using SUID, not to control what an attacker with root can do. For that, see [https://forums.whonix.org/t/untrusted-root-improve-security-by-restricting-root/7998 Untrusted Root - improve Security by Restricting Root], [[apparmor-profile-everything]] and [[Dev/boot_modes|Multiple Boot Modes for Better Security - a Design for the Implementation of Untrusted Root]].
+* This process is re-done every time SUID Disabler and Permission Hardener is started at system boot time. Searching the whole disk would slow down the boot process.
+
 = Enable SUID Disabler and Permission Hardener =
 {{Testers-only}}
 
