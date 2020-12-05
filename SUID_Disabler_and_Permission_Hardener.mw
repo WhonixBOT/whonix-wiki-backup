@@ -7,9 +7,9 @@ SUID Disabler and Permission Hardener
 }}
 
 = Introduction =
-SUID Disabler and Permission Hardener aims to increase the security of the system by improving [[Dev/Strong_Linux_User_Account_Isolation|Strong Linux User Account Isolation]], reducing attack surface through disabling of SUID enabled binaries. <ref>
+SUID Disabler and Permission Hardener aims to increase the security of the system by improving [[Dev/Strong_Linux_User_Account_Isolation|Strong Linux User Account Isolation]], setting more restrictive file permissions and reducing attack surface through disabling of SUID enabled binaries. <ref>
 [https://web.archive.org/web/20180212122001/https://pen-testing.sans.org/resources/papers/gcih/discovering-local-suid-exploit-105447 Discovering a Local SUID Exploit]
-</ref> Some SUID binaries have a history of privilege escalation security vulnerabilities. It is part of [[security-misc]].
+</ref> SUID (or setuid) allows a user to execute a binary with the privileges of the binary's owner. This is often used to allow unprivileged users to utilize certain functionality that is normally only reserved for the root user. As such, many SUID binaries have a history of privilege escalation security vulnerabilities. This feature is part of [[security-misc]].
 
 Quote [https://www.thern.org/projects/linux-lecture/intro-to-linux/node10.html Removing SUID and SGID flags off binaries]:
 
@@ -43,7 +43,7 @@ SUID Disabler and Permission Hardener searches the following folders for SUID/SG
 
 It does not search the whole hard drive because:
 
-* No known Debian packages or other software following the file hierarchy standard installs SUID/SGID binaries/libraries into other disk locations. Since installation of new malicious root owned SUID/SGID binaries/libraries would require root this is outside of the threat model. An attacker capable of creating malicious root owned SUID/SGID binaries/libraries in non-standard disk locations already owns the system. The purpose of SUID Disabler is to avoid malicious/compromised non-root accounts from escalation to root using SUID, not to control what an attacker with root can do. For that, see [https://forums.whonix.org/t/untrusted-root-improve-security-by-restricting-root/7998 Untrusted Root - improve Security by Restricting Root], [[apparmor-profile-everything]] and [[Dev/boot_modes|Multiple Boot Modes for Better Security - a Design for the Implementation of Untrusted Root]].
+* No known Debian packages or other software following the file hierarchy standard installs SUID/SGID binaries/libraries into other disk locations. Since installation of new malicious root owned SUID/SGID binaries/libraries would require root, this is outside of the threat model. An attacker capable of creating malicious root owned SUID/SGID binaries/libraries in non-standard disk locations already owns the system. The purpose of SUID Disabler is to avoid malicious/compromised non-root accounts from escalating to root using SUID, not to control what an attacker with root can do. For that, see [https://forums.whonix.org/t/untrusted-root-improve-security-by-restricting-root/7998 Untrusted Root - improve Security by Restricting Root], [[apparmor-profile-everything]] and [[Dev/boot_modes|Multiple Boot Modes for Better Security - a Design for the Implementation of Untrusted Root]].
 * This process is re-done every time SUID Disabler and Permission Hardener is started at system boot time. Searching the whole disk would slow down the boot process.
 
 Some SUID/SGID binaries such as <code>sudo</code> whitelisted by default because otherwise a Linux desktop computer would be unusable. The choice of whitelisted SUID/SGID binaries is justified in [https://github.com/Whonix/security-misc/blob/master/etc/permission-hardening.d SUID Disabler and Permission Hardener default configuration folder] and in its [https://forums.whonix.org/t/suid-disabler-and-permission-hardener/7706 development discussion].
@@ -297,17 +297,13 @@ Expected output.
 
 = SUID Disabler and Permission Hardener Design =
 
-Some binaries like <code>su</code> when SUID removed will pretend to work but then always give a permission denied error.
+* Some binaries like <code>su</code> when SUID removed will pretend to work but then always give a permission denied error. Therefore, SUID Disabler and Permission Hardener will remove SUID / SGID and execute permission for 'group' and 'others'. Similar to <code>chmod og-ugx /path/to/filename</code>. Removing execution permission is useful to make binaries such as <code>su</code> fail closed rather than fail open if suid was removed from these.
 
-Therefore SUID Disabler and Permission Hardener will remove suid / gid and execute permission for 'group' and 'others'. Similar to <code>chmod og-ugx /path/to/filename</code>.
+* SUID Disabler and Permission Hardener does not remove read access since there is no security benefit and it is easier to manually undo. Preventing read access to a binary can prevent an attacker from reverse engineering it and discovering vulnerabilities to exploit however the attacker could also simply read the source code of the binary since Whonix is comprised of freedom software. Even ignoring that, there are still ways to leak the contents of unreadable binaries. <ref>https://forums.grsecurity.net/viewtopic.php?t=2939</ref> Thus, this would be an incomplete and easily circumvented form of security through obscurity.
 
-Removing execution permission is useful to make binaries such as <code>su</code> fail closed rather than fail open if suid was removed from these.
+* Are there SUID or SGID binaries which are still useful if executable by anyone if SUID/SGID has been removed from these? Yes. For example, the <code>mount</code> command.
 
-SUID Disabler and Permission Hardener does not remove read access since no security benefit and easier to manually undo for users.
-
-Are there suid or sgid binaries which are still useful if executable by anyone if SUID/SGID has been removed from these? Yes. For example the <code>mount</code> command.
-
-Are there suid or sgid binaries which are still useful if executable by non-root users if SUID/SGID has been removed from these? Yes. For example the <code>mount</code> command.
+* Are there SUID or SGID binaries which are still useful if executable by non-root users if SUID/SGID has been removed from these? Yes. For example, the <code>mount</code> command.
 
 = SUID Disabler and Permission Hardener Printout =
 This printout was added in November 2020. It might not be kept up to date. It is for illustrative purposes to document what SUID Disabler and Permission Hardener is actually doing.
