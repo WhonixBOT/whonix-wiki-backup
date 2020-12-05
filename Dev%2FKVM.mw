@@ -20,6 +20,45 @@ None.
 
 = Non-Blockers =
 
+== QCOW2 L2 Subcluster Allocation ==
+
+https://blogs.igalia.com/berto/2020/12/03/subcluster-allocation-for-qcow2-images/
+
+Problem:
+
+<pre>
+Because of that qcow2 images with larger cluster sizes tend to:
+
+grow faster, wasting more disk space and duplicating data. increase the amount of necessary I/O during cluster allocation,reducing the allocation performance.
+</pre>
+
+Why reducing cluster size is not a solution:
+
+<pre>
+Unfortunately, reducing the cluster size is in general not an option because it also has an impact on the amount of metadata used internally by qcow2 (reference counts, guest-to-host cluster mapping). Decreasing the cluster size increases the number of clusters and the amount of necessary metadata. This has direct negative impact on I/O performance, which can be mitigated by caching it in RAM, therefore increasing the memory requirements (the aforementioned post covers this in more detail).
+</pre>
+
+The new '''extended L2 entries''' feature in QEMU 5.2+ gives us the best of all worlds:
+
+<pre>
+
+*Sixteen times less metadata per unit of allocation, greatly reducing the amount of necessary L2 cache.
+*Much faster I/O during allocating when the image has a backing file, up to 10-15 times more I/O operations per second for the same cluster size in my tests (see chart below).
+*Smaller images and less duplication of data.
+</pre>
+
+
+How to use:
+
+<pre>
+In order to test this you simply need to create an image with extended_l2=on, and you also probably want to use a larger cluster size (the default is 64 KB, remember that every cluster has 32 subclusters). Here is an example:
+
+$ qemu-img create -f qcow2 -o extended_l2=on,cluster_size=128k img.qcow2 1T
+
+And that’s all you need to do. Once the image is created all allocations will happen at the subcluster level.
+</pre>
+
+
 == Virtio-Video ==
 Paravirtual webcam access and screen sharing capability soon to land in KVM. Worth documenting when ready.
 
