@@ -47,9 +47,12 @@ It does not search the whole hard drive because:
 * It does not search <code>/mnt</code> or <code>/media</code> because another Linux installation could be mounted in that folder which should not be broken by SUID Disabler. <ref>
 https://forums.whonix.org/t/suid-disabler-and-permission-hardener/7706/70
 </ref>
-* It does not search <code>/root</code> because no SUID binaries should be there by default. That folder is by default readable only by <code>root</code>. If <code>root</code> was to create a custom SUID and move it there, then <code>root</code> should be able to execute it.
-* It searches <code>/opt</code> or <code>/usr/local/opt</code> by default (<code>19.7-1</code> and above) because TODO: expand
+* It does not search folders <code>/root</code> because no SUID binaries should be there by default. That folder is by default readable only by <code>root</code>. If <code>root</code> was to create a custom SUID and move it there, then <code>root</code> should be able to execute it.
+* It searches folders <code>/opt</code> or <code>/usr/local/opt</code> by default (version <code>19.7-1</code> and above). These folders do not exist in a default installation. Rationale for that is that some manually installed software installs itself there. Some lesser important functionality might require SUID/SGID. The SUID/SGID bit might have been accidentally set by a developer. (Or part of legacy install scripts. Useful in past, then forgotten, now obsolete.) Removal of SUID/SGID might in many cases go unnoticed by the user. I.e. user might not notice any broken functionality. For example, cases where that software is run as root anyhow. <ref>
+https://forums.whonix.org/t/suid-disabler-and-permission-hardener/7706/68
+</ref>
 * This process is re-done every time SUID Disabler and Permission Hardener is started at system boot time. Searching the whole disk would slow down the boot process.
+* Another feature by [[security-misc]], [[Security-misc#Remount_Secure|Remount Secure]] will in future re-mount folders such as <code>/home</code> with mount options <code>noexec</code> and <code>noexec</code> at early boot time anyhow. This is a better solution. Therefore there is no need to duplicate that functionality in SUID Disabler.
 
 Some SUID/SGID binaries such as <code>sudo</code> whitelisted by default because otherwise a Linux desktop computer would be unusable. The choice of whitelisted SUID/SGID binaries is justified in [https://github.com/Whonix/security-misc/blob/master/etc/permission-hardening.d SUID Disabler and Permission Hardener default configuration folder] and in its [https://forums.whonix.org/t/suid-disabler-and-permission-hardener/7706 development discussion].
 
