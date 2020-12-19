@@ -266,6 +266,12 @@ Both kernels disable some drivers that are unlikely to be used to cut attack sur
 * Infiniband support.
 * SMC-R, "sockets over RDMA", RDMA over Converged Ethernet (RoCE)
 
+= ftrace / kprobes vs. LKRG =
+
+[https://www.kernel.org/doc/html/latest/trace/ftrace.html ftrace] and [https://www.kernel.org/doc/html/latest/trace/kprobes.html kprobes] are kernel debugging features. They allow debugging a significant amount of kernel code and can be abused by malware with root privileges to gain access to sensitive information or hook parts of the kernel code. As such, hardened kernels often have these features disabled to reduce attack surface. This includes, hardened-kernel (by default), CLIP OS' kernel config, Alexander Popov's kconfig-hardening-check, grsecurity, and so on.
+
+However, [[Linux Kernel Runtime Guard LKRG]] relies on these features to implement the majority of its functionality <ref>https://github.com/openwall/lkrg/issues/27#issuecomment-746933456</ref> so there is a trade-off to disabling them. Users that wish to use hardened-kernel in combination with LKRG must compile hardened-kernel with the <code>--lkrg</code> argument to enable support for it but be aware that this may substantially increase the attack surface of the kernel.
+
 = Project Status =
 == Blockers before calling Whonix Users for Testing ==
 * [https://phabricator.whonix.org/T960 Debian packaging and APT integration is not done yet.]
