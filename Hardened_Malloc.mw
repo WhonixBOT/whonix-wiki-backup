@@ -151,30 +151,36 @@ sudo rm /etc/ld.so.preload
 }}
 
 == Issues ==
-* breaks sshd in Debian buster?
-** https://forums.whonix.org/t/hardened-malloc-hardened-memory-allocator/7474/12
-** https://github.com/GrapheneOS/hardened_malloc/issues/97
-* cryptsetup slowdown by factor ~ 7
-** this prolonged slowdown of systems using swap-file-creator
-** needs to be investigated further and reported upstream
-* slowdown by swap-file-creator shutdown
-** related to above cryptsetup slowdown by factor ~ 7
-** workaround OK https://github.com/Whonix/swap-file-creator/commit/c65edf17f952ac4a296ae6a0aac5a10541579ff6
-* no reliable and "clean" way to disable globally enabled hardened malloc on a per application basis
-** <code>hardened-malloc-disable</code> injects extraneous output to stderr.
-*** <code>ERROR: ld.so: object ‘/usr/lib/libhardened_malloc.so/libhardened_malloc_kicksecure.so’ from /etc/ld.so.preload cannot be preloaded (cannot open shared object file): ignored.</code>
-**** TODO: Fixed thanks to <code>ld-system-preload-disable</code>?
-*** glibc feature request: [https://sourceware.org/bugzilla/show_bug.cgi?id=26723 LD_ETC_IGNORE - environment variable to ignore /etc/ld.so.preload configuration file on a per-application basis]
-*** could break scripts / build process
-*** would confuse users (this message would come up every time user installs a package when mandb is automatically run by apt/dpkg even if man/mandb was wrapped by <code>hardened-malloc-disable</code>)
-** doesn't work with chromium out of the box
-*** required to disable sandbox <code>hardened-malloc-disable chromium --no-sandbox</code>
-* chromium broken
-** https://bugs.debian.org/971876
-*** TODO: needs to be certain that this is fixed in newer versions of chromium
-**** TODO: Fixed thanks to <code>ld-system-preload-disable</code>?
-* does it break https://packages.debian.org/buster/gsmartcontrol?
-* [[#VirtualBox Crash|VirtualBox Crash]] issue (assigned to Patrick)
+breaks sshd in Debian buster?
+
+* https://forums.whonix.org/t/hardened-malloc-hardened-memory-allocator/7474/12
+* https://github.com/GrapheneOS/hardened_malloc/issues/97
+
+cryptsetup slowdown by factor ~ 7
+
+* this prolonged slowdown of systems using swap-file-creator
+* needs to be investigated further and reported upstream
+
+slowdown by swap-file-creator shutdown
+
+* related to above cryptsetup slowdown by factor ~ 7
+* workaround OK https://github.com/Whonix/swap-file-creator/commit/c65edf17f952ac4a296ae6a0aac5a10541579ff6
+
+no reliable and "clean" way to disable globally enabled hardened malloc on a per application basis
+
+* glibc feature request: [https://sourceware.org/bugzilla/show_bug.cgi?id=26723 LD_ETC_IGNORE - environment variable to ignore /etc/ld.so.preload configuration file on a per-application basis]
+* could break scripts / build process
+* TODO: Fixed thanks to <code>ld-system-preload-disable</code>?
+
+chromium broken
+
+* https://bugs.debian.org/971876
+** TODO: needs to be certain that this is fixed in newer versions of chromium
+** TODO: workaround sufficient, <code>ld-system-preload-disable</code> working?
+
+does it break https://packages.debian.org/buster/gsmartcontrol?
+
+[[#VirtualBox Crash|VirtualBox Crash]] issue (assigned to Patrick)
 
 == VirtualBox Crash ==
 VirtualBox VM log:
