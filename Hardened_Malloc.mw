@@ -151,6 +151,19 @@ sudo rm /etc/ld.so.preload
 }}
 
 == Issues ==
+=== workaround available ==
+slowdown by swap-file-creator shutdown
+
+* related to above cryptsetup slowdown by factor ~ 7
+* workaround OK https://github.com/Whonix/swap-file-creator/commit/c65edf17f952ac4a296ae6a0aac5a10541579ff6
+
+chromium requires ld-system-preload-disable
+
+* https://bugs.debian.org/971876
+** workaround <code>ld-system-preload-disable chromium</code> ok
+** chromium from flathub also functional (hardened-malloc-kicksecure probably disregarded inside flatpak's bubblewrap based sandbox?)
+
+=== no workaround available ==
 breaks sshd in Debian buster?
 
 * https://forums.whonix.org/t/hardened-malloc-hardened-memory-allocator/7474/12
@@ -161,27 +174,21 @@ cryptsetup slowdown by factor ~ 7
 * this prolonged slowdown of systems using swap-file-creator
 * needs to be investigated further and reported upstream
 
-slowdown by swap-file-creator shutdown
+could break scripts / build process
 
-* related to above cryptsetup slowdown by factor ~ 7
-* workaround OK https://github.com/Whonix/swap-file-creator/commit/c65edf17f952ac4a296ae6a0aac5a10541579ff6
-
-no reliable and "clean" way to disable globally enabled hardened malloc on a per application basis
-
-* glibc feature request: [https://sourceware.org/bugzilla/show_bug.cgi?id=26723 LD_ETC_IGNORE - environment variable to ignore /etc/ld.so.preload configuration file on a per-application basis]
-* could break scripts / build process
-* TODO: Fixed thanks to <code>ld-system-preload-disable</code>?
+* TODO: test building Whonix with hardened-malloc-kicksecure enabled
 
 chromium requires ld-system-preload-disable
 
 * https://bugs.debian.org/971876
-** workaround <code>ld-system-preload-disable chromium</code> ok
-** chromium from flathub also functional (hardened-malloc-kicksecure probably disregarded inside flatpak's bubblewrap based sandbox?)
 ** TODO: needs to be certain that https://bugs.debian.org/971876 is fixed in newer versions of chromium
 
 does it break https://packages.debian.org/buster/gsmartcontrol?
 
 [[#VirtualBox Crash|VirtualBox Crash]] issue (assigned to Patrick)
+
+== Notes ==
+* glibc feature request: [https://sourceware.org/bugzilla/show_bug.cgi?id=26723 LD_ETC_IGNORE - environment variable to ignore /etc/ld.so.preload configuration file on a per-application basis]
 
 == VirtualBox Crash ==
 VirtualBox VM log:
