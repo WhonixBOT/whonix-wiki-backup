@@ -209,6 +209,29 @@ https://forums.whonix.org/t/fde-emergency-feature-testing-requested
 * https://en.wikipedia.org/wiki/USBKill 
 * https://7io.net/2015/07/02/python-usbkill-anti-forensic-usb-killswitch/#more-201 
 * https://phabricator.whonix.org/T552</ref>
+|-
+! scope="row"| Increase Costs of Brute-Force Attacks
+|
+Encryption software uses Password-Based Key Derivation Functions (PBKDF) to slow down access attempts and provide some protection against low-entropy passphrases. Higher wait times, or iterations,  can often be used. Iteration values are low by default for impatient users and weak processors, also making systematic attempts to access such protected data much easier for unauthorized users. Choosing how long wait times should be should depend on how long you are willing to wait to access your own data and how long someone else should wait if they try. Computing power gets cheaper with time, so what works today might be weak in the future.
+
+* LUKS version 1 uses PBKDF2<ref>See RFC 2898</ref> and allows the option --iter-time (or -i) for the LuksFormat, LuksAddKey, and LuksChangeKey commands. Iter-time is measured in milliseconds, so ten seconds would look like: 
+
+{{CodeSelect|code=
+$ sudo cryptsetup luksChangeKey --iter-time 10000 <device>
+}}
+
+* LUKS 2 (available with Debian Buster) added support for [https://www.cryptolux.org/index.php/Argon2 Argon2i/Argon2id]. In addition to processor time, Argon2 iterations use RAM and can be multi-threaded.<ref>Argon2 on LUKS can use up to four threads, but will lower the number and/or memory if the computer being used can't meet requirements.</ref> RAM being used during unlock is released afterwards, making higher values acceptable.
+
+Argon2 iterations will vary depending on environment. 
+
+{{CodeSelect|code=
+$ sudo cryptsetup benchmark
+}}
+
+will show you how many iterations could be made in a requested 2000 ms. To customize wait times, specify (with values) --pbkdf --pbkdf-force-iterations --pbkdf-memory and --pbkdf-parallel when using the LuksFormat command. Be aware that incorrect values can make wait times extremely long.
+
+* Veracrypt improved upon Truecrypts iterations when performing operations on volumes.
+|-
 |}
 
 = Advice for Solid-state Drives and USB Storage =
