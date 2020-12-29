@@ -1,6 +1,6 @@
 {{Header}}
 {{#seo:
-|description=Attack surface reduction through disabling of SUID enabled binaries.
+|description=Attack surface reduction via disabling of SUID-enabled binaries.
 |image=https://www.whonix.org/w/images/c/cd/Suidhardener.jpg
 }}
 [[image:Suidhardener.jpg|250px|thumb]]
@@ -99,7 +99,9 @@ Only required doing once. Start systemd unit.
 sudo systemctl start permission-hardening.service
 }}
 
-= Show dpkg-statoverride List =
+= Operations =
+
+== Show dpkg-statoverride List ==
 SUID Disabler is based on the standard Debian tool <code>dpkg-statoverride</code> ([https://manpages.debian.org/dpkg-statoverride man page]). It is a tool to reliably override ownership and mode of files.
 
 SUID Disabler would be incomplete if it did not use <code>dpkg-statoverride</code>. This is because when a package is upgraded or re-installed, <code>dpkg</code> would reset the original file permissions. I.e. re-enable SUID. To prevent a race condition (malware abusing SUID before SUID can re-disable), <code>dpkg-statoverride</code> is being used.
@@ -112,14 +114,14 @@ dpkg-statoverride --list
 
 Note that even when not using SUID Disabler at all, Debian (and a few other packages) by default adds a few dpkg statoverwrites by themselves. Not all entries in the list of dpkg statoverwrites are the caused by SUID Disabler. Therefore SUID Disabler maintains its own lists of changes. It records permissions before it applies any changes as well as records the new permissions set by SUID Disabler. In case of any issues it might however be useful to check the list of file permission changes enforced by <code>dpkg-statoverride</code>.
 
-= View List of Debian Default File Permissions Before SUID Disabler =
+== View List of Debian Default File Permissions Before SUID Disabler ==
 File <code>/var/lib/permission-hardening/existing_mode/statoverride</code> records modes before changing them using SUID Disabler and Permission Hardener. To view, run the following command.
 
 {{CodeSelect|code=
 cat /var/lib/permission-hardening/existing_mode/statoverride
 }}
 
-= View List of Permissions Changed by SUID Disabler and Permission Hardener =
+== View List of Permissions Changed by SUID Disabler and Permission Hardener ==
 File <code>/var/lib/permission-hardening/new_mode/statoverride</code> records modes that were changed by SUID Disabler and Permission Hardener. To view, run the following command.
 
 {{CodeSelect|code=
@@ -128,14 +130,14 @@ cat /var/lib/permission-hardening/new_mode/statoverride
 
 Alternatively see [[#Show_dpkg-statoverride_List|dpkg-statoverride list]].
 
-= Compare Changes by SUID Disabler and Permission Hardener =
+== Compare Changes by SUID Disabler and Permission Hardener ==
 To view previous modes and how these were changed (replace <code>meld</code> with your favorite <code>diff</code> viewer):
 
 {{CodeSelect|code=
 meld /var/lib/permission-hardening/existing_mode/statoverride /var/lib/permission-hardening/new_mode/statoverride
 }}
 
-= Re-Enable Specific SUID Binaries =
+== Re-enable Specific SUID Binaries ==
 In next upgrade of security-misc.
 
 Syntax:
@@ -152,7 +154,7 @@ sudo /usr/lib/security-misc/permission-hardening-undo /usr/sbin/exim4
 
 This is only effective only reboot. To make the change permanent the SUID binary needs to be whitelisted as per the next chapter.
 
-= Whitelist Specific SUID Binaries =
+== Whitelist Specific SUID Binaries ==
 '''1.''' Create settings folder.
 
 {{CodeSelect|code=
@@ -179,7 +181,7 @@ Steps in this chapter by itself are not sufficient. It is required to [[#Re-Enab
 
 Steps to whitelist SUID binary are complete.
 
-= Disable All SUID Binaries =
+== Disable All SUID Binaries ==
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px|alt=Whonix first time users warning]]
 | text    = 
@@ -192,7 +194,7 @@ Advanced users only! This breaks even <code>sudo</code>.
 whitelists_disable_all=true
 }}
 
-= Disable SUID Disabler and Permission Hardener =
+== Disable SUID Disabler and Permission Hardener ==
 Undo all changes. The following command is is only efficient until upgrade of package security-misc or reboot. To disable permanently the subsequent <code>systemctl</code> commands are required as well.
 
 {{CodeSelect|code=
