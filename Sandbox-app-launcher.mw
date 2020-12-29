@@ -41,15 +41,17 @@ All applications by default use a seccomp whitelist to block dangerous and unuse
 
 Apparmor also gives fine-grained controls over IPC signals, D-Bus, UNIX sockets, ptrace and more.
 
-= D-Bus =
+= Sandbox Escape Mitigation =
+
+== D-Bus ==
 
 D-Bus is common avenue for sandbox escapes <ref>One such example is: https://github.com/netblue30/firejail/issues/796</ref>. We mitigate this by denying access to the system bus and only allowing access to the session bus. This is safe since each app runs as their own user with their own session bus, ensuring no IPC between sandboxes.
 
-= PulseAudio =
+== PulseAudio ==
 
 PulseAudio was also not written with isolation in mind <ref>https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/Developer/AccessControl/</ref> so access to it is blacklisted from within the sandbox however this will break a lot of things so we may use a more robust solution such as [https://gitlab.freedesktop.org/pipewire/pipewire PipeWire] in the future.
 
-= X11 =
+== X11 ==
 
 X11 has no GUI isolation <ref>
 https://theinvisiblethings.blogspot.com/2011/04/linux-security-circus-on-gui-isolation.html
@@ -57,11 +59,11 @@ https://theinvisiblethings.blogspot.com/2011/04/linux-security-circus-on-gui-iso
 https://forums.whonix.org/t/use-xfce-with-wayland/9063
 </ref> or if that's not an option, use a nested X11 server like Xpra.
 
-= Dynamic Native Code Execution =
+== Dynamic Native Code Execution ==
 
 Dynamic native code execution is generally a security issue since it allows an attacker to execute new arbitrary code so we prevent it by enforcing strict W^X in both memory and the filesystem. Seccomp is used to prevent creating memory mappings that are both writable and executable and transitioning a writable memory mapping to executable. AppArmor is used to prevent executing programs from writable directories. This will force the attacker to utilize the already existing code (e.g. ROP/JOP) which is much more limited and difficult. The main things that legitimately require this are JIT engines in browsers.
 
-= Separate User per Sandboxed Application =
+== Separate User per Sandboxed Application ==
 Quote https://forums.whonix.org/t/system-wide-sandboxing-framework-sandbox-app-launcher/9008/265
 
 <blockquote>
