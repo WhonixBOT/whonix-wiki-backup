@@ -53,14 +53,6 @@ Apparmor also gives fine-grained controls over IPC signals, D-Bus, UNIX sockets,
 ! scope="row"| D-Bus
 | [https://en.wikipedia.org/wiki/D-Bus D-Bus] is common avenue for sandbox escapes. <ref>One such example is: https://github.com/netblue30/firejail/issues/796</ref> This attack vector is mitigated by denying access to the system bus and only allowing access to the session bus. This is safe since each application runs as their own user with their own session bus, ensuring no [https://man7.org/linux/man-pages/man2/ipc.2.html IPC] between sandboxes.
 |-
-! scope="row"| PulseAudio
-| [https://en.wikipedia.org/wiki/PulseAudio PulseAudio] was also not written with isolation in mind <ref>https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/Developer/AccessControl/</ref> so access to it is blacklisted from within the sandbox. By default this will break a lot of things so a more robust solution like [https://gitlab.freedesktop.org/pipewire/pipewire PipeWire] may be used in the future.
-|-
-! scope="row"| X11
-| [https://en.wikipedia.org/wiki/X_Window_System X11] does not have GUI isolation <ref>
-https://theinvisiblethings.blogspot.com/2011/04/linux-security-circus-on-gui-isolation.html
-</ref> so it is trivial to escape sandboxes with it. There is no protection against this vector at present, but the plan is to either switch to Wayland <ref>https://forums.whonix.org/t/use-xfce-with-wayland/9063</ref> or use a nested X11 server like Xpra.
-|-
 ! scope="row"| Dynamic Native Code Execution
 | Dynamic native code execution is generally a security issue since it allows an attacker to execute new arbitrary code. This is prevented by the following mechanisms: 
 * Enforcing strict W^X in both memory and the filesystem. 
@@ -68,12 +60,20 @@ https://theinvisiblethings.blogspot.com/2011/04/linux-security-circus-on-gui-iso
 * AppArmor is used to prevent execution of programs from writable directories. 
 These mechanisms force attackers to utilize the already existing code (e.g. [https://en.wikipedia.org/wiki/Return-oriented_programming Return-oriented programming (ROP)] / [https://security.stackexchange.com/questions/201196/concept-of-jump-oriented-programming-jop Jump-Oriented-Programming (JOP)]) which is much more limited and difficult. The main things that legitimately require this are JIT engines in browsers.
 |-
+! scope="row"| Malware Persistence
+| The only places malware can persist inside the sandbox are the home directory or shared storage (if enabled as read-write) and it can only ever be executed if W^X is disabled. Everything else is mounted read-only or as a [https://www.kernel.org/doc/html/latest/filesystems/tmpfs.html tmpfs] (a file system which keeps all files in virtual memory).
+|-
+! scope="row"| PulseAudio
+| [https://en.wikipedia.org/wiki/PulseAudio PulseAudio] was also not written with isolation in mind <ref>https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/Developer/AccessControl/</ref> so access to it is blacklisted from within the sandbox. By default this will break a lot of things so a more robust solution like [https://gitlab.freedesktop.org/pipewire/pipewire PipeWire] may be used in the future.
+|-
 ! scope="row"| Separate User per Sandboxed Application
 | This approach provides a higher security threshold: <ref>https://forums.whonix.org/t/system-wide-sandboxing-framework-sandbox-app-launcher/9008/265</ref>
 <blockquote>Sandboxing programs running as the same user has historically, never seriously worked well. It’s been the cause of many issues with e.g. Flatpak. It’s why Android/iOS have always used separate users.</blockquote>
 |-
-! scope="row"| Malware Persistence
-| The only places malware can persist inside the sandbox are the home directory or shared storage (if enabled as read-write) and it can only ever be executed if W^X is disabled. Everything else is mounted read-only or as a [https://www.kernel.org/doc/html/latest/filesystems/tmpfs.html tmpfs] (a file system which keeps all files in virtual memory).
+! scope="row"| X11
+| [https://en.wikipedia.org/wiki/X_Window_System X11] does not have GUI isolation <ref>
+https://theinvisiblethings.blogspot.com/2011/04/linux-security-circus-on-gui-isolation.html
+</ref> so it is trivial to escape sandboxes with it. There is no protection against this vector at present, but the plan is to either switch to Wayland <ref>https://forums.whonix.org/t/use-xfce-with-wayland/9063</ref> or use a nested X11 server like Xpra.
 |-
 |}
 
