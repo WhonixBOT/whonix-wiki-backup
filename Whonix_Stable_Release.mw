@@ -204,6 +204,15 @@ Notable changes are listed below. Note that an in-place upgrade is <u>not</u> re
 * Fixed the [https://github.com/QubesOS/build-issues/issues/1769 qvm-kill'ing a DispVM leaves a spurious entry in qubes.xml] bug in Qubes-Whonix.
 * Allow <code>dummy-dependency</code> to fulfill the dependency of <code>qubes-core-agent-passwordless-root</code> in Qubes-Whonix.
 * Attempted to fix the Qubes-Whonix bug: [https://forums.whonix.org/t/setting-up-anon-base-files-shows-machine-id-prompt-followed-by-ominous-warning/8045 Setting up anon-base-files shows machine-id prompt followed by "OMINOUS WARNING"].
+* Fixed <code>update-torbrowser</code> not seeing version <code>10.0.6</code> due to a new, upstream version format. <ref>https://forums.whonix.org/t/update-torbrowser-does-not-see-version-10-0-6/10711</ref>
+* Tor Browser Starter by Whonix Developers: fixed opening URLs which contain question marks and added more folder permission checks.
+* Qubes-Whonix:
+** Enabled a workaround for a Qubes (Xen) Monero bug - “Automatic fallback to softwarecontext renderer”.
+** <code>sdwdate-gui</code>: fixed an unwanted automatic restart of Qubes-Whonix-Workstation after shutdown and no longer qrexec notify self on shutdown.
+** Fixed a msgcollector sudoers issue when <code>qubes-core-agent-passwordless-root</code> package was removed.
+* <code>security-misc</code>: no longer unconditionally abort pam for user accounts with locked passwords.
+* <code>ro-mode-init</code>: fixed the non-functional Live Mode Indicator. <ref>https://forums.whonix.org/t/ro-mode-init-live-mode-indicator-not-working/6795/17</ref>
+* Fixed Thunderbird connectivity out of the box with a [https://forums.whonix.org/t/torbirdy-replacement/8782/35 torbirdy replacement].
 
 === Builds ===
 
@@ -309,6 +318,12 @@ Notable changes are listed below. Note that an in-place upgrade is <u>not</u> re
 * Whonix-Workstation Firewall: added a configuration option <code>firewall_allow_udp=true</code> to allow outgoing UDP.
 * <code>binaries-freedom</code>: upgraded Bitcoin electrum wallet to version <code>4.0.3</code>.
 * <code>anon-apps-config</code>: Skip setting timezone to UTC if file <code>/etc/noutc</code> or <code>/usr/local/etc/noutc</code> exists.
+* Added [[Tor_Browser#Configuration|Tor Browser Downloader configuration options]]:
+** <code>--onion</code> to optionally download over onions.
+** <code>--alpha</code> to optionally download alpha rather than stable versions.
+* whonixcheck now warns if <code>dmesg</code> contains “Bad RAM detected”.
+* <code>security-misc</code>: pam abort when attempting to login to root when root password is locked.
+* Added a DVD drive by default for Whonix-Custom-Workstation. <ref>This avoids a grave usability issue whereby users cannot choose ISO in VirtualBox first start wizard (which asks for which ISO to boot).</ref> <ref>https://forums.whonix.org/t/no-longer-add-virtual-dvd-drive-to-vm-by-default/9337</ref>
 
 === Kernel and Related Hardening ===
 
@@ -428,6 +443,8 @@ Eased installation of [[Linux_Kernel_Runtime_Guard_LKRG|Linux Kernel Runtime Gua
 * Upgraded LKRG to the latest upstream version (version <code>0.8.1</code>; although not yet installed by default).
 
 Other security enhancements:
+* Advanced users can utilize [[Signify]] to [[Verify_the_Whonix_images#Signify_Signatures|verify {{project_name}} digital signatures]].
+* Updated various security-critical software including APT, electrum, Monero, Tor Browser, Tor Browser Downloader by Whonix Developers and Hardened Malloc.
 * Implemented [https://forums.whonix.org/t/tcp-isn-cpu-information-leak-protection-tirdad/8552 TCP ISN CPU Information Leak Protection] to prevent [https://dl.acm.org/citation.cfm?id=1180410 de-anonymization of Tor onion services] and installed [https://github.com/Whonix/tirdad Tirdad kernel module for random ISN generation] by default. <ref>TCP ISN CPU Information Leaks can be used de-anonymize Tor onion services. tirdad fixes that.</ref> <ref>[https://bitguard.wordpress.com/2019/09/03/an-analysis-of-tcp-secure-sn-generation-in-linux-and-its-privacy-issues/ An analysis of TCP secure SN generation in Linux and its privacy issues]</ref> <ref>[https://github.com/Whonix/tirdad Tirdad kernel module for random ISN generation]</ref> <ref>Tor Project bug report: [https://trac.torproject.org/projects/tor/ticket/16659 Add research idea for Linux TCP Initial Sequence Numbers may aid correlation]</ref> <ref>Research paper: [https://dl.acm.org/citation.cfm?id=1180410 Hot or not: revealing hidden services by their clock skew]</ref> <ref>[https://phabricator.whonix.org/T543 Whonix ticket]</ref>
 * [https://forums.whonix.org/t/dkms-kernel-modules-lkrg-and-tirdad-fail-to-properly-recompile-on-kernel-upgrade/8931 Fixed compilation] using DKMS on kernel upgrade by adding support for make variable KERNELRELEASE (DKMS sets it).
 * [https://forums.whonix.org/t/etc-security-hardening-console-lockdown-pam-access-access-conf/8592 Console lockdown]: allow members of group <code>console</code> to use console. Everyone else except members of group <code>console-unrestricted</code> are restricted from using console using ancient, unpopular login methods such as using /bin/login over networks, which might be exploitable. <ref>See CVE-2001-0797, using <code>pam_access</code>.</ref>
@@ -463,6 +480,26 @@ Other security enhancements:
 * Consolidated Whonix packages. <ref>https://forums.whonix.org/t/consolidating-whonix-packages/1945</ref>
 * Installed fewer unneeded packages such as <code>rsyslog</code> (see footnote). <ref>https://forums.whonix.org/t/whonix-default-packages-review-mmdebstrap-varriant-related-risk-of-regressions/9254</ref>
 * Unbreak VirtualBox clearnet DNS settings when not using DNSCrypt.
+
+=== Website Improvements ===
+
+* Wiki editing over onion.
+* Using {{project_name}} forums over onion.
+* Mostly fixed onion forum site redirects to clearnet. <ref>https://forums.whonix.org/t/onion-forum-site-redirects-to-clearnet/197/13</ref>
+* Implemented the [https://community.torproject.org/onion-services/advanced/onion-location/ Onion-Location] header, which shows the “onion available” message to any Tor Browser user visiting the clearnet version of whonix.org.
+* Fixed a false Mediawiki message that identified {{project_name}} forum logins as insecure over onion (thereby offering a https connection to the onion URL). <ref>https://forums.whonix.org/t/wiki-miss-offer-secure-connection-while-the-connection-over-onion/10349/7</ref> <ref><blockquote>Mediawiki thinks the connection is insecure since it does not have internal concepts onion traffic. I am now sending http request <code>X-Forwarded-Proto: https</code> for onion to let mediawiki know that it’s a secure connection.</blockquote></ref>
+* Implemented Expect-CT security header for whonix.org. <ref>https://forums.whonix.org/t/expect-ct-security-header-for-whonix-org/10286/3</ref>
+* Fixed URL with no onion mirror. <ref>https://forums.whonix.org/t/url-with-no-onion-mirror/10341</ref>
+* Reviewed [https://www.hardenize.com/ hardenize.com] results (no clean HSTS-Preload / DNSSEC). <ref>https://forums.whonix.org/t/no-clean-hsts-preload-dnssec/10255</ref>
+* Researched DANE TLSA (DNS-based Authentication of Named Entities) for whonix.org. <ref>https://forums.whonix.org/t/dane-tlsa-dns-based-authentication-of-named-entities-for-whonix-org/10218/2</ref>
+* Whonix software signature verification documentation discussion: VirtualBox vs KVM - GPG / signify / codecrypt. <ref>https://forums.whonix.org/t/whonix-software-signature-verification-documentation-discussion-virtualbox-vs-kvm-gpg-signify-codecrypt/10043/22</ref>
+* Checked broken discourse email replies. <ref>https://forums.whonix.org/t/discourse-reply-by-e-mail-broken-2/9970/3</ref>
+* Investigated uploaded images not presenting after creating a topic. <ref>https://forums.whonix.org/t/uploaded-images-doesnt-show-up-after-creating-topic/5623</ref>
+* Documented [[Website_Tests|Testing the Whonix ™ server]] with test websites such as hardenize.com / securityheaders.com / Mozilla Observatory / SSL Labs / hstspreload.org.
+* Improved documentation chapter [[Trust#Trusting_the_Whonix_.E2.84.A2_Website|Trusting the Whonix ™ Website]].
+* Considered [[Dev/About_Infrastructure#drop-www_vs_yes-www|drop-www vs yes-www]].
+* Considered [[Dev/About_Infrastructure#Hide_Server_IP|Hide Server IP]].
+* Set up a dedicated server for Kicksecure, with dedicated domain kicksecure.com, homepage, wiki and soon forums. <ref>This website is not yet public; a significant effort is required to rewrite the wiki for Kicksecure.</ref>
 
 = Footnotes =
 {{reflist|close=1}}
