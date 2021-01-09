@@ -515,6 +515,67 @@ Is the authority's cert's valid-after date signed/verified/built-into-Tor or can
 * A simple command line tool that can parse Tor's consensus and Tor's log as been implemented: [[#anondate]]
 * Perhaps relying solely on anondate for time setting could be implemented as an alternative [[Dev/TimeSync#Time_Fetching_Methods|Time Fetching Method]] into sdwdate and be available as an option (disabled by default in {{project_name}}).
 
+Implementation:
+
+In short this is how time syncing is performed when {{project name}} starts:
+
+Credits: <ref>
+Rewrite of https://tails.boum.org/contribute/design/Time_syncing/.
+</ref>
+
+# Start Tor. If Tor is already working, skip to the following anondate steps.
+# Let Tor fetch the Tor consensus.
+# (anondate related step) If the time is too badly off, the Tor directory authority certificate may not be valid, so we set the system time to the Tor directory authority certificate start date. (<code>sudo anondate --tor-cert-valid-after</code>) For example, see footnote. <ref>
+<pre>
+Jan 09 02:33:33 work Tor[20042]: Certificate not yet valid. Either their clock is set wrong, or your clock is wrong.
+Jan 09 02:33:33 work Tor[20042]: (certificate lifetime runs from Aug 27 00:00:00 2020 GMT through Aug 27 00:00:00 2021 GMT. Your time is Jan 09 07:33:33 2000 UTC.)
+</pre>
+
+{{CodeSelect|code=
+sudo anondate --tor-cert-valid-after
+}}
+
+<pre>
+Aug 27 00:00:00 2020 GMT
+</pre>
+</ref>, which will guarantee that the Tor directory authority certificate will be valid and the Tor consensus (which includes Tor <code>valid-until</code> date/time) can be downloaded.
+# (anondate related step) Wait until Tor can tell us the Tor <code>valid-until</code> date/time.
+# (anondate related step) Set system time to Tor consensus time <code>valid-until</code> - <code>1:30</code>. (In other words: minus <code>1</code> and <code>30</code> or minus <code>90</code> minutes.) (<code>sudo anondate --show-middle-range</code>) <ref>
+{{CodeSelect|code=
+anondate --show-valid-after
+}}
+
+<pre>
+2021-01-09 13:00:00
+</pre>
+
+{{CodeSelect|code=
+sudo anondate --show-valid-until
+}}
+
+<pre>
+2021-01-09 16:00:00
+</pre>
+
+{{CodeSelect|code=
+anondate --show-middle-range
+}}
+
+<pre>
+2021-01-09 14:30:00
+</pre>
+</ref>
+# Wait until the Tor bootstrap process has been completed.
+# Use sdwdate (which exclusively uses onions as time sources) though Tor to get a more correct system time.
+
+A notification in form of [[sdwdate-gui]] shown while the whole process is running.
+
+Non-issues:
+
+* Use of unverified Tor consensus is not required.
+* Restart of Tor is not required.
+* The hardware clock is not affected.
+
 = Debugging =
 Useful to run in Qubes dom0.
 <pre>
