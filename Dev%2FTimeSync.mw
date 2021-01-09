@@ -576,6 +576,31 @@ Non-issues:
 * Restart of Tor is not required.
 * The hardware clock is not affected.
 
+Security discussion:
+
+sdwdate's approach essentially removes Tor's time skew check, which is used to prevent replay of consensus data. Let's discuss this class of attacks.
+
+First, replaying a consensus older than four weeks or so results in preventing access to the Tor network, and that's all, because onion keys will be wrong. An attacker who is in a position to replay a consensus to you could anyway do this, unrelated to time, so the issue at hand boils down to replaying a consensus not older than four weeks or so.
+
+Second, the same type of attacker as above could also try to forge a completely new consensus, which would be unverifiable since the attacker doesn't have access to the authorities' keys. We would still set the system time according to the Tor directory authority certificate start date, but Tor would refuse to use the forged consensus, resulting in complete denial-of-service. An attacker in that position could do denial-of-service attacks in many other ways, so this doesn't make the situation any worse.
+
+Third, things are different depending on if you're using a bridge or not.
+
+If not using a bridge, first boot: Tor starts without a cached consensus, so the Tor client starts by connecting directly to a fallback directory mirror, so feeding you an old consensus requires the attacker either to break SSL, or to control the fallback directory mirror your Tor client connects to. Not good, but probably a compromise we can make.
+
+If using a bridge: your bridge can replay an old (four weeks old max.) consensus, which is used until sdwdate has fixed the time; not good, but probably a compromise we can make. If your bridge also can either
+
+* A) set up an onion MitM attack against the sdwdate onion connections, and/or
+* B) also controls onions used by sdwdate as time sources,
+
+it can trick you into using this old consensus for max. four weeks, which is much worse.
+
+A) should be extremly unlikely. A successful MitM against a Tor onion connection have never been reported. While Tor onions servers might be vulnerable to various de-anonymization attacks, this is a different topic, this affects only the anonymity of the onion server. The client, visitor (here user's machine using sdwdate) does not have to worry about this. Also does not affect the encryption/authentication of the connection. No reports of breaking onion encryption/authentication where known at time of writing. If this was possible, this would be catastrophic anyhow. This wouldn't make the situation any worse.
+
+B) should also be very unlikely. Onion servers targeting specific users seems very unlikely since users connect anonymously using Tor to an onion server. An attack against all users is also very unlikely since sdwdate is distributed (uses median of 3 onion time sources), randomly choosen from sdwdate time sources list and such an attack would be easy to notice, probably reported by users and in response developers would remove these sdwdate time sources.
+
+In any case it should be better than using unauthenticated NTP.
+
 = Debugging =
 Useful to run in Qubes dom0.
 <pre>
