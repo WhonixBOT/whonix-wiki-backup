@@ -517,20 +517,34 @@ Security discussion:
 
 sdwdate's approach essentially removes Tor's time skew check, which is used to prevent replay of consensus data. Let's discuss this class of attacks.
 
-First, replaying a consensus older than four weeks or so results in preventing access to the Tor network, and that's all, because onion keys will be wrong. An attacker who is in a position to replay a consensus to you could anyway do this, unrelated to time, so the issue at hand boils down to replaying a consensus not older than four weeks or so.
+First, replaying a consensus older than four weeks or so results in preventing access to the Tor network, and that's all, because onion keys will be wrong. An attacker who is in a position to replay a consensus to the user could anyway do this, unrelated to time, so the issue at hand boils down to replaying a consensus not older than four weeks or so.
 
 Second, the same type of attacker as above could also try to forge a completely new consensus, which would be unverifiable since the attacker doesn't have access to the authorities' keys. An attacker in that position could do denial-of-service attacks in many other ways, so this doesn't make the situation any worse.
 
-Third, things are different depending on if you're using a bridge or not.
+Third, things are different depending on if the user is using a bridge or not.
 
-If not using a bridge, first boot: Tor starts without a cached consensus, so the Tor client starts by connecting directly to a fallback directory mirror, so feeding you an old consensus requires the attacker either to break SSL, or to control the [https://gitlab.torproject.org/legacy/trac/-/wikis/doc/FallbackDirectoryMirrors fallback directory mirror] your Tor client connects to. Not good, but probably a compromise we can make.
+If not using a bridge, first boot:
 
-If using a bridge: your bridge can replay an old (four weeks old max.) consensus, which is used until sdwdate has fixed the time; not good, but probably a compromise we can make. If your bridge also can either
+* Tor starts without a cached consensus.
+* The Tor client starts by connecting directly to a [https://gitlab.torproject.org/legacy/trac/-/wikis/doc/FallbackDirectoryMirrors fallback directory mirror] to download the Tor consensus.
+* Feeding a stale consensus requires the attacker either to break SSL or to control the fallback directory mirror the user's Tor client connects to.
+* Under these conditions the adversary could feed an up to four weeks stale Tor consensus, which is used until sdwdate has fixed the time;
+* Not good, but probably a compromise we can make.
+
+If using a bridge, first boot:
+
+* Tor starts without a cached consensus.
+* Tor fetches Tor consensus from the bridge.
+* Feeding a stale consensus requires the attacker either to break SSL or to control the user's bridge.
+* Under these conditions the adversary could feed an up to four weeks stale Tor consensus.
+* Not good, but probably a compromise we can make.
+
+If your ISP, Tor entry guard or Tor bridge, can also:
 
 * A) set up an onion MitM attack against the sdwdate onion connections, and/or
-* B) also controls onions used by sdwdate as time sources,
+* B) controls onions used by sdwdate as time sources,
 
-it can trick you into using this old consensus for max. four weeks, which is much worse.
+it can trick you into keep using this old consensus for max. four weeks, which is much worse.
 
 A) should be extremely unlikely. A successful MitM against a Tor onion connection have never been reported. While Tor onions servers might be vulnerable to various de-anonymization attacks, this is a different topic, this affects only the anonymity of the onion server. The client, visitor (here user's machine using sdwdate) does not have to worry about this. Also does not affect the encryption/authentication of the connection. No reports of breaking onion encryption/authentication where known at time of writing. If this was possible, this would be catastrophic anyhow. This wouldn't make the situation any worse.
 
