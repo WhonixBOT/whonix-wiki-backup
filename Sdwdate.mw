@@ -210,14 +210,17 @@ Let's say the normal distribution for most users would be <code>pool differences
 After boot, sdwdate sets the time using the <code>date</code> after fetching times from remote.
 
 * Without clock randomization: The command executed from sdwdate could be <code>sudo date --set "Tue 12 Jan 2021 06:48:55 AM UTC"</code>. This allows for more opportunities to tag user because nanoseconds are to <code>0</code> without any randomization. The full command to be run could be guessed by the sdwdate time source.
-* With clock randomization: The command executed from sdwdate could be <code>sudo date --set "Tue 12 Jan 2021 06:48:55:976225329 AM UTC"</code>. Only the first part of the date/time "Tue 12 Jan 2021 06:48:55 AM UTC" can be guessed but an an extra random clock skew is introduced. The random nanoseconds part <code>976225329</code> being unpredictable by remote time sources.
+* With clock randomization: The command executed from sdwdate could be <code>sudo date --set "Tue 12 Jan 2021 06:48:55:976225329 AM UTC"</code>. Only the first part of the date/time <code>Tue 12 Jan 2021 06:48:55 AM UTC</code> can be guessed but an an extra random clock skew is introduced. The random nanoseconds part <code>976225329</code> being unpredictable by remote time sources.
 
 (These are just examples. sdwdate internally actually uses unixtime since that is easier in the program. Just to illustrate the mode of operation.)
 
+If nanoseconds are randomized and later leaked to for example remote web servers, it won't be possible for the remote web server know if clock is just skewed normally or if it was set using sdwdate with randomization. Rationale of randomization is making it look more like a naturally skewed clock.
 
+Accuracy of sdwdate is far outside of <code>±</code> <code>1</code> second anyhow. Due after asking a remote onion web servers for the time and the result being relayed back through the slow Tor network to the user with hard to predict latency, nanoseconds might not matter anyhow. By the time sdwdate running <code>date</code>, nanoseconds might already be randomized without extra randomization required.
 
+When supposing for the sake of threat modeling that a web server can observe clock jumps from remote because of lets say browser, javascript or something leaks it is better to jump to a randomized number of nanoseconds <code>976225329</code> than <code>000000000</code>.
 
-In sdwdate clock randomization was enabled by default for many versions. From sdwdate version <code>11.8</code> and above it needs to be opt-in, which is only done inside {{project name}} through package anon-apps-config. sdwdate version <code>11.8</code> does not enable clock randomization by default for non-{{project name}} users.
+In sdwdate clock randomization was enabled by default for many versions. From sdwdate version <code>11.8</code> and above it needs to be opt-in, which is only done inside {{project name}} through package [https://github.com/Whonix/anon-apps-config anon-apps-config] [https://github.com/Whonix/anon-apps-config/blob/master/etc/sdwdate.d/40_anon-apps-config.conf <code>/etc/sdwdate.d/40_anon-apps-config.conf</code>] <code>RANDOMIZE_TIME=true</code>. sdwdate version <code>11.8</code> does not enable clock randomization by default for non-{{project name}} users.
 
 This feature, sdwdate clock randomization, is unrelated to Boot Clock Randomization. sdwdate Clock Randomization happens only after sdwdate has fetched the time from onion time sources before setting the time. Boot Clock Randomization happens at boot time only. See also [[Boot Clock Randomization]].
 
