@@ -192,7 +192,36 @@ sdwdate checks if dates/times from remote servers (onions) are within Tor <code>
 2021-01-09 14:47:17 - sdwdate - INFO - * time_consensus_sanity_check: sane
 </pre>
 
-== Clock Randomization ==
+== sdwdate Clock Randomization ==
+Log example.
+
+<pre>
+End fetching remote times.
+pool differences, sorted: [-35, 5, 5]
+median time difference: +5.000000000
+randomize             : -0.976225329
+new time difference   : +4.023774671
+</pre>
+
+The rationale for that is that an onion time source could try to tag specific users. sdwdate uses the median time (not average) fetch result. (Average time of the 3 pools would not be be safe. To explain, suppose one pool returning a result of -1000 seconds time difference would overpower the time pools with a more realistic time difference of for example -1 and -2 seconds.)
+
+Let's say the normal distribution for most users would be <code>pool differences, sorted: [7, 5, 3]</code>. Then and onion time source could experiment with saying <code>4, 5, 6</code> to split users into different groups. This is assuming that not too many users ask the same server at the very same time. A realistic assumption given that the total number of Tor users is not that high. By adding up to <code>±</code> <code>1</code> second it gets harder to tag specific users.
+
+After boot, sdwdate sets the time using the <code>date</code> after fetching times from remote.
+
+* Without clock randomization: The command executed from sdwdate could be <code>sudo date --set "Tue 12 Jan 2021 06:48:55 AM UTC"</code>. This allows for more opportunities to tag user because nanoseconds are to <code>0</code> without any randomization. The full command to be run could be guessed by the sdwdate time source.
+* With clock randomization: The command executed from sdwdate could be <code>sudo date --set "Tue 12 Jan 2021 06:48:55:976225329 AM UTC"</code>. Only the first part of the date/time "Tue 12 Jan 2021 06:48:55 AM UTC" can be guessed but an an extra random clock skew is introduced. The random nanoseconds part <code>976225329</code> being unpredictable by remote time sources.
+
+(These are just examples. sdwdate internally actually uses unixtime since that is easier in the program. Just to illustrate the mode of operation.)
+
+
+
+
+In sdwdate clock randomization was enabled by default for many versions. From sdwdate version <code>11.8</code> and above it needs to be opt-in, which is only done inside {{project name}} through package anon-apps-config. sdwdate version <code>11.8</code> does not enable clock randomization by default for non-{{project name}} users.
+
+This feature, sdwdate clock randomization, is unrelated to Boot Clock Randomization. sdwdate Clock Randomization happens only after sdwdate has fetched the time from onion time sources before setting the time. Boot Clock Randomization happens at boot time only. See also [[Boot Clock Randomization]].
+
+No clock randomization is planed when temporarily setting time based on Tor certificate lifetime or Tor consensus time middle range. This is because these times are so far off from the the real world time and so few users are using it that randomization could not help or even make users more trackable.
 
 == Trusted Time Sources ==
 The links below are listed to keep track of pool candidates:
