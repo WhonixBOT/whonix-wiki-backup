@@ -604,6 +604,43 @@ B) should also be very unlikely. Onion servers targeting specific users seems ve
 
 In any case it should be better than using unauthenticated NTP.
 
+===== Tor Consensus Time Setting Method Security Considerations =====
+User local system clock being much skewed is a big issue because:
+
+* a) Stands out in javascript snooping scripts (Even if Tor Browser fixed that, other applications could leak it.)
+* b) Prevents Tor consensus from being downloaded leading to broken Tor connectivity.
+* c) Other issues discussed on top of this page, [[Time Attacks]].
+
+It depends on the start conditions. Seems really complex. The user's clock is either:
+
+* [C]: correct
+* [D]: incorrect
+
+The Tor directory mirror (just normal relays) is either sending the user a Tor consensus that is:
+
+* [E]: fresh
+* [D]: legitimate (bug) stale
+* [F]: malicious (targeted attack) stale
+* [G]: invalid
+
+Now these are quite a few cases to combine and consider. [G] we can ignore. [D] and [F] can be regarded as approximately the same issue.
+
+user clock slow [D] + stale Tor consensus [F]: user would remain on fake Tor network
+
+user clock correct [C] + stale Tor consensus [F]: these users would now get worsened by anondate. The user's system clock would be set to the past because the stale Tor consensus told us so. The worst could be prevented with a hardcoded minimum date as a safeguard but it's still a security compromise to make.
+
+user clock slow [D] + fresh Tor consensus [E]: In this case anondate would fix the connectivity/usability issue, fix a) and b).
+
+Then it also depends on how slow the user's clock is.
+
+* [H] Less than 24 hours slow clock or
+* [I] More than 24 hours slow clock.
+
+Therefore:
+
+* [H] + a): issue
+* [I] + a): no issue since no connection
+
 = Debugging =
 Useful to run in Qubes dom0.
 <pre>
