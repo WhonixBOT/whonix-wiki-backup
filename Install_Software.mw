@@ -48,44 +48,51 @@ There are numerous examples of this procedure in the [[Software]] chapter and th
 |-
 ! scope="row"| Prefer APT
 | 
-* The safest option is to stick with Debian's official package manager <code>APT</code>. This is referenced throughout the wiki whenever the user runs <code>apt-get</code>. <br />
-* <code>APT</code> is a secure package manager which passes the TUF threat model, since it features metadata verification and expiration detection. <ref name=tufaaw>https://github.com/theupdateframework/tuf/blob/develop/SECURITY.md http://www.webcitation.org/6F7Io2ncN</ref> <ref>
+* The safest option is to stick with Debian's official package manager <code>APT</code>. This is referenced throughout the wiki whenever the user runs <code>apt-get</code>.
+* <code>APT</code> is a secure package manager which passes the TUF threat model, since it features metadata verification and expiration detection. <ref name=tufaaw>https://github.com/theupdateframework/tuf/blob/develop/SECURITY.md http://www.webcitation.org/6F7Io2ncN
+</ref> <ref>
 https://www2.cs.arizona.edu/stork/packagemanagersecurity/attacks-on-package-managers.html
 </ref>
 |-
 ! scope="row"| Avoid Third Party Package Managers
 | 
-* There are many third party package managers besides <code>APT</code>, however many lack the security safeguards that are standard in Debian. Popular examples are <code>pip</code> and <code>node.js</code>. <br />
-* The security concern with third party options is they do not verify the code comes from the author. When used, these package managers run processes that pull untrusted code from the Internet and perform operations with root level permissions. <br />
-* If a trusted Workstation VM is required for sensitive use cases such as a Bitcoin wallet, then completely avoid this option. <ref>https://web.archive.org/web/20170919173146/https://arstechnica.com/information-technology/2017/09/devs-unknowingly-use-malicious-modules-put-into-official-python-repository/</ref> <ref>The pip developers refused to implement any kind of proper GPG signature verification, [https://github.com/pypa/pip/issues/1035 opting to support server HTTPS instead] which is a lot weaker. While the TUF secure updater project has [https://theupdateframework.github.io/ implemented a safe version of pip], it is not clear how widely it has been adopted and whether it will become popular.</ref>
+* There are many third party package managers besides <code>APT</code>, however many lack the security safeguards that are standard in Debian. Popular examples are <code>pip</code> and <code>node.js</code>.
+* The security concern with third party options is they do not verify the code comes from the author. When used, these package managers run processes that pull untrusted code from the Internet and perform operations with root level permissions.
+* If a trusted Workstation VM is required for sensitive use cases such as a Bitcoin wallet, then completely avoid this option. <ref>
+https://web.archive.org/web/20170919173146/https://arstechnica.com/information-technology/2017/09/devs-unknowingly-use-malicious-modules-put-into-official-python-repository/
+</ref> <ref>
+The pip developers refused to implement any kind of proper GPG signature verification, [https://github.com/pypa/pip/issues/1035 opting to support server HTTPS instead] which is a lot weaker. While the TUF secure updater project has [https://theupdateframework.github.io/ implemented a safe version of pip], it is not clear how widely it has been adopted and whether it will become popular.
+</ref>
 |-
 ! scope="row"| Avoid Manual Software Installation
 | 
-* Generally avoid the manual installation of packages, even trusted ones. In practice that means software should only be installed with <code>apt-get</code>, unless special circumstances exist. <ref>Such as desirable software versions that are not yet bundled in the official repositories.</ref> <br />
+* Generally avoid the manual installation of packages, even trusted ones. In practice that means software should only be installed with <code>apt-get</code>, unless special circumstances exist. <ref>
+Such as desirable software versions that are not yet bundled in the official repositories.
+</ref>
 * Other risks: foreign packages are often unsigned, and users may forget to regularly update the software.
 |-
 ! scope="row"| Always Verify Signatures
 | 
-* For greater system security, it is strongly recommended to avoid installing unsigned software. Always make sure that [[Verifying_Software_Signatures|signing keys and signatures are correct]] and/or use mechanisms that heavily simplify and automate this process, like [[Operating_System_Software_and_Updates#Updates|apt-get upgrades]]. <br />
+* For greater system security, it is strongly recommended to avoid installing unsigned software. Always make sure that [[Verifying_Software_Signatures|signing keys and signatures are correct]] and/or use mechanisms that heavily simplify and automate this process, like [[Operating_System_Software_and_Updates#Updates|apt-get upgrades]].
 * Note: digital signatures are not a magic bullet. While they increase the certainty that no backdoor was introduced by a third party during transit, this does not mean the software is absolutely "backdoor-free". Learn more about this process and [[Verifying_Software_Signatures#What_Digital_Signatures_Prove|what digital signatures prove]].
 |-
 {{Anchor|Prefer Packages from Debian Stable Repository}}
 ! scope="row"| Prefer Packages from Debian Stable Repository
 | 
-* Considering the risks, it is safest to install new software from Debian's stable repository, rather than the testing / unstable or third party repositories -- the [https://www.debian.org/doc/manuals/debian-faq/ch-choosing.en.html#s3.1 Debian FAQ] provides a strong rationale for using the stable repository; see footnote. <ref><blockquote>
-If security or stability are at all important for you: install stable. period. This is the most preferred way.<br />
-...<br />
-Since there is typically over 1 year between releases you might find that stable contains old versions of packages. However, they have been tested in and out. One can confidently say that the packages do not have any known severe bugs, security holes etc., in them. The packages in stable integrate seamlessly with other stable packages. These characteristics are very important for production servers which have to work 24 hours a day, 7 days a week. <br />
-...<br />
-Stable is rock solid. It does not break and has full security support. But it might not have support for the latest hardware.<br /> <br />
+* Considering the risks, it is safest to install new software from Debian's stable repository, rather than the testing / unstable or third party repositories -- the [https://www.debian.org/doc/manuals/debian-faq/ch-choosing.en.html#s3.1 Debian FAQ] provides a strong rationale for using the stable repository; see footnote. <ref>
+<blockquote>If security or stability are at all important for you: install stable. period. This is the most preferred way.
+...
+Since there is typically over 1 year between releases you might find that stable contains old versions of packages. However, they have been tested in and out. One can confidently say that the packages do not have any known severe bugs, security holes etc., in them. The packages in stable integrate seamlessly with other stable packages. These characteristics are very important for production servers which have to work 24 hours a day, 7 days a week. 
+...
+Stable is rock solid. It does not break and has full security support. But it might not have support for the latest hardware.
 
-On the other hand, packages in testing or unstable can have hidden bugs, security holes etc. Moreover, some packages in testing and unstable might not be working as intended.
-</blockquote></ref> <br />
-* Only advanced users should attempt to mix packages from Debian testing or Debian unstable. The reason is it can lead to a [[#Dependency Hell|dependency hell]], making it very difficult to resolve the breakage of APT package management. <br />
-* To use newer package versions, Debian backports <ref>[http://backports.debian.org Debian Backports]: "Backports are packages taken from the next Debian release (called "testing"), adjusted and recompiled for usage on Debian stable."</ref> is a far safer alternative than the Debian testing or unstable repositories. However, Debian backports should be used conservatively; see footnote. <ref>
-<blockquote>
-Backports cannot be tested as extensively as Debian stable, and backports are provided on an as-is basis, with risk of incompatibilities with other components in Debian stable. Use with care!
-</blockquote>
+On the other hand, packages in testing or unstable can have hidden bugs, security holes etc. Moreover, some packages in testing and unstable might not be working as intended.</blockquote>
+</ref>
+* Only advanced users should attempt to mix packages from Debian testing or Debian unstable. The reason is it can lead to a [[#Dependency Hell|dependency hell]], making it very difficult to resolve the breakage of APT package management.
+* To use newer package versions, Debian backports <ref>
+[http://backports.debian.org Debian Backports]: <blockquote>Backports are packages taken from the next Debian release (called "testing"), adjusted and recompiled for usage on Debian stable.</blockquote>
+</ref> is a far safer alternative than the Debian testing or unstable repositories. However, Debian backports should be used conservatively; see footnote. <ref>
+<blockquote>Backports cannot be tested as extensively as Debian stable, and backports are provided on an as-is basis, with risk of incompatibilities with other components in Debian stable. Use with care!</blockquote>
 </ref> For instructions on using Debian backports, see [[#Backports|here]].
 |}
 
