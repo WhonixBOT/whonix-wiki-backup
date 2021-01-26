@@ -195,9 +195,15 @@ sdwdate checks if dates/times from remote servers (onions) are within Tor <code>
 == sdwdate Time Replay Protection ==
 Done in git master. Will be released in next version of sdwdate.
 
-TODO: document
+sdwdate internally uses [https://gitlab.com/whonix/helper-scripts/-/blob/master/usr/bin/minimum-unixtime-show <code>minimum-unixtime-show</code>].
 
-minimum-unixtime-show
+Effectively, sdwdate looks at file <code>/usr/share/timesanitycheck/minimum_unixtime</code> which contains a minimum unixtime timestamp which was created by developers during development and file <code>/var/lib/sdwdate/time-replay-protection-utc-unixtime</code> which will be created every time after sdwdate has successfully set the time. sdwdate will not set time earlier than the time in these files. The purpose of this is to implement Time Replay Protection. No matter if sdwdate onion servers later give false time information due to a bug or an attack to users, the clock would never be set to a much earlier date such as year 1980 or an earlier date than the release date.
+
+File <code>/usr/share/timesanitycheck/minimum_unixtime</code> will be occasionally updated by developers. It is planned to update that file at least for every release. Whenever <code>/usr/share/timesanitycheck/minimum_unixtime</code> was updated. [[Time Attacks]] thorough false time source replies against sdwdate with times before that time will not be possible.
+
+Most users users it should not be required however users are free to create a custom extra file <code>/etc/minimum-unixtime</code> or <code>/usr/local/etc/minimum-unixtime</code> which sdwdate would also honor and never set the clock earlier than that time. All minimum unixtime files would be considered.
+
+sdwdate could optionally also be instructed to ignore vendor provided file <code>/usr/share/timesanitycheck/minimum_unixtime</code>, sdwdate auto generated file <code>/var/lib/sdwdate/time-replay-protection-utc-unixtime</code> and above mentioned user custom extra file by by creating a custom override file <code>/etc/minimum-unixtime.override</code> (lower priority) or <code>/usr/local/etc/minimum-unixtime.override</code> (higher priority) which take absolute priority and result in ignoring all other minimum unixtime files. Valid values in any minimum unixtime files are only integer values. Must be [https://en.wikipedia.org/wiki/Unix_time unixtime]. Example: <code>1611651349</code>. Minimum value is <code>0</code> which however does not make sense except for testing purposes. That would effectively disable time replay protection. For testing purposes it might be useful to set a far future date such as <code>2611651349</code> which could be temporarily enabled to test if sdwdate's time replay protection would be functional.
 
 == sdwdate Clock Randomization ==
 Log example.
