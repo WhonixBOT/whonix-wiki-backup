@@ -40,209 +40,152 @@ Both configs were based on the default Debian config.
 
 Here is a list of the improvements of the config. This may not be complete but has the bulk of the features.
 
-== Options we disable ==
+== Attack surface reduction ==
 
-Disables /proc/kcore. Exposes kernel text image layout.
+hardened-kernel disables numerous options within the kernel in an attempt to minimize the exposed attack surface.
 
-Disables /dev/port. Can modify kernel memory.
+Many features within the kernel are designed to allow the root user to modify kernel code. This is unacceptable within our threat model. As such, features permitting this level of access are disabled:
 
-Disables /dev/mem. Can modify kernel memory.
+* <code>CONFIG_DEVMEM=n</code> - <code>/dev/mem</code>. <ref>https://linux.die.net/man/4/mem</ref> This can be restricted via <code>CONFIG_STRICT_DEVMEM</code> and <code>CONFIG_IO_STRICT_DEVMEM</code> but it is best to disable it altogether.
+* <code>CONFIG_DEVKMEM=n</code> - <code>/dev/kmem</code>. <ref>https://linux.die.net/man/4/mem</ref>
+* <code>CONFIG_DEVPORT=n</code> - <code>/dev/port</code>. <ref>https://linux.die.net/man/4/mem</ref>
+* <code>CONFIG_LIVEPATCH=n</code> - Livepatching. <ref>https://www.kernel.org/doc/html/latest/livepatch/livepatch.html</ref>
+* <code>CONFIG_KEXEC=n</code> - kexec. <ref>https://en.wikipedia.org/wiki/Kexec</ref>
+* <code>CONFIG_KPROBES=n</code> - kprobes. <ref>https://www.kernel.org/doc/html/latest/trace/kprobes.html</ref>
+* <code>CONFIG_FTRACE=n</code> - ftrace. <ref>https://www.kernel.org/doc/html/latest/trace/ftrace.html</ref>
+* <code>CONFIG_X86_MSR=n</code> - CPU MSRs. <ref>https://en.wikipedia.org/wiki/Model-specific_register</ref>
+* <code>CONFIG_ACPI_TABLE_UPGRADE=n</code> - ACPI table upgrading. <ref>https://www.kernel.org/doc/html/latest/admin-guide/acpi/initrd_table_override.html</ref>
+* <code>CONFIG_HIBERNATION=n</code> - Hibernation. The kernel image can be replaced during hibernation.
 
-Disables livepatching. Can modify kernel code.
+However, despite these efforts, the following remaining kernel features have been identified to still be able to modify or extract sensitive data from the kernel:
 
-Disables CPU MSRS. Can be abused to write to kernel memory.
+* <code>efivar_ssdt_load</code> (only applicable for the host kernel).
+* <code>perf_event_open()</code>.
+* <code>iopl()</code> and <code>ioperm()</code>.
+* <code>TIOCSSERIAL</code>.
+* Direct PCI BAR access.
+* Replacement of the PCMCIA Card Information Structure.
+* Certain module parameters.
 
-Disables kexec. Can replace the current kernel.
+The above features can only be disabled with custom kernel patches which are not included yet.
 
-Disables kprobes. Can access kernel memory.
+In order to further reduce attack surface, hardened-kernel also disables dangerous features that have resulted in kernel vulnerabilities or can otherwise aid exploitation:
 
-Disables <code>bpf()</code> syscall. Can be abused to read arbitrary kernel memory through functions such as <code>bpf_probe_read()</code> and has been the cause of many kernel vulnerabilities.
+* <code>CONFIG_BPF_SYSCALL=n</code> - The <code>bpf()</code> syscall can be abused to read arbitrary kernel memory through functions such as <code>bpf_probe_read()</code> <ref>https://www.kernel.org/doc/html/latest/bpf/bpf_design_QA.html#q-can-bpf-overwrite-arbitrary-kernel-memory</ref> and has caused countless kernel vulnerabilities. <ref>https://ricklarabee.blogspot.com/2018/07/ebpf-and-analysis-of-get-rekt-linux.html</ref> <ref>https://nitter.net/bleidl/status/943714277403357185</ref> <ref>https://scannell.me/fuzzing-for-ebpf-jit-bugs-in-the-linux-kernel/</ref> <ref>https://www.thezdi.com/blog/2020/4/8/cve-2020-8835-linux-kernel-privilege-escalation-via-improper-ebpf-program-verification</ref>
+* <code>CONFIG_SLAB_MERGE_DEFAULT=n</code> - Disabling slab merging significantly increases the difficulty of heap exploitation by preventing overwriting objects from merged caches <ref>https://www.openwall.com/lists/kernel-hardening/2017/06/19/33</ref> and by making it harder to influence slab cache layout. <ref>https://www.openwall.com/lists/kernel-hardening/2017/06/20/10</ref>
+* <code>CONFIG_USERFAULTFD=n</code> - The <code>userfaultfd()</code> syscall is often abused to exploit use-after-free flaws. <ref>https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=cefdca0a86be517bc390fc4541e3674b8e7803b0</ref> <ref>https://duasynt.com/blog/linux-kernel-heap-spray</ref>
+* <code>CONFIG_LEGACY_VSYSCALL_NONE=y</code>, <code>CONFIG_X86_VSYSCALL_EMULATION=n</code> - vsyscalls are obsolete, are at fixed addresses and thus, are a potential target for ROP.
+* <code>CONFIG_VIDEO_VIVID=n</code> - The vivid driver is only required for testing and has been the cause of multiple vulnerabilities. <ref>https://www.openwall.com/lists/oss-security/2019/11/02/1</ref>
+* <code>CONFIG_BINFMT_MISC=n</code> - binfmt_misc. We don't need custom binary formats and they only add attack surface.
+* <code>CONFIG_NOUVEAU_LEGACY_CTX_SUPPORT=n</code> - Legacy nouveau contexts aren't needed anymore and contain security holes. <ref>https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=b30a43ac7132cdda833ac4b13dd1ebd35ace14b7</ref>
+* <code>CONFIG_INET_DIAG=n</code> - The INET socket monitoring interface has aided heap memory attacks in the past.
+* <code>CONFIG_COREDUMP=n</code>, <code>CONFIG_CRASH_DUMP=n</code> - Core dumps and crash dumps can contain sensitive information.
+* <code>CONFIG_USELIB=n</code> - The <code>uselib()</code> is only used in older libc versions and is unnecessary. It has also been the cause of privilege escalation vulnerabilities in the past.
+* <code>CONFIG_X86_X32=n</code>, <code>CONFIG_IA32_EMULATION=n</code> - 32-bit support and IA32 emulation adds a lot of additional complexity to the kernel and doesn't receive much attention upstream so it's full of bugs. <ref>https://seclists.org/oss-sec/2019/q4/98</ref>
+* <code>CONFIG_MODIFY_LDT_SYSCALL=n</code> - The <code>modify_ldt()</code> syscall increases low-level kernel attack surface.
+* <code>CONFIG_KSM=n</code> - KSM can aid side-channel attacks. <ref>https://www.whonix.org/wiki/KVM#KSM</ref>
+* <code>CONFIG_IP_DCCP=n</code>, <code>CONFIG_IP_SCTP=n</code>, <code>CONFIG_RDS=n</code>, etc. - Many rare network protocols are disabled, including, DCCP, SCTP, RDS and more. These often cause critical vulnerabilities in the kernel and are generally unneeded.
+* <code>CONFIG_FIREWIRE=n</code>, <code>CONFIG_THUNDERBOLT=n</code> - FireWire and Thunderbolt can be abused for DMA attacks. <ref>https://en.wikipedia.org/wiki/IEEE_1394#Security_issues</ref> <ref>https://en.wikipedia.org/wiki/Thunderbolt_(interface)#Security_vulnerabilities</ref>
+* <code>CONFIG_AIO=n</code> - POSIX AIO is a niche and poorly designed feature that significantly increases the complexity of the kernel whilst receiving very little attention from developers. <ref>https://web.archive.org/web/20190524021219/https://github.com/AndroidHardeningArchive/documentation/blob/master/technical_overview.md#attack-surface-reduction</ref> <ref>https://lwn.net/Articles/671649/</ref> <ref>https://lwn.net/Articles/671657/</ref>
+* <code>CONFIG_SYSFS_SYSCALL=n</code> - The <code>sysfs()</code> syscall is deprecated.
+* <code>CONFIG_PROC_KCORE</code> - <code>/proc/kcore</code> exposes sensitive information about the current kernel which can be useful to an attacker.
+* <code>CONFIG_DEBUG_FS=n</code> - debugfs is a filesystem which contains a substantial amount of sensitive kernel information. <ref>https://lkml.org/lkml/2020/7/16/122</ref>
+* <code>CONFIG_NOTIFIER_ERROR_INJECTION=n</code> - Notifier error injection allows userspace to inject artificial errors into kernel code. <ref>https://www.kernel.org/doc/html/latest/fault-injection/notifier-error-inject.html</ref>
+* <code>CONFIG_PROFILING=n</code> - Profiling support can potentially allow user space to gather dangerous debugging information about the kernel.
+* <code>CONFIG_PROC_PAGE_MONITOR=n</code> - <code>/proc</code> page monitoring adds additional files to <code>/proc</code>, some of which leak sensitive memory information that could be useful to bypass ASLR.
+* <code>CONFIG_LDISC_AUTOLOAD=n</code> - This restricts loading line disciplines to the <code>CAP_SYS_MODULE</code> which prevents unprivileged attackers from loading vulnerable line disciplines to exploit. <ref>https://lkml.org/lkml/2019/4/15/890</ref> <ref>https://a13xp0p0v.github.io/2017/03/24/CVE-2017-2636.html</ref>
+* <code>CONFIG_RANDOM_TRUST_CPU=n</code> - This distrusts the CPU for initial entropy as it cannot be audited to ensure that it provides high quality entropy. <ref>https://github.com/Whonix/security-misc/blob/master/etc/default/grub.d/40_distrust_cpu.cfg</ref>
+* <code>CONFIG_STAGING=n</code> - Staging drivers are lower quality and are more likely to contain vulnerabilities.
+* <code>CONFIG_IPV6=n</code> - Tor currently doesn't have great support for IPv6 and as such, it is disabled in Whonix.
 
-Disables ACPI table upgrading. Loading arbitrary ACPI tables can be abused to jump into kernel code.
+In addition, a wide variety of unused filesystems, partition types, unused LSMs (only AppArmor is enabled) and vulnerable, legacy drivers have been disabled.
 
-Disables hibernation. The kernel image can be replaced during hibernation.
+== Security features ==
 
-Disables slab merging. Reduces the risk of kernel heap overflows.
+hardened-kernel enables as many security features as it can:
 
-Disables <code>userfaultfd()</code> syscall. Can make heap sprays easier. <ref>https://duasynt.com/blog/linux-kernel-heap-spray</ref>
-
-Disables vivid. It's only required for testing and has been the cause of multiple vulnerabilities. <ref>https://www.openwall.com/lists/oss-security/2019/11/02/1</ref>
-
-Disables binfmt_misc. We don't need custom binary formats and they just add attack surface.
-
-Disables legacy nouveau contexts. These aren't needed anymore and contain security holes. <ref>https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=b30a43ac7132cdda833ac4b13dd1ebd35ace14b7</ref>
-
-Disables INET socket monitoring interface. Has helped heap memory attacks in the past.
-
-Disables vsyscall emulation. Vsyscalls are in a fixed position in memory and can be used to bypass ASLR.
-
-Disables crash dumps and coredumps. Can contain sensitive information.
-
-Disables uselib. Only used in older libc versions and has been the cause of privilege escalation vulnerabilities in the past.
-
-Disables 32-bit support and IA32 emulation. Doesn't have much attention upstream so it's full of bugs. <ref>https://seclists.org/oss-sec/2019/q4/98</ref>
-
-Disables <code>modify_ldt()</code> syscall. Increases low-level kernel attack surface.
-
-Disables KSM. This has various vulnerabilities described [https://www.whonix.org/wiki/KVM#KSM here].
-
-Disables unused networks protocols (DCCP, RDS, SCTP, bluetooth etc.).
-
-Disables ftrace. Can hook into kernel code to gather a lot of information about what is happening in the kernel.
-
-Disables firewire and thunderbolt. Can be abused for DMA.
-
-Disables AIO. This has various vulnerabilities described [https://github.com/AndroidHardeningArchive/documentation/blob/master/technical_overview.md#attack-surface-reduction here].
-
-Disables <code>sysfs()</code> syscall. Deprecated.
-
-Disables debugfs. Contains a lot of debug info that's been the cause of many vulnerabilities in the past.
-
-Disables notifier error injection. Allows userspace to inject artificial errors into kernel code.
-
-Disables profiling support. Can gather potentially dangerous debugging information.
-
-Disables unneeded partition types.
-
-Disables IPV6.
-
-Disables unused LSMs. Only AppArmor is enabled.
-
-Disables /proc page monitoring. This adds more files to /proc which leak a lot of memory information that can be useful to bypass ASLR.
-
-Disables unused filesystems.
-
-Restrict loading line disciplines to CAP_SYS_MODULE. Prevents attackers from loading ancient line disciplines with vulnerabilities to exploit them.
-
-Distrusts the CPU for initial entropy as it cannot be audited to ensure it gives good entropy.
-
-Disables staging drivers. These are lower quality and are more likely to contain vulnerabilities.
-
-Disables some legacy drivers with security holes.
-
-== Options we enable ==
-
-Enables validation of commonly targeted structures (SG tables, notifier call chains, credential management, linked list manipulation).
-
-Enables sanity checks in virtual to page code to prevent certain data corruption.
-
-Enables IOMMU by default. Prevents DMA attacks.
-
-Enables hardening GCC plugins: LATENT_ENTROPY, STRUCTLEAK and RANDSTRUCT. LATENT_ENTROPY gathers more entropy during boot, STRUCTLEAK zero-inits variables and RANDSTRUCT randomizes the layout of sensitive kernel structures. We do not weaken RANDSTRUCT with the RANDSTRUCT_PERFORMANCE option. We use STRUCTLEAK's strongest option (BYREF_ALL).
-
-Enables reset attack mitigation. Prevents certain cold-boot attacks.
-
-Sets the number of entropy bits to use for mmap ASLR to the highest (32). linux-hardened applies this to the stack too.
-
-Compiles jitterentropy and various HWRNGs as built-in for better entropy.
-
-Signs all kernel modules during compilation.
-
-Makes the kernel panic on oopses to deter bruteforcing.
-
-Restricts the SysRq key to only allow SAK and shutdowns.
+* <code>CONFIG_DEBUG_SG=y</code>, <code>CONFIG_DEBUG_NOTIFIERS=y</code>, <code>CONFIG_DEBUG_CREDENTIALS=y</code>, <code>CONFIG_DEBUG_LIST=y</code>, <code>CONFIG_BUG_ON_DATA_CORRUPTION=y</code>, <code>CONFIG_SCHED_STACK_END_CHECK=y</code> - Enables validation of commonly targeted structures (SG tables, notifier call chains, credential management, linked list manipulation).
+* <code>CONFIG_DEBUG_VIRTUAL=y</code> - Enables sanity checks in virtual to page code to prevent certain data corruption.
+* <code>CONFIG_INTEL_IOMMU_DEFAULT_ON=y</code> - Enables IOMMU by default to prevent DMA attacks. <ref>https://en.wikipedia.org/wiki/Input%E2%80%93output_memory_management_unit</ref>
+* <code>CONFIG_GCC_PLUGIN_STRUCTLEAK=y</code> - STRUCTLEAK automatically initializes stack variables to zero to mitigate uninitialized memory vulnerabilities. <ref>https://github.com/torvalds/linux/blob/f0fe00d4972a8cd4b98cc2c29758615e4d51cdfe/security/Kconfig.hardening#L4-L18</ref> <ref>https://en.wikibooks.org/wiki/Grsecurity/Appendix/Grsecurity_and_PaX_Configuration_Options#Forcibly_initialize_local_variables_copied_to_userland</ref> We use STRUCTLEAK's strongest option (BYREF_ALL).
+* <code>CONFIG_GCC_PLUGIN_RANDSTRUCT=y</code> - RANDSTRUCT randomizes the layout of sensitive kernel structures. <ref>https://github.com/torvalds/linux/blob/e994cc240a3b75744c33ca9b8d74f71f0fcd8852/scripts/gcc-plugins/Kconfig#L63-L90</ref> <ref>https://en.wikibooks.org/wiki/Grsecurity/Appendix/Grsecurity_and_PaX_Configuration_Options#Randomize_layout_of_sensitive_kernel_structures</ref> We do not weaken RANDSTRUCT with the RANDSTRUCT_PERFORMANCE option.
+* <code>CONFIG_GCC_PLUGIN_LATENT_ENTROPY=y</code> - LATENT_ENTROPY gathers more entropy during boot.
+* <code>CONFIG_RESET_ATTACK_MITIGATION=y</code> - The reset attack mitigation prevents cold boot attacks by overwriting memory with zeroes upon shutdown but this requires firmware support. <ref>https://lwn.net/Articles/730006/</ref> <ref>https://www.trustedcomputinggroup.org/wp-content/uploads/Platform-Reset-Attack-Mitigation-Specification.pdf</ref>
+* <code>CONFIG_CRYPTO_JITTERENTROPY=y</code>, <code>CONFIG_HW_RANDOM_INTEL=y</code>, <code>CONFIG_HW_RANDOM_AMD=y</code>, etc. - Jitterentropy and various HWRNGs are built-in for better entropy.
+* <code>CONFIG_MODULE_SIG_ALL=y</code>, <code>CONFIG_MODULE_SIG_HASH="sha512"</code> - All kernel modules are signed during compilation and the strongest available hash function (SHA512) is used. However, signature verification is not yet enforced (see below).
+* <code>CONFIG_PANIC_ON_OOPS=y</code> - This causes the kernel to panic on oopses to thwart certain kernel exploits. This is only enabled for hardened-vm-kernel as it can break some host machines. Hosts are recommended to enable this feature via [https://github.com/Whonix/security-misc security-misc] instead.
+* <code>CONFIG_MAGIC_SYSRQ_DEFAULT_ENABLE=0x84</code> - The SysRq key is restricted to only allow SAK and shutdowns.
 
 = linux-hardened =
 
-[https://github.com/anthraxx/linux-hardened/ linux-hardened] is a patch for the Linux kernel that adds many hardening features.
+[https://github.com/anthraxx/linux-hardened/ linux-hardened] is a patch for the Linux kernel that adds many useful hardening features:
 
-== Improvements of linux-hardened ==
+* Many ASLR improvements. <ref>https://gist.github.com/thestinger/b43b460cfccfade51b5a2220a0550c35</ref>
+* Marks more data as read-only.
+* Adds writable function pointer detection.
+* Enables stricter sysctls by default although we set these with security-misc already.
+* Additional sanity checks.
+* Slab canaries.
+* Sanitizes slab and page allocations on free (for non-LTS kernels, it just uses <code>init_on_{free,alloc}</code> with some enhancements).
+* Verifies slab and page sanitization.
+* Restricts the <code>TIOCSTI</code> ioctl to <code>CAP_SYS_ADMIN</code> as it can be used to compromise many programs in the same session.
+* Disables unprivileged user namespaces as these expose significant kernel attack surface to unprivileged users.
+* Restricts device timing sidechannels to <code>CAP_MKNOD</code>.
+* Restricts all <code>perf_event_open()</code> use to <code>CAP_SYS_ADMIN</code>.
+* Makes the kernel BUG on more data corruption.
+* Adds the <code>extra_latent_entropy</code> kernel boot parameter to gather more entropy during boot.
+* Disables TCP simultaneous connect. This weakness allows an attacker to easily prevent a client from connecting to a known server so it should be disabled.
 
-Many ASLR improvements https://gist.github.com/thestinger/b43b460cfccfade51b5a2220a0550c35
+There are some additional features that we do not yet take advantage of however:
 
-Marks more areas as read-only with <code>__ro_after_init</code> and adds <code>__read_only</code> for non-init usage.
-
-Adds writable function pointer detection.
-
-Enables stricter sysctls by default although we set these with security-misc already.
-
-More sanity checks.
-
-Slab canaries.
-
-Sanitizes slab and page allocations on free (for non-LTS kernels, it just uses <code>init_on_{free,alloc}</code> with some enhancements).
-
-Verifies slab and page sanitization.
-
-Restricts the TIOCSTI ioctl to CAP_SYS_ADMIN as it can be used to compromise many programs in the same session.
-
-Disables unprivileged user namespaces. These expose a lot of kernel attack surface.
-
-Restricts device timing sidechannels to CAP_MKNOD.
-
-Restricts all <code>perf_event_open()</code> use to CAP_SYS_ADMIN.
-
-Makes the kernel BUG on more data corruption.
-
-Adds the <code>extra_latent_entropy</code> kernel boot parameter to gather more entropy during boot.
-
-Disables TCP simultaneous connect. This weakness allows an attacker to easily prevent a client from connecting to a known server so it should be disabled.
-
-== Improvements of linux-hardened we don't yet benefit from ==
-
-FORTIFY_SOURCE enhancements. These aren't intended for production usage.
-
-Restricts <code>userfaultfd()</code> syscall to root. We disable <code>userfaultfd()</code> altogether.
-
-Extends <code>init_on_free</code> and <code>init_on_alloc</code> to slab caches with constructors. These aren't in our kernel version.
-
-Hard-wires the legacy checkreqprot option to 0. We don't use SELinux.
-
-Adds a sysctl to disable newly added USB devices (<code>kernel.deny_new_usb</code>). We don't make use of this yet.
-
-Zero-fill uninitialized local variables. Requires clang compiler support and we use GCC.
+* FORTIFY_SOURCE enhancements. These don't appear to be intended for production usage.
+* Extends <code>init_on_free</code> and <code>init_on_alloc</code> to slab caches with constructors. These aren't in our kernel version.
+* Hard-wires the legacy checkreqprot option to 0. We don't use SELinux.
+* Adds a sysctl to disable newly added USB devices (<code>kernel.deny_new_usb</code>). We don't make use of this yet.
+* Zero-fill uninitialized local variables. This requires clang compiler support and we use GCC.
 
 == Upcoming improvements of linux-hardened ==
 
-[https://github.com/anthraxx/linux-hardened/pulls?q=author%3Amadaidan+ We are contributing to linux-hardened and adding more hardening features.] These aren't merged yet. This list documents these upcoming features.
+[https://github.com/anthraxx/linux-hardened/pulls?q=author%3Amadaidan+ We are contributing to linux-hardened and adding more hardening features]. These are not merged yet. This list documents these upcoming features:
 
-Restricts module auto-loading to CAP_SYS_MODULE. Prevents unprivileged attackers from auto-loading vulnerable modules to increase attack surface.
-
-Restricts access to sysfs to root. Sysfs has been the cause of many vulnerabilities and info-leaks.
-
-Further restricts <code>perf_event_open()</code> to deny even root from using it.
-
-Trusted Path Execution.
+* Restricting module auto-loading to CAP_SYS_MODULE to prevent unprivileged attackers from auto-loading vulnerable modules to increase attack surface.
+* Restricting access to sysfs to root. Sysfs has been the cause of many vulnerabilities and info-leaks.
+* Further restricting <code>perf_event_open()</code> to deny even root from using it.
+* Trusted Path Execution.
+* Runtime read-only mount protection.
+* Restricting access to overly-permissive IPC objects.
+* Marking further data as read-only.
 
 = Unused options =
 
 There are some hardening options we don't use. This is a list of options we don't use and why.
 
-<code>CONFIG_STATIC_USERMODEHELPER=y</code> - This would be great to enable but breaks boot.
+* <code>CONFIG_STATIC_USERMODEHELPER=y</code> - This would be great to enable but breaks boot as we do not yet have user space support. <ref>We could use something similar to https://github.com/tych0/huldufolk in the future.</ref>
+* <code>CONFIG_KALLSYMS=n</code> - We set <code>kptr_restrict</code> so this won't make much difference except minor attack surface reduction.
+* <code>CONFIG_MAGIC_SYSRQ=n</code> - There are important features of SysRq we don't want to lose such as SAK. Instead, we restrict the SysRq key to only allow SAK and shutdowns.
+* <code>CONFIG_BPF_JIT=n</code> - We harden the BPF JIT compiler so this isn't as important but there has been some discussion on disabling this https://forums.whonix.org/t/should-the-bpf-jit-compiler-be-disabled/8475
+* <code>CONFIG_MODULE_SIG_FORCE=y</code> - Currently, this will break the Virtualbox Guest Additions, LKRG and Tirdad kernel modules but there is work on fixing this.
+* <code>CONFIG_SLUB_DEBUG_ON=y</code> - This gives no advantage over the <code>slub_debug=</code> boot parameter.
+* <code>CONFIG_SECURITY_LOADPIN=y</code> - We don't use loadpin so this option is pointless.
+* <code>CONFIG_PAGE_POISONING=y</code> - We use linux-hardened's <code>CONFIG_PAGE_SANITIZE</code> instead which is better and doesn't force debug bloat.
+* <code>CONFIG_MODULES=n</code> - We need kernel modules and restrict module loading as much as we can (with apparmor-profile-everything and in the future, enforcing signature verification and restricting auto-loading to root). This can be reconsidered once clang CFI is upstream as disabling module support improves CFI granularity.
+* <code>CONFIG_USER_NS=n</code> - This option is only a problem for unprivileged users and linux-hardened restricts these to root.
 
-<code>CONFIG_KALLSYMS=n</code> - We set <code>kptr_restrict</code> so this won't make much difference except minor attack surface reduction.
+The following options are not enabled because they are not yet present in LTS kernels:
 
-<code>CONFIG_MAGIC_SYSRQ=n</code> - There are important features of SysRq we don't want to lose such as SAK. Instead, we restrict the SysRq key to only allow SAK and shutdowns.
+* <code>CONFIG_SHUFFLE_PAGE_ALLOCATOR=y</code>
+* <code>CONFIG_INIT_ON_ALLOC_DEFAULT_ON=y</code>
+* <code>CONFIG_INIT_ON_FREE_DEFAULT_ON=y</code>
+* <code>CONFIG_GCC_PLUGIN_STACKLEAK=y</code>
+* <code>CONFIG_SECURITY_LOCKDOWN_LSM=y</code>
+* <code>CONFIG_SECURITY_SAFESETID=y</code>
 
-<code>CONFIG_BPF_JIT=n</code> - We harden the BPF JIT compiler so this isn't as important but there has been some discussion on disabling this https://forums.whonix.org/t/should-the-bpf-jit-compiler-be-disabled/8475
+The following options are not enabled because they require compiling the kernel with Clang rather than GCC:
 
-<code>CONFIG_MODULE_SIG_FORCE=y</code> - Currently, this will break the Virtualbox Guest Additions, LKRG and Tirdad kernel modules but there is work on fixing this.
+* <code>CONFIG_INIT_STACK_ALL=y</code>
+* <code>CONFIG_LOCAL_INIT=y</code> (linux-hardened)
 
-<code>CONFIG_SLUB_DEBUG_ON=y</code> - This gives no advantage over the <code>slub_debug=</code> boot parameter.
-
-<code>CONFIG_SECURITY_LOADPIN=y</code> - We don't use loadpin so this option is pointless.
-
-<code>CONFIG_PAGE_POISONING=y</code> - We use linux-hardened's <code>CONFIG_PAGE_SANITIZE</code> instead which is better and doesn't force debug bloat.
-
-<code>CONFIG_MODULES=n</code> - We need kernel modules and restrict module loading as much as we can (with apparmor-profile-everything and in the future, enforcing signature verification and restricting auto-loading to root). This can be reconsidered once clang CFI is upstream as disabling module support improves CFI granularity.
-
-<code>CONFIG_USER_NS=n</code> - This option is only a problem for unprivileged users and linux-hardened restricts these to root.
-
-<code>CONFIG_SHUFFLE_PAGE_ALLOCATOR=y</code> - Not in LTS kernels.
-
-<code>CONFIG_INIT_ON_ALLOC_DEFAULT_ON=y</code> - Not in LTS kernels.
-
-<code>CONFIG_INIT_ON_FREE_DEFAULT_ON=y</code> - Not in LTS kernels.
-
-<code>CONFIG_GCC_PLUGIN_STACKLEAK=y</code> - Not in LTS kernels.
-
-<code>CONFIG_SECURITY_LOCKDOWN_LSM=y</code> - Not in LTS kernels.
-
-<code>CONFIG_SECURITY_SAFESETID=y</code> - Not in LTS kernels.
-
-<code>CONFIG_INIT_STACK_ALL=y</code> - Requires clang compiler support.
-
-<code>CONFIG_LOCAL_INIT=y</code> (linux-hardened) - Requires clang compiler support.
+There is currently not very much of an incentive to switch to Clang however, once exploit mitigations such as Control-Flow Integrity are upstreamed, this must be reconsidered. Switching to Clang now would likely result in a security decrease as we will lose GCC plugins such as RANDSTRUCT and STACKLEAK.
 
 = Disabled Devices =
 
@@ -268,8 +211,7 @@ Both kernels disable some drivers that are unlikely to be used to cut attack sur
 
 = ftrace / kprobes vs. LKRG =
 
-[https://www.kernel.org/doc/html/latest/trace/ftrace.html ftrace] and [https://www.kernel.org/doc/html/latest/trace/kprobes.html kprobes] are kernel debugging features. They allow debugging a significant amount of kernel code and can be abused by malware with root privileges to gain access to sensitive information or hook parts of the kernel code. As such, hardened kernels often have these features disabled to reduce attack surface. This includes, hardened-kernel (by default), CLIP OS' kernel config, Alexander Popov's kconfig-hardening-check, grsecurity, and so on.
-
+[https://www.kernel.org/doc/html/latest/trace/ftrace.html ftrace] and [https://www.kernel.org/doc/html/latest/trace/kprobes.html kprobes] are kernel debugging features. They allow debugging a significant amount of kernel code and can be abused by malware with root privileges to gain access to sensitive information or hook parts of the kernel code. As such, hardened kernels often have these features disabled to reduce attack surface. This includes hardened-kernel (by default), CLIP OS' kernel config, Alexander Popov's kconfig-hardening-check, grsecurity, and so on.
 
 However, [[Linux Kernel Runtime Guard LKRG]] relies on these features to implement the majority of its functionality <ref>https://github.com/openwall/lkrg/issues/27#issuecomment-746933456</ref> so there is a trade-off to disabling them. Users that wish to use hardened-kernel in combination with LKRG must compile hardened-kernel with the <code>--lkrg</code> argument to enable support for it but be aware that this may substantially increase the attack surface of the kernel. Disabling it would be deterministic attack surface reduction whereas LKRG is a probabilistic protection, i.e. it can be bypassed without too much effort if malware is aware of it. However, LKRG does cover a lot more than disabling ftrace/kprobes would. LKRG could theoretically be better but that’s assuming that it’s not bypassed in the real world. It’s hard to determine exactly which should be preferred.
 
