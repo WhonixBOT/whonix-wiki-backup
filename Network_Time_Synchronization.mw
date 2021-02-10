@@ -201,16 +201,13 @@ firewall_mode=
 * <u>{{q_project_name}}</u>: shutdown the {{gateway_product_name}} (<code>{{whonix-gw}}</code>) and {{workstation_product_name}} (<code>{{whonix-ws}}</code>) TemplateVMs and restart the TemplateBasedVMs (<code>sys-whonix</code> and <code>anon-whonix</code>).
 }}
 
-= Network Time Synchronization =
-
+= NTP =
 == Disabling NTP ==
-
 If ISP tampering with NTP is ever confirmed, users are advised to [[Time_Attacks#GNU.2FLinux_Host|disable NTP]] and manually update the host clock out-of-band. For example, a watch or [https://en.wikipedia.org/wiki/Atomic_clock atomic clock] can be used for this purpose. If the tampering is targeted and not a widescale attack, then the user already has much bigger problems to worry about than NTP; see [[Warning#Confirmation_Attacks|Confirmation Attacks]].
 
 If following the advice above -- disabling NTP on the host and adjusting the clock out-of-band -- be aware that clearnet traffic might be easier to fingerprint. <ref>See the [[Fingerprint]] page to discover what fingerprinting means in this case.</ref> The reason is that it introduces a device issuing clearnet traffic (such as OS updates), but without the use of NTP. It is unknown how many people have NTP which is deactivated, broken, uninstalled, or never in fact installed in the first place. Also unknown is how many people are using alternative time synchronization methods such as authenticated NTP, tails_htp, tlsdate, [[sdwdate]] or similar. However, search engine research suggests that very few people fall into both these categories.
 
 == NTP Issues ==
-
 The host system clock synchronization mechanism still uses unauthenticated NTP from a single source. This is not optimal, but there is no real solution to this problem. <ref>See Design: [[Dev/TimeSync]].</ref> A potential attack vector is created by this NTP behavior; the ISP and/or time server could either inadvertently or maliciously introduce a significant clock skew, or the host clock could simply malfunction.
 
 If the host clock value is grossly inaccurate -- more than one hour in the past or more than 3 hours in future -- Tor cannot connect to the Tor network. <ref>In this case, Tor cannot verify the Tor consensus.</ref> This is easily solved by manually fixing the clock on the host, then powering the {{gateway_product_name}} (<code>sys-whonix</code>) off and on again.
@@ -219,8 +216,7 @@ Another side effect of a significantly inaccurate host clock concerns operating 
 
 Users should always check whether a host clock defect relates to an empty battery before assuming the ISP is tampering with NTP.
 
-== Saving or Suspending the VM State ==
-
+= Saving or Suspending the VM State =
 When a user suspends or saves the VM state, the clock will stop and continue after resuming, leading to a time that lags behind the correct value. This can cause later Tor connectivity problems or introduce possible adverse anonymity impacts.
 
 The {{gateway_product_name}} (<code>sys-whonix</code>) state should not be suspended or saved. It is far better to  power it off when it is no longer needed. <ref>If this advice is ignored, Tor can become confused if the time is more than 1 hour in the past or more than 3 hours in the future. When this happens, Tor will only reconnect to the Tor network if the clock is manually fixed or powered off and on again.</ref> 
