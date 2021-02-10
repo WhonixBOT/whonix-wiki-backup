@@ -10,6 +10,68 @@
 | text    = '''Warning:''' The system clock inside {{project name}} is set to UTC to prevent against time zone leaks. This means it may be a few hours ahead or behind the user's host system clock. <u>It is strongly recommended not to change this setting.</u>
 }}
 
+= Warnings =
+A reasonably accurate host clock is required for many general security properties because an inaccurate clock can lead to [[Time Attacks]]. Therefore, at all times it is recommended to have a host clock with accuracy of up to ± 30 minutes. Clocks that are days, weeks, months or even years slow or fast can lead to many issues such as connectivity problems with Tor, inability to download operating system upgrades and inaccessible websites. <ref>
+Due to invalid (not yet or no longer valid) TLS certificates.
+</ref>
+
+Follow the platform-specific recommendations below to avoid Tor connectivity problems and to limit possible adverse anonymity impacts.
+
+= All Platforms =
+To protect against time zone leaks, the system clock inside {{project name}} is set to UTC. This means it may be a few hours before or ahead of your host system clock. <u>Do not change this setting!</u>
+
+If the host clock (in UTC! <ref>
+To view the system time in UTC on Linux platforms, run.
+{{CodeSelect|code=
+date --utc
+}}
+</ref> <ref>
+TODO: [https://phabricator.whonix.org/T71 Show desktop clock in local time; keep system in UTC]</ref>) is more than 1 hour in the past or more than 3 hours in the future, Tor cannot connect. In this case, manually fix the host clock by right-clicking on it, and also check for an empty battery. Then, power off and power on the {{gateway_product_name}} (<code>sys-whonix</code>) and Tor should be able to reconnect.
+
+= Easy instructions =
+<u>{{non_q_project_name_short}}:</u> It is strongly discouraged to use the pause / suspend / save / hibernate features.
+
+<u>{{q_project_name}}:</u> It is strongly discouraged to use the pause feature of Qube Manager, but it is is safe to use the suspend or hibernate feature of dom0.
+
+<div class="toccolours mw-collapsible mw-collapsed">
+
+= Advanced instructions =
+If you are interested in using the pause / suspend / save / hibernate features, please click the expand button for further instructions.
+<div class="mw-collapsible-content">
+<u>{{non_q_project_name_short}}:</u>
+* It is strongly discouraged to pause / suspend / save / hibernate the {{gateway_product_name}}, because it is difficult to restore the clock after resume. <ref name=gateway_pause>This is because the clock will be incorrect after system resume. A correct clock is important for anonymity (see [[Dev/TimeSync]] to learn more).</ref>
+* It is strongly discouraged to pause / suspend / save / hibernate the {{workstation_product_name}}. If this advice is ignored, [[#Restart sdwdate|restart sdwdate]] after resume.
+<u>{{q_project_name}}:</u>
+* It is strongly discouraged to pause {{gateway_product_name}} (<code>sys-whonix</code>) using the pause feature of Qube Manager, because it is difficult to restore the clock after resume. <ref name=gateway_pause />
+* It is strongly discouraged to pause {{workstation_product_name}} (<code>anon-whonix</code>) using the pause feature of Qube Manager. If this advice is ignored, [[#Restart sdwdate|restart sdwdate]] after resume. <ref>
+Qubes does not dispatch the <code>/etc/qubes/suspend-post.d</code> / <code>/etc/qubes/suspend-pre.d</code> hooks upon pause / resume using Qube Manager.
+</ref>
+* It is safe to use the suspend or hibernate feature of dom0 and a manual restart of sdwdate is unnecessary. <ref>
+https://github.com/QubesOS/qubes-issues/issues/1764
+</ref>
+</div>
+</div>
+
+= Restart sdwdate =
+To restart <code>sdwdate</code>.
+
+<code>Start Menu</code> &rarr; <code>Applications</code> &rarr; <code>System</code> &rarr; <code>Time Synchronization Monitor (sdwdate-gui)</code> &rarr; <code>restart sdwdate</code>
+
+Or in a terminal. <ref>
+Simplified in next upgrade.
+
+{{CodeSelect|code=
+sudo sdwdate-clock-jump
+}}
+</ref>
+
+{{CodeSelect|code=
+sudo /usr/lib/sdwdate/restart_fresh
+}}
+
+= Manually Set Clock Time and Date =
+Usually not required. See [[Troubleshooting#Clock_Fix|Troubleshooting, Clock Fix]].
+
 = Block Networking until sdwdate Finishes =
 
 [[Sdwdate|sdwdate]] is a Tor-friendly replacement for rdate and ntpdate that sets the system's clock by communicating via end-to-end encrypted TCP with Tor onion webservers. Since timekeeping is crucial for security and anonymity, blocking network access until sdwdate succeeds is sensible. <ref>https://forums.whonix.org/t/testers-wanted-blocking-networking-until-sdwdate-finished-status-of-sdwdate-gui/5372</ref> 
