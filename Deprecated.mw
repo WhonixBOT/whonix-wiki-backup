@@ -6479,6 +6479,51 @@ https://www.whonix.org/w/index.php?title=Category:Documentation&action=pdfbook
 At the time of writing, a 16.6MB file is created. The result is readable but needs some cleanup. Translated pages are included, but will sometimes present with broken, nonsensical characters. The links are absolute and not relative, meaning users are redirected to the online site instead of internal chapters in the file. To avoid this, use the search function instead.
 
 
+= Enable sdwdate-gui =
+
+== {{non_q_project_name_short}} ==
+
+By default, [[sdwdate-gui]] automatically starts when {{project name}} is booted. This keeps users informed about the status of the Tor network connection and sdwdate's progress, and also helps to test this feature.
+
+== {{q_project_name}} ==
+
+If users are willing to persist with one sdwdate-gui systray instance per VM, then it is recommended to enable sdwdate-gui autostart. This setting keeps users informed about the status of the Tor network connection and sdwdate's progress, and will help to test this feature.
+{{Box|text=
+'''1.''' Configure sdwdate-gui autostart.
+
+{{Open with root rights|filename=
+/usr/lib/sdwdate-gui/start-maybe
+}}
+
+'''2.''' Replace its contents with the following code.
+
+<pre style="white-space: pre-wrap;">
+#!/bin/bash
+
+## This file is part of {{project_name}}.
+## Copyright (C) 2012 - 2014 Patrick Schleizer <adrelanos@whonix.org>
+## See the file COPYING for copying conditions.
+
+set -e
+
+if [ -d /usr/lib/qubes ]; then
+    VM_TYPE="$(/usr/bin/qubesdb-read /qubes-vm-type)"
+
+    if [ "$VM_TYPE" == "AppVM" ]; then
+        /usr/lib/sdwdate-gui/sdwdate-watcher
+    elif [ "$VM_TYPE"  == "ProxyVM" ]; then
+        sdwdate-gui-qubes
+    fi
+
+else
+    sdwdate-gui
+fi
+</pre>
+
+'''3.''' Save and exit.
+}}
+Developers are designing the next sdwdate-gui version so it can be conveniently enabled. Check back later for further information concerning sdwdate-gui modifications to prevent auto-start.
+
 = Footnotes =
 {{reflist|close=1}}
 
