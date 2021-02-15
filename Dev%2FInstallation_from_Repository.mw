@@ -49,15 +49,22 @@ https://github.com/{{project_name_short}}/whonix-developer-meta-files/blob/maste
 https://forums.whonix.org/t/sudo-apt-get-install-whonix-part-i-distro-morphing/2346
 
 = Distro Morphing vs Builds =
-What is the difference between a build (downloaded or build from source code) versus distro morphing installation method?
+What is the difference between a build (image downloaded or created from source code) versus distro morphing installation method?
 
 * It is quite similar as it should be.
 
-Advantages of builds:
+Advantages of builds are that these are "cleaner":
 
-* have tighter control over the packages getting installed. Using Debian installer is kinda like a "wonder box" what packages get installed. Difficult to predict what packages will be installed without skills to understand Debian installer. When using builds one can see what packages will be installed by studying mostly 1 file + dependency packages.
-* more likely to get the same tested build that developers and users received.
-* more likely to really get the distribution. Distro morphing might fail due to user error and not get noticed by novice users.
+* Have tighter control over the packages getting installed. Using Debian installer is kinda like a "wonder box" what packages get installed. Difficult to predict what packages will be installed without skills to understand Debian installer. When using builds one can see what packages will be installed by studying mostly 1 file + dependency packages.
+* More likely to get the same tested build that developers and users received.
+* More likely to really get the distribution. Distro morphing might fail due to user error and not get noticed by novice users.
+* Redistributable.
+** No daemons where ever started inside the chroot. (Builds where created by mounting the image and <code>chroot</code>'ing into it while preventing daemons from starting.)
+*** Start of daemons inside the image creates several persistent private user data files which must not be re-used by third parties such as the public. In other words, the public should not be using these private user data files as this would be insecure. Such private user data files are for example entropy seeds or Tor state files such as Tor entry guards.
+*** Cleaning such files at the end of the creation of the image is not a reliable method either since that depends on what packages are installed by default which changes over time and what private data daemons create which also changes over time. There is no such list or research into that topic.
+*** By creating a clean image, it used to be created twice and then compared to check what kinda of private data leaked into it.
+** Fewer non-deterministic artifacts which would hinder accomplishment of the [https://reproducible-builds.org/ reproducible builds] goal.
+** Fewer superfluous packages. Build dependencies are only installed on the build machine. Not installed inside the build.
 
 = See Also =
 * [[{{project name short}} Packages for Debian Hosts|{{project name}} Packages for Debian Hosts]]
