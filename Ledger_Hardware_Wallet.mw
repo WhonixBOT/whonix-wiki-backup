@@ -441,6 +441,48 @@ Make the Ledger Live AppImage executable.
 chmod +x ledger-live-desktop-{{version_ledger_live}}-linux-x86_64.AppImage
 }}
 
+== Kernel Settings ==
+Required as long as {{project name}} is based on Debian <code>buster</code>. Might no longer be required in Debian <code>bullseye</code> and above.
+
+'''1.''' Open a terminal.
+
+Become root.
+
+{{CodeSelect|code=
+sudo su
+}}
+
+'''2.''' Add the following line to <code>/etc/sysctl.d/50_unprivileged_userns_clone.conf</code>.
+
+{{CodeSelect|code=
+kernel.unprivileged_userns_clone=1
+}}
+
+To do that, use the following command.
+
+{{CodeSelect|code=
+echo "kernel.unprivileged_userns_clone=1" > /etc/sysctl.d/50_unprivileged_userns_clone.conf
+}}
+
+'''3.''' To apply the sysctl settings without a reboot, run the following command.
+
+{{CodeSelect|code=
+sysctl -p /etc/sysctl.d/50_unprivileged_userns_clone.conf
+}}
+
+'''4.''' Check if the changes have been properly set.
+
+{{CodeSelect|code=
+sysctl -a | grep kernel.unprivileged_userns_clone
+}}
+
+If it worked correctly, the system should provide the following output.
+
+<pre>
+kernel.unprivileged_userns_clone=1
+</pre>
+}}
+
 = Usage =
 
 {{mbox
