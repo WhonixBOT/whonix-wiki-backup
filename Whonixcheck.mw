@@ -191,11 +191,16 @@ Prerequisite knowledge: [[Trust#{{project name short}}_.E2.84.A2_Warrant_Canary|
 clearnet link for convenience, preview, not used by whonixcheck: https://download.{{project_clearnet}}/whonixdevelopermetafiles/canary/canary.txt.embed.sig
 </ref>
 * Secured through:
-** using memory save language python (python3-requests) for download,
+** The downloader <code>canary-download.py</code> is written in memory-safe language python (python3-requests) and running under a dedicated limited linux user account <code>canary</code>.
+** <code>canary.txt.embed.sig</code> is verified using <code>signify-openbsd</code> <ref>
+{{CodeSelect|code=
+sudo -u canary signify-openbsd -V -e -p /usr/share/repository-dist/derivative-distribution-signify-key.pub -x /var/lib/canary/canary.txt.embed.sig -m /var/lib/canary/canary-unembed.txt
+}}
+</ref>
 ** an [https://gitlab.com/whonix/systemcheck/-/blob/master/etc/apparmor.d/usr.lib.systemcheck.canary AppArmor profile] and,
 ** [https://gitlab.com/whonix/systemcheck/-/blob/master/lib/systemd/system/canary.service systemd hardening (seccomp)] by default.
 
-Initially only shown when using <code>--verbose</code>. That is because there are non-security related potential bugs to be ironed out:
+For now, during initial deployment phase of this new feature, whonixcheck will only shown information about canary status when using whonixcheck with parameter <code>--verbose</code>. That is because there might be non-security related potential bugs to be ironed out:
 
 * file location might change on server
 * file on server might become unreadable due to linux file access permissions
