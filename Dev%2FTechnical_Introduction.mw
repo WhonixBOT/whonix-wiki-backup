@@ -130,9 +130,17 @@ There are [https://trac.torproject.org/projects/tor/wiki/doc/TorifyHOWTO#Overvie
 {{project_name}} uses multiple security layers.
 
 # IP-forwarding is disabled.
+# In general terms (unspecific to {{project name}}): if one VM is only connected to another VM through a virtual, internal LAN and has no other network interfaces besides that, it does not easily gain network access. That requires IP forwarding to be enabled the other VM.
+# In {{project name}} specific terms: Since one VM {{workstation product name}} is only connected to another VM {{gateway product name}} through a virtual, internal LAN, it does not easily gain network access.
+# What application traffic originating from {{workstation product name}} essentially do is attempting to talk to a "service" on {{gateway product name}}, which is [[Tor]]. However, if Tor refuses connections or isn't even available, there is nothing legitimate that {{workstation product name}}. <ref>
+Illegitimate example: exploiting the hypervisor and executing code on the host operating system.
+</ref>
+# Therefore even if {{Gateway product name}} if powered off and only {{Workstation product name}} is powered on, no leaks are possible.
+# In other words, {{project name}} fails "closed": when Tor is disabled, loses connection, or the {{gateway_product_name}} crashes, no network connections are possible. (Fails "closed" means, connection failing without any leak. Nothing goes out to the internet. Failing "open" in this context would mean it would fail to connect using Tor and connect using the user's real external IP address instead.)
 # IPv6 is disabled.
-# The firewall fails "closed": when Tor is disabled, loses connection, or the {{gateway_product_name}} crashes, no network connections are possible.
-# Iptables redirects any traffic from {{workstation_product_name}} to Tor's ports. Local network connections are dropped. No leaks are possible, assuming the TCB is trustworthy.
+# Iptables firewall redirects any traffic from {{workstation_product_name}} to Tor's ports. Local network connections are dropped. No leaks are possible, assuming the TCB is trustworthy.
+# Even without [[Whonix-Gateway Firewall]] and without [[Whonix-Workstation]] firewall, no leaks are possible. Traffic from {{workstation_product_name}} can either reach Tor which is running on {{gateway_product_name}} or nothing.
+# The only thing that breaks and fails closed even without any firewalls is [[Stream_Isolation#Transparent_Proxy|transparent proxying]].
 # Applications are configured correctly using latest suggestions (correct application and proxy and other privacy settings, [[Stream Isolation]]).
 # Firewall rules are enforced and prevent accessing the internet directly, thus leaks are prevented in case some application leaks.
 # Optionally, [[Physical Isolation]] is documented.
