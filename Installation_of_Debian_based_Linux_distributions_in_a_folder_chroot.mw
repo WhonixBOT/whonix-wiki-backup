@@ -1,0 +1,100 @@
+{{Header}}
+{{Title|
+title=Installation of Debian (based) Linux distributions in a folder (chroot)
+}}
+{{#seo:
+|description=How to create a chroot (change root) in a secure way using mmdebstrap and systemd-nspawn.
+}}
+
+{{stub}}
+
+= Chroot Use Cases =
+* See this [https://en.wikipedia.org/wiki/Chroot#Uses list of chroot use cases in wikipedia].
+
+= Chroot Security =
+[https://access.redhat.com/blogs/766093/posts/1975883 chroot is not a security feature].
+
+= Examples =
+
+* [[Kicksecure/chroot|{{Kicksecure}} in a chroot]]
+* [[GNUnet|GNUnet in a chroot]]
+
+= systemd-nspawn =
+== Introduction ==
+Quote [http://0pointer.de/blog/projects/changing-roots Changing Roots]:
+
+* <blockquote>systemd-nspawn tool which acts as chroot(1) on steroids</blockquote>
+* <blockquote>it makes use of file system and PID namespaces to boot a simple lightweight container on a file system tree.</blockquote>
+* <blockquote>It can be used almost like chroot(1), except that the isolation from the host OS is much more complete, a lot more secure and even easier to use</blockquote>
+* <blockquote>systemd-nspawn is capable of booting a complete systemd or sysvinit OS in container with a single command.</blockquote>
+* Booting of the container can take less than 3 seconds.
+
+== Security ==
+Can <code>systemd-nspawn</code> be made a secure jail? The following quote might be outdated and/or not reflect a "hardened container". Quote [http://0pointer.de/blog/projects/changing-roots systemd lead developer]:
+
+<blockquote>
+Note however that this protects the host OS only from accidental changes of its parameters. A process in the container can manually remount the file systems read-writeable and then change whatever it wants to change.
+</blockquote>
+
+What are these issues? Related to running root vs non-root inside the container? Can these security holes nowadays be closed?
+
+Since we are inside a VM already, can containers be used for better security?
+
+Quote [https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html systemd-nspawn man page]:
+
+<blockquote>
+--drop-capability=
+
+    Specify one or more additional capabilities to drop for the container. This allows running the container with fewer capabilities than the default (see above).
+</blockquote>
+
+Quote https://wiki.archlinux.org/index.php/systemd-nspawn#Creating_private_users_(unprivileged_containers)
+
+<blockquote>
+systemd-nspawn supports unprivileged containers,
+</blockquote>
+
+Great!
+
+<blockquote>
+, though the containers need to be booted as root.
+</blockquote>
+
+That could be an OK limitation?
+
+See also:
+
+* https://unix.stackexchange.com/questions/145739/what-makes-systemd-nspawn-still-unsuitable-for-secure-container-setups
+* https://opensource.com/business/14/7/docker-security-selinux
+* https://people.kernel.org/brauner/runtimes-and-the-curse-of-the-privileged-container
+
+== Exit systemd-nspawn ==
+{{systemd-nspawn-exit}}
+
+== See Also ==
+* https://wiki.archlinux.org/index.php/systemd-nspawn
+* https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html
+
+= LXC =
+https://wiki.archlinux.org/index.php/Linux_Containers#Enable_support_to_run_unprivileged_containers_(optional)
+
+= mmdebstrap =
+<code>mmdebstrap</code> is a tool that can be used to securely create chroots.
+
+Using <code>debootstrap</code> is insecure at times such as if APT is vulnerable and the fixed package only available from security.debian.org APT repository not the regular Debian repository because it can use only 1 APT repository at a time. And security.debian.org does not include all packages created to create a chroot.
+
+A secure alternative is <code>mmdebstrap</code>. <ref>
+alternative is multistrap (might be outdated, author has no experience with it)
+</ref> See also [https://manpages.debian.org/buster/mmdebstrap/mmdebstrap.1.en.html#DEBOOTSTRAP other advantages of <code>mmdebstrap</code>].
+
+= TODO =
+
+* [http://www.elstel.org/xchroot/ xchroot]: chroot for users with Xorg/X11 forwarding and automatic mounting + aufs/unionfs read only root support.
+** Needs cautious review. Same author as [https://www.elstel.org/debcheckroot/ debcheckroot] which does not do gpg signature verification of downloaded package metadata because [https://lists.debian.org/debian-security/2019/11/msg00022.html thinks] that's useless.
+
+= Footnotes =
+{{reflist|close=1}}
+
+{{Footer}}
+
+[[Category:Documentation]]
