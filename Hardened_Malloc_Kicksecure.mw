@@ -1,0 +1,108 @@
+= Hardened Malloc Kicksecure Fork =
+Original [[Hardened Malloc]] unfortunately cannot be globally enabled by default in Whonix / Kicksecure [https://forums.whonix.org/t/hardened-malloc-hardened-memory-allocator/7474/69 due to issues].
+
+Hardened Malloc Kicksecure uses different compile time options.
+
+* [https://gitlab.com/whonix/hardened_malloc/-/blob/master/debian/rules#L18 <code>hardened-malloc</code>]
+* [https://gitlab.com/whonix/hardened_malloc/-/blob/master/debian/rules#L20 <code>hardened-malloc-kicksecure</code>]
+
+<pre>
+/usr/lib/libhardened_malloc.so/libhardened_malloc_kicksecure.so
+</pre>
+
+Forum development discussion: <br />
+https://forums.whonix.org/t/hardened-malloc-hardened-memory-allocator/7474/69
+
+== Enable ==
+{{Install Package|package=
+hardened-malloc-kicksecure-enable
+}}
+
+== Disable ==
+<code>hardened-malloc-kicksecure</code> can be disabled either per application or globally.
+
+=== Disable per Application ===
+Apply the following steps to disable <code>hardened-malloc-kicksecure</code> per application.
+
+Prepend the [https://gitlab.com/whonix/helper-scripts/-/blob/master/usr/bin/ld-system-preload-disable <code>ld-system-preload-disable</code>] wrapper.
+
+Syntax:
+
+{{CodeSelect|code=
+ld-system-preload-disable application
+}}
+
+Example:
+
+Note: replace <code>chromium</code> with the actual application which should be started without ld system preload.
+
+{{CodeSelect|code=
+ld-system-preload-disable chromium
+}}
+
+=== Disable Globally ===
+Apply the following steps to globally disable <code>hardened-malloc-kicksecure</code>.
+
+'''1)''' Boot into recovery mode. Optional.
+
+This is only required if the system is no longer bootable. In this case, refer to [[Recovery#Recovery_Mode|boot into recovery mode]].
+
+'''2)''' View the <code>/etc/ld.so.preload</code> file.
+
+{{CodeSelect|code=
+cat /etc/ld.so.preload
+}}
+
+'''3)''' Remove <code>/usr/lib/libhardened_malloc.so/libhardened_malloc_kicksecure.so</code> from <code>/etc/ld.so.preload</code>.
+
+If not using <code>/etc/ld.so.preload</code> for anything else. Warning: this removes all entries from <code>/etc/ld.so.preload</code>.
+
+{{CodeSelect|code=
+sudo rm /etc/ld.so.preload
+}}
+
+== Issues ==
+=== workaround available ===
+slowdown by swap-file-creator shutdown
+
+* related to above cryptsetup slowdown by factor ~ 7
+* workaround OK https://github.com/Whonix/swap-file-creator/commit/c65edf17f952ac4a296ae6a0aac5a10541579ff6
+
+[[chromium]] requires <code>ld-system-preload-disable</code>
+
+* https://bugs.debian.org/971876
+** workaround <code>ld-system-preload-disable chromium</code> ok
+** chromium from flathub also functional (<code>hardened-malloc-kicksecure</code> probably disregarded inside flatpak's bubblewrap based sandbox?)
+
+=== no workaround available ===
+breaks sshd in Debian <code>buster</code>
+
+* https://forums.whonix.org/t/hardened-malloc-hardened-memory-allocator/7474/127
+* https://github.com/GrapheneOS/hardened_malloc/issues/97
+* workaround idea: https://forums.whonix.org/t/hardened-malloc-hardened-memory-allocator/7474/137
+* https://github.com/openssh/openssh-portable/pull/142
+* https://bugzilla.mindrot.org/show_bug.cgi?id=3245
+* TODO: fixed in Debian <code>bullseye</code>?
+
+cryptsetup slowdown by factor ~ 6
+
+* reported upstream: [https://gitlab.com/cryptsetup/cryptsetup/-/issues/617 cryptsetup luksFormat slowdown of factor ~ 6 when using hardened memory allocator Hardened Malloc]
+
+could break scripts / build process
+
+* TODO: test building Whonix with <code>hardened-malloc-kicksecure</code> enabled
+
+chromium crashes with hardened-malloc(-kicksecure) (requires disabling using <code>ld-system-preload-disable</code>)
+
+* https://bugs.debian.org/971876
+** TODO: needs to be certain that https://bugs.debian.org/971876 is fixed in newer versions of chromium
+
+does it break https://packages.debian.org/buster/gsmartcontrol?
+
+[https://www.virtualbox.org/ticket/20107 VirtualBox crashes with hardened memory allocator Hardened Malloc on the host] <ref>
+* https://www.virtualbox.org/wiki/VBoxMainLogging
+* https://www.virtualbox.org/wiki/Core_dump
+</ref>
+
+== Notes ==
+* glibc feature request: [https://sourceware.org/bugzilla/show_bug.cgi?id=26723 LD_ETC_IGNORE - environment variable to ignore /etc/ld.so.preload configuration file on a per-application basis]
