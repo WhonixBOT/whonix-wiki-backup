@@ -67,30 +67,34 @@ sudo apt-get install tb-updater
 | text    = [[Qubes|{{q_project_name}}]] R4 only! This method is anonymous.
 }}
 
-The [[Qubes|{{q_project_name}}]] R4 or above instructions using {{project name}} <code>tb-updater</code> are a little more difficult because TemplateVMs are non-networked by default.
-
 These instructions:
 
 # Anonymously retrieve and verify the {{project name}} signing key.
-# Copy the {{project name}} signing key to a debian-10 TemplateVM clone (<code>debian-10-tor</code>).
+# Copy the {{project name}} signing key to a debian-10 (<code>debian-10-tor</code>) or debian-10-minimal (<code>debian-10-minimal-tor</code>) TemplateVM clone.
 # Add the {{project name}} signing key to a list of trusted keys.
-# Install apt-transport-tor in the <code>debian-10-tor</code> TemplateVM.
+# Install apt-transport-tor in the <code>debian-10-tor</code> / <code>debian-10-minimal-tor</code> TemplateVM.
 # Add the {{project name}} onion repository.
 # Install <code>tb-updater</code> from the {{project name}} stable repository.
-# Create a <code>debian-tor-browser</code> AppVM based on the debian-10 TemplateVM clone.
-# Complete the anonymous installation of Tor Browser in the non-{{project_name}} VM.
+# Create a <code>debian-tor-browser</code> / <code>debian-10-tor-minimal</code> AppVM based on the  TemplateVM clone.
 
-== Clone the debian-10 TemplateVM ==
+The <code>debian-10-minimal</code> template provides a smaller attack surface, but is recommended for advanced users.
+
+== Clone the debian-10 or debian-10-minimal TemplateVM ==
 
 {{mbox
 | type    = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
-| text    = <u>Prerequisite</u>: The Debian 10 TemplateVM must be manually installed first. In <code>dom0</code>, run. {{CodeSelect|code=
-sudo qubes-dom0-update --enablerepo=qubes-templates-itl-testing qubes-template-debian-10
+| text    = <u>Prerequisite</u>: The debian-10 or debian-10-minimal TemplateVM must be manually installed first if it not already available. In <code>dom0</code>, run either. {{CodeSelect|code=
+sudo qubes-dom0-update qubes-template-debian-10
 }}
+Or.
+{{CodeSelect|code=
+sudo qubes-dom0-update qubes-template-debian-10-minimal
 }}
 
-In Qube Manager: <code>Right-click debian-10 template</code> &rarr; <code><u>C</u>lone qube</code> &rarr; <code>Rename to debian-10-tor</code>
+}}
+
+In Qube Manager: <code>Right-click debian-10 or debian-10-minimal template</code> &rarr; <code><u>C</u>lone qube</code> &rarr; <code>Rename to debian-10-tor or debian-10-minimal-tor</code>
 
 == anon-whonix Steps ==
 
@@ -120,16 +124,22 @@ Compare the fingerprint to the one found [[{{project name short}}_Signing_Key|he
 sudo apt-key export 916B8D99C38EAF5E8ADC7A2A8D66066A2EEACCDA > /tmp/whonix.key
 }}
 
-'''5.''' Copy the <code>whonix.key</code> text file to the <code>debian-10-tor</code> TemplateVM.
+'''5.''' Copy the <code>whonix.key</code> text file to the <code>debian-10-tor</code> or <code>debian-10-minimal-tor</code> TemplateVM.
 
 {{CodeSelect|code=
 qvm-copy /tmp/whonix.key debian-10-tor
 }}
+
+Or.
+
+{{CodeSelect|code=
+qvm-copy /tmp/whonix.key debian-10-minimal-tor
+}}
 }}
 
-== debian-10-tor TemplateVM Steps ==
+== debian-10-tor / debian-10-minimal-tor TemplateVM Steps ==
 
-Complete the following steps in <code>debian-10-tor</code> Konsole.
+Complete the following steps in <code>debian-10-tor</code> or <code>debian-10-minimal-tor</code> terminal.
 {{Box|text=
 '''1.''' Add the {{project name}} signing key to the list of trusted keys.
 
@@ -143,12 +153,12 @@ sudo apt-key add ~/QubesIncoming/anon-whonix/whonix.key
 sudo apt-get install apt-transport-tor
 }}
 
-'''3.''' Add the {{project name}} stable onion APT repository.
-
-Note: <code>tor+http</code> does not work in this configuration.
+'''3.''' Add the {{project name}} stable APT repository. <ref>Alternatively use the stable onion APT repository: {{CodeSelect|code=
+echo "deb http://deb.dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion {{Stable project version based on Debian codename}} main contrib non-free" {{!}} sudo tee /etc/apt/sources.list.d/whonix.list
+}}</ref> <ref>Note: <code>tor+http</code> does not work in this configuration.</ref>
 
 {{CodeSelect|code=
-echo "deb http://deb.dds6qkxpwdeubwucdiaord2xgbbeyds25rbsgr73tbfpqpt4a6vjwsyd.onion {{Stable project version based on Debian codename}} main contrib non-free" {{!}} sudo tee /etc/apt/sources.list.d/whonix.list
+echo "deb https://deb.whonix.org {{Stable project version based on Debian codename}} main contrib non-free" {{!}} sudo tee /etc/apt/sources.list.d/whonix.list
 }}
 
 '''4.''' Update the package lists.
@@ -163,7 +173,7 @@ sudo apt-get update
 sudo apt-get install tb-updater
 }}
 
-Note: This step will correctly install <code>tb-updater</code>, but if it tries to automatically download Tor Browser it will fail because the download attempt from The Tor Project is blocked by default.
+Note: This step will correctly install <code>tb-updater</code> and should also automatically download Tor Browser. If that does not occur, complete steps 2 to 4 below after creating an AppVM.
 }}
 
 == debian-tor-browser AppVM Steps ==
@@ -175,24 +185,26 @@ In Qube Manager: <code>Left-click <u>Q</u>ube</code> &rarr; <code>Create <u>n</u
 
 Use the following settings:
 
-* <u>Name and label:</u> debian-tor-browser
+* <u>Name and label:</u> debian-tor-browser or debian-minimal-tor-browser
 * <u>Type:</u> AppVM
-* <u>Template:</u> debian-10-tor
+* <u>Template:</u> debian-10-tor or debian-10-minimal-tor
 * <u>Networking:</u> default (sys-firewall)
 
-'''2.''' Temporarily set <code>sys-whonix</code> as the NetVM for the Debian AppVM.
+'''2.''' ''Optional:'' Temporarily set <code>sys-whonix</code> as the NetVM for the Debian AppVM.
+
+If Tor Browser was not downloaded at step 5 in the previous section, complete steps 2 to 4.
 
 In Qube Manager: <code>Right-click ''debian-tor-browser''</code> &rarr; <code>Qube s<u>e</u>ttings</code> &rarr; <code>Networking</code> &rarr; <code>Select ''sys-whonix''</code> &rarr; <code>OK</code>
 
-'''3.''' Download Tor Browser.
+'''3.''' ''Optional:'' Download Tor Browser.
 
-In Konsole, run.
+In terminal, run.
 
 {{CodeSelect|code=
 update-torbrowser --input gui
 }}
 
-'''4.''' Revert the networking setting to <code>sys-firewall</code> in Qube Manager.
+'''4.''' ''Optional:'' Revert the networking setting to <code>sys-firewall</code> in Qube Manager.
 
 '''5.''' Launch Tor Browser from the AppVM menu and check it is functional.
 
