@@ -8,14 +8,98 @@
 <!--|image=https://www.{{project_clearnet}}/w/images/c/c9/Android23432.png-->
 [[File:anbox_apps_short.png|thumb|800px]]
 
-[https://anbox.io/ Anbox] (third party project) allows Android applications and mobile games to run inside {{project name}}.
+= Introduction =
 
-== Warning ==
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = 
+Anbox disables the majority of the Android security model <ref>For example it disables SELinux which is a core part of the security model; see https://github.com/anbox/platform_system_core/commit/71907fc5e7833866be6ae3c120c602974edf8322</ref> and it uses a very outdated Android version with known vulnerabilities. <ref>See the dates on the Github repositories. https://github.com/anbox</ref>
+}}
 
-Anbox disables the majority of the Android security model <ref>For example, it disables SELinux, a core part of the security model. https://github.com/anbox/platform_system_core/commit/71907fc5e7833866be6ae3c120c602974edf8322</ref> and it uses an incredibly outdated version of Android with known vulnerabilities <ref>See the dates on the Github repositories. https://github.com/anbox</ref>.
+[https://anbox.io/ Anbox] is a third party project that allows Android applications and mobile games to run inside {{project name}}. According to the Anbox website: <ref>https://anbox.io/#about</ref>
+<blockquote>Anbox puts the Android operating system into a container, abstracts hardware access and integrates core system services into a GNU/Linux system. Every Android application will be integrated with your operating system like any other native application. 
 
-== Install Anbox ==
-All installation steps inside {{workstation product name}}. No modifications of {{gateway product name}} required.
+To achieve our goal we use standard Linux technologies like containers (LXC) to separate the Android operating system from the host. Any Android version is suitable for this approach and we try to keep up with the latest available version from the Android Open Source Project.</blockquote> 
+
+The project is open source and theoretically any application can be run. Anbox does not have direct access to a user's hardware or data. It should be noted that while it is possible to install the Google Play Store, Google will not allow anyone to ship applications if the device is not certified and the vendor has not signed an agreement. <ref>https://anbox.io/#faq</ref>
+
+== Anbox inside {{project_name}} vs. Android x86 Workstation ==
+
+There are both distinct advantages and disadvantages of running Android applications in a native {{workstation_product_name}} versus an Android x86 Workstation. <ref>https://forums.whonix.org/t/integrate-anbox-into-whonix-workstation/9642</ref>
+
+'''Table:''' ''Anbox Advantages and Disadvantages'' <ref>The networking and software disadvantages below are very critical.</ref>
+
+{| class="wikitable"
+|-
+
+! scope="col"| '''Category'''
+! scope="col"| '''Notes'''
+|-
+
+! scope="row"| Bootloader / Ramdisk
+| Anbox does not have any type of bootloader and ramdisk. Consequently it is impossible to install Magisk or some kind of recovery tool which is probably necessary for some operations like hiding root from applications (for example Magisk Hide).
+|-
+
+! scope="row"| Emulation
+| No emulation is required, therefore Android applications can be run in a native {{workstation_product_name}} environment.
+|-
+
+! scope="row"| Flexibility
+| It is easy to use adb to install/remove apps and to push/pull files from/to the Anbox environment.
+|-
+
+! scope="row"| Networking
+| Anbox does not provide a virtual Wi-Fi (<code>wlan0</code>) interface so some applications will not see the Internet connection.
+|-
+
+! scope="row"| Speed
+| Android applications run faster in this configuration.
+|-
+
+|}
+
+'''Table:''' ''Android x86 Workstation Advantages and Disadvantages'' 
+
+{| class="wikitable"
+|-
+
+! scope="col"| '''Category'''
+! scope="col"| '''Notes'''
+|-
+
+! scope="row"| Bootloader / Ramdisk
+| It is possible to use Magisk to achieve root permissions and hide root from applications on Android x86. <ref>Some individuals have already achieved this on Android x86.</ref>
+|-
+
+! scope="row"| Flexibility
+|  It is not possible to use adb because no connection between {{workstation_product_name}} and Android x86 is established. <ref>Although it may be possible to run ssh-server on {{workstation_product_name}} and connect your Android x86 through Termux or similar.</ref>
+|-
+
+! scope="row"| Networking
+| Android x86 provides a virtual Wi-Fi interface (<code>wlan0</code>) so applications think that a real Wi-Fi connection is established (Anbox uses a bridge network interface).
+|-
+
+! scope="row"| Operating System
+| The full Android stack implemented as Android x86 is a full operating system which requires hardware virtualization (unlike Anbox).
+|-
+
+! scope="row"| Security
+| This configuration is less secure than utilizing a {{workstation_product_name}}. <ref>Although it may have more flexibility, as static IP connections on the Android x86 Workstation have been accomplished.</ref>
+|-
+
+! scope="row"| Software
+| Any version of Android from 4.x to 9.x can be installed (Anbox provides only Nougat).
+|-
+
+! scope="row"| Speed
+|  This configuration is slower as Android x86 does not provide any type of Guest Additions meaning no graphic card drivers are supported.
+|-
+
+|}
+
+= Anbox Installation =
+
+Perform all installation steps inside {{workstation product name}}. No {{gateway product name}} modifications are required.
 
 {{Box|text=
 {{Install Package|
@@ -118,7 +202,9 @@ Dec 31 06:23:49 debian systemd[1]: Started Anbox Container Manager.
 }}
 </ref>
 
-== Whonix Configuration ==
+= Anbox Configuration =
+
+== Whonix ==
 Disabling [[{{workstation product name short}} Firewall|{{workstation product name}} Firewall]] is unfortunately required. Otherwise there would be no network access. <ref>
 This is because Anbox comes with its own bridged network. Whitelisted that interface in {{workstation product name}} firewall is [[undocumented]] and might require source code modifications. [[Reporting_Bugs#Patches_are_Welcome|Patches are Welcome]].
 </ref>
@@ -161,7 +247,7 @@ To unload {{workstation product name}} firewall rules and to make anbox load its
 sudo reboot
 }}
 
-== Qubes Configuration ==
+== Qubes ==
 [[Qubes]] users only.
 
 You probably want to use a StandaloneVM. Otherwise changes would be non-persistent, i.e. lost after VM restart. Instructions on how to make Anbox persistent using a TemplateBased AppVM are not existing yet. (See footnote for experimental instructions. <ref>
@@ -234,11 +320,11 @@ It has been [https://github.com/QubesOS/qubes-issues/issues/2233#issuecomment-59
 https://forums.whonix.org/t/snap-store-snaps-snapcraft-io-a-new-software-source/7631
 </ref>
 
-== Start Anbox ==
-=== From Start Menu ===
+= Start Anbox =
+== From Start Menu ==
 <code>Start menu</code> &rarr; <code>Accessories</code> &rarr; <code>Anbox</code>
 
-=== From Command Line ===
+== From Command Line ==
 <ref>
 <code>/usr/share/applications/anbox.desktop</code>
 </ref>
@@ -247,13 +333,13 @@ https://forums.whonix.org/t/snap-store-snaps-snapcraft-io-a-new-software-source/
 anbox launch --package=org.anbox.appmgr --component=org.anbox.appmgr.AppViewActivity
 }}
 
-== Usage ==
-=== F-Droid ===
+= Usage =
+== F-Droid ==
 [[File:fdroid.png|400px]]
 [[File:fdroid2.png|400px]]
 [[File:fdroid3.png|400px]]
 
-==== Installation ====
+=== Installation ===
 Might want to install F-Droid.
 
 Here are instructions document how to download and verify F-Droid inside {{workstation product name}}.
@@ -312,7 +398,7 @@ Install F-Droid inside Anbox using <code>adb</code>.
 adb install FDroid.apk
 }}
 
-=== File Sharing ===
+== File Sharing ==
 <ref>
 https://forums.whonix.org/t/running-android-apps-inside-whonix-workstation-anbox-proof-of-concept/7441/13
 </ref>
@@ -330,7 +416,9 @@ Browse to:
 Files dropped to this download directory are readily visible to apps within Anbox.
 
 = Forum Discussion =
-https://forums.whonix.org/t/running-android-apps-inside-whonix-workstation-proof-of-concept/7441/11
+
+* https://forums.whonix.org/t/running-android-apps-inside-whonix-workstation-proof-of-concept/7441/11
+* https://forums.whonix.org/t/integrate-anbox-into-whonix-workstation/9642
 
 = Footnotes =
 <references />
