@@ -251,24 +251,27 @@ sudo reboot
 }}
 
 == Qubes ==
-[[Qubes]] users only.
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = [[Qubes]] users only.
+}}
 
-You probably want to use a StandaloneVM. Otherwise changes would be non-persistent, i.e. lost after VM restart. Instructions on how to make Anbox persistent using a TemplateBased AppVM are not existing yet. (See footnote for experimental instructions. <ref>
-Does not work yet.
+A StandaloneVM is most suitable, otherwise changes will be non-persistent (lost after VM restart). Instructions on how to make Anbox persistent using a TemplateBased AppVM do not exist yet; see footnote for experimental instructions. <ref>
+These steps do not work yet.
 
 <pre>
 [ 2019-10-14 11:00:41] [launch.cpp:214@operator()] Session manager failed to become ready
 </pre>
 
-1) Increase VM private storage.
+{{Box|text=
+'''1.''' Increase VM private storage.
 
-Power off the VM.
+* Power off the VM.
+* Add at least 2 GB more private storage to the VM. This can be done using Qubes VM Manager (QVMM).
+* Reboot the VM.
 
-Add at least 2 GB more private storage to VM. This can be done using Qubes VM Manager (QVMM).
-
-Reboot the VM.
-
-2) Add <code>/var/lib/anbox</code> to [https://www.qubes-os.org/doc/bind-dirs/ Qubes bind-dirs].
+'''2.''' Add <code>/var/lib/anbox</code> to [https://www.qubes-os.org/doc/bind-dirs/ Qubes bind-dirs].
 
 Create folder <code>/rw/config/qubes-bind-dirs.d</code>.
 
@@ -290,13 +293,16 @@ binds+=( '/var/lib/anbox' )
 
 Save.
 
-Reboot the VM.
+'''3.''' Reboot the VM.
 
-This results in storing <code>/var/lib/anbox</code> in the private rather than root image. Thereby changes would persist rather than be lost after VM restart.
+This results in storing <code>/var/lib/anbox</code> in the private rather than the root image. This means changes will persist rather than be lost after a VM restart.
 
-Fix file permissions.
+'''4.''' Fix file permissions.
 
-Warning: might have security issues
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Warning: the following steps might cause security issues.
+}}
 
 {{CodeSelect|code=
 sudo systemctl stop anbox-container-manager.service
@@ -309,17 +315,13 @@ sudo chown --recursive user:user /var/lib/anbox
 {{CodeSelect|code=
 sudo systemctl start anbox-container-manager.service
 }}
-</ref>)
+}}
+</ref>
 
-{{Q project name}} requires using [https://www.qubes-os.org/doc/managing-vm-kernel/ Qubes VM kernel]. <ref>
-Using VM kernel may come with its own challenges currently.
+{{Q project name}} requires the use of a [https://www.qubes-os.org/doc/managing-vm-kernel/ Qubes VM kernel]. <ref>
+Using a VM kernel is currently challenging to use because Anbox is implemented using kernel modules, see: [https://github.com/QubesOS/qubes-issues/issues/5212#issuecomment-533873012 Simplify and promote using in-vm kernel].</ref> Users can follow the instructions from the Qubes website [https://www.qubes-os.org/doc/managing-vm-kernel/#installing-kernel-in-debian-vm Installing kernel in Debian VM] which are equally functional in {{Q project name}}.
 
-https://github.com/QubesOS/qubes-issues/issues/5212#issuecomment-533873012
-
-Since Anbox is implemented using kernel modules.
-</ref> Users can follow the instructions from the Qubes website [https://www.qubes-os.org/doc/managing-vm-kernel/#installing-kernel-in-debian-vm Installing kernel in Debian VM] which are equally functional in {{Q project name}}.
-
-It has been [https://github.com/QubesOS/qubes-issues/issues/2233#issuecomment-593137226 reported] that it is required to enable [https://docs.anbox.io/userguide/advanced/software_rendering.html Anbox software rendering] but how to do this in this guide is unknown at this point. The command from previous link probably won't work as this guide does not use snap and it shouldn't use snap either because that would break recommendation [[Warning#Always_Verify_Signatures|Always Verify Signatures]] since snap does not verify software signatures. <ref>
+It has been [https://github.com/QubesOS/qubes-issues/issues/2233#issuecomment-593137226 reported] that it is necessary to enable [https://docs.anbox.io/userguide/advanced/software_rendering.html Anbox software rendering], but it is unclear how to accomplish that at present. The command from the previous link is likely non-functional because this guide does not use snap. Snap is not utilized because that would break the  [[Warning#Always_Verify_Signatures|Always Verify Signatures]] recommendation (snap does not verify software signatures). <ref>
 https://forums.whonix.org/t/snap-store-snaps-snapcraft-io-a-new-software-source/7631
 </ref>
 
