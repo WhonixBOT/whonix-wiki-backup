@@ -143,88 +143,23 @@ TODO: Test profiles and expand this section.
 
 = Appendix =
 
-== OnionShare Installation from GitHub ==
-{{Box|text=
-'''1.''' ''Optional'': Create a separate {{workstation_product_name}} ([[{{q project name short}}|{{q project name}}]]: <code>anon-onionshare</code> AppVM).
-
-Note: This is not strictly necessary, but best practice is to separate anonymous activities of a different nature in distinct VMs (AppVMs). <ref>[[Qubes|{{q_project_name}}]] users should note the <code>{{whonix-ws}}</code> TemplateVM will pull in over 70Mb of dependencies at step 6. Consider creating a separate, cloned <code>{{whonix-ws}}</code> TemplateVM for this purpose beforehand.</ref>
-
-In [[{{q project name short}}|{{q project name}}]], to clone the existing <code>anon-whonix</code>: 
-
-<code>Qube Manager</code> &rarr; <code>Right-click on anon-vm</code> &rarr; <code>Select "<u>C</u>lone qube"</code> &rarr; <code>Rename to "anon-onionshare"</code>
-
-'''2.''' Install git in {{workstation_product_name}} (<code>anon-onionshare</code>).
-
-Open a terminal (Konsole) in {{workstation_product_name}} (<code>anon-onionshare</code>) and navigate to the persistent home directory. 
-
-{{CodeSelect|code=
-cd /home/user
-}}
-
-Next install git which is not available by default in the VM (AppVM). <ref>The git installation will not persist in [[Qubes|{{q_project_name}}]] following reboot. This method avoids polluting the <code>{{whonix-ws}}</code> TemplateVM upon which it is based.</ref>
-
-{{CodeSelect|code=
-sudo apt-get install git
-}}
-
-'''3.''' Clone the OnionShare directory.
-
-This will pull the OnionShare source code directly from GitHub.
-
-{{CodeSelect|code=
-git clone https://github.com/micahflee/onionshare.git
-}}
-
-Next navigate to the OnionShare directory.
-
-{{CodeSelect|code=
-cd onionshare
-}}
-
-'''4.''' Retrieve the OnionShare PGP signing key.
-
-This step retrieves the OnionShare developer's PGP key using the long key ID. <ref>The OnionShare core developer is Micah Lee. The key ID has been taken directly from https://micahflee.com/ -- [https://micahflee.com/micah.asc micah.asc]. Michah's PGP public key is also referenced [https://docs.onionshare.org/2.3.1/en/install.html here].</ref>
-
-{{CodeSelect|code=
-gpg --keyserver pool.sks-keyservers.net --recv-keys 0x927F419D7EC82C2F149C1BD1403C2657CD994F73
-}}
-
-'''5.''' Examine and verify the git tags and commit.
-
-These steps list the available git tags, and verifies the latest version and its commit (v2.3.1 at the time of writing).
+== Flatpak OnionShare Installation ==
 
 {{mbox
-| image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text    = Good signature messages should appear for each verify command below. Do not proceed if signatures are bad! In that case, remove the OnionShare directory and repeat step 3.
-}}
-{{CodeSelect|code=
-git tag
-}}
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = It is recommended to create a separate {{workstation_product_name}} ([[{{q project name short}}|{{q project name}}]]: <code>anon-onionshare</code> AppVM). <ref>To clone the existing <code>anon-whonix</code> in [[{{q project name short}}|{{q project name}}]]: 
 
-{{CodeSelect|code=
-git verify-tag v2.3.1
+<code>Qube Manager</code> &rarr; <code>Right-click on anon-vm</code> &rarr; <code>Select "<u>C</u>lone qube"</code> &rarr; <code>Rename to "anon-onionshare"</code></ref> The reason is the OnionShare installation will be persistent in this configuration and it is also best practice to separate anonymous activities of a different nature in distinct VMs (AppVMs). <ref>[[Qubes|{{q_project_name}}]] users should also consider creating a separate, cloned <code>{{whonix-ws}}</code> TemplateVM before installing flatpak.</ref>
 }}
 
-{{CodeSelect|code=
-git verify-commit v2.3.1^{commit}
+[[Qubes|{{q_project_name}}]] users must also shutdown the <code>{{whonix-ws}}</code> TemplateVM after flatpak is installed, and restart the <code>anon-onionshare</code> AppVM.
+
+{{Flatpak Install|package=
+onionshare
 }}
 
-[[Qubes|{{q_project_name}}]] users should shut down <code>anon-onionshare</code> prior to the next step.
-
-'''6.''' Install OnionShare dependencies.
-
-Several dependencies must be installed in {{workstation_product_name}} (<code>{{whonix-ws}}</code> TemplateVM) for OnionShare to work correctly. Locate the {{Code2|BUILD.md}} file in the OnionShare repository and run the necessary apt-get commands in the "Debian-like distros" section (note: this file is unavailable as of v2.3).
-
-For example, for OnionShare v2.2 run in a terminal (Konsole).
-
-{{CodeSelect|code=
-sudo apt install -y python3-flask python3-stem python3-pyqt5 python3-crypto python3-socks python-nautilus tor obfs4proxy python3-pytest build-essential fakeroot python3-all python3-stdeb dh-python python3-flask-httpauth python3-distutils
-}}
-
-[[Qubes|{{q_project_name}}]] users should shutdown the <code>{{whonix-ws}}</code> TemplateVM after dependencies have installed, and restart the <code>anon-onionshare</code> AppVM.
-}}
-
-After installation is finished, follow the steps from the [[#Whonix_VM_Configuration|Whonix VM Configuration]] section.
+After installation is finished, follow the steps in the [[#Whonix_VM_Configuration|Whonix VM Configuration]] section.
 
 = Footnotes =
 {{reflist|close=1}}
