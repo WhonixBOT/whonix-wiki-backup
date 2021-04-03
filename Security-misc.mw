@@ -13,8 +13,61 @@ security-misc - Enhances Miscellaneous Security Settings
 
 = Testing Features =
 == Restrict Hardware Information to Root ==
-See [[Whonix-Workstation_Security_Hardening#Restrict_Hardware_Information_to_Root|Restrict Hardware Information to Root]].
 
+Details about your hardware can be used for identification, so Whonix includes the <code>hide-hardware-info.service</code> systemd unit that restricts access to <code>/proc/cpuinfo</code>, <code>/proc/bus</code>, <code>/proc/scsi</code> and <code>/sys</code> to the root user only. This hides most hardware identifiers and increases security as <code>/sys</code> exposes a lot of information that should not be accessible by unprivileged users.
+
+This setting is disabled by default because it might break many applications. It can optionally be enabled by running the following command.
+
+{{CodeSelect|code=
+sudo systemctl enable hide-hardware-info.service
+}}
+
+This command can also be run on {{Gateway product name}}.
+
+A whitelist that allows specific applications to access <code>/sys</code> and <code>/proc/cpuinfo</code> is enabled by default to maintain basic functionality. For example, this allows the launching of applications like XFCE.
+
+=== Whitelisting Applications ===
+
+To whitelist applications, they must be run under the <code>sysfs</code> group (if allowing access to <code>/sys</code>) or the <code>cpuinfo</code> group (if allowing access to <code>/proc/cpuinfo</code>).
+
+For example, to run a systemd service as the <code>sysfs</code> group, create a [[Configuration_Files#Configuration_Drop-In_Folders|drop-in directory]] and add the following.
+
+{{CodeSelect|code=
+[Service]
+SupplementaryGroups=sysfs
+}}
+
+To run a specific binary as the <code>sysfs</code> group, the binary must be owned by the <code>sysfs</code> group and be made setgid. To achieve this, change the ownership of the binary by running the following.
+
+{{CodeSelect|code=
+sudo chgrp sysfs /path/to/binary
+}}
+
+Then make the binary setgid.
+
+{{CodeSelect|code=
+sudo chmod g+s /path/to/binary
+}}
+
+The binary will now run with the permissions of the <code>sysfs</code> group and have access to <code>/sys</code>.
+
+All of these steps can also be applied to the <code>cpuinfo</code> group.
+
+Remember that any whitelisted applications add to the attack surface. An attacker can attempt to exploit a vulnerability in the whitelisted application(s) to gain access to hardware information.
+
+=== Disable the Whitelist ===
+
+In order to reduce the attack surface as much as possible, optionally the whitelist can be disabled entirely.
+
+{{Open with root rights|filename=
+/etc/hide-hardware-info.d/30_whitelist.conf
+}}
+
+Uncomment the <code>sysfs_whitelist=0</code> and <code>cpuinfo_whitelist=0</code> sections to disable the whitelist.
+
+Note that this setting will break many applications; for example, the desktop environment will not even start. Do not perform this action unless you understand the implications and can reverse the change.
+
+=== Forum Discussion ==
 https://forums.whonix.org/t/restrict-hardware-information-to-root-testers-wanted/8618
 
 == SUID Disabler and Permission Hardener ==
