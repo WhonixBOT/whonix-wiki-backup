@@ -38,29 +38,34 @@ See [[KVM#Nested_KVM_Virtualization|Nested KVM Virtualization]].
 
 = VirtualBox inside VirtualBox =
 
-On the host. (L0)
+== Host Steps ==
 
-# Power off the VM (L1) if running.
-# Change your host key: <code>VirtualBox</code> &rarr; <code>Preferences</code> &rarr; <code>Input</code> &rarr; <code>Host Key</code>. The "outside" (L0) and the "inside" (L1) Host Key must differ, otherwise you can not leave the "inside" (L1) VM anymore.
-# Enable nested virtualization. <code>VirtualBox</code> &rarr; <code>click a VM</code> &rarr; <code>Settings</code> &rarr; <code>System</code> &rarr; <code>Processor</code> &rarr; <code>Enable 'Nested VT-x/AMD-V</code> &rarr; <code>OK</code> (If that does not work, see footnote.) <ref>
+Perform these steps on the host (<code>L0</code>).
+
+{{Box|text=
+'''1.''' Power off the VM (<code>L1</code>) if running.<br />
+'''2.''' Change the host key: <code>VirtualBox</code> &rarr; <code>Preferences</code> &rarr; <code>Input</code> &rarr; <code>Host Key</code>. 
+
+The "outside" (<code>L0</code>) and the "inside" (<code>L1</code>) Host Key must differ, otherwise you can not leave the "inside" (<code>L1</code>) VM anymore.<br />
+'''3.''' Enable nested virtualization: <code>VirtualBox</code> &rarr; <code>click a VM</code> &rarr; <code>Settings</code> &rarr; <code>System</code> &rarr; <code>Processor</code> &rarr; <code>Enable 'Nested VT-x/AMD-V</code> &rarr; <code>OK</code> (If that does not work, see footnote.) <ref>
 Replace <code>Whonix-Workstation-XFCE</code> with the actual name of the VM in case you renamed the VM or are using multiple {{Workstation product name}}.
 
-The following command works on Linux. Untested on Windows but should be possible to make this command work on Windows as well. It's only about adding VBoxManage to PATH (if that is not the default) or using the full path to VBoxManage.
+The following command works on Linux. It is untested on Windows but it should be possible to make this command work on Windows as well. Its purpose is adding VBoxManage to PATH (if that is not the default) or using the full path to VBoxManage.
 
 {{CodeSelect|code=
 VBoxManage modifyvm Whonix-Workstation-XFCE --nested-hw-virt on
 }}
-</ref>
-# Assign less virtual CPUs. For example if your host has 4 physical CPU cores, reduce the VM to 3. <ref>
+</ref><br />
+'''4.''' Assign less virtual CPUs. For example if the host has 4 physical CPU cores, reduce the VM to 3: <ref>
 https://www.virtualbox.org/ticket/19500
-</ref> <code>VirtualBox</code> &rarr; <code>click a VM</code> &rarr; <code>Settings</code> &rarr; <code>System</code> &rarr; <code>Processor</code> &rarr; <code>Reduce to 3</code> &rarr; <code>OK</code>
-# Increase virtual RAM. <code>Virtual machine</code> &rarr; <code>Menu</code> &rarr; <code>Settings</code> &rarr; <code><i>Adjust</i></code> <code>Memory slider</code> &rarr; <code><i>Click:</i> OK</code>
-# Using I/O APIC can speed up the VM. <code>VirtualBox</code> &rarr; <code>right-click on VM</code> &rarr; <code>Settings</code> &rarr; <code>System</code> &rarr; <code>check "Enable I/O APIC"</code> &rarr; <code><i>Click:</i> OK</code> <ref>
+</ref> <code>VirtualBox</code> &rarr; <code>click a VM</code> &rarr; <code>Settings</code> &rarr; <code>System</code> &rarr; <code>Processor</code> &rarr; <code>Reduce to 3</code> &rarr; <code>OK</code><br />
+'''5.''' Increase virtual RAM: <code>Virtual machine</code> &rarr; <code>Menu</code> &rarr; <code>Settings</code> &rarr; <code><i>Adjust</i></code> <code>Memory slider</code> &rarr; <code><i>Click:</i> OK</code><br />
+'''6.''' Using I/O APIC can speed up the VM: <code>VirtualBox</code> &rarr; <code>right-click on VM</code> &rarr; <code>Settings</code> &rarr; <code>System</code> &rarr; <code>check "Enable I/O APIC"</code> &rarr; <code><i>Click:</i> OK</code> <ref>
 {{CodeSelect|code=
 vboxmanage "{{workstation_product_name_short}}" modifyvm --ioapic on
 }}
 </ref> <ref>
-So does enabling ACPI. Enabling ACPI in all VMs significantly speeds up the "inside" VM (L1).
+So does enabling ACPI. Enabling ACPI in all VMs significantly speeds up the "inside" VM (<code>L1</code>).
 
 {{CodeSelect|code=
 vboxmanage "{{workstation_product_name_short}}" modifyvm --acpi on
@@ -73,19 +78,25 @@ ACPI is the current industry standard to allow OSes to recognize hardware, confi
 </blockquote>
 </ref> <ref>
 These settings are in use for {{project name}} VMs by default.
-</ref>
-# Power on the VM (L1).
+</ref><br />
+'''7.''' Power on the VM (<code>L1</code>).
+}}
 
-Inside the VM (L1).
+== VM Steps ==
 
-# Install VirtualBox.
+Perform these steps inside the VM (<code>L1</code>).
+{{Box|text=
+'''1.''' Install VirtualBox.
 
 {{Install Package|
 package=virtualbox
 }}
 
-# Now you should be able to use VirtualBox inside the VM (L1).
-# If your VM (L1) has 3 "physical" (actually virtual CPU cores) do not assign more than 2 virtual CPU cores to VM (L2). Start with 1 virtual CPU for the VM (L2). If that works well for you, feel free to experiment increasing. <code>VirtualBox</code> &rarr; <code>click a VM</code> &rarr; <code>Settings</code> &rarr; <code>System</code> &rarr; <code>Processor</code> &rarr; <code>Increase to 2</code> &rarr; <code>OK</code>
+'''2.''' It should now be possible to use VirtualBox inside the VM (<code>L1</code>).<br />
+'''3.''' Make CPU core adjustments.
+
+If the VM (<code>L1</code>) has 3 "physical" (actually virtual) CPU cores do not assign more than 2 virtual CPU cores to VM (<code>L2</code>). Start with 1 virtual CPU for the VM (<code>L2</code>). If that performs well, consider experimenting with an increased number. <code>VirtualBox</code> &rarr; <code>click a VM</code> &rarr; <code>Settings</code> &rarr; <code>System</code> &rarr; <code>Processor</code> &rarr; <code>Increase to 2</code> &rarr; <code>OK</code>
+}}
 
 = Running {{Project name}} in a Nested Virtual Machine =
 Only {{Project name}} 64-bit builds are available for download. See [[Dev/64bit]] for why. Some virtualizers have no or limited support running nested VMs that require 64-bit. This might be an issue when trying to run {{Project name}} in a nested virtual machine.
