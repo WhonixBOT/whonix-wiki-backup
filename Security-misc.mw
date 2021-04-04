@@ -45,6 +45,9 @@ https://gitlab.com/whonix/security-misc/-/blob/master/lib/systemd/system/user@.s
 
 To whitelist applications, they must be run under the <code>sysfs</code> group (if allowing access to <code>/sys</code>) and/or the <code>cpuinfo</code> group (if allowing access to <code>/proc/cpuinfo</code>).
 
+Remember that any whitelisted applications add to the attack surface. An attacker can attempt to exploit a vulnerability in the whitelisted application(s) to gain access to hardware information.
+
+==== addgroup method ====
 For example, to add user <code>user</code> to group <code>cpuinfo</code>, run the following command. (Note, this is weakening protections.)
 
 {{CodeSelect|code=
@@ -81,6 +84,13 @@ sudo -u user cpu-info
 }}
 </ref>
 
+For example, after reboot it would be possible to run the <code>cpu-info</code> utility (from Debian package <code>cpuinfo</code>).
+
+{{CodeSelect|code=
+cpu-info
+}}
+
+==== systemd ====
 For example, to run a systemd service as the <code>sysfs</code> group, create a [[Configuration_Files#Configuration_Drop-In_Folders|drop-in directory]] and add the following.
 
 {{CodeSelect|code=
@@ -88,6 +98,7 @@ For example, to run a systemd service as the <code>sysfs</code> group, create a 
 SupplementaryGroups=sysfs
 }}
 
+==== setgid method ====
 To run a specific binary as the <code>sysfs</code> group, the binary must be owned by the <code>sysfs</code> group and be made setgid. To achieve this, change the ownership of the binary by running the following.
 
 {{CodeSelect|code=
@@ -103,8 +114,6 @@ sudo chmod g+s /path/to/binary
 The binary will now run with the permissions of the <code>sysfs</code> group and have access to <code>/sys</code>.
 
 All of these steps can also be applied to the <code>cpuinfo</code> group.
-
-Remember that any whitelisted applications add to the attack surface. An attacker can attempt to exploit a vulnerability in the whitelisted application(s) to gain access to hardware information.
 
 === Disable the Whitelist ===
 
