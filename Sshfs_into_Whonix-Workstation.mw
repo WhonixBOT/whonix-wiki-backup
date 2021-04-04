@@ -5,10 +5,25 @@
 |image=https://www.{{project_clearnet}}/w/images/b/be/Sshfs.jpg
 }}
 [[image:Sshfs.jpg|thumb]]
-= Do Once =
-'''Developers / experts only! Only for debugging!'''
+= Introduction =
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = <u>Note</u>: this is intended for developers/experts only! 
+}}
 
-On the host.
+This wiki chapter should only be used for debugging purposes.
+
+= SSHFS Procedure =
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = Only complete these steps once.
+}}
+
+== Add Membership ==
+
+Perform these steps on the host.
 
 If you are not already a member of the fuse group, add yourself.
 
@@ -16,7 +31,7 @@ If you are not already a member of the fuse group, add yourself.
 sudo adduser `whoami` fuse
 }}
 
-If you were not already a member, you will see.
+If you were not already a member, this message will appear.
 
 <pre>
 Adding user `user' to group `fuse' ...
@@ -24,9 +39,9 @@ Adding user user to group fuse
 Done.
 </pre>
 
-And should reboot. <ref>Restart X may do the trick as well.</ref>
+And should reboot. <ref>If not, restarting X may also work.</ref>
 
-If you see.
+If this message appears.
 
 <pre>
 The user `user' is already a member of `fuse'.
@@ -34,21 +49,24 @@ The user `user' is already a member of `fuse'.
 
 Then you are already a member of the fuse group and do not have to reboot.
 
-On the host.
+== Import {{project_name}} VMs ==
 
-Import {{gateway_product_name}}
+Perform these steps on the host.
 
-Import {{workstation_product_name}}
+* import {{gateway_product_name}}
+* import {{workstation_product_name}}
 
-On the host.
+== Modify the {{gateway_product_name}} VM ==
 
-Caution if you did not name your VM "{{gateway_product_name_short}}"!
+Perform this step on the host.
+
+Be careful if you did not name your VM "{{gateway_product_name_short}}"!
 
 {{CodeSelect|code=
 VBoxManage modifyvm "{{gateway_product_name_short}}" --natpf1 "ssh",tcp,127.0.0.1,2200,,22 ; echo $?
 }}
 
-When there is an error, you will see this.
+If there is an error, the following message will appear.
 
 <pre>
 VBoxManage: error: The machine '{{gateway_product_name_short}}8.1' is already locked for a session (or being unlocked)
@@ -57,13 +75,15 @@ Context: "LockMachine(a&rarr;session, LockType_Write)" at line 377 of file VBoxM
 1
 </pre>
 
-When it succeeded, you will see this.
+If the procedure is successful, the following message will appear.
 
 <pre>
 0
 </pre>
 
-{{gateway_product_name}} AND {{workstation_product_name}}.
+== Update and Install OpenSSH ==
+
+Perform these steps on both {{gateway_product_name}} <u>and</u> {{workstation_product_name}}.
 
 {{CodeSelect|code=
 sudo apt-get update
@@ -73,7 +93,9 @@ sudo apt-get update
 sudo apt-get install openssh-server
 }}
 
-{{gateway_product_name}} AND {{workstation_product_name}}.
+== Open Ports ==
+
+Perform these steps on both {{gateway_product_name}} <u>and</u> {{workstation_product_name}}.
 
 {{CodeSelect|code=
 echo 'EXTERNAL_OPEN_PORTS+=" 22 "' {{!}} sudo tee -a "/etc/whonix_firewall.d/50_user.conf"
@@ -83,7 +105,9 @@ echo 'EXTERNAL_OPEN_PORTS+=" 22 "' {{!}} sudo tee -a "/etc/whonix_firewall.d/50_
 sudo whonix_firewall
 }}
 
-On {{gateway_product_name}}.
+== Open an SSH Connection ==
+
+Perform these steps on {{gateway_product_name}}.
 
 {{CodeSelect|code=
 ssh.anondist-orig 10.152.152.11
@@ -91,19 +115,23 @@ ssh.anondist-orig 10.152.152.11
 
 Yes (accept fingerprint).
 
-Terminate ssh connection.
+Terminate the SSH connection.
 
 {{CodeSelect|code=
 exit
 }}
 
-On the host.
-If you are using ssh on the host for other purposes, it might be better to switch to an extra user.
+== Troubleshooting ==
 
-On the host.
-Try this if you are having problems. This might not be neccessary.
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = If SSH is used on the host for other purposes, it might be better to switch to an extra user.
+}}
 
-THINK FIRST!
+If necessary, these steps should be performed on the host.
+
+Try the following if you experience problems. This might not be necessary; so <u>think first</u>!
 
 {{CodeSelect|code=
 killall ssh
@@ -113,11 +141,9 @@ killall ssh
 killall sshfs
 }}
 
-On the host. Try this if you are having problems. This might not be neccessary. There seems to be a bug with existing ssh known_hosts files.
+There also seems to be a bug with existing SSH known_hosts files; try these steps if you experience problems. This might not be necessary; so <u>think first</u>!
 
-THINK FIRST!
-
-Or "rm" if you know what you are doing
+The "rm" command can be used instead if you know what you are doing.
 
 {{CodeSelect|code=
 trash-put ~/.ssh/known_hosts
@@ -127,6 +153,8 @@ trash-put ~/.ssh/known_hosts
 trash-put ~/.ssh/known_hosts.old
 }}
 
+Or.
+
 {{CodeSelect|code=
 #rm ~/.ssh/known_hosts
 }}
@@ -135,14 +163,17 @@ trash-put ~/.ssh/known_hosts.old
 #rm ~/.ssh/known_hosts.old
 }}
 
-On the host.
+== Create Necessary Folders ==
+
+Perform this step on the host.
 
 {{CodeSelect|code=
 mkdir ~/mountworkstation
 }}
 
-= Run =
-On the host.
+== SSHFS into {{workstation_product_name}} ==
+
+Perform these steps on the host.
 
 {{CodeSelect|code=
 ssh -f user@127.0.0.1 -p 2200 -L 2222:10.152.152.11 :22 -N
@@ -152,7 +183,7 @@ ssh -f user@127.0.0.1 -p 2200 -L 2222:10.152.152.11 :22 -N
 sshfs -p 2222 user@127.0.0.1:/ ~/mountworkstation
 }}
 
-== Footnotes ==
+= Footnotes =
 {{reflist|close=1}}
 
 {{Footer}}
