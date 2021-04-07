@@ -37,54 +37,52 @@ That is because DNS traffic originating from {{workstation_product_name}} gets r
 }}
 
 == How ==
-{{Box|text=
 '''Advanced users only!''' <br />
 '''Usually recommended against and unnecessary.'''
 
-Working. Using {{gateway_product_name}} user <code>clearnet</code>.
+Using {{gateway_product_name}} user <code>clearnet</code>.
+
+TODO: update documentation
 
 {{mbox
-
 | type    = critical
-| image   = [[File:Ambox_warning_pn.svg.png|40px|alt={{project_name}} first time users warning]]
-| text    = Using the clearnet user, traffic will be sent over normal internet! Not over Tor! Will not be anonymous!
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Using the <code>clearnet</code> user account, traffic will be sent over normal internet! Not over Tor! Will not be anonymous!
 }}
 
-Disable <code>/etc/dhcp/dhclient-enter-hooks.d/nodnsupdate</code> by making it no longer executable so DHCP will write to <code>/etc/resolv.conf</code>. The following command only applies to older versions of Whonix or those who have package <code>anon-gw-dhcp-conf</code> installed.
+Make the following modifications to {{gateway_product_name}}.
 
-{{CodeSelect|code=
-sudo chmod -x /etc/dhcp/dhclient-enter-hooks.d/nodnsupdate
+{{Open with root rights
+|filename=/etc/resolv.conf
 }}
 
-Make <code>/etc/resolv.conf</code> mutable. Don't worry if the next command causes an error. It's not required anymore in recent {{project_name}} versions.
+Uncomment <code>#nameserver 10.0.2.3</code>. In other words, replace <code>#nameserver 10.0.2.3</code> with </code>nameserver 10.0.2.3</code>.
 
-{{CodeSelect|code=
-sudo chattr -i /etc/resolv.conf
+* {{Non-q-project}}: Done.
+* {{Q project name}}: Replace <code>10.0.2.3</code>.
+** To find out that IP to replace it with, run the following command.
+** {{CodeSelect|code=
+qubesdb-read /qubes-netvm-primary-dns
 }}
+** Should show for example:
+** <blockquote>10.139.1.1</blockquote>
+** Replace <code>10.0.2.3</code> with <blockquote>10.139.1.1</blockquote>. Note: replace it with the actual IP, the output of above <code>qubesdb-read /qubes-netvm-primary-dns</code> command.
 
-Delete <code>/etc/resolv.conf</code> so we can regenerate it.
+== Test ==
+Start <code>bash</code> under user <code>clearnet</code>.
 
-{{CodeSelect|code=
-sudo rm /etc/resolv.conf
-}}
-
-Restart networking.
-
-{{CodeSelect|code=
-sudo service networking restart
-}}
-
-Login as user clearnet.
+<ref>
+Similar to login as user <code>clearnet</code>.
+</ref>
 
 {{CodeSelect|code=
-sudo su clearnet
+sudo -u clearnet bash
 }}
 
 Test it, for example using ping.
 
 {{CodeSelect|code=
 ping google.com
-}}
 }}
 
 = See Also =
