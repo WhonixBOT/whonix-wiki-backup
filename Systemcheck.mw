@@ -12,17 +12,17 @@
 
 [[Image:writing to tty1 by adrelanos.png|thumb|
 
-[[Desktop#whonixcheck.2Ftimesync_writing_to_tty1|Automatically started whonixcheck writing to tty1.]]]]
+[[Desktop#whonixcheck.2Ftimesync_writing_to_tty1|Automatically started systemcheck writing to tty1.]]]]
 = Introduction =
-{{Code2|whonixcheck}} is a script which checks numerous, important system variables. whonixcheck can be run in a CLI environment (such as in terminal emulator xfce4-terminal) or via the GUI option, which has an in-built progress meter and summary notification popup of the results. The script is stored in the {{Code|/usr/bin/whonixcheck}} and {{Code|/usr/lib/whonix/whonixcheck/}} directories. {{project_name}} is functional without the whonixcheck script since it only checks the system status; it is not responsible for core settings. Nothing is compiled, and the script can be easily inspected in the source code.
+{{Code2|whonixcheck}} is a script which checks numerous, important system variables. systemcheck can be run in a CLI environment (such as in terminal emulator xfce4-terminal) or via the GUI option, which has an in-built progress meter and summary notification popup of the results. The script is stored in the {{Code|/usr/bin/systemcheck}} and {{Code|/usr/lib/whonix/systemcheck/}} directories. {{project_name}} is functional without the systemcheck script since it only checks the system status; it is not responsible for core settings. Nothing is compiled, and the script can be easily inspected in the source code.
 
-The whonixcheck script was inspired by https://check.torproject.org. In the past this was an important check when people were still recommended to use proxy settings to torify web browsers. Tor Browser is now securely pre-configured upon release, which means manual torification of web browsers is now recommended against. As an additional protection the default Tor Browser visits <code>check.torproject.org</code> to confirm everything is working as expected. <ref>Tor Browser in {{project_name}} is configured to load a local {{project_name}} resource after launch -- the familiar landing page.</ref> This site also checks whether Tor Browser is up-to-date by having Tor Button perform a local check after downloading version information.
+The systemcheck script was inspired by https://check.torproject.org. In the past this was an important check when people were still recommended to use proxy settings to torify web browsers. Tor Browser is now securely pre-configured upon release, which means manual torification of web browsers is now recommended against. As an additional protection the default Tor Browser visits <code>check.torproject.org</code> to confirm everything is working as expected. <ref>Tor Browser in {{project_name}} is configured to load a local {{project_name}} resource after launch -- the familiar landing page.</ref> This site also checks whether Tor Browser is up-to-date by having Tor Button perform a local check after downloading version information.
 
-<code>check.torproject.org</code> is useful for a browser check, but {{project_name}} is a complete operating system. This means certain checks must be performed before the browser starts, otherwise a user's anonymity or security might be compromised. whonicheck's design allows the entire {{project_name}} community to stay informed about important updates or advice, and this is particularly important for users who might not start the browser or visit the {{project_name}} website regularly. For these reasons, whonixcheck is automatically started after boot/login if it has not been completed within the last 24 hours. This behavior holds true even if the system is not restarted, thereby keeping any long-running systems (like [[Onion_Services|Onion Services]]) safely informed.
+<code>check.torproject.org</code> is useful for a browser check, but {{project_name}} is a complete operating system. This means certain checks must be performed before the browser starts, otherwise a user's anonymity or security might be compromised. whonicheck's design allows the entire {{project_name}} community to stay informed about important updates or advice, and this is particularly important for users who might not start the browser or visit the {{project_name}} website regularly. For these reasons, systemcheck is automatically started after boot/login if it has not been completed within the last 24 hours. This behavior holds true even if the system is not restarted, thereby keeping any long-running systems (like [[Onion_Services|Onion Services]]) safely informed.
 
 If it is necessary to hide Tor and {{project_name}} use from an ISP, see [[Hide_Tor_and_{{project_name_short}}_from_your_ISP|here]]. While only a small minority of users configure their system to hide Tor, it is still desirable to hide any obvious {{project_name}} signature. {{project_name}} users are better off if adversaries cannot distinguish them from vanilla Tor Browser users, as the {{project_name}} user pool is far smaller. 
 
-When whonixcheck auto-starts, it first waits for a randomized period of time ranging between 60 and 500 seconds. This obfuscation feature is intended to further stymie traffic analysis, while Tor is still responsible for basic defenses against traffic volume and pattern signatures. Without waiting for a randomized period traffic flows would be more distinguishable, since a spike in whonixcheck traffic would always occur immediately after bootstrapping.
+When systemcheck auto-starts, it first waits for a randomized period of time ranging between 60 and 500 seconds. This obfuscation feature is intended to further stymie traffic analysis, while Tor is still responsible for basic defenses against traffic volume and pattern signatures. Without waiting for a randomized period traffic flows would be more distinguishable, since a spike in systemcheck traffic would always occur immediately after bootstrapping.
 
 {{Running_Whonixcheck}}
 
@@ -31,9 +31,9 @@ Tor bootstrap refers to the process of attempting to connect to the Tor network 
 
 = System Checks =
 
-In all the checks below, whonixcheck warnings appear if a problem is detected. Conversely, whonixcheck output is otherwise quiet unless using the <code>--verbose</code> option. Any operating system updates, downloads or other network activity are [[Stream_Isolation|stream-isolated]] by default.
+In all the checks below, systemcheck warnings appear if a problem is detected. Conversely, systemcheck output is otherwise quiet unless using the <code>--verbose</code> option. Any operating system updates, downloads or other network activity are [[Stream_Isolation|stream-isolated]] by default.
 
-'''Table:''' ''whonixcheck System Checks''
+'''Table:''' ''System Checks run by systemcheck''
 
 {| class="wikitable"
 |-
@@ -107,7 +107,7 @@ checks if <code>check.torproject.org</code> reports the IP to be a Tor IP addres
 Notify about the Tor connection / IP address. <ref>Some users may wonder why it is necessary to check the IP address if the {{project_name}} design ensures that the real IP cannot be leaked. Sometimes <code>check.torproject.org</code> reports false positives and fails to detect Tor exit nodes, so it is better to provide information about that possibility. This also reduces support requests and bad press. Users are welcome to investigate a Tor exit node that could not be detected, but it can be stated with high confidence that the IP address will be associated with a known Tor exit node.</ref> <ref>Another reason to perform this check is because some users set up dangerous and/or unsupported configurations, such as:
 * Changing the {{workstation_product_name}} (<code>anon-whonix</code>) network interface from {{Code|internal}} network {{Code|"{{project_name_short}}"}} to {{Code|bridged}} or {{Code|NAT}}.
 * Using virtualizers which are entirely unsupported and untested by {{project_name}} developers.
-* Installing arbitrary packages on {{workstation_product_name}} (<code>{{whonix-ws}}</code>). This could theoretically create leak vectors, and whonixcheck is the last layer of defense against such leaks.</ref>
+* Installing arbitrary packages on {{workstation_product_name}} (<code>{{whonix-ws}}</code>). This could theoretically create leak vectors, and systemcheck is the last layer of defense against such leaks.</ref>
 |-
 
 ! scope="row"| Repository Notification
@@ -156,7 +156,7 @@ The [https://github.com/{{project_name_short}}/anon-shared-build-log-build-versi
 echo "$anon_dist_build_version" > "/var/lib/anon-dist/build_version"
 </pre>
 </ref> 
-This information is made available so whonixcheck can determine which build script version was used to create that particular image. 
+This information is made available so systemcheck can determine which build script version was used to create that particular image. 
 
 This version number should remain static and be unaffected by updating or other issues, since it only applies to specific (usually older) versions of the build script. This is useful for diagnostic purposes and means specific build versions can be deprecated if they are too difficult or expensive to upgrade. In this case,  whonixcheck's [[#System_Checks|{{project_name}} News]] function would inform users about the change.
 
