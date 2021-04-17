@@ -160,6 +160,7 @@ For most users, the [[Anon_Connection_Wizard|Anon Connection Wizard]] GUI applic
 
 = Experimental Bridges =
 == Snowflake ==
+'''[[Untested]]! Snowflake in {{project name}} was previously functional before but untested since wiki instructions where updated due to upstream configuration changes!'''
 
 The Tor Project describes the design of the Snowflake pluggable transport: <ref>https://trac.torproject.org/projects/tor/wiki/doc/Snowflake</ref>
 <blockquote>Snowflake is a [https://trac.torproject.org/projects/tor/wiki/doc/PluggableTransports pluggable transport] that proxies traffic through temporary proxies using ​[https://webrtc.org/ WebRTC], a peer-to-peer protocol with built-in NAT punching. It aims to work kind of like flash proxy, but without flash proxy's problems with NAT.</blockquote>
@@ -193,12 +194,34 @@ sudo chmod og+rx /usr/bin/snowflake-client
 
 {{Open /usr/local/etc/torrc.d/50_user.conf}}
 
-'''5.''' Paste the following setting.
+'''5.''' Paste the following setting. <ref>
+The line starting with <code>ClientTransportPlugin</code> was taken from the Tor Browser folder file.
+
+<pre>
+~/tor-browser/Browser/TorBrowser/Data/Tor/torrc-defaults
+</pre>
+
+What is the link to the <code>torrc-defaults</code> file The Tor Project git?
+
+Path was adjusted from <code>./TorBrowser/Tor/PluggableTransports/snowflake-client</code> to <code>/usr/bin/snowflake-client</code> to be compatible with these instructions.
+
+The line starting with <code>Bridge</code> was taken from file
+
+<pre>
+~/tor-browser/Browser/TorBrowser/Data/Tor/torrc
+</pre>
+
+It was previously:
+
+<pre>
+Bridge snowflake 0.0.3.0:1 2B280B23E1107BB62ABFC40DDCC8824814F80A72
+</pre>
+</ref>
 
 {{CodeSelect|code=
 UseBridges 1
-ClientTransportPlugin snowflake exec /usr/bin/snowflake-client -url https://snowflake-broker.azureedge.net/ -front ajax.aspnetcdn.com -ice stun:stun.l.google.com:19302
-Bridge snowflake 0.0.3.0:1 2B280B23E1107BB62ABFC40DDCC8824814F80A72
+ClientTransportPlugin snowflake exec /usr/bin/snowflake-client -url https://snowflake-broker.torproject.net.global.prod.fastly.net/ -front cdn.sstatic.net -ice stun:stun.l.google.com:19302,stun:stun.voip.blackberry.com:3478,stun:stun.altar.com.pl:3478,stun:stun.antisip.com:3478,stun:stun.bluesip.net:3478,stun:stun.dus.net:3478,stun:stun.epygi.com:3478,stun:stun.sonetel.com:3478,stun:stun.sonetel.net:3478,stun:stun.stunprotocol.org:3478,stun:stun.uls.co.za:3478,stun:stun.voipgate.com:3478,stun:stun.voys.nl:3478
+Bridge snowflake 192.0.2.3:1 2B280B23E1107BB62ABFC40DDCC8824814F80A72
 }}
 
 '''6.''' Save the file and have the changes take effect.
