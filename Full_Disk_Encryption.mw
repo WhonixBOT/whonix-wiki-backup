@@ -162,6 +162,7 @@ The plausible deniability feature is available with volume types <code>Normal+Hi
 ! scope="col"| '''Measure'''
 ! scope="col"| '''Description'''
 |-
+
 ! scope="row"| Erase LUKS Header
 | 
 This is a much quicker alternative to zeroing data on a HDD with [https://dban.org/ Darik's Boot and Nuke (DBAN)]. <ref>https://en.wikipedia.org/wiki/Darik's_Boot_and_Nuke</ref> <ref>DBAN also warns: <blockquote>While DBAN is free to use, there’s no guarantee your data is completely sanitized across the entire drive. It cannot detect or erase SSDs and does not provide a certificate of data removal for auditing purposes or regulatory compliance. Hardware support (e.g. no RAID dismantling), customer support and software updates are not available using DBAN.</blockquote></ref> This is an effective measure on spinning HDDs where wiped data is confirmed to be destroyed. The OS only needs to read the LUKS header off disk once – not every single second. Wiping the header makes the disk impossible to unlock in the future. <ref>https://superuser.com/questions/1168928/wipe-luks-partition-in-pre-boot/1177362</ref>
@@ -178,9 +179,11 @@ sudo dd if=/dev/zero of=/dev/sdXY bs=1M count=2
 
 This will overwrite the first two megabytes of the partition <code>/dev/sdXY</code>, which should cover the entire LUKS encryption header for version 1. If you are using LUKS2 with cryptsetup version 2.1.0 (Debian Buster default) the default header size is now 16MiB. Previous cryptsetup versions used a 4MiB LUKS2 header. In that case, simply adjust the dd command: dd if=/dev/zero of=/dev/sdXY bs=1M count=16 (or count=4). Determine your header size with the cryptsetup luksDump --debug <device> command.
 |-
+
 ! scope="row"| Killer
 | <code>Killer</code><ref>https://github.com/Lvl4Sword/Killer</ref> is a newer project that supports a range of trigger actions to shutdown a system in the case of tampering (disallowed changes) with USB, Bluetooth, AC, Battery, Disk Tray, and Ethernet. In the future, custom commands will be supported besides shutdown. <ref>https://github.com/Lvl4Sword/Killer/issues/48</ref> Once the program is packaged, it is intended to provide this software in the {{project_name}} repositories for Debian hosts.
 |-
+
 ! scope="row"| LUKS Suspend Scripts
 | On Linux hosts, there is one interesting solution for the risks posed by a computer in a suspended state; luks-suspend scripts. <ref>https://github.com/vianney/arch-luks-suspend/issues/7</ref> This approach has some limitations because it is not yet packaged for Debian, and it has only been tested in the Ubuntu and Arch distributions. As of 2018, luks-suspend and keyslot nuking (mentioned below) is being merged upstream. <ref>https://blog.freesources.org/posts/2018/06/debian_cryptsetup_sprint_report/</ref> As of 2020 <code>cryptsetup-suspend</code> is now available in Debian Bullseye and Buster Backports, requiring Linux 5.6+. Keep in mind that while it protects LUKS keys by removing them from memory, other sensitive keys (GPG and SSH) and documents opened since last boot will still be present and extractable from RAM. Other daemons need to independently support key sanitization on suspend for enhanced protection.<ref>https://blog.freesources.org//posts/2020/08/cryptsetup-suspend/</ref>
 |-
@@ -189,19 +192,22 @@ This will overwrite the first two megabytes of the partition <code>/dev/sdXY</co
 https://forums.whonix.org/t/fde-emergency-feature-testing-requested
 </ref>
 </s>
-|-
+|
 ! scope="row"| Nuke Patch for cryptsetup
 | 
 * The Kali penetration testing distro team has written a [https://www.kali.org/tutorials/emergency-self-destruction-luks-kali/ nuke patch for cryptsetup], which adds the option to nuke all keyslots after a certain passphrase is entered; see footnotes. <ref>https://github.com/offensive-security/cryptsetup-nuke-keys
 </ref> <ref>In most emergency situations there will not be enough time to reboot the computer and enter the dead-man switch passphrase.</ref><br />
 * Supplying the dead-man switch as the "real passphrase" to the interceptors of the machine is unlikely to be an effective strategy. It is standard forensics procedure to create multiple images of the drive beforehand.
 |-
+
 ! scope="row"| Separate <code>/boot</code> Partition
 | When FDE is used on the host, it is inadvisable to keep any unencrypted files on that same physical media. Those at high risk should move the <code>/boot</code> partition to a separate USB media and the bootloader (Grub) should also be installed on the separate USB. To read more on this subject, see [https://twopointfouristan.wordpress.com/2011/04/17/pwning-past-whole-disk-encryption/ Pwning Past Whole Disk Encryption]. Article [https://cryptsetup-team.pages.debian.net/cryptsetup/encrypted-boot.html Full disk encryption, including /boot: Unlocking LUKS devices from GRUB] might be helpful.
 |-
+
 ! scope="row"| TRESOR Kernel Patch
 | Another useful protection is the [https://en.wikipedia.org/wiki/TRESOR TRESOR] [https://www1.cs.fau.de/tresor kernel patch], which keeps the disk encryption key outside of RAM by storing it inside the CPU. TRESOR does have several limitations. It is only available for the x86 architecture, and it complicates software debugging by disabling DR registers for security reasons. <ref>https://security.stackexchange.com/a/119835</ref> Moreover, a specialized attacker who can reverse engineer hardware designs is also capable of extracting secrets held in processor caches or specialized chips like TPMs.
 |-
+
 ! scope="row"| USBKill
 | 
 * [https://en.wikipedia.org/wiki/USBKill USBKill] is an anti-forensics script written in the aftermath of the SilkRoad trial. Its purpose is to trigger protection events that prevent adversaries from siphoning files, installing malware, or running a mouse jiggler. The script creates a white-list of allowable USB devices. If anything else is plugged into the machine, the RAM is erased and the computer is immediately shutdown. <br />
@@ -211,6 +217,7 @@ https://forums.whonix.org/t/fde-emergency-feature-testing-requested
 * https://7io.net/2015/07/02/python-usbkill-anti-forensic-usb-killswitch/#more-201 
 * https://phabricator.whonix.org/T552</ref>
 |-
+
 ! scope="row"| Increase Costs of Brute-Force Attacks
 |
 Encryption software uses Password-Based Key Derivation Functions (PBKDF) to slow down access attempts and provide some protection against low-entropy passphrases. Higher wait times, or iterations,  can often be used. Iteration values are low by default for impatient users and weak processors, also making systematic attempts to access such protected data much easier for unauthorized users. Choosing how long wait times should be should depend on how long you are willing to wait to access your own data and how long someone else should wait if they try. Computing power gets cheaper with time, so what works today might be weak in the future.
@@ -231,8 +238,9 @@ $ sudo cryptsetup benchmark
 
 will show you how many iterations could be made in a requested 2000 ms. To customize wait times, specify (with values) --pbkdf --pbkdf-force-iterations --pbkdf-memory and --pbkdf-parallel when using the LuksFormat command. Be aware that incorrect values can make wait times extremely long.
 
-* Veracrypt improved upon Truecrypts iterations when performing operations on volumes.
+* Veracrypt improved upon TrueCrypt's iterations when performing operations on volumes.
 |-
+
 |}
 
 = Advice for Solid-state Drives and USB Storage =
