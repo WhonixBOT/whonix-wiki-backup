@@ -1,54 +1,78 @@
+{{Title|title=Evil Maid Attacks}}
 {{Header}}
 {{forkme}}
 {{#seo:
-|description=Notes on Anti Evil Maid (AEM); adversary capabilities, AEM alternatives, security issues
+|description=Evil Maid Attacks, Notes on Anti Evil Maid (AEM); adversary capabilities, AEM alternatives, security issues
 }}
 
-Anti Evil Maid (AEM) notes.
+= Introduction =
 
-Adversary capabilities:
+An evil maid attack is: <ref>https://en.wikipedia.org/wiki/Evil_Maid_attack</ref> <blockquote>...an attack on an unattended device, in which an attacker with physical access alters it in some undetectable way so that they can later access the device, or the data on it.
 
-* physical access
-* remove disk
-* re-fash BIOS
-* exfiltrate TPM
+The name refers to the scenario where a maid could subvert a device left unattended in a hotel room – but the concept itself also applies to situations such as a device being intercepted while in transit, or taken away temporarily by airport or law enforcement personnel.</blockquote>
 
-----
+There are two main attack methods. The 'classic' evil maid attack involves a device being left unattended and then being tampered with by the attacker. If the system is not password-protected or does not require authentication, it is simply turned on and information is accessed. If the device is password-protected -- as is the case with [[Full_Disk_Encryption|Full Disk Encryption]] -- the device firmware is compromised so a false password prompt later appears. When the victim inputs the password, it is sent to the attacker and the compromised firmware removes itself. Afterwards, the attacker returns to the unattended device in order to steal data. <ref name=AEM>https://en.wikipedia.org/wiki/Evil_Maid_attack#Methods_of_attack</ref> <ref>Information can also be stolen via Direct Memory Access (DMA) attacks using hardware devices that connect directly to the physical address space.</ref>
 
-Anti Evil Maid (AEM) alternatives:
+The second method is known as a network evil maid. In this case the victim's device is replaced with an identical device. If the original device only has a bootloader password, then a attacker substitutes a device with an identical bootloader password input screen. If the device has a lock screen, the attacker must also recreate the background lock screen picture to mimic the original device. After the victim inputs their password on the false device, the password is sent to the attacker who then accesses data on the original device. <ref name=AEM />
 
-* BIOS password
-** attack requires removal of disk
-** there might be a BIOS master password
-* boot partition on USB
-** attack on BIOS required
-** or USB persistent modifications
-* disk hasher &rarr; attack on BIOS required
+Vulnerable interfaces include: <ref>https://en.wikipedia.org/wiki/Evil_Maid_attack#Vulnerable_interfaces</ref>
+* <u>Legacy BIOS</u>: This architecture is vulnerable because the configuration is unprotected, updates and ROMs are unsigned, and secure boot is unsupported. Attackers can compromise the firmware by booting from an external drive, allowing keystrokes to be sent to remote attackers.
+* <u>Unified Extensible Firmware Interface (UEFI)</u>: UEFI can mitigate evil maid attacks because a secure boot, authenticated framework is available, along with availability of Trusted Platform Module (TPM) initialization security. However, these features may be unused by platform manufacturers or the end-user, allowing exploitation.
+* <u>Full disk encryption systems</u>: Full disk encryption systems like LUKS in Debian are vulnerable because they are unable to authenticate themselves to the user. The disk contents of powered off and encrypted systems can be modified by attackers so the system's bootloader codes can steal passwords.
+* <u>Thunderbolt</u>: Many Intel Thunderbolt ports are vulnerable to DMA attacks that allow full access and the bypassing of all security features. 
+* <u>Any unattended devices</u>: As noted earlier, network evil maids can replace the device with an identical model that is configured to steal the password and send it to a remote attacker.
 
-----
+= Mitigation =
 
-Anti Evil Maid security issues:
+In general it is inadvisable to provide potential adversaries with physical access to a device since they could remove the disk, reflash the BIOS and exfiltrate the TPM. Obviously the safest way to protect against evil maid attacks is to always have the device(s) in your possession. If this is not possible, then placing the device in a safe or lockbox might be feasible. Also consider possible scenarios where the device can be temporarily removed for inspection, like during airport security screening or by law enforcement personnel. Simpler measures that provide some protection include keeping firmware up-to-date and always shutting down unattended devices.
 
-* download binary file SINIT without verification and hope the processor will correctly verify it
-* rely on closed source TPM
+== Detection ==
 
-----
+Various methods can be used to detect whether an unattended device has been potentially exposed or handled by nearby persons, including: <ref>https://en.wikipedia.org/wiki/Evil_Maid_attack#Detection</ref>
+* proximity alarms
+* motion detectors
+* wireless cameras
+* [https://guardianproject.github.io/haven/ Haven Android application] <ref><blockquote>It is an Android application that leverages on-device sensors to provide monitoring and protection of physical areas. Haven turns any Android phone into a motion, sound, vibration and light detector, watching for unexpected guests and unwanted intruders.</blockquote> Event monitoring is transmitted to the user's smartphone.</ref>
+* use of tamper-evident technology or low-cost solutions to detect tampering <ref>Such as the use of glitter over screw holes.</ref>
 
-Anti Evil Maid (AEM)
+If tampering is suspected, the device can be checked for possible malware. Unfortunately this is a difficult exercise and it may just be safer to discard the potentially compromised hardware.
 
-* authenticates machine to the user (not user to machine)
-* change in BIOS &rarr; reseal required
-* another complicated password?
-* picture support was deprecated?
-* one time password support OTP TOTP ("google authenticator) ([[Two-factor authentication 2FA|2FA]])
-* measurement of Xen, kernel, and initrd versions
-* only compatible with legacy boot
-* not compatible with UEFI
-* not compatible with USB 3.0
-* hide USB from dom0 (more secure but also more fragile) (BadUSB attack) vs not-hide (able to use USB AEM)
-* AEM on USB encourages to boot from USB &rarr; makes it easier for an evil maid (no need to change settings in BIOS)
-* a reason for AEM on USB &rarr; as a keyfile (second factor) &rarr; better yubikey
+== Anti Evil Maid (AEM) ==
+
+To protect against compromise, it is recommended to utilize hardware with a TPM interface and to configure Anti Evil Maid (AEM) software. AEM authenticates the device to the user since it will only unlock if the correct password is entered and it determines no unauthorized code has been executed on the device. <ref>Root of trust systems like Intel's TXT technology are used for this purpose.</ref> This can avoid compromise as users are notified if any files in the <code>/boot</code> partition are modified; verification occurs before the password is entered. <ref>https://github.com/unman/notes/blob/master/openBSD_as_netvm</ref>
+
+It should be noted that AEM security is imperfect because it relies upon a closed source TPM. Further, in Intel's case SINIT binary modules are downloaded so that Intel Trusted Execution Technology (Intel TXT) can perform a measured and verified launch of an OS kernel. <ref>https://reposcope.com/package/intel-SINIT</ref> Although digitally signed, the download step is done without verification and the processor must then correctly verify it and perform initial steps like correct measurements of BIOS/firmware and system settings such as ACPI tables.
+
+AEM has several other limitations: <ref>Picture support may also have been deprecated.</ref>
+
+* it authenticates the machine to the user (not the user to the machine)
+* any BIOS changes require a reseal
+* full trust is placed in the CPU and BIOS
+* compatible with legacy boot only (incompatible with (U)EFI boot)
+* a TPM owner password must be set
+* incompatible with USB 3.0
+
+Note that AEM has (time-based) one-time password support (OTP, TOTP; "google authenticator") ([[Two-factor authentication 2FA|2FA]]) which is a more secure configuration. It is also possible to use a USB device as the AEM device, but this has strengths and weaknesses: <ref>[https://www.qubes-os.org/doc/anti-evil-maid/ Installing and Using Anti Evil Maid (AEM) with Qubes OS]: <blockquote>Qubes security guidelines dictate that USB devices should never be attached directly to dom0, since this can result in the entire system being compromised. However, in its default configuration, installing and using AEM requires attaching a USB drive (i.e., mass storage device) directly to dom0. (The other option is to install AEM to an internal disk. However, this carries significant security implications, as explained here.) This presents us with a classic security trade-off: each Qubes user must make a choice between protecting dom0 from a potentially malicious USB drive, on the one hand, and protecting the system from Evil Maid attacks, on the other hand.</blockquote></ref> 
+* evil maid attacks are easier because BIOS settings do not need changing
+* AEM on USB can be used as a keyfile (second factor), which provides a stronger yubikey
+* in Qubes, hiding the USB from <code>dom0</code> is a more secure configuration; for example it avoids [https://acodez.in/badusb-attack/ BadUSB attacks]
+
+Despite these limitations, {{q_project_name}} users who have a compatible TPM are recommended to install [https://www.qubes-os.org/doc/anti-evil-maid/ AEM] in <code>dom0</code>. Also refer to the [https://github.com/QubesOS/qubes-antievilmaid qubes-antievilmaid README] for further security notes and information on system requirements.
+
+== AEM Alternatives ==
+
+If AEM is unavailable, then weaker alternatives include: 
+* Utilizing a BIOS password since an attack requires removal of the disk. Note this protection can potentially be circumvented by a master/maintenance BIOS password that might exist.
+* The <code>/boot</code> partition can also be placed on a USB; adversaries must then attack either the BIOS or USB-persistent modifications.
+* A cryptographic hash can be calculated for the entire disk so an integrity hash can be recalculated at a later time. <ref>This can detect if data has changed, but cannot protect against intentional tampering.</ref> <ref>https://ctf101.org/forensics/what-is-disk-imaging/</ref> An attacker would need to attack the BIOS in this case to avoid detection.
+
+= See Also =
+
+* [https://blog.invisiblethings.org/2011/09/07/anti-evil-maid.html Invisible Things Blog: Anti Evil Maid]
+
+= Footnotes =
+{{reflist|close=1}}
 
 {{Footer}}
 
-[[Category:Development]]
+[[Category:Documentation]]
