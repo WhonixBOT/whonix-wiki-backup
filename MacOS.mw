@@ -8,7 +8,7 @@ The format of the macOS wiki is based on the {{project name}} VirtualBox wiki pa
 |image=https://www.{{project_clearnet}}/w/images/3/3e/Macos_by_ego.png
 }}
 
-{{project_name}} [[File:{{project_name_short}}_old_logo.png|25px]] for '''Apple macOS''' [[File:rsz_osx.png|15px]] inside VirtualBox [[File:Virtualbox_logo.png|25px]].
+{{project_name}} [[File:{{project_name_short}}_old_logo.png|25px]] for '''Apple macOS''' [[File:rsz_osx.png|15px]] inside VirtualBox [[File:Virtualbox_logo.png|25px]] (Intel Macs only, for Apple Silicon support please read the section below).
 
 {{Box|text=
 '''1. Install VirtualBox'''
@@ -133,6 +133,115 @@ Virtualization on osx86 aka "Hackintosh" machines with unmodified "vanilla" kern
 
 </div>
 </div>
+
+{{Box|text=
+'''Running {{project name}} [[File:{{project_name_short}}_old_logo.png|25px]] on Apple Silicon (WIP)'''
+<div class="toccolours mw-collapsible mw-collapsed">
+For {{project name}} on Apple Silicon, please press on expand on the right.
+<div class="mw-collapsible-content">
+
+'''First things first'''<br />
+* This is in active development. Right now, you need to build Whonix to get it running on Apple Silicon. 
+* This can be improved in the future. If you want to help, please visit [https://forums.whonix.org/t/whonix-on-mac-with-arm-m1/11310 this forum thread].
+* Please understand that this is only for advanced users for now!
+
+'''1. Environment Setup'''<br />
+* Git
+* Homebrew
+* QEMU ([https://lore.kernel.org/qemu-devel/20210120224444.71840-1-agraf@csgraf.de/ with latest macOS HVF patches], still not upstream)
+
+The below has only been tested on Debian <code>buster</code> running under [https://www.qemu.org/ QEMU] on a Mac M1. Firstly, we need to use patches on top of QEMU. [https://github.com/knazarov/homebrew-qemu-virgl This Brew repository ] has those patches baked in thus it is advisable to use that.
+
+'''Note:''' getting Debian running on Apple Silicon is a bit out of scope of this documentation, however we have referenced below some helpful links.<ref>
+* https://gist.github.com/akihikodaki/87df4149e7ca87f18dc56807ec5a1bc5
+* https://gist.github.com/GavinPacini/99e30904b039a34acefce0195d34c9cd
+</ref>
+
+'''2. Initial Build'''<br />
+
+Follow the [[Dev/Build_Documentation/15_full| build documentation here]] and be sure to set <code>--arch arm64</code> when running the build script as part of the [[Dev/Build_Documentation/15_full#VM_Creation]] step. This means your build commands should look as follows:
+
+{{CodeSelect|code=
+sudo ./whonix_build --target raw --flavor whonix-workstation-xfce --build --arch arm64
+}}
+{{CodeSelect|code=
+sudo ./whonix_build --target raw --flavor whonix-gateway-xfce --build --arch arm64
+}}
+
+'''Notes''' on the above:
+* For now, you will need to build from master which means running <code>git checkout master</code> after cloning the repo and adding <code>--allow-untagged true</code> to the end of the build command. Once arm64 support is in a new git tag, this will not be necessary. 
+* You can set <code>--vmsize</code> for the output files, it defaults to 100G. This can be helpful because macOS (unlike Linux) does not correctly understand that <code>.raw</code> files are mostly empty and thus these files take up lots of SSD space.
+
+Thus, much more sensible build commands for macOS on Apple Silicon are as follows:
+
+{{CodeSelect|code=
+sudo ./whonix_build --target raw --flavor whonix-workstation-xfce --build --arch arm64 --allow-untagged true --vmsize 50G
+}}
+{{CodeSelect|code=
+sudo ./whonix_build --target raw --flavor whonix-gateway-xfce --build --arch arm64 --allow-untagged true --vmsize 10G
+}}
+
+Provided you have built correctly, you will now have two <code>.raw</code> files in the <code>whonix_binary</code> folder, one for the Workstation and one for the Gateway.
+
+'''3. Running the VM'''<br />
+
+1. Copy the two VM files onto your host Mac machine and put them in some directory.
+2. Run the below command to run the gateway:
+{{CodeSelect|code=
+qemu-system-aarch64 \
+         -machine virt,accel=hvf,highmem=off \
+         -cpu cortex-a72 -smp 4 -m 2G \
+         -device intel-hda -device hda-output \
+         -device virtio-gpu-pci \
+         -device usb-ehci \
+         -device usb-kbd \
+         -device usb-tablet \
+         -device virtio-net-pci,netdev=external \
+         -device virtio-net-pci,netdev=internal \
+         -netdev user,id=external,ipv6=off,net=10.0.2.0/24 \
+         -netdev socket,id=internal,listen=:8010 \
+         -display cocoa \
+         -drive "if=pflash,format=raw,file=./edk2-aarch64-code.fd,readonly=on" \
+         -drive "if=pflash,format=raw,file=./edk2-vars-gateway.fd,discard=on" \
+         -drive "if=virtio,format=raw,file=./Whonix-Gateway-XFCE.raw,discard=on"
+}}
+
+
+3. Run the below command to run the workstation:
+
+{{CodeSelect|code=
+qemu-system-aarch64 \
+         -machine virt,accel=hvf,highmem=off \
+         -cpu cortex-a72 -smp 4 -m 2G \
+         -device intel-hda -device hda-output \
+         -device virtio-gpu-pci \
+         -device usb-ehci \
+         -device usb-kbd \
+         -device usb-tablet \
+         -device virtio-net-pci,netdev=external \
+         -device virtio-net-pci,netdev=internal \
+         -netdev user,id=external,ipv6=off,net=10.0.2.0/24 \
+         -netdev socket,id=internal,listen=:8010 \
+         -display cocoa \
+         -drive "if=pflash,format=raw,file=./edk2-aarch64-code.fd,readonly=on" \
+         -drive "if=pflash,format=raw,file=./edk2-vars-workstation.fd,discard=on" \
+         -drive "if=virtio,format=raw,file=./Whonix-Workstation-XFCE.raw,discard=on"
+}}
+
+
+'''Notes:'''
+* Once QEMU boots the BIOS, it may not find Grub (the bootloader) correctly the first time. When the BIOS is loading, if you hit ESC, you can then go to <code>Boot Maintenance Manager</code> > <code>Boot From File</code> > <code>EFI,[PciRoot...]</code> > <code><EFI></code> > <code><BOOT></code> > <code>BOOTAA64.EFI</code> to boot into Grub correctly. Active development ongoing here to make this easier.
+* The <code>edk2-aarch64-code.fd</code> file in the QEMU commands is a BIOS file. It's packaged with QEMU, so you can easily copy it into your directory with <code>cp $(dirname $(which qemu-img))/../share/qemu/edk2-aarch64-code.fd .</code>.
+* The <code>edk2-vars-gateway.fd</code> and <code>edk2-vars-workstation.fd</code> files are your BIOS settings. <code>cp $(dirname $(which qemu-img))/../share/qemu/edk2-arm-vars.fd ./edk2-vars-gateway.fd</code> and <code>cp $(dirname $(which qemu-img))/../share/qemu/edk2-aarch64-code.fd ./edk2-vars-workstation.fd</code> will get them setup for you. 
+* Currently we are using the default <code>cocoa</code> display type for QEMU. This has issues such as no copy and paste and poor HDPI scaling. It is possible to connect via VNC or Spice which solves those issues. Active development is occuring here and we hope this wiki can be updated with those details soon.
+
+At this point two QEMU windows should open up which lead you into the wonderful world of Whonix. 
+
+}}
+
+</div>
+</div>
+
 
 {{Box|text=
 '''See Also'''
