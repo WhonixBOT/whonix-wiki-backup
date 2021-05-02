@@ -144,7 +144,7 @@ For {{project name}} on Apple Silicon, please press on expand on the right.
 |status=Testing, advanced users only!
 |about=About this For {{project name}} on Apple Silicon Chapter
 |difficulty=hard
-|contributor=[https://gist.github.com/GavinPacini Gavin Pacini]
+|contributor=[https://github.com/GavinPacini Gavin Pacini]
 |support=[https://forums.whonix.org/t/whonix-on-mac-m1-arm/11310 Whonix on Mac M1 (ARM)]
 }}
 
@@ -178,23 +178,35 @@ sudo ./whonix_build --target raw --flavor whonix-gateway-xfce --build --arch arm
 
 '''Notes''' on the above:
 * For now, you will need to build from master which means running <code>git checkout master</code> after cloning the repo and adding <code>--allow-untagged true</code> to the end of the build command. Once arm64 support is in a new git tag, this will not be necessary. 
-* You can set <code>--vmsize</code> for the output files, it defaults to 100G. This can be helpful because macOS (unlike Linux) does not correctly understand that <code>.raw</code> files are mostly empty and thus these files take up lots of SSD space.
 
 Thus, much more sensible build commands for macOS on Apple Silicon are as follows:
 
 {{CodeSelect|code=
-sudo ./whonix_build --target raw --flavor whonix-workstation-xfce --build --arch arm64 --allow-untagged true --vmsize 50G
+sudo ./whonix_build --target raw --flavor whonix-workstation-xfce --build --arch arm64 --allow-untagged true
 }}
 {{CodeSelect|code=
-sudo ./whonix_build --target raw --flavor whonix-gateway-xfce --build --arch arm64 --allow-untagged true --vmsize 10G
+sudo ./whonix_build --target raw --flavor whonix-gateway-xfce --build --arch arm64 --allow-untagged true
 }}
 
-Provided you have built correctly, you will now have two <code>.raw</code> files in the <code>whonix_binary</code> folder, one for the Workstation and one for the Gateway.
+Provided you have built correctly, you will now have two <code>.raw</code> files in the <code>~/whonix_binary</code> (they will look something like <code>Whonix-<flavour>-XFCE-15.0.1.7.3-XX-<git commit hash>.raw</code>), one for the Workstation and one for the Gateway.
+
+You'll need to get these files onto your host Mac. It is recommended to tar them with the <code>S</code> option, this means that [https://eclecticlight.co/2019/04/09/the-quest-for-sparse-files-in-apfs-do-they-exist/ sparse files will be archived correctly]. You can run:
+{{CodeSelect|code=
+tar -zcvSf whonix.workstation.tar.gz Whonix-Workstation-XFCE-15.0.1.7.3-XX-<git commit hash>.raw
+tar -zcvSf whonix.gateway.tar.gz Whonix-Gateway-XFCE-15.0.1.7.3-XX-<git commit hash>.raw
+}}
+to do this (your files may have slightly different file names, but should follow the same format).
+
 
 '''3. Running the VM'''<br />
 
-1. Copy the two VM files onto your host Mac machine and put them in some directory.<br/>
-2. Run the below command to run the gateway:
+1. Copy the two tar files into some directory on your host Mac.<br/>
+2. Run the below to extract them (notice the <code>S</code> flag again which respects sparse files and thus doesn't count the [https://www.halolinux.us/kernel-reference/file-holes.html holes in the files towards your disk usage]).
+{{CodeSelect|code=
+tar -zxvSf whonix.workstation.tar.gz
+tar -zxvSf whonix.gateway.tar.gz
+}}
+3. Run the below command to run the gateway:
 {{CodeSelect|code=
 qemu-system-aarch64 \
          -machine virt,accel=hvf,highmem=off \
@@ -214,7 +226,7 @@ qemu-system-aarch64 \
 }}
 
 
-3. Run the below command to run the workstation:
+4. In another terminal, run the below command to run the workstation:
 
 {{CodeSelect|code=
 qemu-system-aarch64 \
@@ -235,8 +247,9 @@ qemu-system-aarch64 \
 }}
 
 
-'''Notes:'''
+'''Notes on QERMU:'''
 * The <code>edk2-aarch64-code.fd</code> file in the QEMU commands is a BIOS file. It's packaged with QEMU, so you can easily copy it into your directory with <code>cp $(dirname $(which qemu-img))/../share/qemu/edk2-aarch64-code.fd .</code>.
+* <code>-smp X -m YG</code> controls CPU count (X) and RAM amount (Y in gigabytes). You can change these to better suit your needs.
 * Currently we are using the default <code>cocoa</code> display type for QEMU. This has issues such as no copy and paste and poor HDPI scaling. It is possible to connect via VNC or Spice which solves those issues. Active development is occuring here and we hope this wiki can be updated with those details soon.
 
 At this point two QEMU windows should open up which lead you into the wonderful world of Whonix. 
