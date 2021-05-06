@@ -446,24 +446,32 @@ sshfs root@127.0.0.1:/ -p 2200 ~/mountgateway
 }}
 
 == SSH into {{workstation_product_name}} ==
+
 === Introduction ===
-'''Developers / experts only! Only for debugging!'''
 
-Connection will look like this: host &rarr; ssh &rarr; {{gateway_product_name}} &rarr; ssh &rarr; {{workstation_product_name}}.
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Developers / experts only! Only for debugging!
+}}
 
-These instructions assume connecting from a local host into {{project_name}}, not ssh to a remotely running {{project_name}}.
+These instructions assume a connection from a local host into {{project_name}}, not SSH to a remotely running {{project_name}} instance. The connection formed will look like this: <code>host</code> &rarr; <code>SSH</code> &rarr; <code>{{gateway_product_name}}</code> &rarr; <code>SSH</code> &rarr; <code>{{workstation_product_name}}</code>.
 
-You can not directly SSH into {{workstation_product_name}}, because {{workstation_product_name}} has only an internal network interface and no NAT interface. Adding one would defeat the purpose of {{project_name}}. (See [[Security Guide]] for details why.)
+It is not possible to directly SSH into {{workstation_product_name}} because it only has an internal network interface and no NAT interface. Adding a NAT interface would defeat the purpose of {{project_name}}.
 
 === Prerequisite ===
-Required: You mastered the steps "SSH into {{gateway_product_name}}" above.
+
+Do not attempt this procedure before mastering the steps [[#SSH_into_Whonix-Gateway_.E2.84.A2|SSH into {{gateway_product_name}}]].
 
 === Firewall ===
-On {{workstation_product_name}}:
+
+{{Box|text=
+'''1.''' Adjust {{workstation_product_name}} firewall settings.
 
 {{Firewall Settings Workstation}}
 
-Add. Replace <code>80</code> with the actual port you would like to open.
+'''2.''' Add the necessary port. 
+
+Replace <code>80</code> with the actual port that should be opened.
 
 {{CodeSelect|code=
 EXTERNAL_OPEN_PORTS+=" 80 "
@@ -471,58 +479,73 @@ EXTERNAL_OPEN_PORTS+=" 80 "
 
 Save.
 
+'''3.''' Reload the firewall.
+
 {{Reload_Firewall_ws}}
+}}
 
 === Setup Workstation ===
-On {{workstation_product_name}}:
+
+On {{workstation_product_name}}, run.
 
 {{CodeSelect|code=
 sudo apt-get install openssh-server
 }}
 
 === Setup Gateway ===
-On the {{gateway_product_name}}:
 
-Or {{Code|user@}}.
+On {{gateway_product_name}}, run.
 
 {{CodeSelect|code=
 /usr/bin/ssh.anondist-orig root@10.152.152.11
 }}
 
+{{Code|user@}} can also be substituted in the above command.
+
 === Setup Host ===
-Then SSH from the host into {{gateway_product_name}} (host &rarr; {{gateway_product_name}}). From there, SSH into {{workstation_product_name}} ({{gateway_product_name}} &rarr; {{workstation_product_name}}). You can also do that with one command (called SSH hopping).
 
-On the host!
+Note:
+* It is possible to use one command to SSH from the host into {{gateway_product_name}} and then SSH into {{workstation_product_name}}. This is called SSH hopping.
+* SSH hopping is also possible for SSHFS; see [http://www.larkinweb.co.uk/computing/mounting_file_systems_over_two_ssh_hops.html here]. <ref>http://www.webcitation.org/6FDYtApEP</ref>
+* The filesystem of {{workstation_product_name}} can also be mounted with two commands. 
 
-Or {{Code|root@}}.
+{{Box|text=
+'''1.''' SSH from the host into {{gateway_product_name}}.
+
+<code>host</code> &rarr; <code>{{gateway_product_name}}</code>
 
 {{CodeSelect|code=
 ssh -t user@127.0.0.1 -p 2200 "ssh.anondist-orig user@10.152.152.11"
 }}
 
-You can also mount the filesystem of {{workstation_product_name}} with two commands. SSH hopping is also possible for sshfs (a website [http://www.larkinweb.co.uk/computing/mounting_file_systems_over_two_ssh_hops.html told] ([http://www.webcitation.org/6FDYtApEP w]) me).
+{{Code|root@}} can also be substituted in the above command.
+
+'''2.''' Create a directory to mount {{workstation_product_name}}.
 
 {{CodeSelect|code=
 mkdir ~/mountworkstation
 }}
 
-On the host!
+'''3.''' SSH into {{workstation_product_name}} and map to localhost:2222.
 
-Or {{Code|root@}}.
+<code>{{gateway_product_name}}</code> &rarr; <code>{{workstation_product_name}}</code>
 
-SSH into {{workstation_product_name}} and map to localhost:2222.
+Perform this step on the <u>host</u>.
 
 {{CodeSelect|code=
 ssh -f user@127.0.0.1 -p 2200 -L 2222:10.152.152.11:22 -N
 }}
 
-Mount {{workstation_product_name}} folder on the host.
+{{Code|root@}} can also be substituted in the above command.
+
+'''4.''' Mount the {{workstation_product_name}} folder on the <u>host</u>.
 
 {{CodeSelect|code=
 sshfs -p 2222 user@127.0.0.1:/ ~/mountworkstation
 }}
 
-If these instructions do not work for your, you can try the alternative standalone instructions [[Sshfs into {{workstation_product_name_short}}]].
+If these instructions did not work, try the alternative standalone instructions [[Sshfs into {{workstation_product_name_short}}]].
+}}
 
 == Mount and inspect images ==
 === Introduction ===
