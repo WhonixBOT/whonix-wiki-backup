@@ -231,101 +231,67 @@ sudo qemu-nbd -d /dev/nbd0
 After unmounting, the {{project name}} VM can be safely restarted.
 }}
 
-== Transfer files from one {{workstation_product_name}} to a different {{workstation_product_name}} through a VDI file ==
+== Transfer Files via a VDI File ==
+
+This section describes how to transfer files from one {{workstation_product_name}} to a different {{workstation_product_name}} via a VDI file. 
+
 === Linux ===
-This is one of the more convenient solutions for copying work from one {{workstation_product_name}} to another {{workstation_product_name}}. 
 
-0. The virtual machine you want to edit needs to be powered off.
+The procedure below is one of the more convenient solutions for copying work from one {{workstation_product_name}} to another. 
 
-1. First, in VirtualBox, click on the "Settings" for the {{project name}} Workstation that you desire to copy files from. Then, click on "Storage."
-
-2. In the "Storage" settings, click on the square with a + sign on it to "add hard disk." It will be located next to an entry that says "Controller: {{project_name}}."
-
-3. In the next window that appears, click on "create new disk."
-
-4. When prompted to choose a "hard drive file type,"  select "VDI."
-
-5. When prompted to choose "storage on physical hard drive," choose "dynamically allocated."
-
-6. In the next window, type "WhonixTransferBackup" for the drive name and then choose the storage capacity you need. In many cases, the default "8.00 GB" will be enough.
-
-7. When you are returned to the "Settings" window, click the "OK" button.
-
-8. Next, start the {{project name}} Workstation that you wish to transfer files from. When you reach the desktop, open a Terminal/Konsole session. 
-
-9. Now, format the new drive you created. Type
-{{CodeSelect|code=
+{{Box|text=
+# The virtual machine that will be edited needs to be powered off.
+# In VirtualBox: <code>Click on "Settings" for the {{project name}} Workstation that you wish to copy files from</code> &rarr; <code>click on "Storage"</code>. 
+# <code>Select "Storage" settings</code> &rarr; <code>click on the square with a + sign</code> &rarr; <code>select "add hard disk" (located next to the "Controller: {{project_name}}" entry)</code>.
+# In the next window that appears, click on <code>create new disk</code>.
+# When prompted: <code>Choose a "hard drive file type"</code> &rarr; <code>select "VDI"</code>.
+# When prompted: <code>Choose "storage on physical hard drive"</code> &rarr; <code>select "dynamically allocated"</code>.
+# In the next window: <code>Type "WhonixTransferBackup" for the drive name</code> &rarr; <code>choose the needed storage capacity</code>. In many cases, the default "8.00 GB" will be enough.
+# After returning to the "Settings" window, click the "OK" button.
+# Start the {{project name}} Workstation that you wish to transfer files from. After reaching the desktop, open a Terminal/Konsole session. 
+# Format the newly created drive: {{CodeSelect|code=
 sudo fdisk /dev/sdb
 }}
-at the command prompt that appears, type "n" create a new partition. Press "enter" to choose the default options when prompted until you are returned to fdisk's main menu. Finally, when you are returned to fdisk's main command prompt, type "w" to write the partition and exit fdisk.
-
-10. Next, type
-{{CodeSelect|code=
+# At the command prompt: <code>Type "n" create a new partition</code> &rarr; <code>press "enter" to choose the default options when prompted until returned to fdisk's main menu</code> &rarr; <code>type "w" to write the partition and exit fdisk</code>.
+# In the terminal session, type: {{CodeSelect|code=
 sudo mkfs.ext4 /dev/sdb1
 }}
-in the terminal session. 
-
-11. Now create a new directory to be the mount point for your drive. Type
-{{CodeSelect|code=
+# Create a new directory to be the mount point for the drive: {{CodeSelect|code=
 mkdir temp
 }}
-in the terminal.
-
-12. Next, mount your new drive. Type
-{{CodeSelect|code=
+# Mount the new drive: {{CodeSelect|code=
 sudo mount /dev/sdb1 temp
 }}
-in the terminal.
-
-13. Now, change the permissions to your mount folder so you can write to the drive. Type
-{{CodeSelect|code=
+# Change the permissions of the mount folder so it is possible to write to the drive: {{CodeSelect|code=
 sudo chmod 777 temp
 }}
-in the terminal.
-
-14. At this point, you can copy whichever files you desire to your new drive by copying them to the "temp" folder. You can do this in the terminal, with the file browser, etc.  Once you have finished copying the files you want to the "temp" folder, shut down the {{project name}} Workstation.
-
-15. After the {{project name}} Workstation is closed, open the "Virtual Media Manager" in VirtualBox by clicking on "File &rarr; Virtual Media Manager."
-
-16. Locate the new VDI file you created in steps 1-7 and click on it. Then, click the "copy" button. When the next window appears, click the "next" button.
-
-17. When prompted to choose a "hard drive file type,"  select "VDI."
-
-18. When prompted to choose "storage on physical hard drive," choose "dynamically allocated."
-
-19. In the next window, type "WhonixWorkstationFileTransfer" for the drive name and then choose a folder where you wish to store it. The, click on the "copy" button. [ If copying does not work for you, you can also just power down the old VM, and attach the same vdi to the new VM. ]
-
-20. When you are returned to the "Virtual Media Manager" window, click the "close" button.
-
-21. Now, in the main VirtualBox window, click on the version of the {{project name}} Workstation that you want to copy the files into and click "settings." 
-
-22. Got to the "storage" section and click on the square with a + sign on it to "add hard disk." It will be located next to an entry that says "Controller: {{project_name}}."
-
-23. In the next window that appears, click on "choose existing disk." Then, find where you saved the "WhonixWorkstationFileTransfer.vdi" file and select it.
-
-24.When you are returned to the "settings" window, click "OK."
-
-25. Now, start the {{project name}} Workstation that you wish to copy your files into. When you reach your desktop, open a Terminal/Konsole session.
-
-26. At the terminal command prompt, create a new directory to be the mount point for your drive. Type
-{{CodeSelect|code=
+# Copy selected files to the new drive by copying them to the "temp" folder. This is possible in the terminal, with the file browser and so on.  Once all files have been copied to the "temp" folder, shut down the {{project name}} Workstation.
+# After the {{project name}} Workstation has closed, open the "Virtual Media Manager" in VirtualBox:  <code> Click on "File &rarr; Virtual Media Manager"</code>.
+# <code>Locate the new VDI file created in steps 2-8</code> &rarr; <code>click on it</code> &rarr; <code>click the "copy" button</code> &rarr; <code>click the "next" button</code>.
+# When prompted to choose a "hard drive file type,"  select "VDI".
+# When prompted to choose "storage on physical hard drive," select "dynamically allocated".
+# In the next window: <code>type "WhonixWorkstationFileTransfer" for the drive name</code> &rarr; <code>choose a folder to store the VDI file</code> &rarr; <code>click on the "copy" button</code>. <ref>If copying does not work, power down the old VM and attach the same VDI to the new VM.</ref> 
+# After returning to the "Virtual Media Manager" window, click the "close" button.
+# In the main VirtualBox window: <code>Click the {{project name}} Workstation version that you want to copy the files into</code> &rarr; <code>click "settings"</code>.
+# <code>Navigate to the "storage" section</code> &rarr; <code>click on the square with a + sign</code> &rarr; <code>select "add hard disk" (located next to the "Controller: {{project_name}}" entry)</code>.
+# In the next window: <code>Click on "choose existing disk"</code> &rarr; <code>find the saved  "WhonixWorkstationFileTransfer.vdi" file and select it</code>.
+# After returning to the "settings" window, click "OK."
+# Start the {{project name}} Workstation that you wish to copy your files into. After reaching the desktop, open a Terminal/Konsole session.
+# Create a new directory to be the mount point for the drive:{{CodeSelect|code=
 mkdir temp
 }}
-in the terminal.
-
-27. Next, mount your new drive. Type
-{{CodeSelect|code=
+# Mount the new drive: {{CodeSelect|code=
 sudo mount /dev/sdb1 temp
 }}
-in the terminal.
-
-28. Finally, copy the files you want into the {{project name}} Workstation. When you are finished copying all the files, you can shut down the {{project name}} Workstation and delete the temporary "file transfer" VDI files you used in this process through the Virtual Media Manager if you desire.
+# Finally, copy selected files into the {{project name}} Workstation. When copying is finished, shut down the {{project name}} Workstation and delete the temporary "file transfer" VDI files through Virtual Media Manager.
+}}
 
 Related forum topic: <br />
 [https://forums.whonix.org/t/solved-how-to-tranfer-data-to-whonix-8/115 How to tranfer data to {{project name}} 8]
 
 === Windows ===
-https://forums.whonix.org/t/virtualbox-transfer-files-from-whonix-to-host-with-disk-images/2189
+
+Refer to the following forum topic: [https://forums.whonix.org/t/virtualbox-transfer-files-from-whonix-to-host-with-disk-images/2189 Virtualbox: Transfer files from whonix to host with disk images].
 
 == Adding USB device to VirtualBox ==
 This is not recommended for security reasons. <ref>
