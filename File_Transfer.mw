@@ -547,30 +547,35 @@ sshfs -p 2222 user@127.0.0.1:/ ~/mountworkstation
 If these instructions did not work, try the alternative standalone instructions [[Sshfs into {{workstation_product_name_short}}|SSHFS into Whonix-Workstation]].
 }}
 
-== Mount and inspect images ==
+== Mount and Inspect Images ==
+
 === Introduction ===
-'''Developers / experts only! Only for debugging!'''
 
 {{mbox
 | type    = critical
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text    = '''Warning:''' If a guest image file is mounted and the image is compromised by malware, a user's system can be infected. <ref>https://www.berrange.com/posts/2013/02/20/a-reminder-why-you-should-never-mount-guest-disk-images-on-the-host-os/</ref>
+| text    = <br />
+* Developers / experts only! Only for debugging!
+* '''Warning:''' If a guest image file is mounted and the image is compromised by malware, the system can be infected. <ref>https://www.berrange.com/posts/2013/02/20/a-reminder-why-you-should-never-mount-guest-disk-images-on-the-host-os/</ref>
 }}
 
-Required user knowledge:
+Required knowledge:
 
-* This method is not compulsory. Standard ''vdi'' (or ''raw'') images are used, but the user can mount them using any other preferred method.
+* This method is not compulsory. Standard ''vdi'' (or ''raw'') images are used, but the user can mount them with another preferred method.
 * The mounting and inspecting of images has only been researched for Linux hosts. It may be possible on Windows, but it is undocumented.
-* The user must understand the purpose and use of ''raw'' and ''vdi'' images, which is explained on the [[Dev/Source Code Intro]] page.
-* The {{project name}} source code is required; see chapter [[Dev/Build_Documentation|Get the {{project name}} source code]].
+* The purpose and use of ''raw'' and ''vdi'' images must be understood, which is explained on the [[Dev/Source Code Intro]] page.
+* The {{project name}} source code is required; see chapter [[Dev/Build_Documentation|Build and Update Whonix ™ from Source Code]].
 * {{project name}} source code should be verified with OpenPGP, although this is not compulsory.
 * Several dependencies are required and can be installed using the {{Code|build-steps.d/1100_prepare-build-machine}} script.
 
-=== VDI ===
-==== Mount {{gateway_product_name}} ''vdi'' images. ====
+=== VDI Images ===
+
+==== Mount {{gateway_product_name}} VDI Images ====
+
 {{CodeSelect|code=
 sudo ./help-steps/mount-vdi --target virtualbox --build --flavor whonix-gateway
 }}
+
 {{CodeSelect|code=
 cd "/home/user/whonix_binary/{{gateway_product_name_short}}_image"
 }}
@@ -580,14 +585,17 @@ Inspect.
 {{CodeSelect|code=
 cd ~
 }}
+
 {{CodeSelect|code=
 sudo ./help-steps/unmount-vdi --target virtualbox --build  --flavor whonix-gateway
 }}
 
-==== Mount {{workstation_product_name}} ''vdi'' images. ====
+==== Mount {{workstation_product_name}} VDI Images ====
+
 {{CodeSelect|code=
 sudo ./help-steps/mount-vdi --target virtualbox --build --flavor whonix-workstation
 }}
+
 {{CodeSelect|code=
 cd "/home/user/whonix_binary/{{gateway_product_name_short}}_image"
 }}
@@ -597,16 +605,19 @@ Inspect.
 {{CodeSelect|code=
 cd ~
 }}
+
 {{CodeSelect|code=
 sudo ./help-steps/unmount-vdi --target virtualbox --build --flavor whonix-workstation
 }}
 
-=== raw ===
+=== Raw Images ===
 
-==== Mount {{gateway_product_name}} ''raw'' images. ====
+==== Mount {{gateway_product_name}} Raw Images ====
+
 {{CodeSelect|code=
 sudo ./help-steps/mount-raw --target virtualbox --build --flavor whonix-gateway
 }}
+
 {{CodeSelect|code=
 cd "/home/user/whonix_binary/{{gateway_product_name_short}}_image"
 }}
@@ -616,14 +627,17 @@ Inspect.
 {{CodeSelect|code=
 cd ~
 }}
+
 {{CodeSelect|code=
 sudo ./help-steps/unmount-raw --target virtualbox --build --flavor whonix-gateway
 }}
 
-==== Mount {{workstation_product_name}} ''raw'' images. ====
+==== Mount {{workstation_product_name}} Raw Images ====
+
 {{CodeSelect|code=
 sudo ./help-steps/mount-raw --target virtualbox --build --flavor whonix-workstation
 }}
+
 {{CodeSelect|code=
 cd "/home/user/whonix_binary/{{gateway_product_name_short}}_image"
 }}
@@ -633,64 +647,90 @@ Inspect.
 {{CodeSelect|code=
 cd ~
 }}
+
 {{CodeSelect|code=
 sudo ./help-steps/unmount-raw --target virtualbox --build --flavor whonix-workstation
 }}
 
-=== VMDK ===
-==== Mount {{workstation_product_name}} ''vmdk'' images. ====
-Use this method to mount any VirtualBox file type (VMDK, VDI, VHD, or raw) on a Linux host.
+=== VMDK Images ===
 
-'''Broken''', because package virtualbox-fuse package is no longer available in Debian jessie or above.
+==== Mount {{workstation_product_name}} VDMK Images ====
 
-This method uses a VirtualBox utility named "vdfuse" ([http://packages.debian.org/wheezy/virtualbox-fuse virtualbox-fuse package]). It uses the VirtualBox access library to open a VirtualBox supported image file and mount it as a Fuse file system.
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = These instructions are broken because the <code>virtualbox-fuse</code> package is no longer available in Debian jessie and above. <ref>https://unix.stackexchange.com/questions/99044/running-debian-jessie-missing-some-packages</ref> They have been kept in case the situation changes.
+}}
 
-This step is optional. You can skip this step and come back to it if the next step fails.
+Use this method to mount any VirtualBox file type (VMDK, VDI, VHD, or raw) on a Linux host. It utilizes a VirtualBox utility named "vdfuse" <ref> Broken link: [http://packages.debian.org/wheezy/virtualbox-fuse virtualbox-fuse package]</ref> and the VirtualBox access library to open a VirtualBox supported image file and mount it as a Fuse file system.
+
+{{Box|text=
+'''1.''' ''Optional'': Update the system.
+
 {{CodeSelect|code=
 sudo apt-get update
 }}
 
-Install the VirtualBox vdfuse utility. Note: this only works up to Debian Wheezy.
+'''2.''' Install the VirtualBox vdfuse utility. <ref>This only works up to Debian wheezy.</ref>
+
 {{CodeSelect|code=
 sudo apt-get install virtualbox-fuse
 }}
 
-Edit the /etc/fuse.conf file and uncomment the line #user_allow_other and then save the file. Then, set the permissions on /etc/fuse.conf.
+'''3.''' Edit the <code>/etc/fuse.conf</code> file.
+
 {{CodeSelect|code=
-sudo vi /etc/fuse.conf (Uncomment #user_allow_other and then save)
+sudo vi /etc/fuse.conf 
 }}
+
+Uncomment the line ''#user_allow_other'' and then save the file. 
+
+'''4.''' Set the permissions on <code>/etc/fuse.conf</code>.
+
 {{CodeSelect|code=
 sudo chmod 644 /etc/fuse.conf
 }}
 
-Create a mount point and mount the {{project name}} Workstation image. This example shows a .vmdk file type, but any VirtualBox file type should work (VMDK, VDI, VHD, or raw).
+'''5.''' Create a mount point and mount the {{project name}} Workstation image. 
+
+This example shows a <code>.vmdk</code> file type, but any VirtualBox file type should work (VMDK, VDI, VHD, or raw).
+
 {{CodeSelect|code=
 mkdir /mnt/whonix
 }}
+
 {{CodeSelect|code=
 vdfuse -f /path/to/{{workstation_product_name_short}}/{{workstation_product_name_short}}-disk1.vmdk /mnt/whonix
 }}
 
-The path /mnt/whonix/ will now contains files like EntireDisk, Partition1, etc. Last, mount Partition1 at a second mount point.
+The path <code>/mnt/whonix/</code> will now contain files like EntireDisk, Partition1, etc. 
+
+'''6.''' Mount Partition1 at a second mount point.
+
 {{CodeSelect|code=
 mkdir /mnt/workstation
 }}
+
 {{CodeSelect|code=
 sudo mount -o loop /mnt/whonix/Partition1 /mnt/workstation
 }}
 
-Now, you can copy files to/from the {{project name}} workstation disk image.
+'''7.''' Copy files to/from the {{project name}} workstation disk image.
 
-When you are finished, unmount each of the mount points.
+'''8.''' Unmount each of the mount points.
+
 {{CodeSelect|code=
 sudo umount /mnt/workstation
 }}
+
 {{CodeSelect|code=
 sudo umount /mnt/whonix
 }}
+}}
 
-=== Related ===
-* [[Dev/Source Code Intro]]
+=== See Also ===
+
+* [[Dev/Source Code Intro|Whonix ™ Source Code Introduction]]
 
 == Usability Development Tickets ==
 All solutions listed here are far from user friendly. Please help improving this. See also our tickets about this issue:
