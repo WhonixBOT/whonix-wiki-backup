@@ -339,91 +339,110 @@ If the USB device is formatted with NTFS, it is necessary to install the [https:
 }}
 
 == SSH into {{gateway_product_name}} ==
-'''Developers / experts only! Only for debugging!''' <br />
 
-These instructions assume connecting from a local host into {{project_name}}, not ssh to a remotely running {{project_name}}.
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = Developers / experts only! Only for debugging!
+}}
 
-On {{gateway_product_name}}.
+These instructions assume a connection from a local host into {{project_name}}, not SSH to a remotely running {{project_name}} instance.
+
+{{Box|text=
+
+'''1.''' Adjust {{gateway_product_name}} firewall settings.
 
 {{Firewall Settings Gateway}}
 
-Add.
+'''2.''' Add.
 
 <pre>
 GATEWAY_ALLOW_INCOMING_SSH=1
 </pre>
 
-Restart firewall.
+'''3.''' Restart the firewall.
 
-On {{gateway_product_name}}!
+Make sure this is run on {{gateway_product_name}}!
 
 {{CodeSelect|code=
 sudo /usr/bin/whonix_firewall
 }}
 
-Inside {{gateway_product_name}}:
+'''4.''' Install <code>openssh-server</code> inside {{gateway_product_name}}.
 
-On {{gateway_product_name}}! Run once.
+Make sure this is run on {{gateway_product_name}}! Run the command once.
 
 {{CodeSelect|code=
 sudo apt-get install openssh-server
 }}
 
-On the host: Add port forwarding from host into Virtual Machine.
+'''5.''' Add port forwarding from host into the virtual machine.
 
-On the host! Run once.
+Make sure this is run on the host! Run the command once.
 
-Open a terminal. This forwards connection from the host to 127.0.0.1:2200 to the SSH server running inside {{gateway_product_name}} on port 22.
+Open a terminal. This will forward connections from the host to <code>127.0.0.1:2200</code> to the SSH server running inside {{gateway_product_name}} on port 22.
 
 {{CodeSelect|code=
 VBoxManage modifyvm "{{gateway_product_name_short}}" --natpf1 "ssh",tcp,127.0.0.1,2200,,22
 }}
 
-If you ever want to undo this...
+If it is necessary to undo this change, run.
 
 {{CodeSelect|code=
 VBoxManage modifyvm "{{gateway_product_name_short}}" --natpf1 delete "ssh"
 }}
 
-If you ever want to verify this...
+To verify the change, run. 
 
 {{CodeSelect|code=
 VBoxManage showvminfo "{{gateway_product_name_short}}"
 }}
-Look for the lines beginning with NIC. e.g. NIC 1 Rule(0):   name = ssh, protocol = tcp, host ip = 127.0.0.1, host port = 2222, guest ip = 127.0.0.1, guest port = 22
 
-On the host: Open a ssh session.
+Search for lines beginning with NIC. For example: 
+<pre>
+NIC 1 Rule(0):   name = ssh, protocol = tcp, host ip = 127.0.0.1, host port = 2222, guest ip = 127.0.0.1, guest port = 22
+</pre>
 
-On the host! As user.
+'''6.''' Open a SSH session on the host.
+
+Make sure this is run on the host!
+
+As <code>user</code>.
 
 {{CodeSelect|code=
 ssh user@127.0.0.1 -p 2200
 }}
 
-Or as root.
+Or as <code>root</code>.
 
 {{CodeSelect|code=
 ssh root@127.0.0.1 -p 2200
 }}
 
-On the host: Or mount {{gateway_product_name}} as a folder.
+'''7.''' Create a folder which will be used to mount the image.
 
-Create a folder which will be used to mount the image. It needs to exist before trying to mount.
+Perform this step on the host or mount {{gateway_product_name}} as a folder.
+
+This folder must exist before trying to mount.
 
 {{CodeSelect|code=
 mkdir ~/mountgateway
 }}
 
-On the host! As user.
+'''8.''' Mount the folder.
+
+Make sure this is run on the host!
+
+As <code>user</code>.
 
 {{CodeSelect|code=
 sshfs user@127.0.0.1:/ -p 2200 ~/mountgateway
 }}
 
-Or as root.
+Or as <code>root</code>.
 
 {{CodeSelect|code=
 sshfs root@127.0.0.1:/ -p 2200 ~/mountgateway
+}}
 }}
 
 == SSH into {{workstation_product_name}} ==
