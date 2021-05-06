@@ -7,7 +7,7 @@
 [[image:Torrent-35656640.png|200px|thumb]]
 This page describes how to share files with others.
 
-If you are interested in copying files into and out of {{project name}} Virtual Machines, see [[File Transfer]]
+If you are interested in copying files into and out of {{project name}} Virtual Machines, see [[File Transfer]].
 = Magic-Wormhole =
 == Introduction ==
 
@@ -15,11 +15,11 @@ The Magic-Wormhole package: <ref>https://github.com/warner/magic-wormhole</ref> 
 
 <blockquote>... provides a library and a command-line tool named wormhole, which makes it possible to get arbitrary-sized files and directories (or short pieces of text) from one computer to another. The two endpoints are identified by using identical "wormhole codes": in general, the sending machine generates and displays the code, which must then be typed into the receiving machine.</blockquote>
 
-This is by far the simplest way to send files securely between two endpoints that the Whonix developers have encountered.
+This is by far the simplest way to send files securely between two endpoints that the {{project_name}} developers have encountered.
 
-The wormhole tool uses [https://www.researchgate.net/publication/260357994_Efficient_Two-Server_Password-Only_Authenticated_Key_Exchange PAKE “Password-Authenticated Key Exchange”], a family of cryptographic algorithms that uses a short low-entropy password to establish a strong high-entropy shared key. <ref>https://magic-wormhole.readthedocs.io/en/latest/welcome.html#design</ref> The codes are short and human-pronounceable, using a phonetically-distinct wordlist. The receiving side offers tab-completion on the codewords, so usually only a few characters must be typed. Wormhole codes are single-use and do not need to be memorized.
+The wormhole tool uses [https://www.researchgate.net/publication/260357994_Efficient_Two-Server_Password-Only_Authenticated_Key_Exchange PAKE “Password-Authenticated Key Exchange”], a family of cryptographic algorithms that uses a short low-entropy password to establish a strong high-entropy shared key. <ref>https://magic-wormhole.readthedocs.io/en/latest/welcome.html#design</ref> The codes are short and human-pronounceable, using a phonetically-distinct word list. The receiving side offers tab-completion on the code words, so usually only a few characters must be typed. Wormhole codes are single-use and do not need to be memorized.
 
-In the future, it is planned to use ephemeral onion services (OnionShare style) to eliminate reliance on a rendezvous server susceptible to DoS attacks. <ref>https://github.com/warner/magic-wormhole/blob/master/docs/tor.md</ref> Work on a Rust port is underway.<ref>https://web.archive.org/web/20190817162545/https:/twitter.com/str4d/status/1153247233044860928</ref><ref>https://github.com/warner/magic-wormhole.rs</ref>
+In the future, it is planned to use ephemeral onion services (OnionShare style) to eliminate reliance on a rendezvous server susceptible to DoS attacks. <ref>https://github.com/warner/magic-wormhole/blob/master/docs/tor.md</ref> Work on a Rust port is underway.<ref>https://web.archive.org/web/20190817162545/https:/twitter.com/str4d/status/1153247233044860928</ref> <ref>https://github.com/warner/magic-wormhole.rs</ref>
 
 == Operation ==
 
@@ -45,15 +45,16 @@ Receiving (&rarr;tcp:10.0.1.43:58986).. <br />
 100%|===========================| 7.92K/7.92K [00:00<00:00, 120KB/s] <br />
 Received file written to README.md</blockquote>
 
-== Codeword Security ==
+== Code Word Security ==
 
 The secret wormhole code must <u>not</u> be sent over an insecure channel, as an adversary can perform a [[Warning#Man-in-the-middle_Attacks|Man-in-the-Middle (MITM) Attack]] and intercept transfers with complete reliability.
 
-By default, wormhole codes contain 16 bits of entropy. If an attacker can intercept your network connection -- either by owning your network or owning the rendezvous server -- they can attempt an attack. They will have a one-in-65536 chance of successfully guessing the code, allowing them to pose as your intended partner. If they succeed, they can immediately start a new wormhole (using the same code), allowing your partner to connect to them instead of you. By passing, observing, and possibly modifying messages between these two connections, they could perform an MITM attack. <ref>https://magic-wormhole.readthedocs.io/en/latest/attacks.html#low-probability-man-in-the-middle-attacks</ref>
+By default, wormhole codes contain 16 bits of entropy. If an attacker can intercept the network connection -- either by owning your network or owning the rendezvous server -- they can attempt an attack. They will have a one-in-65536 chance of successfully guessing the code, allowing them to pose as your intended partner. If they succeed, they can immediately start a new wormhole (using the same code), allowing your partner to connect to them instead of you. By passing, observing, and possibly modifying messages between these two connections, they could perform an MITM attack. <ref>https://magic-wormhole.readthedocs.io/en/latest/attacks.html#low-probability-man-in-the-middle-attacks</ref>
 
 Basic probability suggests that peers will see a large number of "WrongPasswordErrors" before the attacker is likely to successfully guess any wormhole code. In fact, about 32,000 failures would be reported before they have a 50 percent chance of being successful. If many failures emerge and it appears someone is trying to guess the codes, it is possible to make a longer code and significantly reduce adversary chances, for example: <code>wormhole send --code-length=4</code>.
 
 = OnionShare =
+
 See [[OnionShare]].
 
 = Peer-to-Peer (P2P) File Sharing =
@@ -71,22 +72,30 @@ In simple terms, any computer can join a P2P network with an Internet connection
 Keep the following factors in mind if P2P programs are used over Tor:
 
 * {{project_name}} keeps your IP address hidden while BitTorrent and other file sharing/P2P programs are in use. {{project_name}} also protects against de-anonymization attacks outlined in the [[#The_Tor_Project_Opinion|next section]].
-* Despite protocol leaks not being feasible on {{project_name}}, BitTorrent clients create a very large number of circuits (50x the amount by IRC) which increases the chance of traffic observation by malicious Tor-relays and results in faster deanonymization.<ref>[https://www.ohmygodel.com/publications/usersrouted-ccs13.pdf Users Get Routed:Traffic Correlation on Tor by Realistic Adversaries]</ref><ref>https://forums.whonix.org/t/does-whonix-have-torrents-available/10046/14#</ref> The duration a download is running is also a factor in deanonymization attack speed. It is unclear how [[vanguards]] and [[Whonix-Gateway_Security#Tor_Connection_Padding|Tor connection padding]] help mitigations (both introduced since the paper was written). Therefore it is recommended to run torrent downloads in a [[Tunnels/Introduction#Connecting_to_Tor_before_a_Tunnel-link_.28Proxy.2FVPN.2FSSH.29|Connecting to Tor before a VPN]] ('''<code>User</code> &rarr; <code>Tor</code> &rarr; <code>proxy/VPN/SSH</code> &rarr; <code>Internet</code>''') setup, to limit the number of circuits created on Tor and also protect Tor exit relays from DMCA harassment. See [[Tunnels/Introduction]].
+* Despite protocol leaks not being feasible on {{project_name}}, BitTorrent clients create a very large number of circuits (50x the amount by IRC) which increases the chance of traffic observation by malicious Tor-relays and results in faster deanonymization. <ref>[https://www.ohmygodel.com/publications/usersrouted-ccs13.pdf Users Get Routed:Traffic Correlation on Tor by Realistic Adversaries]</ref> <ref>https://forums.whonix.org/t/does-whonix-have-torrents-available/10046/14#</ref> The duration a download is running is also a factor in deanonymization attack speed. It is unclear how [[vanguards]] and [[Whonix-Gateway_Security#Tor_Connection_Padding|Tor connection padding]] help mitigations (both introduced since the paper was written). Therefore it is recommended to run torrent downloads in a [[Tunnels/Introduction#Connecting_to_Tor_before_a_Tunnel-link_.28Proxy.2FVPN.2FSSH.29|Connecting to Tor before a VPN]] ('''<code>User</code> &rarr; <code>Tor</code> &rarr; <code>proxy/VPN/SSH</code> &rarr; <code>Internet</code>''') setup, to limit the number of circuits created on Tor and also to protect Tor exit relays from DMCA harassment; see [[Tunnels/Introduction]].
 * [[#Torrent_Client_Fingerprinting|Torrent clients can be fingerprinted]], so periodically start fresh from a clean snapshot and reinstall the torrent client. 
-* The Tor network suffers from limited bandwidth shared among 2 million users. Please be conscious of how much is downloaded/uploaded with these programs: a single, 500MB media file can equal several hours of browsing for another user.
+* The Tor network suffers from limited bandwidth shared among more than 2 million users. Please be conscious of how much is downloaded/uploaded with these programs: a single, 500MB media file can equal several hours of browsing for another user.
 * Violation of copyright laws risks harassment against exit nodes. To learn more about legal protections for file sharing in your jurisdiction, see: [https://en.wikipedia.org/wiki/Legal_aspects_of_file_sharing Legal aspects of file sharing].
 * If P2P must be used, please disable [http://help.bittorrent.com/customer/portal/articles/164656-what-is-seeding- torrent seeding]. <ref>[https://www.quora.com/How-seeding-works-in-torrent?share=1 How seeding works in torrent?]: <blockquote>Seed is a person who has a torrent file open in their client (let's say the same file you are trying to download) and the only difference between you and them is that they have the complete file downloaded already and are now "seeding" - sharing the file with peers but not downloading any parts of the file from others.</blockquote></ref> Compared to ordinary downloads over FTP/HTTP, constant P2P uploading has harmful impacts upon Tor network resources.
 
 == Setup ==
-Some file sharing networks might require UDP.
 
-1) {{Tor UDP}}
+Some file sharing networks might require the [https://en.wikipedia.org/wiki/User_Datagram_Protocol User Datagram Protocol (UDP)].
 
-2) [[{{Workstation product name short}}_Firewall#Allow_UDP|Allow UDP in {{Workstation product name}} firewall]].
+{{Box|text=
+'''1.''' Configure a <code>User</code> &rarr; <code>Tor</code> &rarr; <code>VPN</code> &rarr; <code>Internet</code> tunnel link.
 
-3) File sharing software other than documented on this page are [[undocumented]].
+{{Tor UDP}}
+
+'''2.''' Modify the {{Workstation product name}} firewall.
+
+It is necessary to [[{{Workstation product name short}}_Firewall#Allow_UDP|Allow UDP in {{Workstation product name}} firewall]].
+
+'''3.''' File sharing software that is not mentioned on this page is presently [[undocumented]].
+}}
 
 == The Tor Project Opinion ==
+
 Over the last decade, the Tor Project has been fairly consistent in advising against torrenting over the Tor network. In response to the 2010 paper [https://hal.inria.fr/file/index/docid/471556/filename/TorBT.pdf Compromising Tor Anonymity Exploiting P2P Information Leakage] -- which detailed P2P information leakage over Tor that could compromise a (non-Whonix) user's identity -- [https://blog.torproject.org/blog/bittorrent-over-tor-isnt-good-idea Roger Dingledine] stated in 2010:
 
 <blockquote>Combined, they present a variety of reasons why running any Bittorrent traffic over Tor isn't going to get you the privacy that you might want.
@@ -113,9 +122,9 @@ Several fingerprinting risks exist for torrent clients:
 
 * On initial startup, torrent clients generate a unique peer ID for the [https://en.wikipedia.org/wiki/Distributed_hash_table Distributed Hash Table (DHT)] network. <ref>https://security.stackexchange.com/questions/37167/can-bittorrent-clients-be-fingerprinted</ref> In effect, the "RandomNumbers" component of the peer ID could be used to identify a client.
 * Another identifier concerns node IDs, which are persistent unless the user clears their DHT information and rejoins the network (which is uncommon).
-* It is reported trackers can set cookies in the client - for example a newer version of qbittorrent allows you to see and manage those from the GUI. 
+* It is reported trackers can set cookies in the client -- for example a newer version of qbittorrent allows you to see and manage those from the GUI. 
 
-To avoid leaving a long-lived trail of download activity, it is recommended to periodically start fresh from a clean [[Whonix-Workstation_Security#VM_Snapshots|snapshot]] and to delete the torrent client's user data folder. Note: the torrent client's user data folder is likely - depending on the torrent client - different from the download folder. Clearing the download folder likely does not remove unique IDs.
+To avoid leaving a long-lived trail of download activity, it is recommended to periodically start fresh from a clean [[Whonix-Workstation_Security#VM_Snapshots|snapshot]] and to delete the torrent client's user data folder. Note: Depending on the torrent client, the torrent client's user data folder is likely different from the download folder. Clearing the download folder likely does not remove unique IDs.
 
 = Footnotes =
 {{reflist|close=1}}
