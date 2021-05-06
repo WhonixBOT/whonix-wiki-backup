@@ -151,69 +151,74 @@ See [[KVM#Shared_Folders|KVM: Shared Folders]].
 This method works when {{project name}} is able to start normally. If {{project name}} does not start properly, then another option like [[#Mount Disk Image|Mount Disk Image]] is required. Refer to the  [[VirtualBox/Guest_Additions#Shared_Folder|VirtualBox Shared Folder]] entry for further details.
 
 == Mount Disk Image ==
-All these steps going to be inside the host operating system.
 
-Shut down any eventually still running {{project name}} virtual machines. preferably to back-up your data to avoid any data loss.
+The following steps are all performed inside the host operating system.
 
-Don't run the {{project name}} VM that you have currently mounted! That could lead to data loss. Always unmount first.
+{{Box|text=
+'''1.''' Shut down any running {{project name}} virtual machines. 
 
-{{Update}}
+* It is recommended to back-up data to avoid any potential data loss.
+* Never run the {{project name}} VM that is currently mounted because that can lead to data loss. Always unmount first.
+
+'''2.''' {{Update}}
 
 {{CodeSelect|code=
 sudo apt-get update
 }}
 
-Install qemu.
+'''3.''' Install qemu.
 
 {{CodeSelect|code=
 sudo apt-get install qemu 
 }}
 
-Load the Network Block Device kernel module.
+'''4.''' Load the Network Block Device kernel module.
 
 {{CodeSelect|code=
 sudo modprobe nbd max_part=16
 }}
 
-Attach the disk image (.vmdk) to one of the nbd you just created.
+'''5.''' Attach the disk image (<code>.vmdk</code>) to one of the newly created network block devices.
 
-(The example is {{project_name_short}}-ws.vmdk which is stored in the default place created by VirtualBox for VMs <code>/home/user/VirtualBox VMs</code>.
+The example below uses <code>{{project_name_short}}-ws.vmdk</code>. This is stored in the default place created by VirtualBox for VMs: <code>/home/user/VirtualBox VMs</code>.
 
 {{CodeSelect|code=
 sudo qemu-nbd -c /dev/nbd0 '/home/user/VirtualBox VMs/{{workstation_product_name_short}}/{{workstation_product_name_short}}-13.0.0.1.5-disk1.vmdk'
 }}
 
 <ref>
-Why do we use <code>sudo modprobe nbd max_part=16</code> instead of just <code>sudo modprobe nbd</code>? because it will show this error:-
+<code>sudo modprobe nbd max_part=16</code> is used instead of <code>sudo modprobe nbd</code> to avoid the following error:
 
 {{CodeSelect|code=
 sudo qemu-nbd -c /dev/nbd0 '/home/user/VirtualBox VMs/{{workstation_product_name_short}}/{{workstation_product_name_short}}-13.0.0.1.5-disk1.vmdk'
 }}
 
 {{CodeSelect|code=
-Failed to open /dev/nbd0: No suck file or directory /build/qemu-XXUWBP/qemu-2.1+dfsq/nbd.c:nbd_receive_request ():L756: read failed
+Failed to open /dev/nbd0: No such file or directory /build/qemu-XXUWBP/qemu-2.1+dfsq/nbd.c:nbd_receive_request ():L756: read failed
 }}
 
-This is perhaps due to an old bug.
+This might relate to an old bug.
 </ref> <ref>
 https://forums.gentoo.org/viewtopic-t-822672-start-0.html
 </ref>
 
-Create a mount point. For example.
+'''6.''' Create a mount point. 
+
+For example.
 
 {{CodeSelect|code=
 sudo mkdir -p /mnt/workstation
 }}
 
-Now you could, for instance, run a partition manager like <code>cfdisk</code> on the block device, but you will most likely want to mount an individual partition.
+A partition manager like <code>cfdisk</code> could be run on the block device, but it is more likely you will want to mount an individual partition.
 
 {{CodeSelect|code=
 sudo mount /dev/nbd0p1 /mnt/workstation
 }}
 
-Done. Now you can see new partition with {{workstation_product_name}} mounted inside it. 
+The procedure is complete. A new partition with {{workstation_product_name}} mounted inside it will be visible. 
 
-Once you are done, you should unmount everything by.
+'''7.''' Unmount everything when finished.
 
 {{CodeSelect|code=
 sudo umount /mnt/workstation
@@ -223,7 +228,8 @@ sudo umount /mnt/workstation
 sudo qemu-nbd -d /dev/nbd0
 }}
 
-Now if you wish you are free to restart the {{project name}} VM.
+After unmounting, the {{project name}} VM can be safely restarted.
+}}
 
 == Transfer files from one {{workstation_product_name}} to a different {{workstation_product_name}} through a VDI file ==
 === Linux ===
