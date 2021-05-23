@@ -12,15 +12,20 @@ man whonix_firewall
 }}
 </ref>
 
-= How to open a Port in {{workstation_product_name}} Firewall =
-== How to open an Incoming Port in {{workstation_product_name}} Firewall ==
+= How-to: Open a Port in {{workstation_product_name}} Firewall =
+
+== Open an Incoming Port in {{workstation_product_name}} Firewall ==
+
 '''<code>{{Gateway product name}}</code> &rarr; <code>{{workstation_product_name}}</code> &rarr; <code>server running inside {{workstation_product_name}}</code>
 
-For purpose of allowing an incoming connection from {{Gateway product name}} such as for example to make [[Onion Services]] reachable.
+This allows for an incoming connection from {{Gateway product name}}. This is useful for various purposes such as making [[Onion Services]] reachable.
 
+{{Box|text=
 '''1.''' {{Firewall Settings Workstation}}
 
-'''2.''' Add. Replace <code>80</code> with the actual port you would like to open.
+'''2.''' Add. 
+
+Replace <code>80</code> with the actual port you would like to open.
 
 {{CodeSelect|code=
 EXTERNAL_OPEN_PORTS+=" 80 "
@@ -30,20 +35,25 @@ EXTERNAL_OPEN_PORTS+=" 80 "
 
 '''4.''' {{Reload_Firewall_ws}}
 
-'''5.''' Done.
+The procedure is complete.
+}}
 
-== How to open an Outgoing Port in {{workstation_product_name}} Firewall ==
+== Open an Outgoing Port in {{workstation_product_name}} Firewall ==
+
+{{Firewall Custom}}
+
 '''<code>{{workstation product name}}</code> &rarr; <code>{{gateway_product_name}}</code> &rarr; Tor <code>SocksPort</code>
 
-For purpose of allowing an outgoing connection to {{Gateway product name}}.
+This allows for an outgoing connection to {{Gateway product name}}.
 
-Might be useful for [[Tor#Additional_SocksPorts|Tor additional <code>SocksPort</code>s]].
+This might be useful for [[Tor#Additional_SocksPorts|Tor additional <code>SocksPort</code>s]].
 
-'''1.''' {{Firewall Custom}}
+{{Box|text=
+'''1.''' Reminder on opening outgoing ports.
 
-Usually not required since {{Workstation product name}} firewall does not restrict what ports on {{Gateway product name}} are reachable if these are open in {{Gateway product name}} firewall.
+This is usually not required since {{Workstation product name}} firewall does not restrict what ports on {{Gateway product name}} are reachable if these are open in {{Gateway product name}} firewall.
 
-Only useful to prevent connections to Tor SocksPorts in timesync-fail-closed firewall mode. <ref>
+It is only useful to prevent connections to Tor SocksPorts in timesync-fail-closed firewall mode. <ref>
 https://phabricator.whonix.org/T533#11025
 </ref>
 
@@ -51,7 +61,10 @@ https://phabricator.whonix.org/T533#11025
 
 '''3.''' Add.
 
-Note: Replace <code>9230</code> with the actual port you would like to open. Replace <code>SOCKS_PORT_CUSTOM</code> with <code>SOCKS_PORT_ANOTHER</code> when using multiple. Replace word <code>ANOTHER</code> with another unique word.
+Note: 
+* Replace <code>9230</code> with the actual port you would like to open. 
+* Replace <code>SOCKS_PORT_CUSTOM</code> with <code>SOCKS_PORT_ANOTHER</code> when using multiple connections. 
+* Replace word <code>ANOTHER</code> with another unique word.
 
 Up to {{project name}} version <code>15.0.1.7.2</code>.
 
@@ -67,22 +80,29 @@ https://forums.whonix.org/t/internal-open-ports-setting/11404/1
 INTERNAL_OPEN_PORTS+=" 9230 "
 }}
 
-Adding both settings to the firewall settings file is OK.
+Adding both settings to the firewall settings file is okay.
 
 '''4.''' Save.
 
 '''5.''' {{Reload_Firewall_ws}}
 
-'''6.''' Done.
+The procedure is complete.
+}}
 
-= How to open All Ports in {{workstation_product_name}} Firewall =
-For purpose of allowing an incoming connection from {{Gateway product name}} such as for example to make [[Onion Services]] reachable.
+= How-to: Open All Ports in {{workstation_product_name}} Firewall =
 
-This is usually not required and should be avoided.
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = This procedure is usually not required and should be avoided.
+}}
 
-{{Firewall Settings Workstation}}
+This allows for an incoming connection from {{Gateway product name}}. This is useful for various purposes such as making [[Onion Services]] reachable.
 
-Add.
+{{Box|text=
+'''1.''' {{Firewall Settings Workstation}}
+
+'''2.''' Add.
 
 {{CodeSelect|code=
 EXTERNAL_OPEN_ALL=true
@@ -90,15 +110,18 @@ EXTERNAL_OPEN_ALL=true
 
 Save.
 
-{{Reload_Firewall_ws}}
+'''3.''' {{Reload_Firewall_ws}}
+
+The procedure is complete.
+}}
 
 = Disable {{workstation_product_name}} Firewall Until Reboot =
-Inside {{Workstation product name}}.
 
-See [[Dev/Firewall_Unload]].
+Perform this action inside {{Workstation product name}} -- see [[Dev/Firewall_Unload|Firewall Unload]].
 
 = Permanently Disable {{workstation_product_name}} Firewall =
-Inside {{Workstation product name}}.
+
+Perform this action inside {{Workstation product name}}.
 
 {{CodeSelect|code=
 sudo systemctl mask whonix-firewall
@@ -106,24 +129,27 @@ sudo systemctl mask whonix-firewall
 
 No firewall rules will load after rebooting.
 
-= ping =
-Ping commands should NOT work for external addresses from your {{workstation_product_name}}; ICMP traffic <ref>http://en.wikipedia.org/wiki/Internet_Control_Message_Protocol</ref> is not proxied, and filtered by {{project name}} Firewall (<code>{{W_Firewall}}</code>) because [[Tor#UDP|Tor does not support UDP]]. For example, <code>ping google.com</code> will not work. To make ping work, see chapter [[#Allow UDP|Allow UDP]].
+= Ping =
 
-When [[SUID Disabler and Permission Hardener]] gets enabled (not enabled by default at time of writing but will be enabled in by default in future), the <code>CAP_NET_RAW</code> capability will be removed from <code>ping</code> to reduce attack surface since it wold not work anyway. <ref>
+Ping commands should <u>not</u> work for external addresses from the {{workstation_product_name}}. The reason is [https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol ICMP traffic] is not proxied and it is filtered by {{project name}} Firewall (<code>{{W_Firewall}}</code>) because [[Tor#UDP|Tor does not support UDP]]. For example, <code>ping google.com</code> will not work. To make ping functional, see the [[#Allow UDP|Allow UDP]] chapter.
+
+When [[SUID Disabler and Permission Hardener]] is enabled in the future, <ref>It was not enabled by default at the time of writing.</ref> the <code>CAP_NET_RAW</code> capability will be removed from <code>ping</code> to reduce the attack surface since it would not work anyway. <ref>
 https://github.com/Whonix/anon-apps-config/blob/master/etc/permission-hardening.d/30_ping.conf
-</ref> When that will happen, to re-enable <code>ping</code> this, chapter [[SUID_Disabler_and_Permission_Hardener#Whitelist_Specific_Capability_Binaries|Whitelist Specific Capability Binaries]].
+</ref> When that occurs, to re-enable <code>ping</code> functionality refer to the  [[SUID_Disabler_and_Permission_Hardener#Whitelist_Specific_Capability_Binaries|Whitelist Specific Capability Binaries]] chapter.
 
 Forum discussion: <br />
-https://forums.whonix.org/t/ping-operation-permitted/11056/
+[https://forums.whonix.org/t/ping-operation-permitted/11056/ Ping operation permitted?]
 
 = Allow UDP =
+
 {{Tor_UDP}}
 
 To allow allow UDP, follow the following steps.
 
-{{Firewall Settings Workstation}}
+{{Box|text=
+'''1.''' {{Firewall Settings Workstation}}
 
-Add. <ref>
+'''2.''' Add. <ref>
 * https://forums.whonix.org/t/does-whonix-have-torrents-available/10046/8
 * https://forums.whonix.org/t/whonix-15-0-1-5-1-for-virtualbox-point-release/10294
 </ref>
@@ -134,14 +160,17 @@ firewall_allow_udp=true
 
 Save.
 
-{{Reload_Firewall_ws}}
+'''3.''' {{Reload_Firewall_ws}}
 
-Done, {{Workstation product name}} firewall does now permit UDP.
+The procedure is complete. {{Workstation product name}} firewall will now permit UDP.
+}}
 
 = Purpose =
-https://github.com/Whonix/whonix-firewall/blob/master/man/whonix_firewall.8.ronn#whonix-workstation-firewall-design-notes
+
+Refer to [https://github.com/Whonix/whonix-firewall/blob/master/man/whonix_firewall.8.ronn#whonix-workstation-firewall-design-notes {{workstation_product_name}} firewall design notes] for further information.
 
 = See Also =
+
 * [[Install_Software#{{workstation_product_name}}_is_Firewalled|{{workstation_product_name}} is Firewalled]]
 * [[Ports|Open a Port(s) in {{project name}} and Port Forwarding]]
 * [[Whonix_Configuration_Files#Configuration_Drop-In_Folders|{{project_name}} Configuration Drop-In Folders]]
