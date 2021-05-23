@@ -6,12 +6,15 @@
 __TOC__
 [[image:Five-elements-379106640.jpg|thumb]]
 {{Anchor|.d Style Configuration Folders}}
+= Introduction =
+
+When changing any configurations it is recommended to use configuration drop-in folders whenever available to avoid the [[#Ordinary_Configuration_Files|disadvantages of ordinary configuration files]]. To use a configuration drop-in folder means "to drop a configuration snippet", which translates to creating a new configuration file in a configuration drop-in folder.
+
+This applies to most, if not all, other (Debian-based) Linux distributions including {{project_name}}.
+
 = Configuration Drop-In Folders =
-When changing any configurations it is recommended to use configuration drop-in folders whenever available to avoid the [[#Ordinary_Configuration_Files|disadvantages of ordinary configuration files]]. To use a configuration drop-in folder means "to drop a configuration snippet" which translates to creating a new configuration file in a configuration drop-in folder.
 
-This applies to most, if not all, other (Debian based) Linux distributions including {{project_name}}.
-
-[https://github.com/Whonix Most] of [[{{project name short}} Debian Packages|packages by {{project name}}]] provide configuration drop-in folders.
+[https://github.com/Whonix Most] [[{{project name short}} Debian Packages|{{project name}} packages]] provide configuration drop-in folders:
 
 * <code>/etc/torbrowser.d</code>
 * <code>[[#/usr/local/etc|/usr/local/etc]]/torbrowser.d</code>
@@ -22,9 +25,10 @@ This applies to most, if not all, other (Debian based) Linux distributions inclu
 * <code>/etc/sdwdate.d</code>
 * <code>/etc/sdwdate-gui.d</code>
 * <code>/etc/uwt.d</code>
-* Configuration of Tor is a special case, see [[Tor#Configuration|Tor configuration]].
 
-We'll explain it using an example. For example, <code>/etc/whonix_firewall.d/30_default.conf</code> says.
+Note that configuration of Tor is a special case; see [[Tor#Configuration|here]] for further details.
+
+To explain this concept, consider the [[Whonix-Gateway_Firewall|{{project_name}}]] [[Whonix-Workstation_Firewall|firewall]] example. <code>/etc/whonix_firewall.d/30_default.conf</code> states:
 
 <blockquote>
 Please use "/etc/whonix_firewall.d/50_user.conf" for your custom configuration,
@@ -32,7 +36,7 @@ which will override the defaults found here. When {{project_name}} is updated, t
 file may be overwritten.
 </blockquote>
 
-The same in other words.
+The same message is described elsewhere as follows.
 
 <blockquote>
 Instead of editing this file, please create and use the file
@@ -43,9 +47,9 @@ Instead of editing this file, please create and use the file
 allowing the user to keep their settings after updating {{project_name}}.
 </blockquote>
 
-The same yet in other words... Files in configuration drop-in folders are usually sourced in lexical order. That means, files named <code>30_...</code> will always get overruled by files named <code>50_...</code>.
+In simple terms, files in configuration drop-in folders are usually sourced in lexical order. That means files named <code>30_...</code> will always be overruled by files named <code>50_...</code>.
 
-For example, directly editing <code>/etc/whonix_firewall.d/30_default.conf</code> is recommended against. This is because, next time {{project_name}} gets updated, <code>/etc/whonix_firewall.d/30_default.conf</code> may get new settings and improved settings. You would end up with an {{Code2|dpkg interactive conflict resolution dialog}}, which would for example look the following.
+In this example, directly editing <code>/etc/whonix_firewall.d/30_default.conf</code> is recommended against. This is because the next time {{project_name}} is updated, <code>/etc/whonix_firewall.d/30_default.conf</code> may get new and improved settings. In this case it would cause a {{Code2|dpkg interactive conflict resolution dialog}}, which would look like the following.
 
 <pre>
 Configuration file `/etc/whonix_firewall.d/30_default.conf'
@@ -60,13 +64,16 @@ Configuration file `/etc/whonix_firewall.d/30_default.conf'
 *** interfaces (Y/I/N/O/D/Z) [default=N] ? N
 </pre>
 
-Modifications coming with {{project_name}} will always fall back to reasonable defaults, if you were still using an old version. However, to prevent such conflicts in the first place, you're better off reading <code>/etc/whonix_firewall.d/30_default.conf</code>, leaving <code>/etc/whonix_firewall.d/30_default.conf</code> untouched, copying settings you wish to overrule from <code>/etc/whonix_firewall.d/30_default.conf</code> and pasting them into <code>/etc/whonix_firewall.d/50_user.conf</code>.
+Modifications coming with {{project_name}} will always fall back to reasonable defaults, if you were still using an old version. However, to prevent such conflicts in the first place it is better to:
+* read <code>/etc/whonix_firewall.d/30_default.conf</code>
+* leave <code>/etc/whonix_firewall.d/30_default.conf</code> untouched
+* copy settings you wish to overrule from <code>/etc/whonix_firewall.d/30_default.conf</code> and paste them into <code>/etc/whonix_firewall.d/50_user.conf</code>
 
-Since standardized configuration drop-in folders are not standardized, configuration drop-in snippets are processed in very different ways depending on the software that reads the configuration. Differences in drop-in folders:
+Since configuration drop-in folders are not standardized, configuration drop-in snippets are processed in very different ways depending on the software that reads the configuration. Sample differences in drop-in folders include:
 
-* Some allow overwriting configuration variables from lexical lower configuration files such as <code>/etc/default/grub.d</code> (grub configuration).; Some do not such as <code>/etc/apt/sources.list.d</code> (where APT repository definitions can be dropped) or <code>/etc/apt/trusted.gpg.d</code> (where APT signing keys can be dropped).
-* Some are <code>source</code>ed in lexical order such a <code>/etc/profile.d</code> or <code>/etc/X11/Xsession.d</code>.
-* Some contain scripts which are executed such as <code>/etc/grub.d</code> (boot grub menu generation).
+* Some allow overwriting configuration variables from lexical lower configuration files, such as <code>/etc/default/grub.d</code> (grub configuration). Conversely, some do not allow this such as <code>/etc/apt/sources.list.d</code> (where APT repository definitions can be dropped) or <code>/etc/apt/trusted.gpg.d</code> (where APT signing keys can be dropped).
+* Some are sourced in lexical order such as <code>/etc/profile.d</code> or <code>/etc/X11/Xsession.d</code>.
+* Some contain scripts which are executed, like <code>/etc/grub.d</code> (boot grub menu generation).
 
 = Ordinary Configuration Files =
 
