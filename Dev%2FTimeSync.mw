@@ -651,6 +651,66 @@ Therefore:
 * <code>[H]</code> + <code>a)</code>: issue
 * <code>[I]</code> + <code>a)</code>: no issue since no connection
 
+
+===== Issues =====
+This happens after VM was offline for a few hours:
+
+<pre>
+sudo anondate-get
+/usr/sbin/anondate-get: INFO: 100% Tor bootstrap, ok.
+/usr/sbin/anondate-get: INFO: tor_circuit_established_check.py, ok.
+/usr/sbin/anondate-get: INFO: Tor circuit already established, ok.
+/usr/sbin/anondate-get: WARNING: local system time is NOT with valid time range. (valid_after: 2021-05-25 11:00:00 | middle_range: 2021-05-25 12:30:00 | valid_until: 2021-05-25 14:00:00)
+/usr/sbin/anondate-get: INFO: middle_range: '2021-05-25 12:30:00'
+/usr/sbin/anondate-get: INFO: time_result later than minimum-unixtime-show, ok.
+2021-05-25 12:30:00
+/usr/sbin/anondate-get: END: Exiting with exit_code '0' indicating 'Showed Tor consensus time middle range.'.
+</pre>
+
+<pre>
+/usr/lib/helper-scripts/onion-time-pre-script: Start.
+Static Time Sanity Check: Within minimum time 'Sun Jan 17 00:00:00 UTC 2021' and expiration timestamp 'Tue May 17 10:00:00 UTC 2033', ok.
+Tor reports: NOTICE BOOTSTRAP PROGRESS=95 TAG=circuit_create SUMMARY="Establishing a Tor circuit"
+Tor circuit: not established.
+Tor Consensus Time Sanity Check: The clock might be too fast. Clock is faster than consensus/valid-until 2021-05-25 14:00:00.
+/usr/lib/helper-scripts/onion-time-pre-script: END: Exiting with exit_code '2' indicating 'wait, show busy icon and retry.'.
+</pre>
+
+After approximately two minutes after VM start:
+
+<pre>
+sudo anondate-get
+/usr/sbin/anondate-get: INFO: 100% Tor bootstrap, ok.
+/usr/sbin/anondate-get: INFO: tor_circuit_established_check.py, ok.
+/usr/sbin/anondate-get: INFO: Tor circuit already established, ok.
+/usr/sbin/anondate-get: INFO: local system time is already within valid range, ok. (valid_after: 2021-05-25 18:00:00 | middle_range: 2021-05-25 19:30:00 | valid_until: 2021-05-25 21:00:00)
+/usr/sbin/anondate-get: INFO: time_result later than minimum-unixtime-show, ok.
+/usr/sbin/anondate-get: INFO: Tor certificate lifetime valid, ok.
+/usr/sbin/anondate-get: END: Exiting with exit_code '4' indicating 'Setting time using anondate either not possible or not required.'.
+</pre>
+
+<pre>
+Static Time Sanity Check: Within minimum time 'Sun Jan 17 00:00:00 UTC 2021' and expiration timestamp 'Tue May 17 10:00:00 UTC 2033', ok.
+Tor reports: NOTICE BOOTSTRAP PROGRESS=100 TAG=done SUMMARY="Done"
+Tor circuit: established.
+Tor Consensus Time Sanity Check: Clock within consensus parameters consensus/valid-after 2021-05-25 18:00:00 and consensus/valid-until 2021-05-25 21:00:00.
+Tor already reports circuit established.
+/usr/lib/helper-scripts/onion-time-pre-script: END: Exiting with exit_code '0' indicating 'success'.
+</pre>
+
+Comparison:
+
+<pre>
+valid_after: 2021-05-25 11:00:00 | middle_range: 2021-05-25 12:30:00 | valid_until: 2021-05-25 14:00:00
+valid_after: 2021-05-25 18:00:00 | middle_range: 2021-05-25 19:30:00 | valid_until: 2021-05-25 21:00:00
+</pre>
+
+Actual time when this happend was:
+
+<pre>
+2021-05-25 18:40:00
+</pre>
+
 == Blockchain Time ==
 * https://bitcoinmagazine.com/articles/bip-the-end-to-end-encryption-bitcoin-never-had-but-soon-will-1465401187
 * https://github.com/bitcoin/bips/blob/master/bip-0150.mediawiki
