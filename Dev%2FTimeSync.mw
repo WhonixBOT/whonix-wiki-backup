@@ -653,9 +653,9 @@ Therefore:
 
 
 ===== Issues =====
-The issue with looking at Tor consensus time is that after power off for a few hours (<code>>= ~3</code> hours) Tor starts necessarily with a stale Tor consensus.
+The issue with looking at Tor consensus time is that after power off for a few hours (<code>>= ~3</code> hours) Tor starts necessarily with a stale Tor consensus. When querying Tor consensus time (using <code>anondate-get</code> or otherwise), from the perspective of <code>anondate-get</code> the clock is fast, because Tor consensus is stale because Tor hasn't downloaded a newer Tor consensus yet.
 
-This happens after VM was offline for a few hours:
+This happened after the gateway VM was offline for a few hours:
 
 <pre>
 sudo anondate-get
@@ -678,7 +678,9 @@ Tor Consensus Time Sanity Check: The clock might be too fast. Clock is faster th
 /usr/lib/helper-scripts/onion-time-pre-script: END: Exiting with exit_code '2' indicating 'wait, show busy icon and retry.'.
 </pre>
 
-After approximately two minutes after VM start:
+<code>The clock might be too fast.</code> is because while the hardware clock was reasonable correct, Tor consensus time was still stale since Tor didn't download a new Tor consensus yet.
+
+After approximately two minutes after VM start (Tor finished downloading a newer Tor consensus):
 
 <pre>
 sudo anondate-get
@@ -707,11 +709,17 @@ valid_after: 2021-05-25 11:00:00 | middle_range: 2021-05-25 12:30:00 | valid_unt
 valid_after: 2021-05-25 18:00:00 | middle_range: 2021-05-25 19:30:00 | valid_until: 2021-05-25 21:00:00
 </pre>
 
-Actual time when this happend was:
+Actual time when this happened was:
 
 <pre>
 2021-05-25 18:40:00
 </pre>
+
+If sdwdate had set the time to <code>anondate-get</code>'s initial guess <code>2021-05-25 12:30:00</code> (using <code>anondate-set</code>), Tor connectivity would have been broken. (This issue was experienced indeed in past during experimentation using <code>anondate-set</code>.)
+
+Idea:
+
+If hardware clock is faster than <code>valid_until</code>, delete Tor consensus before Tor starts.
 
 == Blockchain Time ==
 * https://bitcoinmagazine.com/articles/bip-the-end-to-end-encryption-bitcoin-never-had-but-soon-will-1465401187
