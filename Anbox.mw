@@ -23,6 +23,36 @@ To achieve our goal we use standard Linux technologies like containers (LXC) to 
 
 The project is open source and theoretically any application can be run. Anbox does not have direct access to a user's hardware or data. It should be noted that while it is possible to install the Google Play Store, Google will not allow anyone to ship applications if the device is not certified and the vendor has not signed an agreement. <ref>https://anbox.io/#faq</ref>
 
+== General issues ==
+There are several issues with running popular Android apps on top of non-physical certified Android device but using Anbox or Android x86 Workstation.
+=== Unsupported CPU architecture ===
+Most of popular Android apps especially from Google Play Store were written for ARMv7 and rarely for ARMv8 architectures. Therefore some apps don't have support for x86 or x86_64 architectures. Android x86 users can use libhoudini library in order to try to emulate ARMv7 architecture but many Android apps written for ARM still don't work.
+
+=== Device fingerprint ===
+Many of non-free popular Android apps check device fingerprint in order to see what kind of device is used. Both Anbox and Android x86 have emulator fingerprints so apps can easily detect that an emulator is used. It is generally possible to spoof device fingerprint but it is required to rebuild Android image for Anbox. Android x86 can use Magisk module called MagiskHide Props Config in order to spoof device fingerprint.
+
+=== Network interface detection ===
+Most of popular Android apps detect network adapters and won't work properly if there's no Wi-Fi or mobile connection established. Anbox uses bridge network interface by default so some apps won't see the Internet connection. However, Android x86 starting from Nougat has a built-in virtual Wi-Fi interface so apps think that a real Wi-Fi connection is established.
+
+=== Google Play Services mechanisms ===
+
+The biggest problem with running popular Android apps on top of non-physical Android device right now is passing SafetyNet by Google. Android consists of two parts:
+
+*The Android system itself (Android Open Source Project). This is a base system.
+*Proprietary subsystem called Google Play Services which helps to interact apps from Google Play Store with Google servers. This is an optional subsystem but all Android devices which are certified by Google have this subsystem.
+
+If you are going to run only free software (FOSS) apps, then you don’t need Google Play Services at all as all apps from F-Droid are built without need of Google Play Services. But if you need to run some kind of proprietary apps, it can be problem for you as some of them use Google Play Services mechanism.
+
+Generally, Google Play Services is consists of two important parts:
+
+*GCM (Google Cloud Messages)
+*SafetyNet
+
+GCM is a proprietary mechanism of delivering Push Notifications from Google servers. GCM is used by ~70-80% of proprietary apps from Google Play Store as these apps use that mechanism. It is not hard to enable support GCM both for Android x86 and Anbox. Android x86 image comes with built-in non-free Google Play Services so GCM is enabled by default. With Anbox, you can install either proprietary Google Play Services (OpenGAPPS) or open-source implementation of Google Play Services called Micro-G.
+
+SafetyNet is a mechanism which verifies the integrity of the device. If a device is not certified by Google Corporation then you won't be able to run most of proprietary Android apps from Google Play Store because lots of them uses SafetyNet in order to check that your device is authentic and not tampered. Nowadays there is no way to pass SafetyNet neither on Android x86 nor on Anbox because Google uses its own closed-source algorythm of non-real devices detection. SafetyNet is used by ~30-50% of Google Play Store apps especially banking apps, social network apps such as Tinder and other apps.
+
+
 == Anbox inside {{project_name}} vs. Android x86 Workstation ==
 
 There are both distinct advantages and disadvantages of running Android applications in a native {{workstation_product_name}} versus an Android x86 Workstation. <ref>https://forums.whonix.org/t/integrate-anbox-into-whonix-workstation/9642</ref>
