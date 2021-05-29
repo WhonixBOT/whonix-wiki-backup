@@ -1,5 +1,5 @@
 {{Header}}
-{{title|title=Run Anbox inside {{workstation product name}}
+{{title|title=Android Applications and Games
 }}
 {{#seo:
 |description=Anbox allows Android applications and mobile games to run inside {{project name}}.
@@ -8,7 +8,6 @@
 <!--|image=https://www.{{project_clearnet}}/w/images/c/c9/Android23432.png-->
 [[File:anbox_apps_short.png|thumb|800px]]
 = Introduction =
-{{Community Support}}
 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
@@ -23,46 +22,53 @@ To achieve our goal we use standard Linux technologies like containers (LXC) to 
 
 The project is open source and theoretically any application can be run. Anbox does not have direct access to a user's hardware or data. It should be noted that while it is possible to install the Google Play Store, Google will not allow anyone to ship applications if the device is not certified and the vendor has not signed an agreement. <ref>https://anbox.io/#faq</ref>
 
-== Security notes ==
-* Do not use physical devices (mobile phones or tablets) for any kind of anonymous activities because any physical device has a unique IMEI number which can be easily fetched by Android apps. Always use virtual devices such as Anbox or Android x86 for such kind of activities.
-* Always prefer using free and open source (FOSS) Android apps because they usually don't use any kind of surveillance. Using apps from [https://f-droid.org/ F-Droid] repositories is recommended.
-* Do not install APK directly from untrusted sources.
-* Always check app permissions before starting app. Note that Android settings menu allows user to manage only dangerous permissions (such as Camera, Storage, Location, Phone etc.) but not AppOps (application operations) permissions. ADB shell or extended [https://f-droid.org/en/packages/io.github.muntashirakon.AppManager GUI app/permission manager] (root required) is needed in order to display and manage not only dangerous but AppOps permissions.
+{{Community Support}}
+
+= Security Notes =
+
+* Do not use physical devices (mobile phones or tablets) for any kind of anonymous activities because any physical device has a unique IMEI number which can be easily fetched by Android applications. Always use virtual devices such as Anbox or Android x86 for these kind of activities.
+* Always prefer using free and open source (FOSS) Android applications because they usually don't use any kind of surveillance. Using applications from [https://f-droid.org/ F-Droid] repositories is recommended.
+* Do not install Android Package Kits (APKs) directly from untrusted sources.
+* Always check permissions before starting an application. Note the Android settings menu only allows the user to manage dangerous permissions (such as Camera, Storage, Location, Phone etc.) but not AppOps (application operations) permissions. ADB shell or extended [https://f-droid.org/en/packages/io.github.muntashirakon.AppManager GUI application/permission manager] (root required) is needed in order to display and manage not only dangerous but AppOps permissions.
 * Do not store any private information inside Anbox or Android x86 filesystems.
-* As Android system cannot prevent apps from accessing to the Internet, an additional firewall management is required. Android uses Linux iptables firewall manager so a GUI app such as [https://f-droid.org/en/packages/dev.ukanth.ufirewall AFWall+] can be used to control what apps are allowed to access the Internet (root needed).
-* If a proprietary non-free Android app installation is needed, prefer install it from Google Play Store using an anonymous account. An [https://f-droid.org/en/packages/com.aurora.store Aurora Store] app can be useful for that. Do not use your real Google Account and do not download and install APKs from third-party websites as it can be dangerous.<ref>Note that most of non-free apps from Google Play Store won't work properly without Google Play Services installed. Some of them will never work because an Android virtual device cannot pass Google's SafetyNet mechanism.</ref>
+* As the Android system cannot prevent applications from accessing the Internet, additional firewall management is required. Android uses Linux iptables firewall manager so a GUI application like [https://f-droid.org/en/packages/dev.ukanth.ufirewall AFWall+] can be used to control what applications are allowed to access the Internet (root needed).
+* If a proprietary, non-free Android application installation is required, prefer installation from Google Play Store using an anonymous account. An [https://f-droid.org/en/packages/com.aurora.store Aurora Store] application can be useful for this purpose. Do not use your real Google Account and do not download and install APKs from third-party websites because it can be dangerous. <ref>Note that most non-free applications from Google Play Store will not work properly without Google Play Services installed. Some will never work at all because an Android virtual device cannot pass Google's SafetyNet mechanism.</ref>
  
-== General issues ==
-There are several issues with running popular Android apps on top of non-physical certified Android device but using Anbox or Android x86 Workstation.
-=== Unsupported CPU architecture ===
-Most of popular Android apps especially from Google Play Store were written for ARMv7 and rarely for ARMv8 architectures. Therefore some apps don't have support for x86 or x86_64 architectures. Android x86 users can use libhoudini library in order to try to emulate ARMv7 architecture but many Android apps written for ARM still don't work.
+= General Issues =
 
-=== Device fingerprint ===
-Many of non-free popular Android apps check device fingerprint in order to see what kind of device is used. Both Anbox and Android x86 have emulator fingerprints so apps can easily detect that an emulator is used. It is generally possible to spoof device fingerprint but it is required to rebuild Android image for Anbox. Android x86 can use Magisk module called MagiskHide Props Config in order to spoof device fingerprint.
+There are several issues with running popular Android applications using Anbox or Android x86 Workstation on top of a non-physical, certified Android device.
 
-=== Network interface detection ===
-Most of popular Android apps detect network adapters and won't work properly if there's no Wi-Fi or mobile connection established. Anbox uses bridge network interface by default so some apps won't see the Internet connection. However, Android x86 starting from Nougat has a built-in virtual Wi-Fi interface so apps think that a real Wi-Fi connection is established.
+== Unsupported CPU Architecture ==
 
-=== Google Play Services mechanisms ===
+Most popular Android applications (especially from Google Play Store) were written for ARMv7 and rarely for ARMv8 architectures. Therefore, some applications do not have support for x86 or x86_64 architectures. Android x86 users can use the <code>libhoudini</code> library in order to try to emulate ARMv7 architecture but many Android applictions written for ARM still don't work.
 
-The biggest problem with running popular Android apps on top of non-physical Android device right now is passing SafetyNet by Google. Android consists of two parts:
+== Device Fingerprint ==
 
-*The Android system itself (Android Open Source Project). This is a base system.
-*Proprietary subsystem called Google Play Services which helps to interact apps from Google Play Store with Google servers. This is an optional subsystem but all Android devices which are certified by Google have this subsystem.
+Many non-free, popular Android applications check the device fingerprint for hardware identification purposes. Both Anbox and Android x86 have emulator fingerprints so applications can easily detect that an emulator is in use. It is generally possible to spoof the device fingerprint, but it is necessary to rebuild the Android image for Anbox. Android x86 can utilize the Magisk module called MagiskHide Props Config in order to spoof the device fingerprint.
 
-If you are going to run only free software (FOSS) apps, then you don’t need Google Play Services at all as all apps from F-Droid are built without need of Google Play Services. But if you need to run some kind of proprietary apps, it can be problem for you as some of them use Google Play Services mechanism.
+== Network Interface Detection ==
 
-Generally, Google Play Services is consists of two important parts:
+Most popular Android applications detect network adapters and will not work properly if no Wi-Fi or mobile connection is established. Anbox uses a bridge network interface by default so some applications will not see the Internet connection. However, Android x86 starting from Nougat has a built-in virtual Wi-Fi interface so applications think that a real Wi-Fi connection is established.
 
-*GCM (Google Cloud Messages)
-*SafetyNet
+== Google Play Services Mechanisms ==
 
-GCM is a proprietary mechanism of delivering Push Notifications from Google servers. GCM is used by ~70-80% of proprietary apps from Google Play Store as these apps use that mechanism. It is not hard to enable support GCM both for Android x86 and Anbox. Android x86 image comes with built-in non-free Google Play Services so GCM is enabled by default. With Anbox, you can install either proprietary Google Play Services (OpenGAPPS) or open-source implementation of Google Play Services called Micro-G.
+At present, the biggest problem with running popular Android applications on top of a non-physical Android device is passing SafetyNet by Google. Android consists of two parts:
 
-SafetyNet is a mechanism which verifies the integrity of the device. If a device is not certified by Google Corporation then you won't be able to run most of proprietary Android apps from Google Play Store because lots of them uses SafetyNet in order to check that your device is authentic and not tampered. Nowadays there is no way to pass SafetyNet neither on Android x86 nor on Anbox because Google uses its own closed-source algorythm of non-real devices detection. SafetyNet is used by ~30-50% of Google Play Store apps especially banking apps, social network apps such as Tinder and other apps.
+* The Android system itself (Android Open Source Project). This is a base system.
+* A proprietary subsystem called Google Play Services. This helps applications from Google Play Store to interact with Google servers. This is an optional subsystem but all Android devices which are certified by Google have this arrangement.
 
+If only free software (FOSS) applications will be run, then Google Play Services is unneeded since all applications from F-Droid are built without a dependency upon Google Play Services. If some types of proprietary applications are needed, this can be problematic because some will use the Google Play Services mechanism.
 
-== Anbox inside {{project_name}} vs. Android x86 Workstation ==
+Generally, Google Play Services consists of two important parts:
+
+* GCM (Google Cloud Messages)
+* SafetyNet
+
+GCM is a proprietary mechanism for delivering Push Notifications from Google servers. GCM is used by ~70-80% of proprietary applications from Google Play Store which rely upon the mechanism. It is not difficult to enable GCM support for both Android x86 and Anbox. The Android x86 image comes with built-in, non-free Google Play Services so GCM is enabled by default. With Anbox, it is possible to install either proprietary Google Play Services (OpenGAPPS) or an open-source implementation of Google Play Services called Micro-G.
+
+SafetyNet is a mechanism which verifies the integrity of the device. If a device is not certified by Google Corporation then most of the proprietary Android applications from Google Play Store will not run because many use SafetyNet to check the device is authentic and has not been tampered with. Nowadays there is no way to pass SafetyNet on either Android x86 or Anbox because Google uses its own closed-source algorithm for non-real devices detection. SafetyNet is used by ~30-50% of Google Play Store applications, especially those relating to banking and social networks such as Tinder.
+
+= Anbox inside {{project_name}} vs. Android x86 Workstation =
 
 There are both distinct advantages and disadvantages of running Android applications in a native {{workstation_product_name}} versus an Android x86 Workstation. <ref>https://forums.whonix.org/t/integrate-anbox-into-whonix-workstation/9642</ref>
 
@@ -84,8 +90,9 @@ There are both distinct advantages and disadvantages of running Android applicat
 |-
 
 ! scope="row"| Flexibility
-| It is easy to use adb to install/remove apps and to push/pull files from/to the Anbox environment.
-Root access. Anbox doesn't provide superuser binary and manager so a manual installation of su binary and app is needed therefore Android image rebuild is necessary.
+| 
+* It is easy to use Android Debug Bridge (<code>adb</code>) to install/remove applications and to push/pull files from/to the Anbox environment.
+* Root access - Anbox does not provide a superuser binary and manager. A manual installation of a superuser binary and application is required, which necessitates a rebuild of the Android image.
 |-
 
 ! scope="row"| Networking
@@ -112,8 +119,9 @@ Root access. Anbox doesn't provide superuser binary and manager so a manual inst
 |-
 
 ! scope="row"| Flexibility
-|  It is possible to use adb if Android x86 uses the same internal network as Gateway and Workstation. <ref>Also it may be possible to run ssh-server on {{workstation_product_name}} and connect your Android x86 through Termux or similar.</ref>
-Root access. Android x86 goes with preinstalled Superuser binary and manager so root access works out of the box. Apps with root access will work without any additional setup.
+|  
+* It is possible to use <code>adb</code> if Android x86 uses the same internal network as the Gateway and Workstation. <ref>Also, it may be possible to run ssh-server on {{workstation_product_name}} and connect the Android x86 through Termux or similar.</ref>
+* Root access - Android x86 has a pre-installed superuser binary and manager so root access works out of the box. Applications with root access will work without any additional setup.
 |-
 
 ! scope="row"| Networking
