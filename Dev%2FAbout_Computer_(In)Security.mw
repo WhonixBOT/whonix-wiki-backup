@@ -3,10 +3,12 @@
 title=About Computer (In)Security
 }}
 {{#seo:
-|description=Overview about About Computer (In)Security, Trusted Computing Base, Bad Usability of Programming Languages,Too much Software Written in Unsafe Languages, Miscellaneous
+|description=Overview about About Computer (In)Security, Trusted Computing Base, Bad Usability of Programming Languages, Too much Software Written in Unsafe Languages, Backdoors, Purposeful Vulnerabilities in Software, Miscellaneous
 }}
 __FORCETOC__
+
 = Trusted Computing Base =
+
 A secure and trustworthy computer is a computer that only does what ''you'' (think you) tell it to.
 
 Computers are insecure and not trustworthy and there is nothing we can do about that. Computers are "universal machines" (see Von Neumann, Turing). They can be instructed to do anything they can do according to the laws of physics. It is important to understand that a computer can't discern between "good" and "bad" instructions, bits are bits. There are two general problems:
@@ -42,6 +44,7 @@ This could be compared to the "Air Gap" used on most high security networks. The
 [[Physical Isolation]] in the sense of {{project name}} is not a new idea, see [http://www.cs.utexas.edu/ftp/boyer/cli-reports/070.pdf Verifiable Computer Security and Hardware: Issues by William D. Young. September 1991 (PDF!)] page 18 for a summary. It seems like the idea was rediscovered by {{project name}} (independently, and we came up with the same term), to our knowledge {{project name}} is currently the only project following this approach in a defined way.
 
 = Security Mindset of Open Source Software Ecosystem =
+
 Upstream distributions (such as Debian) can mostly only package available upstream software but not re-write most. Though, a lot upstream software was created with priorities and not necessarily highest security in mind. A lot required functionality is only available through "legacy" software written in memory-unsafe programming languages. The whole Open Source software ecosystem was never primarily focused on highest possible security to begin with.
 
 https://www.youtube.com/watch?v=31xA9p3pYE4 does not sound promising on general trends in computer security. Quoting freely. "More and more companies (such as google chrome to pick one example among a trend) move to an approach where security bug reports are disregarded unless a proof of concept exploit is being provided. Mitigation methods for bad, potentially exploitable code are preferred over actual security bug fixes because there is too much source code, complexity is too high and the total number of bugs is unmanageable."
@@ -51,22 +54,44 @@ See also [[Linux User Experience versus Commercial Operating Systems]] to learn 
 See also [[Dev/Operating System]] to learn about which operating systems were considered for {{project name}}.
 
 = Bad Usability of Programming Languages =
+
 Too much software which is part of the TCB is written in very old programming languages such as assembler, C and C++. These programming languages are unsafe and difficult to master. There are many ways to make mistakes. Review of software written in such languages is difficult even if the author had good intentions. It is getting worse if the author had malicious intentions. Auditing exiting source code can be super difficult, see [https://en.wikipedia.org/wiki/International_Obfuscated_C_Code_Contest Obfuscated C Code Contest]. Most times it is easier to write source code than to understand source code written by a third party. Geeks will disagree however due to the flood of security issues it should be abundantly proven that there is rarely security bug free source code. Therefore the conclusion is undeniable that there are safety and usability issues in programming languages and the overall tool chain.
 
 Even easier programming languages such as ruby are still too difficult to learn. Therefore the number of hobbyists motivated/capable to use them is limited. Programming languages that focus on usability, run usability studies and iterate according to usability research, that can be understood by as many people as possible are yet to be invented.
 
 = Too much Software Written in Unsafe Languages =
+
 This is partially because by the time the software was written there were no easier / more suitable programming languages available. Also performance considerations were part of this. Nowadays too few people are sufficiently aware, funded and/or motivated to replace this software with rewrites in languages with higher safety and usability. In the very strong opinion of the author, for "perfect security" a lot old source code written in unsafe languages would have to be rewritten in safe and easy (yet to be invented) programming languages to keep the amount of code in the TCB which is written in unsafe languages at a minimum to make it manageable to audit and free of security issues. This however is very unlikely to happen.
+
+= Purposeful Vulnerabilities in Software =
+
+In 2021, researchers at the University of Minnesota released a paper that revealed they had purposefully tested the feasibility of introducing vulnerabilities (use-after-free bugs) in open source software (OSS) -- in this case the Linux kernel -- via "hypocrite commits." They defined these commits as "...seemingly beneficial commits that in fact introduce other critical issues." <ref name=hypocrite_commits>https://raw.githubusercontent.com/QiushiWu/qiushiwu.github.io/main/papers/OpenSourceInsecurity.pdf</ref> While this research is ethically questionable, it prompts doubt about the OSS claim that this development approach produces more reliable, secure and higher-quality software, particularly since the "many eyeballs" approach is suggested to increase the rate at which bugs are identified and fixed. The paper is significant because the Linux kernel powers billions of devices world-wide and the hypocrite commits were not identified until the researcher's paper was published.
+
+The researchers identified three primary reasons for why hypocrite commits to the kernel were possible: <ref name=hypocrite_commits />
+<blockquote>(1) OSS is open by nature, so anyone from anywhere, including malicious ones, can submit patches. (2) Due to the overwhelming patches and performance issues, it is impractical for maintainers to accept preventive patches for “immature vulnerabilities”. (3) OSS like the Linux kernel is extremely complex, so the patch-review process often misses introduced vulnerabilities that involve complicated semantics and contexts.</blockquote> Suggested mitigations included: <ref name=hypocrite_commits />
+
+* increasing committer liability and accountability
+* employment of advanced static-analysis tools
+* high-coverage or directed dynamic testing (such as fuzzers)
+* accepting patches for high-risk immature vulnerabilities
+* raising awareness of the risk of hypocrite commits
+* auditing of public patches by a larger number of people (not just maintainers)
+
+This example illustrates that malicious committers to OSS may have had multiple opportunities to purposefully introduce stealthy vulnerabilities in countless software tools and projects. It is feasible that high-profile OSS focused on privacy and anonymity might have become a target for similar attempts. Successful attempts have the potential to be significant, because they could potentially exist for a long period and affect a countless number of users. As outlined by the researchers, it is possible to mitigate these underhanded methods by updating the code of conduct for OSS and developing/improving tools for patch testing and verification. <ref name=hypocrite_commits />
 
 = Backdoors =
 {{Backdoors}}
 
-= Miscellaneous =
-* https://grsecurity.net/~spender/interview_notes.txt
-* https://theinvisiblethings.blogspot.com/2009/03/trusting-hardware.html
-* https://blog.invisiblethings.org/2009/06/01/more-thoughts-on-cpu-backdoors.html
+= See Also =
+* [https://grsecurity.net/~spender/interview_notes.txt grsecurity's Brad Spengler: Interview Notes]
+* [https://theinvisiblethings.blogspot.com/2009/03/trusting-hardware.html The Invisible Things Lab's blog: Trusting Hardware]
+* [https://blog.invisiblethings.org/2009/06/01/more-thoughts-on-cpu-backdoors.html The Invisible Things Lab's blog: More Thoughts on CPU backdoors]
+* [https://raw.githubusercontent.com/QiushiWu/qiushiwu.github.io/main/papers/OpenSourceInsecurity.pdf On the Feasibility of Stealthily Introducing Vulnerabilities in Open-Source Software via Hypocrite Commits]
 * [[Open-source Hardware]]
 
-[[Category:Design]]
+= Footnotes =
+{{reflist|close=1}}
 
 {{Footer}}
+
+[[Category:Design]]
