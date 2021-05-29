@@ -272,30 +272,39 @@ Alternatively, there might be a very crude workaround which is discussed in the 
 [https://forums.whonix.org/t/issues-with-removal-of-specific-packages-by-users-builders/653/9 Issues with removal of specific packages by users / builders].
 
 == Technical Information ==
-Technical explanations why stuff is as is. Users can skip this chapter.
 
-The underlying technical issues with meta packages are not caused by {{project_name}}, are general issues {{project_name}} inherited from Debian. Those are also described here:
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = This section provides technical information for interested readers and can be skipped.
+}}
 
-* http://administratosphere.wordpress.com/2011/11/29/the-metapackage-problem-and-apt-get-autoremove/
-* http://tanguy.ortolo.eu/blog/article8/uninstall-meta-package
-* https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=942303
+The underlying technical issues with meta packages are not caused by {{project_name}}, but instead have been inherited from Debian. Those are also described here:
 
-About meta packages:
+* [https://administratosphere.wordpress.com/2011/11/29/the-metapackage-problem-and-apt-get-autoremove/ The Metapackage Problem and apt-get autoremove]
+* [https://tanguy.ortolo.eu/blog/article8/uninstall-meta-package Uninstalling a single component of a meta-package]
+* [https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=942303 Debian bug report: Weak-Depends - something in the middle between 'Recommends:' and 'Depends:']
 
-* https://www.debian.org/doc/manuals/developers-reference/best-pkging-practices.html#bpp-meta
+The Debian manual also provides further information about meta packages:
 
-{{project name}} build script installs all packages using <code>apt-get --no-install-recommends</code>. <ref>
+* [https://www.debian.org/doc/manuals/developers-reference/best-pkging-practices.html#bpp-meta Best practices for meta-packages] 
+
+The {{project name}} build script installs all packages using <code>apt-get --no-install-recommends</code>. <ref>
 Function <code>pkg-install-maybe</code> in https://github.com/{{project_name_short}}/{{project_name_short}}/blob/master/build-steps.d/1700_install-packages#L97.
-</ref> The <code>--no-install-recommends</code> option is being used to prevent installation of lots of packages we do not want to install. For example, <code>anon-workstation-default-applications</code> <code>Depends: gwenview</code>, which <code>Recommends: kamera</code>. Without using <code>--no-install-recommends</code>, we would also install <code>kamera</code>, which would then pull its own <code>Depends:</code> as well. <code>kamera</code> [+ dependencies] would not be useful to have installed by default on {{workstation_product_name}}. Would cost unnecessary disk space. And there are more examples. We might even end up installing packages by default we do not recommend privacy reasons.
+</ref> The <code>--no-install-recommends</code> option is being used to prevent installation of many additional packages that are unwanted. For example:
+* <code>anon-workstation-default-applications</code> <code>Depends: gwenview</code>.
+* gwenview <code>Recommends: kamera</code>. 
+* Without using <code>--no-install-recommends</code>, <code>kamera</code> would also be installed and then pull its own <code>Depends:</code> as well. 
+* <code>kamera</code> [+ dependencies] would not be useful to have installed by default on {{workstation_product_name}} as it would cost unnecessary disk space. There are many more examples which could end up installing packages by default that are unrecommended for privacy reasons.
 
-Since we do use the <code>--no-install-recommends</code> option, meta packages such as <code>anon-workstation-default-applications</code> must use the <code>Depends:</code> field and cannot use the <code>Recommends:</code> field. (Since no packages would be installed then.)
+Since the <code>--no-install-recommends</code> option is used, meta packages like <code>anon-workstation-default-applications</code> must use the <code>Depends:</code> field and cannot use the <code>Recommends:</code> field. (Since no packages would be installed then.)
 
-Even if we could use and did use <code>Recommends:</code> field, new packages added to the <code>Recommends:</code> field would not be installed when the meta package that <code>Recommends:</code> them gets upgraded. This is because packages listed after the <code>Recommends:</code> field only get installed during their initial <code>sudo apt-get install package-name</code> installation.
+Even if {{project_name}} could and did use the <code>Recommends:</code> field, new packages added to the <code>Recommends:</code> field would not be installed when the meta package that <code>Recommends:</code> them gets upgraded. This is because packages listed after the <code>Recommends:</code> field only get installed during their initial <code>sudo apt-get install package-name</code> installation.
 
-You might notice that even though having said this, <code>anon-meta-packages</code>'s <code>debian/control</code> file uses the <code>Recommends:</code> field anyway. This is not a contradiction. It may be useful for a later [[Dev/Installation_from_Repository|{{project_name}} installation from {{project_name}} repository]] use case.
+Some readers might notice that despite this explanation, <code>anon-meta-packages</code>'s <code>debian/control</code> file uses the <code>Recommends:</code> field anyway. This is not a contradiction because it may be useful for a later [[Dev/Installation_from_Repository|{{project_name}} installation from {{project_name}} repository]] use case.
 
 Forum discussion:<br />
-[https://forums.whonix.org/t/issues-with-removal-of-specific-packages-by-users-builders issues with removal of specific packages by users / builders]
+[https://forums.whonix.org/t/issues-with-removal-of-specific-packages-by-users-builders Issues with removal of specific packages by users / builders]
 
 = See Also =
 * [[Configuration_Files|modular flexible <code>.d</code> style configuration folders]]
