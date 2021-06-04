@@ -51,11 +51,11 @@ Many features within the kernel are designed to allow the root user to modify ke
 * <code>CONFIG_DEVPORT=n</code> - <code>/dev/port</code>. <ref>https://linux.die.net/man/4/mem</ref>
 * <code>CONFIG_LIVEPATCH=n</code> - Livepatching. <ref>https://www.kernel.org/doc/html/latest/livepatch/livepatch.html</ref>
 * <code>CONFIG_KEXEC=n</code> - kexec. <ref>https://en.wikipedia.org/wiki/Kexec</ref>
-* <code>CONFIG_KPROBES=n</code> - kprobes. <ref>https://www.kernel.org/doc/html/latest/trace/kprobes.html</ref>
-* <code>CONFIG_FTRACE=n</code> - ftrace. <ref>https://www.kernel.org/doc/html/latest/trace/ftrace.html</ref>
 * <code>CONFIG_X86_MSR=n</code> - CPU MSRs. <ref>https://en.wikipedia.org/wiki/Model-specific_register</ref>
 * <code>CONFIG_ACPI_TABLE_UPGRADE=n</code> - ACPI table upgrading. <ref>https://www.kernel.org/doc/html/latest/admin-guide/acpi/initrd_table_override.html</ref>
 * <code>CONFIG_HIBERNATION=n</code> - Hibernation. The kernel image can be replaced during hibernation.
+
+Note that we enable <code>CONFIG_KPROBES</code>, but we still use a minimal configuration to avoid exposing attack surface to user space as other security functionality requires this, including LKRG and tirdad. <ref>https://github.com/GrapheneOS/os-issue-tracker/issues/408#issuecomment-820490823</ref>
 
 However, despite these efforts, the following remaining kernel features have been identified to still be able to modify or extract sensitive data from the kernel:
 
@@ -208,12 +208,6 @@ Both kernels disable some drivers that are unlikely to be used to cut attack sur
 * All android support is disabled as these kernels aren't meant to be used on any mobile devices.
 * Infiniband support.
 * SMC-R, "sockets over RDMA", RDMA over Converged Ethernet (RoCE)
-
-= ftrace / kprobes vs. LKRG =
-
-[https://www.kernel.org/doc/html/latest/trace/ftrace.html ftrace] and [https://www.kernel.org/doc/html/latest/trace/kprobes.html kprobes] are kernel debugging features. They allow debugging a significant amount of kernel code and can be abused by malware with root privileges to gain access to sensitive information or hook parts of the kernel code. As such, hardened kernels often have these features disabled to reduce attack surface. This includes hardened-kernel (by default), CLIP OS' kernel config, Alexander Popov's kconfig-hardening-check, grsecurity, and so on.
-
-However, [[Linux Kernel Runtime Guard LKRG]] relies on these features to implement the majority of its functionality <ref>https://github.com/openwall/lkrg/issues/27#issuecomment-746933456</ref> so there is a trade-off to disabling them. Users that wish to use hardened-kernel in combination with LKRG must compile hardened-kernel with the <code>--lkrg</code> argument to enable support for it but be aware that this may substantially increase the attack surface of the kernel. Disabling it would be deterministic attack surface reduction whereas LKRG is a probabilistic protection, i.e. it can be bypassed without too much effort if malware is aware of it. However, LKRG does cover a lot more than disabling ftrace/kprobes would. LKRG could theoretically be better but that’s assuming that it’s not bypassed in the real world. It’s hard to determine exactly which should be preferred.
 
 = Project Status =
 == Blockers before calling Whonix Users for Testing ==
