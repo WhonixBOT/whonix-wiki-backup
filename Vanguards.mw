@@ -22,6 +22,17 @@ From {{Project name}} version <code>15.0.0.8.7</code> and above, vanguards is in
 
 <blockquote>The daemon in Tor through 0.4.1.8 and 0.4.2.x through 0.4.2.6 does not verify that a rendezvous node is known before attempting to connect to it, which might make it easier for remote attackers to discover circuit information.</blockquote>
 
+Tor developers have recently developed a proposal for "Vanguards lite". This is identical to the existing proposal, except: <ref>https://lists.torproject.org/pipermail/tor-dev/2021-June/014569.html</ref>
+
+<blockquote>
+* No third layer of guards is used.
+* The Layer2 lifetime uses the max(x,x) distribution with a minimum of one day and maximum of 12 days. This makes the average lifetime approximately a week. We let NUM_LAYER2_GUARDS=4.
+* We don't write guards on disk. This means that the guard topology resets when tor restarts.
+
+By avoiding a third-layer of guards we reduce the linkability issues of Proposal 292, which means that we don't have to add an extra hop on top of our paths. This simplifies engineering.</blockquote>
+
+The technical specifications of this proposal require further consideration by developers to determine suitability for the {{project_name}} user population (since it will exist alongside standard vanguards). While removing a third-layer of guards reduces linkability risks and reduces latency, it also makes it easier to launch guard discovery attacks against clients and onion services.
+
 Also note that [https://onionbalance.readthedocs.org onionbalance] is now available for onion v3 services <ref>
 * https://github.com/DonnchaC/onionbalance/issues/69#issuecomment-58108608
 * [https://lists.torproject.org/pipermail/tor-dev/2020-January/014142.html Tor development mailing list - Request for onionbalance v3 pre-alpha testing]
