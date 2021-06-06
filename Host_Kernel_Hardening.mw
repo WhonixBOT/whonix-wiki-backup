@@ -1,1 +1,532 @@
-TODO
+<!--
+Copyright:
+   {{project name}} About wiki page Copyright (C) madaidan <https://madaidans-insecurities.github.io>
+   {{project name}} About wiki page Copyright (C) 2012 - 2021 ENCRYPTED SUPPORT LP <adrelanos@whonix.org>
+
+[...]
+-->
+<!--
+This wiki page is a fork of the [https://madaidans-insecurities.github.io/guides/linux-hardening.html Linux Hardening Guide] Kernels chapter, from this exact source: <https://madaidans-insecurities.github.io/guides/linux-hardening.html#kernel>.
+-->
+
+{{Header}}
+{{#seo:
+|description=Host Kernel Hardening
+}}
+__TOC__
+
+= Credits =
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = This material was authored by {{project_name}} developer [https://forums.whonix.org/users/madaidan/activity madaidan]. It forms the [https://madaidans-insecurities.github.io/guides/linux-hardening.html#kernel Kernels chapter] of the [https://madaidans-insecurities.github.io/guides/linux-hardening.html Linux Hardening Guide]. This material has been used with the author's permission.
+
+Readers who are interested in Linux hardening, security and privacy advice, Linux phones, browser comparisons, VPNs and other security matters are encouraged to review madaidan's articles and guides found [https://madaidans-insecurities.github.io/ here].
+}}
+
+= Introduction =
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = '''DISCLAIMER:''' Do not attempt to apply anything in this chapter if you do not know exactly what you are doing. This guide is focused purely on security and privacy, not performance, usability, or anything else.
+
+All commands listed in this chapter will require root privileges. Words beginning with <code>$</code> sign indicate a variable that may differ between users as to suit their setup.
+}} 
+
+[https://madaidans-insecurities.github.io/linux.html Linux is not a secure operating system]. However, there are steps you can take to improve it. This chapter aims to explain how to harden the Linux kernel as much as possible for security and privacy. This guide attempts to be distribution-agnostic and is not tied to any specific one.
+
+The kernel is the core of the operating system and is unfortunately very prone to attacks. As Brad Spengler has once said, [https://grsecurity.net/huawei_hksp_introduces_trivially_exploitable_vulnerability it can be thought of as the largest, most vulnerable setuid root binary on the system]. Thus, it is very important for the kernel to be hardened as much as possible.
+
+= Stable vs. LTS kernels =
+
+The Linux kernel is released under two main forms: stable and long-term support (LTS). Stable releases are more recent, whereas LTS releases are an older stable release that is being supported for a long time. [https://www.grsecurity.net/the_truth_about_linux_4_6 There are many consequences to choosing either of the aforementioned releases].
+
+The Linux kernel [https://grsecurity.net/reports_of_cves_death_greatly_exaggerated does not use CVEs to identify security vulnerabilities properly]. This means that fixes for most security vulnerabilities are not able to be backported to LTS kernels; but stable releases contain all security fixes made so far.
+
+With those fixes however, a stable kernel includes a lot more new features, therefore vastly increasing the attack surface of the kernel and introducing a large amount of new bugs. On the contrary, LTS kernels have less attack surface because these features are not being constantly added.
+
+Additionally, stable kernels include newer hardening features to mitigate certain exploits which LTS kernels do not. A few examples of such features are the [https://mjg59.dreamwidth.org/55105.html Lockdown LSM] and [https://a13xp0p0v.github.io/2018/11/04/stackleak.html STACKLEAK GCC plugin].
+
+To conclude, there is a trade-off when choosing a stable or LTS kernel. LTS kernels have less hardening features and not all public bug fixes at that point have been backported, but it generally has less attack surface and potentially a smaller chance of introducing unknown bugs. Stable kernels have more hardening features and all known bug fixes are included but it also has more attack surface and greater chances of introducing more unknown bugs. In the end though, a more recent LTS branch such as the 4.19 kernel would be preferred due to the much smaller attack surface.
+
+= Sysctl =
+
+Sysctl is a tool that allows the user to configure certain kernel settings and enable various security features or disable dangerous features to reduce attack surface. To change settings temporarily you can execute:
+
+{{CodeSelect|code=
+sysctl -w $tunable = $value
+}}
+
+To change sysctls permanently you can add the one you want to change to <code>/etc/sysctl.conf</code> or the corresponding files within <code>/etc/sysctl.d</code>, depending on your Linux distribution.
+
+The following are the recommended sysctl settings that you should change. 
+
+== Kernel Self-protection ==
+
+{{CodeSelect|code=
+kernel.kptr_restrict=2
+}}
+
+A kernel pointer points to a specific location in kernel memory. [https://kernsec.org/wiki/index.php/Bug_Classes/Kernel_pointer_leak These can be very useful in exploiting the kernel] but kernel pointers are not hidden by default — it is easy to uncover them by, for example, reading the contents of <code>/proc/kallsyms</code>. This setting aims to mitigate kernel pointer leaks. Alternatively, you can set <code>kernel.kptr_restrict=1</code> to only hide kernel pointers from processes without the CAP_SYSLOG [https://madaidans-insecurities.github.io/guides/linux-hardening.html#capabilities capability].
+-----
+{{CodeSelect|code=
+kernel.dmesg_restrict=1
+}}
+
+[https://en.wikipedia.org/wiki/Dmesg dmesg] is the kernel log. It exposes a large amount of useful kernel debugging information but this can often leak sensitive information such as kernel pointers. Changing the above sysctl restricts the kernel log to the CAP_SYSLOG [https://madaidans-insecurities.github.io/guides/linux-hardening.html#capabilities capability].
+-----
+{{CodeSelect|code=
+kernel.printk=3 3 3 3
+}}
+
+Despite the value of <code>dmesg_restrict</code>, the kernel log will still be displayed in the console during boot. Malware that is able to record the screen during boot may be able to abuse this to gain higher privileges. This option prevents those information leaks. This must be used in combination with certain boot parameters [https://madaidans-insecurities.github.io/guides/linux-hardening.html#boot-kernel described below] to be fully effective.
+-----
+{{CodeSelect|code=
+kernel.unprivileged_bpf_disabled=1
+net.core.bpf_jit_harden=2
+}}
+
+[https://madaidans-insecurities.github.io/linux.html#kernel eBPF exposes quite large attack surface]. As such, it must be restricted. These sysctls restrict eBPF to the CAP_BPF [https://madaidans-insecurities.github.io/guides/linux-hardening.html#capabilities capability] (CAP_SYS_ADMIN on kernel versions prior to 5.8) and enable JIT hardening techniques such as [https://github.com/torvalds/linux/blob/9e4b0d55d84a66dbfede56890501dc96e696059c/include/linux/filter.h#L1039-L1070 constant blinding].
+-----
+{{CodeSelect|code=
+dev.tty.ldisc_autoload=0
+}}
+
+This [https://lkml.org/lkml/2019/4/15/890 restricts loading TTY line disciplines] to the CAP_SYS_MODULE [https://madaidans-insecurities.github.io/guides/linux-hardening.html#capabilities capability] to prevent unprivileged attackers from loading vulnerable line disciplines with the TIOCSETD ioctl which [https://a13xp0p0v.github.io/2017/03/24/CVE-2017-2636.html has been abused in a number of exploits before].
+-----
+{{CodeSelect|code=
+vm.unprivileged_userfaultfd=0
+}}
+
+The [https://man7.org/linux/man-pages/man2/userfaultfd.2.html userfaultfd()] syscall is [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=cefdca0a86be517bc390fc4541e3674b8e7803b0 often] [https://duasynt.com/blog/linux-kernel-heap-spray abused] to exploit use-after-free flaws. Due to this, this sysctl is used to restrict this syscall to the CAP_SYS_PTRACE [https://madaidans-insecurities.github.io/guides/linux-hardening.html#capabilities capability].
+-----
+{{CodeSelect|code=
+kernel.kexec_load_disabled=1
+}}
+
+[https://en.wikipedia.org/wiki/Kexec kexec is a system call that is used to boot another kernel during runtime]. This functionality can be abused to load a malicious kernel and gain arbitrary code execution in kernel mode so this sysctl disables it.
+-----
+{{CodeSelect|code=
+kernel.sysrq=4
+}}
+
+The [https://www.kernel.org/doc/html/latest/admin-guide/sysrq.html SysRq key] exposes a lot of potentially dangerous debugging functionality to unprivileged users. Contrary to common assumptions, SysRq is not only an issue for physical attacks as [https://github.com/xairy/unlockdown it can also be triggered remotely]. The value of this sysctl makes it so that a user can only use the [https://www.kernel.org/doc/Documentation/SAK.txt secure attention key] which will be necessary for [https://madaidans-insecurities.github.io/guides/linux-hardening.html#accessing-root-securely accessing root securely]. Alternatively, you can simply set the value to <code>0</code> to disable SysRq completely.
+-----
+{{CodeSelect|code=
+kernel.unprivileged_userns_clone=0
+}}
+
+User namespaces are a feature in the kernel which aim to improve sandboxing and make it easily accessible for unprivileged users however, [https://madaidans-insecurities.github.io/linux.html#kernel this feature exposes significant kernel attack surface for privilege escalation] so this sysctl restricts the usage of user namespaces to the CAP_SYS_ADMIN [https://madaidans-insecurities.github.io/guides/linux-hardening.html#capabilities capability]. For unprivileged sandboxing, it is instead recommended to use a setuid binary with little attack surface to minimise the potential for privilege escalation. This topic is covered further in the [https://madaidans-insecurities.github.io/guides/linux-hardening.html#application-sandboxing sandboxing section].
+
+Be aware though that this sysctl only exists on certain Linux distributions as it requires a kernel patch. If your kernel does not include this patch, you can alternatively disable user namespaces completely (including for root) by setting <code>user.max_user_namespaces=0</code>.
+-----
+{{CodeSelect|code=
+kernel.perf_event_paranoid=3
+}}
+
+Performance events [https://lore.kernel.org/kernel-hardening/1469630746-32279-1-git-send-email-jeffv@google.com/ add considerable kernel attack surface and have caused abundant vulnerabilities]. This sysctl restricts all usage of performance events to the CAP_PERFMON [https://madaidans-insecurities.github.io/guides/linux-hardening.html#capabilities capability] (CAP_SYS_ADMIN on kernel versions prior to 5.8).
+
+Be aware that this sysctl also requires a kernel patch that is only available on certain distributions. Otherwise, this setting is equivalent to <code>kernel.perf_event_paranoid=2</code> which [https://www.kernel.org/doc/html/latest/admin-guide/perf-security.html#unprivileged-users only restricts a subset of this functionality]. 
+
+== Network ==
+
+{{CodeSelect|code=
+net.ipv4.tcp_syncookies=1
+}}
+
+This helps protect against [https://en.wikipedia.org/wiki/SYN_flood SYN flood attacks] which are a form of denial of service attack in which an attacker sends a large amount of bogus SYN requests in an attempt to consume enough resources to make the system unresponsive to legitimate traffic.
+-----
+{{CodeSelect|code=
+net.ipv4.tcp_rfc1337=1
+}}
+
+This protects against [https://tools.ietf.org/html/rfc1337 time-wait assassination] by dropping RST packets for sockets in the time-wait state.
+-----
+{{CodeSelect|code=
+net.ipv4.conf.all.rp_filter=1
+net.ipv4.conf.default.rp_filter=1
+}}
+
+These enable source validation of packets received from all interfaces of the machine. This protects against [https://en.wikipedia.org/wiki/IP_address_spoofing IP spoofing] in which an attacker sends a packet with a fraudulent IP address.
+-----
+{{CodeSelect|code=
+net.ipv4.conf.all.accept_redirects=0
+net.ipv4.conf.default.accept_redirects=0
+net.ipv4.conf.all.secure_redirects=0
+net.ipv4.conf.default.secure_redirects=0
+net.ipv6.conf.all.accept_redirects=0
+net.ipv6.conf.default.accept_redirects=0
+net.ipv4.conf.all.send_redirects=0
+net.ipv4.conf.default.send_redirects=0
+}}
+
+These disable ICMP redirect acceptance and sending to [https://askubuntu.com/questions/118273/what-are-icmp-redirects-and-should-they-be-blocked prevent man-in-the-middle attacks] and minimise information disclosure.
+-----
+{{CodeSelect|code=
+net.ipv4.icmp_echo_ignore_all=1
+}}
+
+This setting makes your system ignore all ICMP requests to avoid [https://en.wikipedia.org/wiki/Smurf_attack Smurf attacks], make the device more difficult to enumerate on the network and [https://madaidans-insecurities.github.io/guides/linux-hardening.html#icmp-timestamps prevent clock fingerprinting through ICMP timestamps].
+-----
+{{CodeSelect|code=
+net.ipv4.conf.all.accept_source_route=0
+net.ipv4.conf.default.accept_source_route=0
+net.ipv6.conf.all.accept_source_route=0
+net.ipv6.conf.default.accept_source_route=0
+}}
+
+[https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/security_guide/sect-security_guide-server_security-disable-source-routing Source routing is a mechanism that allows users to redirect network traffic]. As this can be used to perform man-in-the-middle attacks in which the traffic is redirected for nefarious purposes, the above settings disable this functionality.
+-----
+{{CodeSelect|code=
+net.ipv6.conf.all.accept_ra=0
+net.ipv6.conf.default.accept_ra=0
+}}
+
+Malicious IPv6 router advertisements [https://tools.cisco.com/security/center/resources/ipv6_first_hop can result in a man-in-the-middle attack] so they should be disabled.
+-----
+{{CodeSelect|code=
+net.ipv4.tcp_sack=0
+net.ipv4.tcp_dsack=0
+net.ipv4.tcp_fack=0
+}}
+
+This disables [https://tools.ietf.org/html/rfc2018 TCP SACK]. SACK is [https://github.com/Netflix/security-bulletins/blob/master/advisories/third-party/2019-001.md commonly exploited] and [https://serverfault.com/questions/10955/when-to-turn-tcp-sack-off unnecessary for many circumstances] so it should be disabled if you don't require it. 
+
+== User Space ==
+
+{{CodeSelect|code=
+kernel.yama.ptrace_scope=2
+}}
+
+[https://www.kernel.org/doc/html/latest/admin-guide/LSM/Yama.html ptrace is a system call that allows a program to alter and inspect another running process] which allows attackers to trivially modify the memory of other running programs. This restricts usage of ptrace to only processes with the CAP_SYS_PTRACE [https://madaidans-insecurities.github.io/guides/linux-hardening.html#capabilities capability]. Alternatively, set the sysctl to 3 to disable ptrace entirely.
+-----
+{{CodeSelect|code=
+vm.mmap_rnd_bits=32
+vm.mmap_rnd_compat_bits=16
+}}
+
+[https://en.wikipedia.org/wiki/Address_space_layout_randomization ASLR] is a common exploit mitigation which randomises the position of critical parts of a process in memory. This can make a wide variety of exploits harder to pull off as they first require an information leak. The above settings increase the bits of entropy used for mmap ASLR, improving its effectiveness.
+
+The values of these sysctls must be set in relation to the CPU architecture. The above values are compatible with x86 but other architectures may differ.
+-----
+{{CodeSelect|code=
+fs.protected_symlinks=1
+fs.protected_hardlinks=1
+}}
+
+This only permits symlinks to be followed when outside of a world-writable sticky directory, when the owner of the symlink and follower match, or when the directory owner matches the symlink's owner. This also prevents hardlinks from being created by users that do not have read/write access to the source file. Both of these prevent many common [https://en.wikipedia.org/wiki/Time-of-check_to_time-of-use TOCTOU races].
+-----
+{{CodeSelect|code=
+fs.protected_fifos=2
+fs.protected_regular=2
+}}
+
+These [https://github.com/torvalds/linux/commit/30aba6656f61ed44cba445a3c0d38b296fa9e8f5 prevent creating files in potentially attacker-controlled environments] such as world-writable directories to make data spoofing attacks more difficult. 
+
+= Boot Parameters =
+
+Boot parameters pass settings to the kernel at boot using your bootloader. Some settings can be used to increase security, similar to sysctl. Bootloaders often differ in how boot parameters are set. A few examples are listed below but you should research the required steps for your specific bootloader.
+
+If using GRUB as your bootloader, edit <code>/etc/default/grub</code> and add your parameters to the GRUB_CMDLINE_LINUX_DEFAULT= line.
+
+If using Syslinux, edit <code>/boot/syslinux/syslinux.cfg</code> and add them to the APPEND line.
+
+If using systemd-boot, edit your loader entry and append them to the end of the linux line.
+
+The following settings are recommended to increase security. 
+
+== Kernel Self-protection ==
+
+{{CodeSelect|code=
+slab_nomerge
+}}
+
+This disables slab merging which significantly increases the difficulty of heap exploitation by [https://www.openwall.com/lists/kernel-hardening/2017/06/19/33 preventing overwriting objects from merged caches] and by [https://www.openwall.com/lists/kernel-hardening/2017/06/20/10 making it harder to influence slab cache layout].
+-----
+{{CodeSelect|code=
+slub_debug=FZ
+}}
+
+These enable [https://www.kernel.org/doc/html/latest/vm/slub.html sanity checks (F) and redzoning (Z)]. Sanity checks add various checks to prevent corruption in certain slab operations. Redzoning adds extra areas around slabs that detect when a slab is overwritten past its real size which can help detect overflows.
+-----
+{{CodeSelect|code=
+init_on_alloc=1 init_on_free=1
+}}
+
+This enables [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=6471384af2a6530696fc0203bafe4de41a23c9ef zeroing of memory during allocation and free time] which can help mitigate use-after-free vulnerabilities and erase sensitive information in memory.
+
+If your kernel version is lower than 5.3, then these options do not exist. Instead, append "P" to the above <code>slub_debug</code> option to get <code>slub_debug=FZP</code> and also add <code>page_poison=1</code>. These offer a weaker form of memory erasure upon deallocation since they are actually a debugging feature that just happens to have some security benefits.
+-----
+{{CodeSelect|code=
+page_alloc.shuffle=1
+}}
+
+This option [https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=e900a918b0984ec8f2eb150b8477a47b75d17692 randomises page allocator freelists], improving security by making page allocations less predictable. This also ''improves'' performance.
+-----
+{{CodeSelect|code=
+pti=on
+}}
+
+This enables [https://en.wikipedia.org/wiki/Kernel_page-table_isolation Kernel Page Table Isolation] which mitigates Meltdown and prevents some KASLR bypasses.
+-----
+{{CodeSelect|code=
+vsyscall=none
+}}
+
+This disables [https://lwn.net/Articles/446528/ vsyscalls] as they are obsolete and have been replaced with [https://en.wikipedia.org/wiki/VDSO vDSO]. vsyscalls are also at fixed addresses in memory, making them a potential target for ROP attacks.
+-----
+{{CodeSelect|code=
+debugfs=off
+}}
+
+This disables debugfs which [https://lkml.org/lkml/2020/7/16/122 exposes a lot of sensitive information about the kernel].
+-----
+{{CodeSelect|code=
+oops=panic
+}}
+
+Sometimes certain kernel exploits will cause what is known as an [https://en.wikipedia.org/wiki/Linux_kernel_oops "oops"]. This parameter will cause the kernel to panic on such oopses, thereby preventing those exploits. However, sometimes bad drivers cause harmless oopses which would result in your system crashing, meaning this boot parameter can only be used on certain hardware.
+-----
+{{CodeSelect|code=
+module.sig_enforce=1
+}}
+
+This only allows kernel modules that have been signed with a valid key to be loaded which increases security by making it much harder to load a malicious kernel module. This prevents all out-of-tree kernel modules, including DKMS modules from being loaded [https://www.kernel.org/doc/html/latest/admin-guide/module-signing.html unless you have signed them], meaning that modules such as the VirtualBox or Nvidia drivers may not be usable, although that may not be important, depending on your setup.
+-----
+{{CodeSelect|code=
+lockdown=confidentiality
+}}
+
+The [https://mjg59.dreamwidth.org/55105.html kernel lockdown LSM] can eliminate many methods that user space code could abuse to escalate to kernel privileges and extract sensitive information. This LSM is necessary to implement a clear security boundary between user space and the kernel. The above option enables this feature in confidentiality mode, the strictest option. This implies <code>module.sig_enforce=1</code>.
+-----
+{{CodeSelect|code=
+mce=0
+}}
+
+This causes the kernel to panic on uncorrectable errors in ECC memory which could be exploited. This is unnecessary for systems without ECC memory.
+-----
+{{CodeSelect|code=
+quiet loglevel=0
+}}
+
+These parameters prevent information leaks during boot and must be used in combination with the <code>kernel.printk</code> sysctl [https://madaidans-insecurities.github.io/guides/linux-hardening.html#sysctl-kernel documented above]. 
+
+== CPU Mitigations ==
+
+It is best to enable all CPU mitigations that are applicable to your CPU as to ensure that you are not affected by known vulnerabilities. This is a list that enables all built-in mitigations:
+
+{{CodeSelect|code=
+spectre_v2=on spec_store_bypass_disable=on tsx=off tsx_async_abort=full,nosmt mds=full,nosmt l1tf=full,force nosmt=force kvm.nx_huge_pages=force
+}}
+
+You must research the CPU vulnerabilities that your system is affected by and apply a selection of the above mitigations accordingly. Keep in mind that you will need to [https://madaidans-insecurities.github.io/guides/linux-hardening.html#microcode install microcode updates] to be fully protected from these vulnerabilities. All of these may cause a significant performance decrease. 
+
+== Result ==
+
+If you have followed all of the above recommendations, excluding your specific CPU mitigations, you will have:
+
+{{CodeSelect|code=
+slab_nomerge slub_debug=FZ init_on_alloc=1 init_on_free=1 page_alloc.shuffle=1 pti=on vsyscall=none debugfs=off oops=panic module.sig_enforce=1 lockdown=confidentiality mce=0 quiet loglevel=0
+}}
+
+You may need to [https://madaidans-insecurities.github.io/guides/linux-hardening.html#regenerate-grub-config regenerate your GRUB configuration file] to apply these if using GRUB as your bootloader. 
+
+= hidepid =
+
+<code>/proc</code> is a pseudo-filesystem that contains information about all processes currently running on the system. By default this is accessible to all users which can allow an attacker to spy on other processes. To permit users to only see their own processes and not those of other users, you must mount <code>/proc</code> with the <code>hidepid=2,gid=proc</code> mount options. <code>gid=proc</code> exempts the <code>proc</code> group from this feature so you can whitelist specific users or processes. One way to add these mount options is to edit <code>/etc/fstab</code> and add:
+
+{{CodeSelect|code=
+proc /proc proc nosuid,nodev,noexec,hidepid=2,gid=proc 0 0
+}}
+
+systemd-logind still needs to see other users' processes so, for user sessions to work correctly on a systemd system, you must create <code>/etc/systemd/system/systemd-logind.service.d/hidepid.conf</code> and add:
+
+{{CodeSelect|code=
+[Service]
+SupplementaryGroups=proc
+}}
+
+= Kernel Attack Surface Reduction =
+
+It is best to disable any functionality that is not absolutely required as to minimise potential kernel attack surface. These features do not necessarily have to be dangerous, they could simply be benign code that is removed to reduce attack surface. Never disable random things that you don't understand. The following are some examples that may be of use, depending on your setup. 
+
+== Boot Parameters ==
+
+Boot parameters can often be used to reduce attack surface. One such example is:
+
+{{CodeSelect|code=
+ipv6.disable=1
+}}
+
+This disables the entire IPv6 stack which may not be required if you have not migrated to it. Do not use this boot parameter if you are using IPv6. 
+
+== Blacklisting Kernel Modules ==
+
+The kernel allows unprivileged users to indirectly cause certain modules to be loaded via module auto-loading. This allows an attacker to auto-load a vulnerable module which is then exploited. One such example is [https://github.com/xairy/kernel-exploits/tree/master/CVE-2017-6074 CVE-2017-6074], in which an attacker could trigger the DCCP kernel module to be loaded by initiating a DCCP connection and then exploit a vulnerability in said kernel module.
+
+Specific kernel modules can be blacklisted by inserting files into <code>/etc/modprobe.d</code> with instructions on which kernel modules to blacklist.
+
+The <code>install</code> parameter tells <code>modprobe</code> to run a specific command instead of loading the module as normal. <code>/bin/false</code> is a command that simply returns <code>1</code> which will essentially do nothing. Both of these together tells the kernel to run <code>/bin/false</code> instead of loading the module which will prevent the module from being exploited by attackers. The following are kernel modules that are most likely to be unnecessary:
+
+{{CodeSelect|code=
+install dccp /bin/false
+install sctp /bin/false
+install rds /bin/false
+install tipc /bin/false
+install n-hdlc /bin/false
+install ax25 /bin/false
+install netrom /bin/false
+install x25 /bin/false
+install rose /bin/false
+install decnet /bin/false
+install econet /bin/false
+install af_802154 /bin/false
+install ipx /bin/false
+install appletalk /bin/false
+install psnap /bin/false
+install p8023 /bin/false
+install p8022 /bin/false
+install can /bin/false
+install atm /bin/false
+}}
+
+Obscure networking protocols in particular add considerable remote attack surface. This blacklists:
+
+* DCCP — Datagram Congestion Control Protocol
+* SCTP — Stream Control Transmission Protocol
+* RDS — Reliable Datagram Sockets
+* TIPC — Transparent Inter-process Communication
+* HDLC — High-Level Data Link Control
+* AX25 — Amateur X.25
+* NetRom
+* X25
+* ROSE
+* DECnet
+* Econet
+* af_802154 — IEEE 802.15.4
+* IPX — Internetwork Packet Exchange
+* AppleTalk
+* PSNAP — Subnetwork Access Protocol
+* p8023 — Novell raw IEEE 802.3
+* p8022 — IEEE 802.2
+* CAN — Controller Area Network
+* ATM
+-----
+{{CodeSelect|code=
+install cramfs /bin/false
+install freevxfs /bin/false
+install jffs2 /bin/false
+install hfs /bin/false
+install hfsplus /bin/false
+install squashfs /bin/false
+install udf /bin/false
+}}
+
+This blacklists various rare filesystems.
+-----
+{{CodeSelect|code=
+install cifs /bin/true
+install nfs /bin/true
+install nfsv3 /bin/true
+install nfsv4 /bin/true
+install gfs2 /bin/true
+}}
+
+Network filesystems can also be blacklisted if not in use.
+-----
+{{CodeSelect|code=
+install vivid /bin/false
+}}
+
+The [https://www.kernel.org/doc/html/v4.12/media/v4l-drivers/vivid.html vivid driver] is only useful for testing purposes and [https://www.openwall.com/lists/oss-security/2019/11/02/1 has been the cause of privilege escalation vulnerabilities] so it should be disabled.
+-----
+{{CodeSelect|code=
+install bluetooth /bin/false
+install btusb /bin/false
+}}
+
+This disables Bluetooth which [https://en.wikipedia.org/wiki/Bluetooth#History_of_security_concerns has a history of security issues].
+-----
+{{CodeSelect|code=
+install uvcvideo /bin/false
+}}
+
+This disables the webcam to prevent it from being used to spy on you.
+
+You can also blacklist the microphone module however, this can differ from system to system. To find the name of the module, look in <code>/proc/asound/modules</code> and blacklist it. For example, one such module is <code>snd_hda_intel</code>.
+
+Be aware though that sometimes the kernel module for the microphone is the same as the module for the speaker. This means that disabling the microphone like this may also inadvertently disable any speakers. Although [https://arxiv.org/ftp/arxiv/papers/1611/1611.07350.pdf speakers can potentially be turned into microphones too] so this isn't necessarily a negative outcome.
+
+It would be preferred to physically remove these devices or, at the very least, disable them in the BIOS / UEFI. Disabling the kernel modules is not as effective. 
+
+== rfkill ==
+
+Wireless devices can be blacklisted through <code>rfkill</code> to reduce remote attack surface further. To blacklist all wireless devices, execute:
+
+{{CodeSelect|code=
+rfkill block all
+}}
+
+WiFi can be unblocked with:
+
+{{CodeSelect|code=
+rfkill unblock wifi
+}}
+
+On systems using systemd, [https://www.freedesktop.org/software/systemd/man/systemd-rfkill.service.html rfkill persists across sessions] however, on systems using a different init system, you may have to create an init script to execute these commands upon boot. 
+
+= Other Kernel Pointer Leaks =
+
+Previous sections have prevented some kernel pointer leaks but [https://github.com/jonoberheide/ksymhunter there are still a few more].
+
+On the filesystem, there exists the kernel images and System.map files in <code>/boot</code>. There is also other sensitive kernel information in the <code>/usr/src</code> and <code>/{,usr/}lib/modules</code> directories. [https://madaidans-insecurities.github.io/guides/linux-hardening.html#file-permissions You should restrict the file permissions of these directories to make them only readable by the root user]. You should also delete the System.map files as they are not required for anything except advanced debugging.
+
+Additionally, certain logging daemons such as systemd's <code>journalctl</code> include the kernel logs which can be used to bypass the above <code>dmesg_restrict</code> protection. Removing the user from the adm group is often sufficient to revoke access to these logs:
+
+{{CodeSelect|code=
+gpasswd -d $user adm
+}}
+
+= Restricting access to sysfs =
+
+[https://www.kernel.org/doc/html/latest/filesystems/sysfs.html sysfs] is a pseudo-filesystem which provides large quantities of kernel and hardware information. It is commonly mounted at <code>/sys</code>. sysfs has been the cause of [https://www.openwall.com/lists/kernel-hardening/2017/10/05/5 numerous information leaks, particularly of kernel pointers]. Whonix's [https://github.com/Whonix/security-misc security-misc package] includes the [https://github.com/Whonix/security-misc/blob/master/usr/lib/security-misc/hide-hardware-info hide-hardware-info script] which restricts access to this directory as well as a few in <code>/proc</code> in an attempt to hide potential hardware identifiers and prevent kernel pointer leaks. This script is configurable and allows [[Security-misc#Restrict_Hardware_Information_to_Root|whitelisting specific applications based on groups]]. It is recommended to apply this and make it execute on boot with an init script. For example, [https://github.com/Whonix/security-misc/blob/master/lib/systemd/system/hide-hardware-info.service this is a systemd service to do so].
+
+For basic functionality to work on systems using systemd, you must whitelist a few system services. This can be done by creating <code>/etc/systemd/system/user@.service.d/sysfs.conf</code> and adding:
+
+{{CodeSelect|code=
+[Service]
+SupplementaryGroups=sysfs
+}}
+
+This will not fix everything though. Many applications may still break and it is up to you to whitelist them properly. 
+
+= linux-hardened =
+
+Certain distributions such as Arch Linux include a [https://www.archlinux.org/packages/extra/x86_64/linux-hardened/ hardened kernel package]. This contains many hardening patches and a more security-conscious kernel configuration. It is recommended to install this if possible.
+
+= Grsecurity =
+
+[https://www.archlinux.org/packages/extra/x86_64/linux-hardened/  Grsecurity] is a set of kernel patches that can massively increase kernel security. These patches used to be freely available but [https://grsecurity.net/passing_the_baton are now commercial and must be purchased]. If it is available, then it is highly recommended that you get it. Grsecurity offers state-of-the-art kernel and user space protections.
+
+= Linux Kernel Runtime Guard =
+
+[https://www.openwall.com/lkrg/ Linux Kernel Runtime Guard (LKRG)] is a kernel module which ensures kernel integrity at runtime and detects exploits. It can kill entire classes of kernel exploits; but it is not a perfect mitigation as [https://github.com/milabs/lkrg-bypass LKRG is bypassable by design]. It is only suitable for off-the-shelf malware. However, while it is unlikely, LKRG may in itself expose new vulnerabilities like any additional kernel module.
+
+= Kernel Self-compilation =
+
+It is recommended to compile your own kernel whilst enabling as little kernel modules as possible and as many security features as possible to keep the attack surface of the kernel at an absolute minimum.
+
+In addition, apply kernel hardening patches such as [https://github.com/anthraxx/linux-hardened linux-hardened] or [https://grsecurity.net/ grsecurity] as mentioned above.
+
+Distribution-compiled kernels also have public kernel pointers / symbols which are very useful for exploits. Compiling your own kernel will give you unique kernel symbols which, along with <code>kptr_restrict</code>, <code>dmesg_restrict</code> and other hardening against kernel pointer leaks, will make it considerably harder for attackers to create exploits that rely on kernel pointer knowledge.
+
+You can take inspiration from or use Whonix's [[Hardened-kernel|hardened-kernel]] once it is complete to develop your kernel configuration. 
+
+= License =
+
+{{License_madaidan|{{FULLPAGENAME}}}}
+
+{{Footer}}
+
+[[Category:Documentation]] [[Category:Design]]
