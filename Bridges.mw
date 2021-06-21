@@ -374,6 +374,39 @@ Using bridge users' traffic to mask your own onion service traffic is difficult 
 
 In order to implement a similar defense using a Snowflake proxy (as opposed to a bridge), a custom client needs to be written that would encapsulate your Tor traffic and send it through a TCP WebSocket connection to the Snowflake bridge. This measure is ineffective for the same reasons bridge cover traffic is not. For other traffic to provide effective cover, client traffic needs to be mixed with concurrent, relayed Tor relay traffic; this may require a relatively high speed main network relay to be in use frequently enough to help. Note that website fingerprinting of client traffic is not a severe enough threat to warrant this type of defense for clearnet-destined tor traffic, but it is helpful to protect against end-to-end correlation attacks. <ref>https://lists.torproject.org/pipermail/tor-dev/2020-January/014127.html</ref> <ref>https://2019.www.torproject.org/docs/faq.html.en#BetterAnonymity</ref>
 
+== Active Probing ==
+
+Various jurisdictions utilize active probing in order to block circumvention proxies, including different versions of Tor and the detection and blocking of bridges. Perhaps the most infamous example is the probing system used by the "Great Firewall of China" (GFW). The Tor Project first began exploring this issue in [https://trac.torproject.org/projects/tor/ticket/4185 October 2011]. At that time it was discovered that:
+<ref name=bridges_block>https://blog.torproject.org/knock-knock-knockin-bridges-doors</ref>
+<blockquote>...connections to US-based Tor bridge relays were being regularly cut off after a very short period of time. At the time we performed some basic experimentation and discovered that Chinese IPs (presumably at the behest of the Great Firewall of China, or GFW) would reach out to the US-based bridge and connect to it shortly after the Tor user in China connected, and, if successful, shortly thereafter the connection would be blocked by the GFW. There wasn't time for a detailed investigation and analysis at the time, but that kernel eventually grew into the investigation detailed below. We were, however, able to determine that limiting connections to the bridge relay to only the single IP expected to be its client would, in fact, block the probes and allow the connection to remain open for an extended period (>48 hours in our testing).</blockquote>
+
+The Tor Project identified two types of probing: <ref name=bridges_block /> 
+# <u>Garbage binary probes</u>: when an SSL connection took place, arbitrary binary data was sent to the non-China side of connections originating from China to TCP port 443 (HTTPS). [https://en.wikipedia.org/wiki/Deep_packet_inspection Deep packet inspection (DPI)] was suspected because the probe occured soon after the connection was established. <ref>At that time probing did not occur when the obfsproxy or plain-text protocols were used, presumably because a SSL handshake does not take place.</ref>
+# <u>Tor probes</u>: China-based Tor clients connecting to US-based bridge relays were probed at 15 minute intervals. The bridge received probes from China-based hosts that: established a TCP connection, performed a SSL negotiation, followed by a SSL renogotiation and the building of a one-hop circuit (including a <code>BEGIN_DIR</code> cell).
+
+To prevent probing, Tor developers then responded by changing the list of supported SSL ciphers included in the "hello" packet sent to Tor clients in China. <ref>They did note that ongoing Chinese censorship efforts would require ongoing developments of new Tor protocols, handshakes and extensions, such as improved obfsproxy protocols.</ref>
+
+Further investigation of the GFW active probing system in 2015 revealed: <ref>https://blog.torproject.org/learning-more-about-gfws-active-probing-system</ref>
+* Bridges detected and blocked by the GFW remain blocked. However, a small window of opportunity was available around every 25 hours when Tor clients in China could connect to bridges.
+* TCP headers of active probes suggest the thousands of IP addresses are controlled by a single source and not independent computers.
+* The GFW also targets other circumvention systems like SoftEther and GoAgent. <ref>Suggesting the active probing system is modular in nature and can be configured to detect newer, proxy-based circumvention tools.</ref>
+* Bridges are probed by the GFW using the standard Tor protocol, as well as obfs2/3.
+* Tor probes had increased in frequency from 15 minute intervals to near real-time -- active probes emerged half a second after a bridge connection was established.
+* The GFW sensor is unable to reassemble TCP streams.
+
+In 2019, The Tor Project noted: <ref>https://blog.torproject.org/new-release-bridgedb-071</ref>
+<blockquote>When the Great Firewall's active probing attack discovered a bridge, the GFW used to block the bridge by its IP address ''and'' port, which conveniently left other transport protocols that ran on the same IP address, say obfs4, reachable. This behavior changed recently, and bridges are now blocked by their IP address. This means that a protocol that is vulnerable to the GFW’s active probing attack (e.g., vanilla Tor, fte, and obfs3) can get the entire bridge blocked—including obfs4, which is resistant to active probing! The new BridgeDB release addresses this issue by only handing out a bridge’s probing-resistant protocols if the bridge supports protocols that are both vulnerable ''and'' resistant to active probing. For example, if a bridge supports both vanilla Tor and obfs4, then we ''only'' hand obfs4 to users.</blockquote>
+
+Research suggests [http://www.cs.kau.se/philwint/scramblesuit/ ScrambleSuit] and [https://github.com/Yawning/obfs4/blob/master/doc/obfs4-spec.txt obfs4] can successfully defend against probing attacks, but their ongoing effectiveness will remain an open research question. The take-home message is that {{project_name}} users in heavily censored nations like China and Iran will require an obfs4 bridge or other probe-resistant protocols to try and circumvent censorship.
+
+For further reading on this topic, see:
+* [https://ensa.fi/active-probing/imc2015.pdf Examining How the Great Firewall Discovers Hidden Circumvention Servers]
+* [https://aaltodoc.aalto.fi/bitstream/handle/123456789/102539/master_Liubinskii_Pavel_2021.pdf?sequence=1&isAllowed=y The Great Firewall’s active probing circumvention technique with portknocking and SDN]
+* [https://medium.com/mobile-asia/demystifying-the-great-firewall-of-china-22f4a97550cc Demystifying the Great Firewall of China]
+* [https://www.usenix.org/system/files/conference/foci18/foci18-paper-dunna.pdf Analyzing China’s Blocking of Unpublished Tor Bridges]
+* [https://www.cs.kau.se/philwint/gfw/ How the Great Firewall of China is Blocking Tor]
+* [https://censorbib.nymity.ch/pdf/Frolov2020a.pdf Detecting Probe-resistant Proxies]
+
 = Footnotes =
 {{reflist|close=1}}
 
