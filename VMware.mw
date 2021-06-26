@@ -60,72 +60,123 @@ Lead {{project_name}} developer, Patrick Schleizer, has expressed serious reserv
 
 = How-to: Run {{project_name}} using VMware =
 
-Do not forget to read the [[Documentation]].
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = <br />
+* After installing {{project_name}} in VMWare, refer to existing [[Documentation]] for additional security and anonymity advice.
+* For newer, third party VMware configuration instructions, see: [https://www.youtube.com/watch?v=2kHrmJoxsJI How to Run Whonix 15 for Anonymous Web Browsing]
+}}
 
 == VMware Workstation ==
-Newer third party video:<br />
-[https://www.youtube.com/watch?v=DzLxUr33A-M How to Install {{project_name}} 13 for Anonymous Web Browsing + Review on VMware Workstation [HD]]
 
-Existing instructions:
+=== Importing Appliances ===
 
-Importing the appliances:
-* You can either import the [[Download]] version or manually build from source. 
-* Import {{gateway_product_name_short}}.ova and {{workstation_product_name_short}}.ova. 
-* Due to a VMware upstream bug, you may have to press ''retry'' when importing the .ova images (to relax the importing requirements).
+# Either import the [[Download]] version or manually build from source. 
+# Import <code>{{gateway_product_name_short}}.ova</code> and <code>{{workstation_product_name_short}}.ova</code>. 
+# Due to an upstream VMware bug, it might be necessary to press ''retry'' when importing the <code>.ova</code> images (to relax the importing requirements).
 
+=== Network Setup ===
 
-Setting up the network:
-* Connect the virtual network adapter to custom. This is important! No host-only, no NAT, no bridging! I used VMnet9 virtual network, as it wasn't used by anything else.
-* Adjust the adapters with the following settings:
-** {{gateway_product_name}} set ''network adapter'' '''2''' to custom, ''/dev/vmnet8'' (or on Windows probably: ''vmnet9'').
-** {{workstation_product_name}} set ''network adapter'' '''1''' to ''custom'', ''/dev/vmnet8'' (or on Windows probably: ''vmnet9'').
-* '''Note''': if ''vmnetX'', such as for example ''vmnet8'' is already used by the NAT adapter, do not re-use it for the custom adapter. In that case, use something else, such as ''vmnet9''.
+{{Box|text=
+'''1.''' Connect the virtual network adapter to custom. 
 
+This is important! Do not use host-only, NAT or bridging for the virtual network adapter! For example, in testing the <code>vmnet9</code> virtual network was configured because it was not used by anything else.
 
-Tweaks:
-* Due to a VMware upstream bug, VM time is not set to UTC. Set VM time to UTC, otherwise Tor might not be able to connect.
+'''2.''' Adjust the adapter settings.
+
+* <u>{{gateway_product_name}}</u>: <code>set ''network adapter'' '''2''' to custom</code> &rarr;  <code>''/dev/vmnet8'' (or on Windows probably: ''vmnet9'')</code>
+* <u>{{workstation_product_name}}</u> <code>set ''network adapter'' '''1''' to ''custom''</code> &rarr; <code>''/dev/vmnet8'' (or on Windows probably: ''vmnet9'')</code>
+
+<u>Note</u>: if ''vmnetX'' -- for example <code>vmnet8</code> -- is already in use by the NAT adapter, do not re-use it for the custom adapter. In that case, utilize something else like <code>vmnet9</code>.
+
+'''3.''' Adjust time settings.
+
+Due to an upstream VMware bug, the VM time is not set to UTC. Manually make this change, otherwise Tor connections might fail.
+}}
 
 == VMware ESX(i) ==
-Importing the .ova templates will simply not work. ESX(i) will not recognize the hardware family.
-However, there are workarounds, either extracting the .ova and editing the .ovf files or using VMware Workstation.
-===Importing virtual disk files===
-One way {{project_name}} can be made to run on ESXi is by extracting the .vmdk (VM virtual disk) files.
-An example can be found here<ref>https://github.com/DartNecrON/{{project_name_short}}ESXi</ref>. 
 
-Importing the appliances:
-* Create two virtual machines in ESX(i) with default settings, do not create a virtual disk for them.
-* Import both ova templates in VirtualBox, yes, VirtualBox.
-* Once they are imported, grab the .vmdk disk files from their physical location on your disk (VirtualBox has extracted them from the .ova)
-* Upload both disk files to the datastore that you are using in ESX(i)
-* Attach the disk files to the appropriate virtual machines.
+Simply importing the <code>.ova</code> templates will not work because ESX(i) will not recognize the hardware family. Existing workarounds include using VMware Workstation or extracting the <code>.ova</code> and then editing the <code>.ovf</code> files.
 
-Set the networking:
-* Make sure the {{gateway_product_name}} has '''two''' network adapters configured as a virtual machine, the {{workstation_product_name}} only '''one'''.
-* Attach the first {{gateway_product_name}} network adapter to your '''outside network vSwitch''' (this can be WAN, LAN, DMZ, ...)
-* Attach the second {{gateway_product_name}} network adapter to an '''isolated vSwitch'''. Preferably create a new vSwitch, which will be used only by {{gateway_product_name}} and {{workstation_product_name}}. '''Attach no physical NICs to this vSwitch!''' Make sure you create a new vSwitch, not simply a new portgroup. Promiscuous mode within a vSwitch might screw you over.
-* Attach the {{workstation_product_name}} network adapter to the isolated vSwitch from previous step.
+=== Importing Virtual Disk Files ===
 
-Once the machines boot, everything should come online nicely.
-'''Double check the vSwitch logic in your setup!'''
+One method of running {{project_name}} on ESXi is to extract the <code>.vmdk</code> (VM virtual disk) files; one example can be found [https://github.com/necr0n/WhonixESXi here]. 
 
+To import the appliances:
+# Create two virtual machines in ESX(i) with default settings -- do not create a virtual disk for them.
+# Import <code>{{gateway_product_name_short}}.ova</code> and <code>{{workstation_product_name_short}}.ova</code> in <u>VirtualBox</u> (this is not a typo!).
+# Once both are imported, retrive the <code>.vmdk</code> disk files from their physical location on the disk (VirtualBox extracts them from the <code>.ova</code>).
+# Upload both disk files to the datastore that is being used in ESX(i).
+# Attach the disk files to the appropriate virtual machines.
 
-===Unfinished: Alternate Workflow===
-If you prefer building from source, or the previous methods did not work, here is a method that was tested with 14.0.0.9.9, & ESXi 6.7. 
-====Build Images====
-Using a 64bit linux machine, build both gw & ws whonix flavors target raw 
+=== Network Setup ===
+
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = '''Warning:''' Double check the vSwitch logic in the following setup!
+}}
+
+# Ensure {{gateway_product_name}} has <u>two</u> network adapters configured as a virtual machine, while  {{workstation_product_name}} only has <u>one</u>.
+# Attach the first {{gateway_product_name}} network adapter to the <u>outside network vSwitch</u> (this can be WAN, LAN, DMZ etc.)
+# Attach the second {{gateway_product_name}} network adapter to an <u>isolated vSwitch</u>. Preferably create a new vSwitch which will only be used by {{gateway_product_name}} and {{workstation_product_name}}. Note: Do <u>not</u> attach physical NICs to this vSwitch! Ensure a new vSwitch is created and not simply a new portgroup. Promiscuous mode within a vSwitch might jeopardize anonymity.
+# Attach the {{workstation_product_name}} network adapter to the isolated vSwitch from the previous step.
+# Boot the machines and check online connectivity has been established.
+
+=== Alternate Workflow ===
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = These instructions are unfinished.
+}}
+
+If you prefer building from source or the previous instructions did not work, the following method was successfully tested with {{project_name}} <code>14.0.0.9.9</code> and ESX(i) <code>6.7</code>. 
+
+==== Build Images ====
+
+{{Box|text=
+'''1.''' Using a 64-bit Linux machine, build both {{gateway_product_name}} and {{workstation_product_name}} with the <code>--target raw</code> instruction. 
+
 Example build phrase: <pre> sudo ./build_whonix --flavor whonix-gateway-cli --vmsize 20G --target raw --build etc </pre>
-Use qemu-img to convert the raw images to vmdk 
-Example: <pre> qemu-img convert image.raw image.vmdk etc etc </pre>
-Move or copy the .vmdk disks to a data store on ESXi 
+
+'''2.''' Use <code>qemu-img</code> to convert the raw images to <code>vmdk</code>. 
+
+Example: <pre>qemu-img convert image.raw image.vmdk etc </pre>
+
+'''3.''' Move or copy the <code>.vmdk</code> disks to a data store on ESX(i). 
+
 Example: <pre> scp </pre> 
+}}
 
-====Create VMs====
-* From ESXi, create a new virtual switch for internal traffic. IMPORTANT: Delete the uplink by  clicking the x! Create a new port group for internal traffic using the virtual switch you just created.
-* Create a new virtual machine named {{workstation_product_name}}: Guest linux Debian 9 64bit, one network interface (change network to internal switch/portgroup), delete disk, add existing disk, select vmdk created for workstation, expand dropdown and select IDE controller. Boot the machine.
-* Create a new virtual machine named {{gateway_product_name}}: Guest linux Debian 9 64bit, two network interfaces (leave first one default, add second and change to internal switch. Delete disk, add existing disk, select .vmdk created for gateway, expand dropdown and select IDE controller. Boot the machine. Note: This machine will have no WAN access unless one of the following actions is taken: addition of static route or modification of eth0 to DHCP.
+==== Create VMs ====
 
-===Using VMWare Workstation as intermediary===
-If VMware Workstation is available, another option that works without manual extraction and repacking is to import both VMs to VMware Workstation, check that all settings are properly applied (as per the guide above) and then either export the VMs to ovf and import them on the ESXi server or, if the server is connected to the Workstation instance, migrate via VMware Workstation. This generally works out of the box, although the networking should be reviewed and isolated as per the guide above.
+{{Box|text=
+'''1.''' From ESX(i), create a new virtual switch for internal traffic. 
+
+<u>Important</u>: Delete the uplink by  clicking the <code>x</code>! Create a new port group for internal traffic using the virtual switch that was just created.
+
+'''2.''' Create a new virtual machine named {{workstation_product_name}}.
+
+<code>Guest Linux Debian 10 64-bit</code> &rarr; <code>one network interface (change network to internal switch/portgroup)</code> &rarr; <code>delete disk</code> &rarr; <code>add existing disk</code> &rarr; <code>select vmdk created for workstation</code> &rarr; <code>expand dropdown and select IDE controller</code>. 
+
+Then boot the machine.
+
+'''3.''' Create a new virtual machine named {{gateway_product_name}}.
+
+<code>Guest Linux Debian 10 64-bit</code> &rarr; <code>two network interfaces (leave first one default, add second and change to internal switch)</code> &rarr; <code>delete disk</code> &rarr; <code>add existing disk</code> &rarr; <code>select .vmdk created for gateway</code> &rarr; <code>expand dropdown and select IDE controller</code>. 
+
+Then boot the machine. 
+
+<u>Note</u>: This machine will have no WAN access unless a static route is added or <code>eth0</code> is modified to DHCP.
+}}
+
+=== Using VMWare Workstation as an Intermediary ===
+
+If VMware Workstation is available, the following method works without manual extraction and repacking:
+# Import both VMs to VMware Workstation.
+# Check all settings are properly applied as per the guide above.
+# Either export the VMs to <code>.ovf</code> and import them on the ESX(i) server, or if the server is connected to the Workstation instance, migrate via VMware Workstation. This generally works out of the box, although the networking should be reviewed and isolated as per the guide above.
 
 = Harden VMware products =
 See also [[Security Guide]] and [[Advanced_Security_Guide]].
