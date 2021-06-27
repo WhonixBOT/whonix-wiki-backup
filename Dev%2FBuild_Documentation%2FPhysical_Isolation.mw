@@ -7,6 +7,8 @@
 [[image:Digital-art-191226640.jpg|thumb]]
 {{forkme}}
 
+= Introduction =
+
 '''{{free}}'''
 
 {{mbox
@@ -21,100 +23,104 @@ https://forums.whonix.org/t/error-failed-bilding-whonix-gateway-on-physical-host
 </ref> <code>15.0.1.4.0-testers-only</code> was [https://forums.whonix.org/t/whonix-gateway-doesnt-want-to-start/9840/2 reported] to be functional.
 }}
 
-= Introduction =
-== Basic ==
-{{Other Platforms}}
+== Overview ==
 
-See also Physical Isolation [[#Security and Support Status]].
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = <br />
+* [[{{non q project name short}}|{{non q project name}}]] instructions only. 
+* [[{{q project name short}}|{{q project name}}]] see: [https://forums.whonix.org/t/physical-isolation-is-back-qubes-whonix-style Physical Isolation is back! Qubes-Whonix style]
+}}
 
-The following instructions are for [[{{non q project name short}}|{{non q project name}}]]. For [[{{q project name short}}|{{q project name}}]] see:<br />
-https://forums.whonix.org/t/physical-isolation-is-back-qubes-whonix-style
+Physical isolation requires:
 
-== Technical Introduction ==
-When setting up {{project name}} in the form of two Virtual Machines running on the same physical host, exploits targeting the VM implementation or the host can still break out of the torified Client VM and expose the IP of a user. Malware running on the host has full control over all VMs. To protect such attacks we need a different approach: In this context we called it Physical Isolation, because the gateway system is installed on separate hardware. This drastically reduces the TCB<ref>https://en.wikipedia.org/wiki/Trusted_computing_base</ref> by more than the half.
-
-In total we'll be installing and configuring two computers and set up an isolated point to point network between them (you could also set up a an ordinary, completely isolated, LAN behind the {{gateway_product_name}}). One computer acts as the client or "{{workstation_product_name}}", the other as a proxy or "{{gateway_product_name}}" which will transparently route all of the {{workstation_product_name}} traffic through Tor.
-
-The {{gateway_product_name}} on its own physical device can either run directly on hardware or inside a virtual machine. Both options have advantages and disadvantages. We recommend to use no additional Virtual Machine for the {{gateway_product_name}}.
-
-The {{workstation_product_name}} should always be installed in a Virtual Machine: A VM hides hardware serial numbers. See also [[Security_Guide#Recommendation_to_use_multiple_VM_Snapshots|Recommendation to use multiple VM Snapshots]].
-
-The host operating system(s) should only be used for downloading operating system updating, hosting {{gateway_product_name}} or {{workstation_product_name}} and nothing else.
-
-Bonus points if the physical systems are exclusively used for hosting {{project_name}}, or if storage devices are separated for {{project name}} and non-{{project_name}} use cases, to avoid a {{project name}} hard drive getting infected by a another operating system.
+* {{Other Platforms}}
+* Also refer to Physical Isolation [[#Security and Support Status|Security and Support Status]].
 
 ==  First time user? ==
+
 {{Default Passwords}}
 {{First_Time_User}}
 
-== Warnings ==
-'''WARNING''': Less tested than VM builds. Needs your help for more rigid testing!
+== Technical Introduction ==
 
-'''WARNING''': Instructions are difficult. Only advanced Linux users can understand them.
+The default {{project name}} configuration consists of two virtual machines (VMs) running on the same physical host. This means any exploits targeting the VM implementation or the host can still break out of the torified client VM and expose the IP address of a user. Further, any malware running on the host has full control over all VMs. To protect against these attacks a different approach is required -- physical isolation. In this configuration the gateway system is installed on separate hardware, which drastically reduces the [https://en.wikipedia.org/wiki/Trusted_computing_base trusted computing base (TCB)] by more than half.
 
-'''WARNING''': [[Dev/Build Anonymity]] has not been considered for this article.
+The following instructions describe how to install and configure two computers and set up an isolated point to point network between them. <ref>Alternatively an ordinary, completely isolated, LAN behind the {{gateway_product_name}} can be set up.</ref> This way one computer acts as the client ({{workstation_product_name}}), while the other is the proxy ({{gateway_product_name}}) which transparently routes all the {{workstation_product_name}} traffic via Tor.
 
-'''WARNING''': Do also read the [[Dev/Build Documentation‏‎_8#Warning|warnings]] in the [[Dev/Build Documentation‏‎|latest build instructions for VM images]]. Some of them, {{Code2|Don't add private files to {{project name}} source code folder!}} and {{Code2|Check if the OpenPGP public keys are still up to date.}} also applies to the physical isolation page.
+The {{gateway_product_name}} on its own physical device can be run either directly on hardware or inside a VM. Both options have distinct advantages and disadvantages, but using an additional VM for the {{gateway_product_name}} is <u>unrecommended</u>. In contrast, the {{workstation_product_name}} should <u>always</u> be installed in a VM because this will hide hardware serial numbers. Also read the wiki entry recommending [[Whonix-Workstation_Security#VM_Snapshots|use of multiple VM Snapshots]] for better security.
 
-'''WARNING''': This article currently lacks information about {{gateway_product_name}} and {{workstation_product_name}} MAC address. See also:
+In this configuration the host operating system(s) should only be used for downloading operating system updates, hosting {{gateway_product_name}} or {{workstation_product_name}} and nothing else. The configuration is also more secure if the physical systems are exclusively used for hosting {{project_name}}, or if storage devices are separated for {{project name}} and non-{{project_name}} use cases. The reason is this avoids any potential infection of the {{project name}} hard drive by another operating system.
 
-* [[Protocol-Leak-Protection and Fingerprinting-Protection]]
-* [[Computer_Security_Education#MAC_Address|{{project_name}} in public networks / MAC Address]]<br />
+= Warnings =
 
-'''WARNING''': {{software compartmentalization vs. physical separation}} (See also: [[Qubes|{{q_project_name}}]].)
+Please note the following warnings about physical isolation:
 
-== Using spare hardware + Virtual Machine ==
+* This configuration is less tested than VM builds. More rigid testing by the {{project_name}} community is required.
+* These instructions are difficult to comprehend for non-technical Linux users.
+* [[Dev/Build Anonymity|Build Anonymity]] has not been considered for this wiki chapter. <ref>This refers to staying anonymous while building {{project name}} from source code. Since building {{project_name}} requires a unique selection of software to be downloaded, the ISP can likely guess that a user is building {{project_name}}.</ref>
+* It is essential to read the [[Dev/Build_Documentation/15_full|warnings]] in the [[Dev/Build Documentation‏‎|latest build instructions for VM images]]. Some of these apply to physical isolation such as {{Code2|Don't add private files to {{project name}} source code folder!}} and {{Code2|Check if the OpenPGP public keys are still up to date}}.
+* This chapter currently lacks detail concerning {{gateway_product_name}} and {{workstation_product_name}} MAC addresses, see:
+** [[Protocol-Leak-Protection and Fingerprinting-Protection|Protocol Leak and Fingerprinting Protection‎]]
+** [[MAC_Address#Using_Personal_Computers_in_a_Public_Network|{{project_name}} in public networks / MAC Address]]<br />
+* {{software compartmentalization vs. physical separation}} (See also: [[Qubes|{{q_project_name}}]].)
 
-Advantages:
+= Configuration =
 
-* You can install a graphical host.
-* Use the {{project name}} download version.
-* You can use the graphical network manager on the host, for example to connect to WiFi.
-* You can setup easily a VPN on the host. Tor will be tunneled through the VPN.
+== Physical Isolation Configuration ==
 
-Disadvantages:
+'''Table:''' ''Physical Isolation Configuration Comparison''
 
-* Higher attack surface, because the Virtual Machine code get's involved.
+{|   class="wikitable"
 
-== Using spare hardware without Virtual Machine ==
+!| '''Configuration'''
+!| '''Advantages'''
+!| '''Disadvantages'''
+|-
 
-Advantages:
+| Spare Hardware and VM
+| 
+* A graphical host can be installed.
+* The {{project name}} download version is used.
+* The graphical network manager on the host can be used, for example to connect to WiFi.
+* A VPN can be easily set up on the host. Tor will then be tunneled through the VPN.
+|
+* This has a higher attack surface because the VM code is involved.
+|-
 
-* More secure, because less code is involved.
+| Spare Hardware without VM
+| 
+* This is more secure because less code is involved.
+|
+* The setup is slightly more complicated.
+* It is more difficult to set up a VPN.
+* It is more difficult to set up 3G/4G/5G networking compared to using a Windows host.
+|-
 
-Disadvantages:
+|}
 
-* Slightly more complicated setup
-* More difficult to set up VPN
-* More difficult to set up 3G networking compared to using a Windows host
+== Hardware Configuration ==
 
-== Hardware ==
+It is recommended that two dedicated computers are utilized for {{project name}} that are never used for activities that could reveal your identity. Alternatively, an existing computer that is already in use can be utilized for {{gateway_product_name}}. To offer some isolation, all internal and external drives should be disconnected, with boots occuring from an eSATA, USB or another internal drive into a clean environment.
 
-=== General ===
+For non-anonymous use, the physical arrangement can be used as is without any modification. This includes the use of a non-anonymous home (dial-up) Internet router, without any changes. In contrast anonymous use requires:
+# {{gateway_product_name}}
+# an anonymous 3G/4G/5G modem or an anonymous WiFi adapter (see below)
+# {{workstation_product_name}}
 
-We recommend that you use two dedicated computers for {{project name}} that are never used for activities that could lead back to your identity. Alternatively you can use an already existing and otherwise used computer for the {{gateway_product_name}}. To offer some isolation you should disconnect all internal and external drives and boot from a eSATA, USB or another internal drive into a clean environment.
-
-=== non-anonymous use ===
-
-* non-anonymous box (leave it as it is, like you want)
-* non-anonymous home dial up internet router (leave it as it is, like you want)
-
-=== anonymous use ===
-
-* {{gateway_product_name}}
-** This really does not have to be a big desktop computer or ordinary server. There are alternatives.
-** smartphone <ref name=one>Just some hints to get started. It is difficult and beyond the scope of {{project_name}}, because you don't have an Ethernet interface. Some (after market) firmwares support USB-host. (You can plug USB devices into your phone, such as an USB ethernet card. For example some rooted android smartphones can [http://android.galoula.com/en/LinuxInstall/ install] Debian Linux.</ref>,
-** UMPC<ref>https://en.wikipedia.org/wiki/Ultra-mobile_PC</ref>
-** pad, tablet,
-** notebook, netbook,
-** <s>Raspberry Pi</s><ref>https://en.wikipedia.org/wiki/Raspberry_Pi</ref>: needs contributor, [https://forums.whonix.org/t/whonix-raspberry-pi/723 development thread]
-** router <ref>something like OpenWRT</ref>,
-** set top box,
-** etc.
-** how to utilize such a device as a linux server is beyond the scope of this guide, there are already better resources
-* anonymous 3G modem (see below) or anonymous wifi adapter (see below)
-* {{workstation_product_name}}
-** You get the idea. Use a device which suits you.
+In terms of the specific hardware used for {{gateway_product_name}}, various devices are feasible and it does not have to be a big desktop computer or ordinary server. Alternatives include:
+<div style="column-count:2;-moz-column-count:2;-webkit-column-count:2">
+* smartphone <ref name=one>Due to the lack of an ethernet interface this is a difficult configuration and beyond the scope of the {{project_name}} documentation. However, as a tip some (after market) firmwares support USB-host. This makes it possible to plug USB devices into your phone, such as an USB ethernet card. For example, some rooted Android smartphones can [http://android.galoula.com/en/LinuxInstall/ install] Debian Linux.</ref>
+* [https://en.wikipedia.org/wiki/Ultra-mobile_PC ultra-mobile personal computer (UMPC)]
+* pad or tablet
+* notebook or netbook
+* formerly a [https://en.wikipedia.org/wiki/Raspberry_Pi Raspberry Pi] <ref>A contributor or maintainer is required, see: [https://forums.whonix.org/t/whonix-raspberry-pi/723 Whonix - Raspberry Pi] development thread.</ref>
+* router <ref>For example, something like [https://openwrt.org/ OpenWRT].</ref>
+* [https://en.wikipedia.org/wiki/Set-top_box set-top box]
+* and other suitable devices
+</div>
+How to utilize devices like a Linux server is beyond the scope of this chapter and better resources already exist on the Internet. Similarly for {{workstation_product_name}}, a device that is suitable should be chosen.
 
 = Before installing =
 {{Pre_Install_Advice}}
