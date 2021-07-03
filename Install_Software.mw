@@ -91,33 +91,60 @@ On the other hand, packages in testing or unstable can have hidden bugs, securit
 |}
 
 = --no-install-recommends =
-Debian's default is <code>--install-recommends</code>. Debian packages have various metadata fields such as <code>Depends:</code> (dependencies or dependency packages) and <code>Recommends:</code> ("recommended" packages). When installing a package using <code>apt-get</code>, dependencies are always installed. When the package to be installed is not yet installed, by Debian default, recommended packages will also be installed. To avoid that, it is possible to use <code>apt-get</code> command line parameter <code>--no-install-recommends</code>. Using <code>apt-get</code> command line parameter <code>--no-install-recommends</code> is in most cases optional.
 
-If the package was installed using <code>apt-get --no-install-recommends install package-name</code>, then re-running  <code>apt-get</code> without any parameters or even with <code>--install-recommends</code> will not result in installation of the recommended packages. To accomplish a "late" installation of recommended packages, the package needs to either first be uninstalled. Alternatively one could view the list of <code>Recommends:</code> using <code>apt-cache package-name</code> or by viewing the package on https://packages.debian.org.
+Debian's installation default is <code>--install-recommends</code>. Debian packages have various metadata fields such as:
+* <code>Depends:</code> dependencies or dependency packages
+* <code>Recommends:</code> "recommended" packages
+* <code>Suggests:</code> "suggested" packages
 
-"recommended" can be a big word which means many different things for many different people.
+When installing a package using <code>apt-get</code>, dependencies (<code>Depends:</code>) are always installed. The Debian default is for recommended packages (<code>Recommends:</code>) to also be installed alongside the primary package (unless installed previously). To avoid that outcome, it is possible to use the <code>apt-get</code> command line parameter <code>--no-install-recommends</code>; this is in most cases optional. 
 
-Can using <code>--no-install-recommends</code> lead to security issues? No. <ref>
-No known examples at time of writing.
-</ref>
+Debian's default for suggested packages (<code>Suggests:</code>) is <code>--no-install-suggests</code> i.e. not to install suggested packages. Users can optionally use <code>--install-suggests</code>, but there are no known cases where this would be useful at the time of writing. A host of other [https://manpages.debian.org/buster/apt/apt-get.8.en.html#OPTIONS command line options] are also available.
 
-Can using <code>--no-install-recommends</code> lead to missing or broken functionalities? Yes. <ref>For example,
-[https://packages.debian.org/search?keywords=mmdebstrap mmdebstrap] uses <code>Recommends:</code> and <code>Suggests:</code> [https://gitlab.mister-muffin.de/josch/mmdebstrap/issues/5 for various optional dependencies providing various functionality].
-</ref>
+If a package is installed using <code>apt-get --no-install-recommends install package-name</code>, then re-running <code>apt-get</code> without any parameters or even with <code>--install-recommends</code> will not result in installation of the recommended packages. To accomplish a "late" installation of recommended packages, the simplest method is first uninstalling the package. Alternatively, the list of <code>Recommends:</code> can be viewed using <code>apt-cache package-name</code> or by checking the package on https://packages.debian.org.
 
-Can not using <code>--no-install-recommends</code> lead to security issues? In corner cases, yes. For example a [[Host Operating System Selection|host operating system]] without a [[Host Firewall]] <ref>
-Most people nowadays are behind a NAT router which blocks by default unsolicited incoming connections. While that protects from outside attacks from the internet, that does not protect from attacks from inside the local area network (LAN), i.e. from devices that use the same router. This is specifically dangerous when using shared WiFi hotspots.
-</ref> not using <code>--no-install-recommends</code>, which defaults in using Debian's default <code>--install-recommends</code>, packages might be installed that open [[Ports|ports]], which can significantly increase attack surface.
+A brief Q&A regarding the potential impacts of the "recommended" field is outlined below.
 
-Should <code>--no-install-recommends</code> be used? That depends on the package. Advanced users who exactly know which packages are needed can use <code>--no-install-recommends</code> and just manually add any wanted (perhaps including some recommended packages) to the <code>apt-get</code> installation command. Otherwise by not using <code>--no-install-recommends</code> there might be corner cases of missing optional dependencies or functionality which would then be missing.
+'''Table:''' ''<code>--no-install-recommends</code> Impacts''
 
-[[Documentation|{{project name}} documentation]] uses <code>--no-install-recommends</code> whenever appropriate.
+{|   class="wikitable"
 
-Whether users should use <code>--no-install-recommends</code> per package installation or not is unspecific to {{project name}} and should be resolved as per [[Free Support Principle]].
+!| '''Question'''
+!| '''Answer'''
+|-
 
-Debian's default for suggested packages (<code>Suggests:</code>) is <code>--no-install-suggests</code>, i.e. not to install suggested packages. Users could optionally use <code>--install-suggests</code>. No known cases where this would be useful at time of writing.
+| Can using <code>--no-install-recommends</code> lead to security issues?
+| No. <ref>There are no known examples at the time of writing.</ref>
 
-Should {{project name}} set the default to <code>--no-install-recommends</code>? This is a good question. It is a big change and could lead to a lot broken functionality for user installed packages. At the moment, {{project name}} user [[support]] is manageable because redirection to [[Free Support Principle]] is possible. If <code>--no-install-recommends</code> was {{project name}} default, then a lot functionality might work out of the box in Debian but not in {{project name}}, therefore invalidating Free Support Principle. For these reasons, such suggestions should be made at Debian's issue tracker first. Please search for existing discussions on Debian mailing lists first. Search [https://bugs.debian.org/cgi-bin/pkgreport.cgi?pkg=apt;dist=unstable Debian APT issue tracker] for <code>recommend</code> first to avoid duplicate issues. For this change to be implemented, it would probably require a lot research, good examples and a very well written feature request. Parts of this wiki chapter come handy.
+|-
+
+| Can using <code>--no-install-recommends</code> lead to missing or broken functionalities?
+| Yes. For example, [https://packages.debian.org/search?keywords=mmdebstrap mmdebstrap] uses <code>Recommends:</code> and <code>Suggests:</code> [https://gitlab.mister-muffin.de/josch/mmdebstrap/issues/5 for various optional dependencies providing various functionality].
+
+|-
+
+| Can not using <code>--no-install-recommends</code> lead to security issues?
+| In corner cases, yes. For example consider a [[Host Operating System Selection|host operating system]] without a [[Host Firewall]]. <ref>
+Most people nowadays are behind a NAT router which blocks unsolicited incoming connections by default. While that protects from outside Internet-based attacks, it does not protect against attacks launched from inside the local area network (LAN) (devices that use the same router). This is specifically dangerous when using shared WiFi hotspots.
+</ref> By not using <code>--no-install-recommends</code> -- which defaults in using Debian's default <code>--install-recommends</code> -- packages might be installed that open [[Ports|ports]], which can significantly increase attack surface.
+
+|-
+
+| Should <code>--no-install-recommends</code> be used?
+| The answer depends on the specific package. Advanced users who know exactly which packages are needed can use <code>--no-install-recommends</code> and afterwards manually add any wanted/additional packages <ref>Perhaps including some recommended packages.</ref> to the <code>apt-get</code> installation command. Otherwise, there might be corner cases of missing optional dependencies or limited functionality.
+
+|-
+
+| Should {{project name}} set the default to <code>--no-install-recommends</code>? <ref>See: [https://forums.whonix.org/t/set-apt-get-no-install-recommends-by-default/11890 set apt-get --no-install-recommends by default]</ref>
+| This is a good question. It is a big change and could lead to a lot of broken functionality for user-installed packages. At the moment, {{project name}} user [[support]] is manageable because redirection to the [[Free Support Principle]] is possible. If <code>--no-install-recommends</code> was the {{project name}} default, then a lot of functionality might work out of the box in Debian but not in {{project name}}, therefore invalidating the Free Support Principle. 
+
+For these reasons, such suggestions should first be raised at Debian's issue tracker after first searching for existing discussions on Debian mailing lists. Search [https://bugs.debian.org/cgi-bin/pkgreport.cgi?pkg=apt;dist=unstable Debian APT issue tracker] for <code>recommend</code> first to avoid duplicate issues. For this change to be implemented, it would probably require a lot of research, good examples and a very well written feature request. <ref>This wiki chapter has been authored so it may be a useful resource in the future.</ref>
+
+|-
+
+|}
+
+[[Documentation|{{project name}} documentation]] uses <code>--no-install-recommends</code> whenever appropriate. In general, whether users should use <code>--no-install-recommends</code> for package installation is unspecific to {{project name}} and should be resolved as per [[Free Support Principle]].
 
 = More Security =
 
