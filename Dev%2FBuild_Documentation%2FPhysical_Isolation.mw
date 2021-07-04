@@ -162,74 +162,19 @@ It is recommended to set the terminal (such as Konsole) to unlimited scrollback,
 
 {{Kicksecure Prerequisites}}
 
-= How To Install {{gateway_product_name}} on the Raspberry Pi 3 B (RPI3) =
-* Contributor of <code>How To Install {{gateway_product_name}} on the Raspberry Pi 3 B (RPI3)</code>: [https://forums.whonix.org/u/Algernon Algernon]
-* Forum discussion: [https://forums.whonix.org/t/whonix-for-arm64-raspberry-pi-rpi/1788 {{project name}} for arm64 / Raspberry Pi ( RPi )]
+= How-to: Install {{gateway_product_name}} =
 
-Get the source (see below).
+== Recommended: On Hardware ==
 
-From inside the {{project name}} source folder run:
+=== Get Debian ===
 
-{{CodeSelect|code=
-sudo ./whonix_build --target raw --flavor whonix-gateway-rpi --build --arch arm64 --kernel linux-image-arm64 --headers linux-headers-arm64
-}}
-
-After a succesful build burn the <code>whonix_gw_rpi.img</code> to a micro SD card using gnome-disk-utility.
-# Within gnome-disk-utility select the SD card. 
-# At the top panel select options (next to the poweroff button). 
-# Click restore disk image and choose the respective file. 
-# Click start restoring and wait until it is finished. 
-# Put the SD card into the RPI3, attach an HDMI monitor, an USB-ethernet adapter as well as a keyboard and boot it. 
-
-After login run:
-
-{{CodeSelect|code=
-sudoedit /etc/network/interfaces.d/30_non-qubes-whonix
-}}
-
-and change the address and the gateway of eth0 corresponding to your local network / upstream router. 
-As an example  our ISP router uses 192.168.0.1/24 for the internal network. The settings of eth0 would look like the following:
-
-{{CodeSelect|code=
-auto eth0
-iface eth0 inet static
-    address 192.168.0.11
-    netmask 255.255.255.0
-    gateway 192.168.0.1
-}}
-
-
-By default eth0 is the native ethernet connection of the RPI3. Hence, connect a network cable from there to your router. eth1 is the USB-ethernet adapter which should also be connected via cable to the computer running the workstation.
-Since the RPI3 is lacking a real time clock you need to set the date manually to the current UTC time. Example:
-
-{{CodeSelect|code=
-sudo date -s "09 NOV 2019 17:00:00"
-}}
-
-Run:
-
-{{CodeSelect|code=
-sudo service networking restart
-}}
-
-and
-
-{{CodeSelect|code=
-sudo service tor restart
-}}
-
-to connect to the Tor network.
-Depending on your hypervisor you need to change network settings on the Workstation in order to connect it to the gateway (see below).
-
-= How To Install {{gateway_product_name}} on Hardware (RECOMMENDED) =
-== Get Debian ==
 Download a Debian {{Stable_project_version_based_on_Debian_codename}} 32 bit installation iso. Detailed instructions doing so are unfortunately not part of this guide. However, the [[Debian]] page contains some help.
 
 You can choose iso of any desktop environment (KDE, LXDE, Xfce, ...) but since you'll be using the command line, Debian {{Stable_project_version_based_on_Debian_codename}} network install (netinst) version is recommended (it is the most minimal).
 
 (You could also use a Debian {{Stable_project_version_based_on_Debian_codename}} 64 bit installation iso, these instructions should also work, but it is less tested.)
 
-== Install Debian ==
+=== Install Debian ===
 In the installer boot menu of Debian {{Stable_project_version_based_on_Debian_codename}} press "Install" and choose following settings:
 
 <pre>
@@ -538,12 +483,14 @@ O2. Change "do not use" to "swap area", and press Enter. Then select "Done setti
 </div>
 </div>
 
-== Network Configuration ==
+=== Network Configuration ===
+
 The external interface (usually eth0) may need to be configured according to the requirements of your local network, e.g. static or simply left to use dhcp if the gateway is connected to a dhcp capable router. For wlan follow the upstream documentations: [http://wiki.debian.org/WiFi debian wiki], [https://help.ubuntu.com/community/WifiDocs/WiFiHowTo Ubuntu help].
 
 Make sure the internet is working.
 
-== Logon and upgrade Debian ==
+=== Logon and upgrade Debian ===
+
 Logon, install all security updates and reboot.
 
 Login with "root"
@@ -566,7 +513,8 @@ Refresh package lists and upgrade.
 apt-get update && apt-get dist-upgrade -y
 }}
 
-== Firmware Updating and Security Problems ==
+=== Firmware Updating and Security Problems ===
+
 As per [[Firmware_Security_and_Updates#Firmware_Updating_and_Security_Problems]].
 
 {{Update}}
@@ -587,7 +535,8 @@ For AMD.
 sudo apt-get install amd64-microcode
 }}
 
-== Preparation ==
+=== Preparation ===
+
 Install sudo and git. <ref>You need git to obtain the source code. Alternatively, you could also download a git tag as an archive using a (torified) browser: https://github.com/{{project_name_short}}/{{project_name_short}}/tags</ref>
 
 <pre>
@@ -611,32 +560,40 @@ user
 '''Optional''': <br />
 You may want to take an image of your installation in case the build script fails in the middle.
 
-== Get the Source Code ==
-=== Get the Signing Key ===
+=== Get the Source Code ===
+
+==== Get the Signing Key ====
+
 {{Get Signing Key}}
 
-=== Get the Source Code ===
+==== Get the Source Code ====
+
 {{Build Documentation Get Source}}
 
-=== OpenPGP Verify the Source Code ===
+==== OpenPGP Verify the Source Code ====
+
 {{OpenPGP Verify the Source Code}}
 
-=== Choose Version ===
+==== Choose Version ====
+
 {{
 Build Documentation Choose Version
 |version={{VersionNew}}-stable
 |extra=--recurse-submodules
 }}
 
-=== Check Git ===
+==== Check Git ====
+
 {{Build Documentation Check Git
 |version={{VersionNew}}-stable
 }}
 
-== Optional Build Configuration ==
+=== Optional Build Configuration ===
+
 See also [[Build_Configuration|Optional Build Configuration]].
 
-== Network Verification ==
+=== Network Verification ===
+
 Before running the {{Code2|whonix_build}} script make sure eth1 and eth0 refer to the correct interfaces.
 
 <pre>
@@ -764,14 +721,16 @@ systemctl status onion-grater.service
 </div>
 </div>
 
-== Minor Things ==
+=== Minor Things ===
+
 <s>Most configuration files work well inside Virtual Machines and on hardware. Only minor things such as deactivating powersaving, passwordless reboot, shutdown etc. are only recommended for Virtual Machines. You can easily comment them out by putting a hash # in front of them. They are marked, to find them, grep can be used.</s> Skip this for now. You can change these files later after building {{project_name}}. (Simpler.)
 
 <pre>
 grep -r VMONLY* *
 </pre>
 
-== Run Build Script ==
+=== Run Build Script ===
+
 It is recommended that you create a log of the build process by redirecting all the output to a log file. Be aware that by doing so no build progress will appear on the screen - instead a text log file will be created in your home folder. 
 
 <pre>
@@ -792,7 +751,8 @@ If don't want to create a log of the build process (the build progress will then
 sudo ./whonix_build --flavor whonix-gateway --target root --build
 </pre>
 
-== Final Steps ==
+=== Final Steps ===
+
 Reboot.
 
 <pre>
@@ -805,10 +765,70 @@ Login as new user "user". (If you didn't install as user "user", your old user a
 <br />
 Done.
 
-== Cleanup ==
+=== Cleanup ===
+
 {{Build Documentation Cleanup}}
 
-= How To Install {{gateway_product_name}} in a VM (UNTESTED / NOT RECOMMENDED) =
+== Experimental: On the Raspberry Pi 3 B (RPI3) ==
+
+* Contributor of <code>How To Install {{gateway_product_name}} on the Raspberry Pi 3 B (RPI3)</code>: [https://forums.whonix.org/u/Algernon Algernon]
+* Forum discussion: [https://forums.whonix.org/t/whonix-for-arm64-raspberry-pi-rpi/1788 {{project name}} for arm64 / Raspberry Pi ( RPi )]
+
+Get the source (see below).
+
+From inside the {{project name}} source folder run:
+
+{{CodeSelect|code=
+sudo ./whonix_build --target raw --flavor whonix-gateway-rpi --build --arch arm64 --kernel linux-image-arm64 --headers linux-headers-arm64
+}}
+
+After a succesful build burn the <code>whonix_gw_rpi.img</code> to a micro SD card using gnome-disk-utility.
+# Within gnome-disk-utility select the SD card. 
+# At the top panel select options (next to the poweroff button). 
+# Click restore disk image and choose the respective file. 
+# Click start restoring and wait until it is finished. 
+# Put the SD card into the RPI3, attach an HDMI monitor, an USB-ethernet adapter as well as a keyboard and boot it. 
+
+After login run:
+
+{{CodeSelect|code=
+sudoedit /etc/network/interfaces.d/30_non-qubes-whonix
+}}
+
+and change the address and the gateway of eth0 corresponding to your local network / upstream router. 
+As an example  our ISP router uses 192.168.0.1/24 for the internal network. The settings of eth0 would look like the following:
+
+{{CodeSelect|code=
+auto eth0
+iface eth0 inet static
+    address 192.168.0.11
+    netmask 255.255.255.0
+    gateway 192.168.0.1
+}}
+
+By default eth0 is the native ethernet connection of the RPI3. Hence, connect a network cable from there to your router. eth1 is the USB-ethernet adapter which should also be connected via cable to the computer running the workstation.
+Since the RPI3 is lacking a real time clock you need to set the date manually to the current UTC time. Example:
+
+{{CodeSelect|code=
+sudo date -s "09 NOV 2019 17:00:00"
+}}
+
+Run:
+
+{{CodeSelect|code=
+sudo service networking restart
+}}
+
+and
+
+{{CodeSelect|code=
+sudo service tor restart
+}}
+
+to connect to the Tor network.
+Depending on your hypervisor you need to change network settings on the Workstation in order to connect it to the gateway (see below).
+
+== Untested / Unrecommended: In a VM ==
 
 It is advised to install a new OS just for hosting the Gateway VM, any OS that can run VirtualBox works but we recommend an Open Source system.
 
