@@ -641,7 +641,7 @@ Refer to [[Build_Configuration|Optional Build Configuration]] for additional con
 
 === Network Verification ===
 
-Before running the {{Code2|whonix_build}} script make sure eth1 and eth0 refer to the correct interfaces.
+Before running the {{Code2|whonix_build}} script make sure <code>eth0</code> and <code>eth1</code> refer to the correct interfaces.
 
 <pre>
 ## May be helpful.
@@ -649,13 +649,17 @@ dmesg | grep eth
 </pre>
 
 <div class="toccolours mw-collapsible mw-collapsed">
-If you are using non-default network interface names, please click on Expand on the right. 
+If non-default network interface names are in use, please click on Expand on the right. 
 <div class="mw-collapsible-content">
-Should be doable using non-default network interface names as well. Not as easy. Not fully documented. Untested.
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = The following procedure should also be possible with non-default network interface names, but that is more difficult. Note this procedure is untested and not fully documented.
+}}
 
-One way would be to figure out how to change a network interface name such as <code>wlan0</code> to <code>eth0</code>.
+One method is figuring out how to change a network interface name such as <code>wlan0</code> to <code>eth0</code>.
 
-Otherwise you could consider to change the network interface names in the configuration files. To find the components that require configuration changes in the {{project name}} source folder, the following commands may be helpful. Should be really only a very few files. We used variables for eth0 and eth1 wherever possible.
+Another method is to consider changing the network interface names in the configuration files. To discover components that require configuration changes in the {{project name}} source folder, the following commands may be helpful. Note that only a few files should require modification and the variables <code>eth0</code> and <code>eth1</code> have been used wherever possible.
 
 <pre>
 exclude="--exclude=README.md --exclude=control --exclude=changelog.upstream --exclude-dir=.git --exclude-dir=whonix-developer-meta-files --exclude-dir=build-steps.d --exclude-dir=qubes-whonix"
@@ -671,100 +675,122 @@ grep -l $exclude -r eth0 ~/{{project_name_short}}
 grep -l $exclude -r eth1 ~/{{project_name_short}}
 </pre>
 
-Should you decide to edit these files in {{project name}} source folder, note to apply the build parameters from [[#Source Code Changes]] as well.
+If you decide to edit these files in {{project name}} source folder, remember to apply the build parameters from the Source Code Changes section [[Build_Configuration|here]].
 
-Another, perhaps better option might be to change the network interface names after {{project name}} build script finished.
+The final and perhaps best method is changing the network interface names after the {{project name}} build script has finished; see below.
+
+{{Box|text=
+'''1.''' Note the location for network interfaces.
 
 For example <code>/home/user/{{project_name_short}}/packages/whonix-ws-network-conf/etc/network/interfaces.d/30_non-qubes-whonix</code> becomes <code>/etc/network/interfaces.d/30_non-qubes-whonix</code>.
 
-'''/usr/bin/whonix_firewall'''
+'''2.''' Create a firewall drop-in configuration snippet.
 
-Do not edit. We use a drop-in config snippet instead.
-
-'''/etc/whonix_firewall.d/30_default.conf'''
-
-Use a drop-in config snippet instead.
+* Do not edit <code>/usr/bin/whonix_firewall</code>.
+* Instead, create a drop-in config snippet here: <code>/etc/whonix_firewall.d/30_default.conf</code>.
 
 {{Open with root rights|
 filename=/etc/whonix_firewall.d/50_user.conf
 }}
 
-Add. Replace eth0 with your actual external network interface name as well as eth1 with your actual internal network interface name.
+'''3.''' Add the external and internal network interface names.
+
+In the example below, replace <code>eth0</code> and <code>eth1</code> with the respective (actual) external and internal network interface names.
 
 <pre>
 EXT_IF="eth0"
 INT_IF="eth1"
 </pre>
 
-Save.
+Save the file.
 
-'''/etc/network/interfaces.d/30_non-qubes-whonix'''
+'''4.''' Edit the network interfaces file.
 
-Manual edit required.
+* Manually edit <code>/etc/network/interfaces.d/30_non-qubes-whonix</code>.
 
 {{Open with root rights|
-filename=/etc/network/interfaces.d/30_non-qubes-whonix'
+filename=/etc/network/interfaces.d/30_non-qubes-whonix
 }}
 
-Replace interface names.
+Replace the interface names and save the file.
 
-Save.
+'''5.''' Create a uwtwrapper drop-in configuration snippet. <ref>This is required for {{workstation_product_name}} in {{project name}} 14 and above.</ref>
 
-'''/uwt/usr/lib/uwtwrapper'''
-
-Do not edit. Use a drop-in config snippet instead.
-
-Required for {{workstation_product_name}} in {{project name}} 14 and above only.
+* Do not edit <code>/uwt/usr/lib/uwtwrapper</code>.
+* Instead, create a drop-in config snippet here: <code>/etc/uwt.d/50_user.conf</code>.
 
 {{Open with root rights|
 filename=/etc/uwt.d/50_user.conf
 }}
 
-Add. Replace eth0 interface name.
+'''6.''' Add the external and internal network interface names.
+
+In the example below, replace the <code>eth0</code> interface name.
 
 <pre>
 bindp_interface="eth0"
 </pre>
 
-'''/usr/bin/leaktest'''
+Save the file.
 
-Not important. Manual edit required.
+'''7.''' ''Optional'': Edit the leaktest file.
 
-'''/usr/lib/whonixcheck/check_network_interfaces.bsh'''
+This step is not important, but <code>/usr/bin/leaktest</code> can be manually edited as per previous steps.
 
-Manual edit required. Will break when whonixcheck gets upgraded. Then it needs to be edited again. This will be configurable in {{project name}} 14 so the setting survives whonixcheck upgrades.
+{{Open with root rights|
+filename=/usr/bin/leaktest
+}}
 
-'''/etc/sudoers.d/whonixcheck'''
+Make necessary changes and save the file.
 
-Do not edit. Use a drop-in config snippet instead.
+'''8.''' Edit the <code>systemcheck</code> network interfaces file.
 
-Use any editor of your choice.
+* Manually edit <code>/usr/lib/systemcheck/check_network_interfaces.bsh</code>.
+* This will break when systemcheck is upgraded, meaning it needs to be edited again. This is configurable in {{project name}} 14 and above so the setting survives systemcheck upgrades.
+
+{{Open with root rights|
+filename=/usr/lib/systemcheck/check_network_interfaces.bsh
+}}
+
+Make necessary changes and save the file.
+
+'''9.''' Create a sudoers drop-in configuration snippet.
+
+* Do not edit <code>/etc/sudoers.d/systemcheck</code>.
+* Instead, create a drop-in config snippet here: <code>/etc/sudoers.d/systemcheck-user</code>.
+
+Use any preferred editor.
+
 <pre>
-sudo EDITOR=nano visudo -f /etc/sudoers.d/whonixcheck-user
+sudo EDITOR=nano visudo -f /etc/sudoers.d/systemcheck-user
 </pre>
 
-Add. Replace eth0 and eth1 with your network interface names.
+'''10.''' Add the external and internal network interface names.
+
+In the example below, replace the <code>eth0</code> and <code>eth1</code> interface names.
 
 <pre>
-whonixcheck ALL=NOPASSWD: /sbin/ifconfig eth0
-whonixcheck ALL=NOPASSWD: /sbin/ifconfig eth1
+systemcheck ALL=NOPASSWD: /sbin/ifconfig eth0
+systemcheck ALL=NOPASSWD: /sbin/ifconfig eth1
 </pre>
 
-Save.
+Save the file.
 
-'''/usr/lib/systemd/system/onion-grater.service.d/30_cpfpy.conf'''
+'''11.''' Edit the <code>onion-grater</code> configuration file.
 
-Systemd may fail to start onion-grater if this file isn't configured properly.
-Replace any appearances of old interface names with your corresponding interface names.
-Restart onion-grater.service and confirm active status.
+* Manually edit <code>/usr/lib/systemd/system/onion-grater.service.d/30_cpfpy.conf</code>.
+* Systemd may fail to start <code>onion-grater</code> if this file is not configured properly.
+* As per previous steps, replace any interface names with your corresponding interface names and save the file.
 
-TODO: better use a drop-in <code>/usr/lib/systemd/system/onion-grater.service.d/50_user.conf</code>. See [[Configuration Files]].
+TODO: it is better to use a drop-in <code>/usr/lib/systemd/system/onion-grater.service.d/50_user.conf</code> file; see [[Configuration Files]].
+
+'''12.''' Restart <code>onion-grater.service</code> and confirm active status.
 
 <pre>
 systemctl restart onion-grater.service
 systemctl status onion-grater.service
 </pre>
-
+}}
 </div>
 </div>
 
