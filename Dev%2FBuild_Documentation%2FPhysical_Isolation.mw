@@ -1004,11 +1004,11 @@ If the physical network between {{gateway_product_name}} and a router uses 10.15
 
 === NAT vs Bridging ===
 
-In the default {{project name}} VirtualBox image, the network adapter setting for Adapter 1 (eth0) is set to internal network and will therefore not work out of the box. There are two choices to fix this. NAT (recommended) or bridged network.
+In the default {{project name}} VirtualBox image, the network adapter setting for Adapter 1 (<code>eth0</code>) is set to internal network and will therefore not work out of the box. There are two ways to fix this: NAT (recommended) or using a bridged network (unrecommended).
 
 ==== Recommended: NAT ====
 
-If you use NAT you will have to edit the ''/etc/network/interfaces'' in {{workstation_product_name}} to use DHCP (easier, shown in the example below) or a static IP for VirtualBox NAT.
+To use NAT, edit <code>/etc/network/interfaces</code> in {{workstation_product_name}} to utilize either DHCP (easier, shown in the example below) or a static IP for VirtualBox NAT.
 
 <pre>
 sudoedit /etc/network/interfaces
@@ -1030,22 +1030,24 @@ iface eth0 inet dhcp
 ## end of /etc/network/interfaces
 </pre>
 
-==== Untested / Unrecommended: Bridged Network ====
+==== Unrecommended: Bridged Network ====
 
-If you use bridged networking things will (or should, we haven't tested anything yet) just work.
+{{mbox
+| image   = [[File:Ambox_warning_pn.svg.png|40px]]
+| text    = This is untested.
+}}
 
-Since in the bridged network case, {{workstation_product_name}} can see the MAC address of whatever network adapter it is connected to, you should change the MAC address of the Workstation host and of the {{gateway_product_name}}.
+If bridged networking is configured, then everything should work by default. <ref>At least it should work, although it is untested by developers.</ref> The reason is {{workstation_product_name}} can see the MAC address of whatever network adapter it is connected to.
 
-See [[Pre_Install_Advice#MAC_Address|{{project_name}} in public networks]].
+For this reason it is recommended to change the MAC address for both the Workstation host and the {{gateway_product_name}}; see [[MAC_Address#Changing_MAC_Addresses|Changing MAC Addresses]].
 
 ==== Macvtap on KVM ====
 
-Change the network source of the ethernet nic to "macvtap" and the source mode to "passthrough"
-Be aware, you can't use networking on the host anymore.
+Change the network source of the ethernet nic to "macvtap" and the source mode to "passthrough". Be aware that you cannot use networking on the host anymore.
 
-==== Attach an USB-ethernet adapter to the VM ====
+==== Attach a USB-ethernet Adapter to the VM ====
 
-Remove the network adapter from the VM and instead attach an USB-ethernet adapter to the host and redirect it to the VM.
+Remove the network adapter from the VM and instead attach a USB-ethernet adapter to the host and redirect it to the VM.
 
 == Unrecommended: On Hardware ==
 
