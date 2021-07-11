@@ -854,32 +854,42 @@ Done.
 
 == Experimental: On the Raspberry Pi 3 B (RPI3) ==
 
-* Contributor of <code>How To Install {{gateway_product_name}} on the Raspberry Pi 3 B (RPI3)</code>: [https://forums.whonix.org/u/Algernon Algernon]
-* Forum discussion: [https://forums.whonix.org/t/whonix-for-arm64-raspberry-pi-rpi/1788 {{project name}} for arm64 / Raspberry Pi ( RPi )]
+=== Introduction ===
 
-Get the source (see below).
+* Contributor of <code>Experimental: On the Raspberry Pi 3 B (RPI3)</code>: [https://forums.whonix.org/u/Algernon Algernon]
+* Forum discussion: [https://forums.whonix.org/t/whonix-for-arm64-raspberry-pi-rpi/1788 {{project name}} for arm64 / Raspberry Pi (RPi)]
 
-From inside the {{project name}} source folder run:
+=== Procedure ===
+
+{{Box|text=
+'''1.''' [[#Get_the_Source_Code|Get the source code]].
+
+'''2.''' Build {{gateway_product_name}}.
+
+Run this command inside the {{project name}} source folder.
 
 {{CodeSelect|code=
 sudo ./whonix_build --target raw --flavor whonix-gateway-rpi --build --arch arm64 --kernel linux-image-arm64 --headers linux-headers-arm64
 }}
 
-After a succesful build burn the <code>whonix_gw_rpi.img</code> to a micro SD card using gnome-disk-utility.
+'''3.''' Burn the image to a micro SD card.
+
+After a successful build, burn the <code>whonix_gw_rpi.img</code> image to a micro SD card using <code>gnome-disk-utility</code>.
 # Within gnome-disk-utility select the SD card. 
-# At the top panel select options (next to the poweroff button). 
-# Click restore disk image and choose the respective file. 
-# Click start restoring and wait until it is finished. 
+# At the top panel select "options" (next to the poweroff button). 
+# Click "restore disk image" and choose the respective file. 
+# Click "start restoring" and wait until it is finished. 
 # Put the SD card into the RPI3, attach an HDMI monitor, an USB-ethernet adapter as well as a keyboard and boot it. 
 
-After login run:
+'''4.''' Configure interfaces.
+
+After login, run.
 
 {{CodeSelect|code=
 sudoedit /etc/network/interfaces.d/30_non-qubes-whonix
 }}
 
-and change the address and the gateway of eth0 corresponding to your local network / upstream router. 
-As an example  our ISP router uses 192.168.0.1/24 for the internal network. The settings of eth0 would look like the following:
+Change the address and the gateway of <code>eth0</code> corresponding to the local network / upstream router. As an example, our ISP router uses <code>192.168.0.1/24</code> for the internal network. In this case the <code>eth0</code> settings would look like the following:
 
 {{CodeSelect|code=
 auto eth0
@@ -889,27 +899,34 @@ iface eth0 inet static
     gateway 192.168.0.1
 }}
 
-By default eth0 is the native ethernet connection of the RPI3. Hence, connect a network cable from there to your router. eth1 is the USB-ethernet adapter which should also be connected via cable to the computer running the workstation.
-Since the RPI3 is lacking a real time clock you need to set the date manually to the current UTC time. Example:
+'''5.''' Set up network cables.
+
+By default <code>eth0</code> is the native ethernet connection of the RPI3. Hence, connect a network cable from there to the router. <code>eth1</code> is the USB-ethernet adapter which should also be connected via cable to the computer running {{workstation_product_name}}.
+
+'''6.''' Manually set the time.
+
+The RPI3 lacks a real time clock, so it is necessary to manually set the current UTC date and time. Example:
 
 {{CodeSelect|code=
-sudo date -s "09 NOV 2019 17:00:00"
+sudo date -s "10 JUL 2021 17:00:00"
 }}
 
-Run:
+'''7.''' Connect to the Tor network.
+
+Restart the networking service.
 
 {{CodeSelect|code=
 sudo service networking restart
 }}
 
-and
+Restart the Tor service.
 
 {{CodeSelect|code=
 sudo service tor restart
 }}
 
-to connect to the Tor network.
-Depending on your hypervisor you need to change network settings on the Workstation in order to connect it to the gateway (see below).
+<u>Note</u>: Depending on the hypervisor it is necessary to change network settings on {{workstation_product_name}} in order to connect it to {{gateway_product_name}} (see next section).
+}}
 
 == Untested / Unrecommended: In a VM ==
 
