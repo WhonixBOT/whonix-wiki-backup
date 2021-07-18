@@ -285,17 +285,39 @@ This issue was fixed in the {{project name}} 14 release.
 # Shut down both TemplateVMs and any running instances of <code>sys-whonix</code> and <code>anon-whonix</code>.
 # Restart <code>sys-whonix</code> and <code>anon-whonix</code>.
 
-== Inspecting and Disabling AppArmor Notifications ==
+== AppArmor Notifications ==
+=== apparmor-info ===
+[https://gitlab.com/whonix/helper-scripts/-/blob/master/usr/sbin/apparmor-info <code>apparmor-info</code>] is a helper utility to simplify viewing AppArmor logs. It parses AppArmor logs, hides unnecessary information <ref>
+<blockquote>Jul 18 13:50:28 host kernel: [  117.212029] audit: type=1400 audit(1626616228.947:23):</blockquote>
+</ref> and removes duplicates.
 
-[https://packages.debian.org/stretch/apparmor-notify apparmor-notify] is no longer installed by default. This means desktop notifications will not appear concerning AppArmor denied messages, which are stored in <code>/var/log/kern.log</code>. <ref>
-To install it, run: <code>sudo apt-get update && sudo apt-get install apparmor-notify</code>.
-</ref> <ref>
+{{CodeSelect|code=
+sudo apparmor-info {{!}} grep -i DENIED
+}}
+
+=== apparmor-notify ===
+[https://packages.debian.org/{{Stable project version based on Debian codename}}/apparmor-notify apparmor-notify] is no longer installed by default. <ref>
 https://forums.whonix.org/t/whonix-14-debian-stretch-apparmor-related-changes/3563
-</ref>
+</ref> This means desktop notifications will not appear concerning AppArmor denied messages, which are stored in <code>/var/log/kern.log</code>. 
 
-=== Inspect Notifications ===
+To install:
 
-To inspect relevant logs, run.
+{{Install Package|
+package=apparmor-notify
+}}
+
+If <code>apparmor-notify</code> is manually installed, then on occasion an application may be functional but AppArmor "denied" messages constantly appear. Rather than updating the relevant AppArmor profile(s), it is possible to disable notifications instead.
+
+In the offending {{project name}} (App)VM, launch Xfce Terminal and run.
+
+{{CodeSelect|code=
+sudo killall aa-notify
+}}
+
+To revert this change, reboot the VM.
+
+=== Manual Notifications Inspection ===
+To manually inspect relevant logs, run.
 
 {{Open with root rights|filename=
 /var/log/kern.log
@@ -312,18 +334,6 @@ It is possible to keep watching the file as it is appended. This is useful for r
 {{CodeSelect|code=
 sudo tail -f /var/log/kern.log {{!}} grep --line-buffered DENIED
 }}
-
-=== Disable Notifications ===
-
-If <code>apparmor-notify</code> is manually installed, then on occasion an application may be functional but AppArmor "denied" messages constantly appear. Rather than updating the relevant AppArmor profile(s), it is possible to disable notifications instead.
-
-In the offending {{project name}} (App)VM, launch Xfce Terminal and run.
-
-{{CodeSelect|code=
-sudo killall aa-notify
-}}
-
-To revert this change, reboot the VM.
 
 == More Profiles ==
 It is possible to utilize profiles by other vendors, but this is unsupported by {{project name}} developers. As a reminder, it is not necessary to install AppArmor profiles for any applications that are unlikely to be used (such as dovecot). Additional options include:
