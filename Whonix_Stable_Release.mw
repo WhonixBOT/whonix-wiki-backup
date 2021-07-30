@@ -205,6 +205,7 @@ Various fixes for [[I2p|I2P]] inside Whonix-Workstation: <ref>https://forums.who
 * Do not autostart <code>privoxy.service</code> if installed.
 * Do not autostart <code>i2p.service</code> in Qubes TemplateVM.
 * Do not autostart <code>privoxy.service</code> in Qubes TemplateVM.
+* Fixed the i2pbrowser local browser homepage.
 
 [https://gitlab.com/whonix/open-link-confirmation <code>open-link-confirmation</code>]:
 * Remove SecBrowser code since it is deprecated. <ref>https://gitlab.com/whonix/open-link-confirmation/-/commit/7c8fce21d7146a370adbd3073f25b4602901b813</ref>
@@ -214,6 +215,14 @@ Various fixes for [[I2p|I2P]] inside Whonix-Workstation: <ref>https://forums.who
 * <code>sdwdate-gui</code>: Fixed an unwanted automatic restart of Qubes-Whonix-Workstation after shutdown and no longer qrexec notify self on shutdown.
 * Fixed a msgcollector sudoers issue when <code>qubes-core-agent-passwordless-root</code> package was removed.
 * <code>vm-config-dist</code> is now installed in {{q_project_name}} so the QMLSCENE_DEVICE=softwarecontext workaround is available. <ref>https://gitlab.com/whonix/anon-meta-packages/-/commit/4e6db57c3fba6329dd1f23818523e43fa4e1e98d</ref>
+* Fixed the [https://github.com/QubesOS/qubes-issues/issues/5930 Networks VMs are restarting themselves without valid reason] bug in Qubes-Whonix.
+* Fixed the [https://github.com/QubesOS/build-issues/issues/1769 qvm-kill'ing a DispVM leaves a spurious entry in qubes.xml] bug in Qubes-Whonix.
+* Allow <code>dummy-dependency</code> to fulfill the dependency of <code>qubes-core-agent-passwordless-root</code> in Qubes-Whonix.
+* Attempted to fix the Qubes-Whonix bug: [https://forums.whonix.org/t/setting-up-anon-base-files-shows-machine-id-prompt-followed-by-ominous-warning/8045 Setting up anon-base-files shows machine-id prompt followed by "OMINOUS WARNING"].
+
+[https://gitlab.com/whonix/security-misc <code>security-misc</code>]:
+* Fixed <code>security-misc</code> to allow group sudo and console to use consoles.
+* No longer unconditionally abort pam for user accounts with locked passwords.
 
 [https://gitlab.com/whonix/tb-default-browser <code>tb-default-browser</code>]:
 * Removed SecBrowser code since it is deprecated. <ref>https://gitlab.com/whonix/tb-default-browser/-/commit/e2a05621ae54cad84dccc293ed43089fcc745b87</ref>
@@ -222,6 +231,7 @@ Various fixes for [[I2p|I2P]] inside Whonix-Workstation: <ref>https://forums.who
 * Removed SecBrowser-specific code since it is deprecated.
 * Added custom <code>user.js</code> support. <ref>https://gitlab.com/whonix/tb-starter/-/commit/b5d2280ad445bc1fbdb613424664bf8503e6f395</ref>
 * Updated Tor Browser Integration. <ref>https://forums.whonix.org/t/tor-browser-integration/11912</ref>
+* Fixed a <code>tb-starter</code> bug.
 
 [https://gitlab.com/whonix/tirdad <code>tirdad</code>]:
 * Load tirdad before LKRG so LKRG does not judge tirdad to be malicious. <ref>https://gitlab.com/whonix/tirdad/-/commit/2fc3c726dd09dbf9cfe0ad51a327d02ce392a16b</ref>
@@ -241,7 +251,6 @@ Various fixes for [[I2p|I2P]] inside Whonix-Workstation: <ref>https://forums.who
 Other fixes:
 * Fixed whonixcheck msgcollector permission errors.
 * Corrected authentication failures related to Anon Connection Wizard and Whonix repository. <ref>https://github.com/Whonix/Whonix/commit/5067d7eca6cfb36b71fe62ff7f3461f87bcdb3f6</ref>
-* Fixed a <code>tb-starter</code> bug.
 * Resolved the apt-get error relating to Debian's suite value changing from 'testing' to 'stable'. <ref>https://forums.whonix.org/t/apt-get-error-e-repository-tor-https-cdn-aws-deb-debian-org-debian-security-buster-updates-inrelease-changed-its-suite-value-from-testing-to-stable/7704</ref>
 * Fixed starting pkexec-based applications from start menu, such as gdebi, synaptic and gparted. <ref>https://forums.whonix.org/t/cannot-use-pkexec/8129</ref>
 * Added an encrypted swap file to the system to avoid Whonix-Gateway freezing (for systems with low RAM) during the <code>apt-get dist-upgrade</code> procedure. <ref>This also creates a new encrypted swapfile with a random password on every boot.</ref> <ref>https://github.com/Whonix/swap-file-creator</ref> <ref>https://forums.whonix.org/t/swap-swap-file-whonix-gateway-freezing-during-apt-get-dist-upgrade-encrypted-swap-file-creator/8317</ref>
@@ -253,7 +262,6 @@ Other fixes:
 * Disabled <code>vm.unprivileged_userfaultfd=0</code> because it is currently broken. <ref>[https://forums.whonix.org/t/kernel-hardening/7296/406 Kernel Hardening]</ref> <ref>Reverts “Restrict the userfaultfd() syscall to root as it can make heap sprays easier.”</ref> <ref>https://duasynt.com/blog/linux-kernel-heap-spray</ref>
 * pkexec wrapper: fixed gdebi / synaptic but at the cost of checking for passwordless sudo /etc/suders /etc/sudoers.d exceptions. <ref>[https://forums.whonix.org/t/cannot-use-pkexec/8129/53 cannot use pkexec]</ref>
 * SecBrowser / i2pbrowser: no longer use firejail by default even if installed since it is not currently  maintained by a contributor in Whonix / Kicksecure.
-* Fixed the i2pbrowser local browser homepage.
 * Fixed an onioncircuits error report related to user permissions. <ref><blockquote>disksd[572]: failed to load module crypto: libbd_crypto.so.2: cannot open shared object file: No such file or directory</blockquote></ref> <ref>[https://forums.whonix.org/t/onion-circuits-does-not-appear-in-the-tor-control-panel/8838 onioncircuits started from tor-control-panel by running it under user debian-tor rather than root].</ref>
 * Added an ENOUGH_RAM setting to swap-file-creator (1950 MB RAM default), so if there is enough RAM a swap file is not created (improving boot time). <ref>[https://forums.whonix.org/t/swap-swap-file-whonix-gateway-freezing-during-apt-get-dist-upgrade-encrypted-swap-file-creator/8317 Fix Non-Qubes-Whonix Whonix-Gateway slow boot].</ref>
 * first-boot-skel: fixed <code>/etc/skel/.bashrc</code> to <code>/home/user/.bashrc</code> handling if the home folder is completely empty.
@@ -263,16 +271,10 @@ Other fixes:
 * Ensured consistent parsing of <code>/usr/local/etc/name.d</code> for applications by Whonix that also parse <code>/etc/name.d</code>. Parsing <code>/rw/config/name.d</code> is still possible for compatibility but will be deprecated.
 * Fixed adduser -- no longer writing to <code>/nonexistent</code>.
 * Set the environment variable <code>QMLSCENE_DEVICE=softwarecontext</code> (in VirtualBox, and also after upgrades in KVM) to workaround a [https://github.com/monero-project/monero-gui/issues/2878 VM-specific Monero bug].
-* Fixed <code>security-misc</code> to allow group sudo and console to use consoles.
 * Implemented a <code>sdwdate</code> python 3.7 fix if the host timezone is set to something other than UTC.
 * Fixed a false positive live mode detection in live mode indicator.
-* Fixed the [https://github.com/QubesOS/qubes-issues/issues/5930 Networks VMs are restarting themselves without valid reason] bug in Qubes-Whonix.
-* Fixed the [https://github.com/QubesOS/build-issues/issues/1769 qvm-kill'ing a DispVM leaves a spurious entry in qubes.xml] bug in Qubes-Whonix.
-* Allow <code>dummy-dependency</code> to fulfill the dependency of <code>qubes-core-agent-passwordless-root</code> in Qubes-Whonix.
-* Attempted to fix the Qubes-Whonix bug: [https://forums.whonix.org/t/setting-up-anon-base-files-shows-machine-id-prompt-followed-by-ominous-warning/8045 Setting up anon-base-files shows machine-id prompt followed by "OMINOUS WARNING"].
 * Fixed <code>update-torbrowser</code> not seeing version <code>10.0.6</code> due to a new, upstream version format. <ref>https://forums.whonix.org/t/update-torbrowser-does-not-see-version-10-0-6/10711</ref>
 * Tor Browser Starter by Whonix Developers: fixed opening URLs which contain question marks and added more folder permission checks.
-* <code>security-misc</code>: no longer unconditionally abort pam for user accounts with locked passwords.
 * <code>ro-mode-init</code>: fixed the non-functional Live Mode Indicator. <ref>https://forums.whonix.org/t/ro-mode-init-live-mode-indicator-not-working/6795/17</ref>
 * Fixed Thunderbird connectivity out of the box with a [https://forums.whonix.org/t/torbirdy-replacement/8782/35 torbirdy replacement].
 * qtox is no longer installed by default. <ref>https://forums.whonix.org/t/tox-qtox-whonix-integration/1219/18 no longer installed by default</ref>
