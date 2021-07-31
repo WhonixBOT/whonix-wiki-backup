@@ -82,23 +82,29 @@ VirtualBox ticket: [https://www.virtualbox.org/ticket/19500 VirtualBox should no
 | text    = '''Warning:''' this procedure lessens security.
 }}
 
-Consider disabling the [[Spectre Meltdown]] mitigations. ([https://forums.whonix.org/t/whonix-vulerable-due-to-missing-processor-microcode-packages-spectre-meltdown-retpoline-l1-terminal-fault-l1tf/5739 related forum discussion])
+Consider disabling the [[Spectre Meltdown]] mitigations. ([https://forums.whonix.org/t/whonix-vulerable-due-to-missing-processor-microcode-packages-spectre-meltdown-retpoline-l1-terminal-fault-l1tf/5739 Related forum discussion].)
 
-Doing this is required in the VM in which the user intents to disable CPU mitigations <u>and</u> on the host operating system if using [[Kicksecure]] or [[security-misc]].
+This step should be performed in the VM intended for disabled CPU mitigations <u>and</u> on the host operating system if either [[Kicksecure]] or [[security-misc]] are in use.
+
+{{box|text=
+'''1.''' Remove the relevant CPU mitigations file.
 
 {{CodeSelect|code=
 sudo rm /etc/default/grub.d/40_cpu_mitigations.cfg
 }}
 
+'''2.''' Update grub.
+
 {{CodeSelect|code=
 sudo update-grub
 }}
 
-Reboot required.
+'''3.''' Reboot.
+}}
 
-== Nested paging and VPIDs ==
+== Nested Paging and VPIDs ==
 
-You could increase performance by using large and/or VPIDs. It is unknown, if that may decrease security or stability. See VirtualBox manual: [http://www.virtualbox.org/manual/ch10.html#nestedpaging Nested paging and VPIDs] for more information.
+It is possible to increase performance by using largepages and/or Virtual Processor Identifiers (VPIDs). It is unknown if this decreases security or stability. For further information refer to the VirtualBox manual: [https://www.virtualbox.org/manual/ch10.html#nestedpaging Nested Paging and VPIDs].
 
 {{CodeSelect|code=
 vboxmanage modifyvm {{workstation_product_name_short}}-XFCE --largepages on
@@ -116,45 +122,47 @@ vboxmanage modifyvm {{workstation_product_name_short}}-XFCE --vtxvpid on
 vboxmanage modifyvm {{gateway_product_name_short}}-XFCE --vtxvpid on
 }}
 
-== Memory ballooning, Page Fusion, Memory overcommitment ==
+== Memory Ballooning, Page Fusion and Memory Overcommitment ==
 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text    = '''Warning:''' this procedure lessens security.
 }}
 
-Memory ballooning is bad for security, see [[Dev/KVM#memory_balloon|this reference]] (it is written in context of KVM but the research also applies to any other virtualizer unless it has specific protection against that which would need to be stated somewhere).
+Memory ballooning worsens security because it is a vector for side channel attacks on memory; see [[Dev/KVM#memory_balloon|here]] for further information. <ref>This entry relates to KVM but the research similarly applies to other virtualizers unless they have implemented and documented specific protections.</ref>
 
-Other settings for security?
-
-See VirtualBox manual: [https://www.virtualbox.org/manual/ch04.html#guestadd-memory-usage Memory overcommitment].
+For other security settings, refer to the VirtualBox manual: [https://www.virtualbox.org/manual/ch04.html#guestadd-memory-usage Memory Overcommitment].
 
 == Undocumented Tuning Settings ==
 
-There are probably more tuning related settings. Undocumented at {{project name}}. Documented in VirtualBox manual but not bundled as a chapter "tuning".
+There are probably more tuning-related settings, but these are currently undocumented at {{project name}}. Interested readers can review the VirtualBox manual for relevant settings, which are unlikely to be bundled under a "tuning" chapter.
 
-View all settings.
+To view all settings, run.
 
 {{CodeSelect|code=
 vboxmanage showvminfo Whonix-Workstation-XFCE
 }}
 
-Learn about all of these settings. Read [https://www.virtualbox.org/manual/ VirtualBox manual].
+Next, learn about all of these settings by reviewing the [https://www.virtualbox.org/manual/ VirtualBox manual].
 
-== Optimized builds ==
+== Optimized Builds ==
 
-Since the concept behind {{project_name}} is not tied to anything, you could create your own implementation. Perhaps using Gentoo with optimized build flags for your system. See [[Dev/Technical Introduction#{{project_name}} Framework|{{project_name}} Framework]], [[UniStation]].
+Since the {{project_name}} concept is flexible and distribution-agnostic, it is possible to create your own implementation. For example, Gentoo could be used with optimized build flags for a personal system. 
 
-== PCI passthrough ==
+See: 
+* [[Dev/Technical Introduction#{{project_name}} Framework|{{project_name}} Framework]]; and 
+* [[UniStation]].
+
+== PCI Passthrough ==
 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
 | text    = '''Warning:''' this procedure lessens security.
 }}
 
-Might greatly improve graphics performance. Bad for security as VMs should not have direct access to physical hardware.
+This setting can improve graphics performance dramatically, but it worsens security because VMs should not have direct access to physical hardware.
 
-Essentially this feature allows to directly use physical PCI devices on the host by the guest even if host doesn't have drivers for this particular device. See VirtualBox Manual: [http://www.virtualbox.org/manual/ch09.html#pcipassthrough PCI passthrough].
+In simple terms, this feature allows the direct use of physical PCI devices on the host by the guest even if the host does not have drivers for the particular device. For further information, refer to VirtualBox Manual: [https://documentation.help/VirtualBox/ch09s06.html PCI Passthrough].
 
 = See Also =
 
