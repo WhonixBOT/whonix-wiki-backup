@@ -3,61 +3,115 @@
 title=Cold Boot Attack Defense
 }}
 {{#seo:
-|description=Wipe RAM to prevent information extracted from memory.
+|description=Preventing Cold Boot Attacks. Wipe RAM to prevent information extraction from memory.
 |image=https://www.{{project_clearnet}}/w/images/9/9f/Coldbootattack12312421.png
 }}
 [[image:Coldbootattack12312421.png|thumb]]
 
-{{stub}}
+= Introduction =
 
-TODO: write introduction
+== Attack Definition ==
 
-* What is a cold boot attack.
-* What is RAM.
-* Explain DDR2 vs DDR3 RAM.
-* How is RAM different from mass storage.
-* Document how to find out if one is using DDR3 RAM.
+A cold boot attack is: <ref>https://en.wikipedia.org/wiki/Cold_boot_attack</ref> <blockquote>... a type of [https://en.wikipedia.org/wiki/Side_channel_attack side channel attack] in which an attacker with [https://en.wikipedia.org/wiki/Physical_access physical access] to a computer performs a [https://en.wikipedia.org/wiki/Memory_dump memory dump] of a computer's [https://en.wikipedia.org/wiki/Random-access_memory random-access memory (RAM)] by performing a hard reset of the target machine. Typically, cold boot attacks are used to retrieve encryption [https://en.wikipedia.org/wiki/Key_(cryptography) keys] from a running [https://en.wikipedia.org/wiki/Operating_system operating system] for malicious and/or criminal investigative reasons. The attack relies on the [https://en.wikipedia.org/wiki/Data_remanence data remanence] property of [https://en.wikipedia.org/wiki/Dynamic_random-access_memory DRAM] and [https://en.wikipedia.org/wiki/Static_random-access_memory SRAM] to retrieve memory contents that [https://en.wikipedia.org/wiki/DRAM_data_remanence remain readable] in the seconds to minutes after power has been removed.</blockquote>
 
-<ref>
-* https://www.youtube.com/watch?v=JDaicPIgn9U
-* https://en.wikipedia.org/wiki/Cold_boot_attack
-* https://blog.f-secure.com/cold-boot-attacks/
-* https://www.usenix.org/legacy/event/sec08/tech/full_papers/halderman/halderman.pdf
-* https://cyberside.planet.ee/docs/fares_coldboot.pdf
-</ref>
+There are two primary methods of performing the attack: <ref>https://doc.lagout.org/security/DFRWS-EU-2016-7.pdf</ref>
+# The target computer is reset and booted from an alternative medium like a USB with a minimal operating system. RAM contents are recovered, except for those that have been already overwritten. BIOS passwords can trivially defeat this method.
+# Ram modules are physically transplanted from the target computer into another which performs image extraction. Most of the content is retained if properly cooled using certain sprays that increase the data remanence.
 
-= Cold boot attack =
-Cold boot attack is a side channel attack which an attacker has physical access to a computer, which then ca n steal the memory from RAM before it disappears.
+== Research Findings ==
 
-This attack relies on RAM from removing his content, which typically stays from seconds to minutes.
-Usually this behavior (RAM cleaning his content) also depends on the user operation of handling sensitive things, such as forcefully shutting down a computer (with the power button) or clearing encryption keys from RAM.
+The [https://www.usenix.org/legacy/event/sec08/tech/full_papers/halderman/halderman.pdf original 2008 cold boot attack research] found:
+*  Dynamic random access memory (DRAM) in most computers retain their contents for seconds to minutes after power is lost, even when removed from the motherboard.
+* This persistence allows for forensic or malicious access to system memory images.
+* Attackers with physical access can potentially cold boot the machine and use an operating system on a removable disk to write the contents of physical memory to a file.
+* This file can be analyzed for sensitive data like cryptographic (encryption) keys.
+* This technique was able to defeat disk encryption schemes like BitLocker, TrueCrypt and FileVault.
 
-This kind of attack is typically used for data recovery, investigations and more.
+More recent research in 2018 has identified that mechanisms that overwrite RAM contents when power is restored can be bypassed by rewriting the non-volatile memory chip (firmware) that contains these settings. 
+<ref name=f_secure>https://blog.f-secure.com/cold-boot-attacks/</ref> <ref name=wired_coldboot>https://www.wired.com/story/cold-boot-break-pc-encryption/</ref> At the time of writing DDR3/4 RAM appears to protect against cold boot attacks (see next section).
 
-There is ways to defend from this type of attack, such as on [https://tails.boum.org Tails] which when the operating system is shut down, it writes random data to the RAM.
+= Possible Countermeasures =
 
-Defending Cold Boot Attacks makes most sense for users of [[Full Disk Encryption]] and/or [[Host Live Mode]].
+== Literature Summary ==
 
-To make memory forensics harder, make sure you shutdown your computer normally <ref>
-so the Linux kernel's memory erasing features (<code>page_poison</code>, <code>slub_debug</code> or <code>init_on_free</code>) and/or your firmware reset attack mitigation can kick in
-</ref> and then remove the machine from any power source by pulling the power plug. In the case of notebooks, the battery should be removed after powering off. And the computer should be turned when exposed to higher-risk situations like traveling. <ref>
-And/or the memory should be wiped upon shutdown. This is a theoretical mechanism at present because it is [[undocumented]].
+The literature suggests the following possible countermeasures against cold boot attacks.
 
-https://forums.whonix.org/t/is-ram-wipe-possible-inside-whonix/5596
-</ref>
+'''Table:''' ''Cold Boot Attack Countermeasures''
 
-Use DDR3 RAM since it might be resistant to this attack. <ref>
-Quote [https://cyberside.planet.ee/docs/fares_coldboot.pdf On the Practicability of Cold Boot Attacks]:
+{| class="wikitable"
+|-
 
-<blockquote>
-we could not reproduce cold boot attacks against modern DDR3 chips.
-</blockquote>
-</ref>
+! scope="col"| '''Category'''
+! scope="col"| '''Description'''
+|-
+
+! scope="row"| Scrubbing memory
+| Software should try to avoid storing keys in memory. For example, software should overwrite keys when unneeded, keys should be prevented from being paged to disk, and memory cleared at boot time. <ref>The last measure cannot prevent the physical removal of memory chips to another computer for analysis.</ref> Unfortunately this cannot protect against keys that remain in memory while in active use, such as encrypted disk keys. Further, researchers demonstrated in 2018 that mechanisms that overwrite RAM contents when power is restored can be bypassed by rewriting the non-volatile memory chip (firmware) that contains these settings. <ref name=f_secure /> <ref name=wired_coldboot /> <ref>In summary, researchers were able to disable memory overwriting and enable booting from external devices. This allowed cold boot attacks via a special program on a USB stick.</ref>
+|-
+
+! scope="row"| Limiting booting from network or removable media
+| Administrative passwords can be configured in order to boot from these sources. This is an imperfect defense because the drive can still be swapped out or the computer's NVRAM can be reset to allow for booting from removable media.
+|-
+
+! scope="row"| Safe system suspension
+| Usually locking the computer screen or suspending a laptop's state is generally ineffective, because the computer can be awakened, power-cycled, and then have its memory extracted. It is far safer to just completely power off systems when they are not in use, with the computer guarded for a few minutes afterward. Suspension is made safer by necessitating a strong password or external secret to awaken the computer, with memory contents encrypted by a key related to the password.
+|-
+
+! scope="row"| Avoiding precomputation
+| Although precomputation speeds up cryptographic operations, it makes keys more vulnerable because there is redundant storage of key information.
+|-
+
+! scope="row"| Key expansion
+| Theoretically the application of a transform to keys when it is stored in memory can make it more difficult to reconstruct. Operating systems could also identify memory locations that decay more quickly, and utilize those to store key material.
+|-
+
+! scope="row"| Physical defenses
+| Since some cold boot attacks rely on access to DRAM chips/modules, the physical memory can be protected by locking them inside the machine, soldering memory to the motherboard or encasing chips in epoxy so they cannot be removed/accessed.
+|-
+
+! scope="row"| Future architectural changes
+| DRAM can be designed that loses their state more quickly or future hardware might have key-store hardware that erases the state during power-up, reset and shutdown. Another possibility is the routine encryption of memory contents, so long as they are destroyed after a reset or power loss.
+|-
+
+! scope="row"| Disk controller encryption
+| Data in the hard disk controller hardware can be encrypted. Unlike normal disk encryption systems, both encryption and decryption are performed by the disk controller which store the main encryption keys. This means encryption/decryption is not performed by software in the main CPU, along with the main encryption keys stored in DRAM.
+|-
+
+! scope="row"| DDR3 and DDR4 RAM
+| The literature generally suggests that a proper solution to cold boot attacks may be later generation DDR3 and DDR4 RAM which utilizes [https://en.wikipedia.org/wiki/Memory_scrambling memory scrambling] via the memory controllers. This also retains memory for a shorter period of time than DDR1 and DDR2 RAM. In summary, there does not appear to be any way to perform cold boot attacks on scrambled DDR3 and DDR4 memory, however it should be noted that researchers have shown it ''is'' possible to [https://doc.lagout.org/security/DFRWS-EU-2016-7.pdf descramble DDR3 memory in laboratory conditions]. <ref>While the scrambling algorithm could be broken, researchers only found DDR3 memory retention for around 10 seconds before it totally decayed.</ref> Further, "warm reset attacks" where power is not cut ''are'' effective against DDR3 systems. <ref>https://cyberside.planet.ee/docs/fares_coldboot.pdf</ref> <ref>The researchers also concluded that cold boot attacks were not possible against modern DDR3 (and later) RAM chips.</ref>
+|-
+
+|}
+
+It should be noted that [https://en.wikipedia.org/wiki/Trusted_Platform_Module Trusted Platform Modules] (TPMs) are ineffective against cold boot attacks. The reason is TPMs can prevent keys from being loaded into memory for use, but cannot prevent their capture once they are in memory. 
+
+== Recommendations ==
+
+Based on the research findings, practical countermeasures for the majority of users involves never leaving the computer unattended and always ensuring the computer is completely shut down when not in use or when in high-risk situations like traveling. <ref>So the Linux kernel's memory erasing features (<code>page_poison</code>, <code>slub_debug</code> or <code>init_on_free</code>) and/or your firmware reset attack mitigations are instituted.</ref> After shutdown, it is safer to completely remove the machine from any power source by removing the power plug. In the case of notebooks, the battery should be removed after powering off. <ref>And/or the memory should be wiped upon shutdown. This is a theoretical concern at present because it is [[undocumented]].</ref> <ref>See: [https://forums.whonix.org/t/is-ram-wipe-possible-inside-whonix/5596 Is RAM Wipe possible inside Whonix? Cold Boot Attack Defense]</ref> A final simple recommendation is to rely on later computer hardware that holds encryption keys in hardware separate from the HDD/SSD and utilizing systems that have DDR3/4 RAM installed; see the footnote for how to determine the RAM type. <ref>
+* In Linux, launch a terminal and run. {{CodeSelect|code=
+sudo sudo dmidecode --type memory
+}}
+* In Windows, select the PC Task Manager after pressing <code>Ctrl</code> + <code>Alt</code> + <code>Delete</code>. Click "more details" and navigate to the performance tab. Then select the memory option.
+* In macOS, click the Apple logo and select "About This Mac". For additional information, click the "More Info..." button and navigate to the "Memory" tab.</ref>
+
+= See Also =
+
+* [https://en.wikipedia.org/wiki/Cold_boot_attack Wikipedia: Cold boot attack]
+* [https://www.usenix.org/legacy/event/sec08/tech/full_papers/halderman/halderman.pdf Lest We Remember: Cold Boot Attacks on Encryption Keys]
+* [https://www.forensicfocus.com/stable/wp-content/uploads/2011/08/cold_boot_attack_for_forensiscs1.pdf An in-depth analysis of the cold boot attack: Can it be used for sound forensic memory acquisition?]
+* [https://blog.f-secure.com/cold-boot-attacks/ The Chilling Reality of Cold Boot Attacks]
+* [https://cyberside.planet.ee/docs/fares_coldboot.pdf On the Practicability of Cold Boot Attacks]
+* [https://www.wired.com/story/cold-boot-break-pc-encryption/ A Decade-Old Attack Can Break the Encryption of Most PCs]
+* [https://www.youtube.com/watch?v=JDaicPIgn9U YouTube: Lest We Remember: Cold Boot Attacks on Encryption Keys]
 
 = Development Discussion =
-https://forums.whonix.org/t/is-ram-wipe-possible-inside-whonix/5596
+
+* [https://forums.whonix.org/t/is-ram-wipe-possible-inside-whonix/5596 {{project_name}} Forum: Is RAM Wipe possible inside Whonix? Cold Boot Attack Defense]
 
 = Footnotes =
+
 {{reflist|close=1}}
+
 [[Category:Documentation]]
+
 {{Footer}}
