@@ -6591,6 +6591,246 @@ E: Repository 'tor+https://cdn-aws.deb.debian.org/debian-security buster/updates
 
 See [https://forums.whonix.org/t/apt-get-error-e-repository-tor-https-cdn-aws-deb-debian-org-debian-security-buster-updates-inrelease-changed-its-suite-value-from-testing-to-stable/7704 this forum thread] for a solution.
 
+= Manual Release Upgrade =
+== Introduction ==
+First consider completing the [[#Sanity Tests|sanity tests]] described above; the system is checked for obvious and grave issues that must be fixed before attempting an upgrade. For example, if the package manager is broken due to the mixing of packages from both Debian stable and Debian testing, then the upgrade may fail part way through, leaving the system in an unstable state that is difficult to resolve.
+
+Consider retaining the full terminal log. Even if the upgrade appears successful, there might be issues following reboot. To properly report a bug in the {{project_name}} forums it is necessary to share the upgrade log so the issue can be investigated.
+
+== Update Package and Sources Lists ==
+
+First upgrade the system's packages by performing the [[Operating_System_Software_and_Updates#Standard_Upgrade_Steps|Standard Upgrade Steps]]. <ref>
+Mandatory, not optional for most users. Unless you know what you are doing.
+
+It (initially) downloads the <code>release-upgrade</code> script.
+
+In past this for example to ensure that the signing key for the next Debian release got added. Quote [https://metadata.ftp-master.debian.org/changelogs//main/d/debian-archive-keyring/debian-archive-keyring_2019.1+deb10u1_changelog debian-archive-keyring changelog]:
+<pre>
+debian-archive-keyring (2019.1+deb10u1) buster; urgency=medium
+
+  * Remove jessie's archive keys (Closes: #981343)
+  * Add automatic signing keys for bullseye (Closes: #977911)
+  * Update my own key
+  * Add Debian Stable Release Key (11/bullseye) (ID: 600062A9605C66F00D6C9793)
+    (Closes: #977910)
+  * Refresh signatures over keyrings/debian-archive-keyring.gpg and keyrings/debian-archive-removed-keys.gpg
+  * Add myself to uploaders
+</pre>
+</ref>
+
+=== All Platforms ===
+Update {{project_name}} apt sources list. ([[Project-APT-Repository]])
+
+{{CodeSelect|code=
+sudo whonix_repository --enable --codename bullseye
+}}
+
+Update Debian apt sources list.
+
+{{CodeSelect|code=
+sudo sed -i "s/buster/bullseye/g" /etc/apt/sources.list.d/debian.list
+}}
+
+Delete the [[Install_Software#Backports|backports]], [[Install_Software#Install_from_Debian_testing|testing]] and [[Install_Software#Install_from_Debian_Unstable|unstable]] repositories, as well as the [[Install_Software#Install_from_Debian_testing|default release APT config]] snippet. <ref>
+This step is only required if they were previously enabled, but the command is harmless either way.
+</ref>
+
+{{CodeSelect|code=
+sudo rm -f /etc/apt/sources.list.d/backports.list /etc/apt/sources.list.d/testing.list /etc/apt/sources.list.d/unstable.list /etc/apt/apt.conf.d/70defaultrelease
+}}
+
+=== {{q_project_name}} Only ===
+Update Qubes' apt sources list.
+
+{{CodeSelect|code=
+sudo sed -i "s/buster/bullseye/g" /etc/apt/sources.list.d/qubes*.list
+}}
+
+{{Anchor|Enable Debugging and Update Select Packages}}
+
+== Preparation ==
+Become root.
+
+{{CodeSelect|code=
+sudo su
+}}
+
+Enable extensive debugging so the reporting of any eventual bugs is easier.
+
+{{CodeSelect|code=
+export DEBDEBUG=1
+}}
+
+{{Update}}
+
+{{CodeSelect|code=
+apt-get update
+}}
+
+== Upgrade ==
+
+=== Distribution Upgrade ===
+
+To perform a distribution upgrade, it is recommended to run the following command which uses [https://github.com/{{project_name_short}}/usability-misc/blob/master/usr/bin/apt-get-noninteractive <code>apt-get-noninteractive</code>]; see the footnotes for technical reasons. <ref>
+<code>apt-get-noninteractive</code> prevents the user from being asked difficult technical questions anytime during the upgrade, since the upgrade is stopped until the question is answered. <code>apt-get-noninteractive</code> uses <code>apt-get</code> with <code>-o Dpkg::Options::=--force-confnew</code>. This means <code>apt-get</code> will prefer config files shipped by the distribution in case there is an existing modified config file on the system. Old config files should be automatically moved to <code>configfile.dpkg-old</code>.
+</ref> <ref>
+Advanced users can use <code>apt-get</code> rather than <code>apt-get-noninteractive</code>. However, it is probably best to use <code>apt-get-noninteractive</code> and to re-apply custom configurations after the upgrade.
+</ref> <ref>
+Parameter <code>--no-install-recommends</code> prevents the installation of packages (from <code>debian/control</code> <code>Recommends:</code> packages by Debian) which are not useful, confusing or waste disk space inside of virtual machines, such as <code>xscreensaver</code>. For other reasons why {{project_name}} uses <code>--no-install-recommends</code>, see: [[{{project name short}}_Debian_Packages#Technical_Stuff|Technical Stuff]].
+</code>
+</ref>
+
+{{CodeSelect|code=
+apt-get-noninteractive dist-upgrade --no-install-recommends
+}}
+
+=== Restart Necessary Services ===
+
+Restart whonix-legacy service. <ref>
+A manual restart is required because apt-get-noninteractive is being used. This step is not crucial since it would also run after reboot.
+</ref>
+
+{{CodeSelect|code=
+service whonix-legacy restart
+}}
+
+=== Metapackage Installation ===
+
+<u>Note:</u> It is possible t and likely hat the following [[{{project name short}} Debian Packages|{{project name}} meta packages]] are already installed, but these steps are necessary to confirm it.
+
+==== Non-Qubes-Whonix ====
+
+# In <u>{{gateway_product_name}}</u>, install package <code>non-qubes-whonix-gateway-xfce</code>. {{CodeSelect|code=
+apt-get install non-qubes-whonix-gateway-xfce
+}}
+# In <u>{{workstation_product_name}}</u>, install package <code>non-qubes-whonix-workstation-xfce</code>. {{CodeSelect|code=
+apt-get install non-qubes-whonix-workstation-xfce
+}}
+
+==== Qubes-Whonix ====
+
+# In <u>{{gateway_product_name}}</u> (<code>whonix-gw-15</code>), install package <code>qubes-whonix-gateway</code>. {{CodeSelect|code=
+apt-get install qubes-whonix-gateway
+}}
+# In <u>{{workstation_product_name}}</u> (<code>whonix-ws-15</code>), install package <code>qubes-whonix-workstation</code>. {{CodeSelect|code=
+apt-get install qubes-whonix-workstation
+}}
+
+=== Remove Unneeded Packages ===
+<u>Note:</u> This step is not required for [[{{non q project name short}}|{{non q project name}}]] XFCE users.
+
+This long command will remove deprecated meta packages and KDE leftovers; simply cut and paste the entire command. <ref>In order to separately run the commands, it is necessary to remove the <code>;</code> and <code>\</code> characters at the end.
+</ref> <ref>Unfortunately, as of Debian buster apt-get no longer allows a single apt-get purge command  followed by a list of all packages. If one of the packages is not already installed, then it aborts the whole command and also refuses to uninstall those which are still present. Therefore, to run commands in succession the <code>;</code> parameter is used, while <code>\</code> allows a single long command to be split into multiple lines for better readability.</ref>
+
+Run the following command in <u>both</u> {{gateway_product_name}} and {{workstation_product_name}}.
+
+TODO: none yet
+
+{{CodeSelect|code=
+apt-get purge --yes TODO ; \
+}}
+
+=== Autoremove ===
+
+Remove packages which are no longer required.
+
+{{CodeSelect|code=
+apt-get autoremove
+}}
+
+=== Revert to Regular Privileges ===
+
+If you are root already (previously became root using <code>sudo su</code>), then exit now.
+
+Open a terminal and run.
+
+{{CodeSelect|code=
+exit
+}}
+
+=== {{project_name}} XFCE Desktop Config ===
+* <u>[[{{q project name short}}|{{q project name}}]] users</u>: Please skip this step. <ref>VM XFCE is not being used in Qubes and package [https://github.com/{{project_name_short}}/whonix-xfce-desktop-config {{project_name}} XFCE Desktop Config] is also not installed, so this step is unnecessary. If you want to apply this anyhow, it should be done in every AppVM.
+</ref>
+<div class="toccolours mw-collapsible mw-collapsed">
+* <u>[[{{non q project name short}}|{{non q project name}}]] users:</u> Please click on expand on the right.
+<div class="mw-collapsible-content">
+Create folder <code>/home/user/desktop-backup</code>.
+
+{{CodeSelect|code=
+mkdir -p /home/user/desktop-backup
+}}
+
+Backup the existing XFCE desktop configuration.
+
+{{CodeSelect|code=
+mv /home/user/.config/xfce4 /home/user/desktop-backup/
+}}
+
+Execute [https://github.com/{{project_name_short}}/helper-scripts/blob/master/usr/libexec/helper-scripts/first-boot-skel <code>/usr/libexec/helper-scripts/first-boot-skel</code>] to reset the XFCE desktop configuration and to get the latest [https://github.com/{{project_name_short}}/whonix-xfce-desktop-config {{project_name}} XFCE Desktop Config].
+
+{{CodeSelect|code=
+sudo /usr/libexec/helper-scripts/first-boot-skel force
+}}
+</div>
+</div>
+
+=== Terminal Log ===
+
+Remember to retain the terminal log:
+
+<code>Edit</code> &rarr; <code>Select All</code> &rarr; <code>Edit</code> &rarr; <code>Copy</code> &rarr; <code>Open Editor</code> &rarr; <code>Paste</code> &rarr; <code>Save</code>
+
+=== APT Sources Lists ===
+Open a new terminal window. <ref>Because GUI application whonix-repository-wizard should not be run as root.
+</ref>
+
+Run [[Project-APT-Repository|{{project_name}} APT Repository Tool]]. <ref>
+To select the correct APT repository for use.
+</ref>
+
+{{CodeSelect|code=
+lxsudo repository-dist-wizard
+}}
+
+As explained in step [[#Distribution Upgrade|Distribution Upgrade]], all system configuration files in <code>/etc</code> were reset to the distributor default. If modifications were previously made to any files in folder <code>/etc/apt/sources.list.d</code>, they should be re-added at this step (if desired).
+
+Review all files in folder <code>/etc/apt/sources.list.d</code>
+
+{{CodeSelect|code=
+lxsudo mousepad /etc/apt/sources.list.d/*
+}}
+
+If changes were made, follow the [[Operating System Software and Updates|standard ("everyday") upgrade instructions]].
+
+=== Reboot ===
+
+A reboot is required.
+
+{{CodeSelect|code=
+sudo reboot
+}}
+
+=== Start Menu  ===
+* <u>[[{{non q project name short}}|{{non q project name}}]] users</u>: Please skip this step. 
+<div class="toccolours mw-collapsible mw-collapsed">
+* <u>[[{{q project name short}}|{{q project name}}]] users:</u> Please click on expand on the right.
+<div class="mw-collapsible-content">
+The upgrade process does not upgrade the Qubes appmenus (start menu) entries and these must be manually updated. TODO: maybe not required <ref>
+https://groups.google.com/d/topic/qubes-devel/pkvvm1WNznY
+</ref>
+	 
+# <code>Qubes appmenu</code> &rarr; <code>anon-whonix</code> &rarr; <code>Add more shortcuts</code>
+# <code>Qubes appmenu</code> &rarr; <code>sys-whonix</code> &rarr; <code>Add more shortcuts</code>
+# <code>Qubes appmenu</code> &rarr; <code>whonix-gw-15</code> &rarr; <code>Add more shortcuts</code>
+# <code>Qubes appmenu</code> &rarr; <code>whonix-ws-15</code> &rarr; <code>Add more shortcuts</code>
+</div>
+</div>
+
+=== Done ===
+All necessary steps are now complete.
+
+As a final recommendation, it is advisable to run [[systemcheck]] to check numerous, important system states.
+
 = Footnotes =
 {{reflist|close=1}}
 
