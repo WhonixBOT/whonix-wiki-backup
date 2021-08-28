@@ -54,6 +54,8 @@ Researchers emphasized it is easy for malicious actors to get access to OpenAI A
 
 = Exploitation Vectors =
 
+== Common Phishing Attacks ==
+
 The most common social engineering vectors relate to phishing attacks which are summarized below, as well as related exploitation vectors.
 
 '''Table:''' ''Social Engineering Exploitation Vectors'' <ref>https://en.wikipedia.org/wiki/Social_engineering_%28security%29#Four_social_engineering_vectors</ref> <ref name=social_eng /> <ref name=phishing>https://en.wikipedia.org/wiki/Phishing</ref>
@@ -157,6 +159,50 @@ The attacker entices the victim to ask them questions to solve problems they act
 |-
 
 |}
+
+== IDN Homograph Attacks ==
+
+Wikipedia provides a concise summary of this phishing attack vector: <ref>https://en.wikipedia.org/wiki/IDN_homograph_attack</ref> <ref>This attack is distinct from "typosquatting" whereby malicious domains use URLs similar to legitimate websites in the hope victims will make natural typographical errors when manually entering website links into a browser.</ref>
+<blockquote>The internationalized domain name (IDN) homograph attack is a way a malicious party may deceive computer users about what remote system they are communicating with, by exploiting the fact that many different characters look alike (i.e., they are homographs, hence the term for the attack, although technically homoglyph is the more accurate term for different characters that look alike). For example, a regular user of example.com may be lured to click a link where the Latin character "a" is replaced with the Cyrillic character "а".
+
+This kind of spoofing attack is also known as script spoofing. Unicode incorporates numerous writing systems, and, for a number of reasons, similar-looking characters such as Greek Ο, Latin O, and Cyrillic О were not assigned the same code. Their incorrect or malicious usage is a possibility for security attacks.</blockquote>
+
+IDNs exist because it allows non-English speakers to use domains in their local language. Unfortunately, depending on the font in use supported characters can be visually similar or identical to others. In certain browsers it is possible to construct phishing sites that are indistinguishable from the real, legitimate ones unless IDN is manually disabled and domains are shown in their raw "punycode" format. <ref>https://www.mozilla.org/en-US/security/advisories/mfsa2005-29/</ref> Punycode encodings allow for various different types of input, including ASCII characters, non-ASCII characters, mixed strings/scripts and foreign languages. <ref>https://en.wikipedia.org/wiki/Punycode#Examples</ref> <ref><blockquote>For example, München (German name for Munich) is encoded as Mnchen-3ya.</blockquote></ref> Internationalized domain names are prepended with the <code>xn--</code> prefix, meaning the example domain name "bücher.tld" would be represented in ASCII as "xn--bcher-kva.tld". <ref>https://en.wikipedia.org/wiki/Punycode#Internationalized_domain_names</ref>
+
+At the time of writing the default Firefox and Tor Browser settings remain vulnerable to this attack, while other browsers like Chrome, Chromium, Opera and Safari are protected. <ref>[https://bugzilla.mozilla.org/show_bug.cgi?id=1332714 IDN Phishing using whole-script confusables on Windows and Linux]</ref> To date, Mozilla has decided to rely upon domain registries, standards bodies and browser vendors developing an agreed plan to prevent IDN domain phishing scams. This is arguably a naive approach considering how long this attack vector has remained unfixed (over five years). Further, Mozilla's [https://wiki.mozilla.org/IDN_Display_Algorithm_FAQ IDN Display Algorithm FAQ] that is supposed to clarify their position is currently empty. This situation is clearly unsatisfactory because malicious, spoofed websites can potentially record sensitive information like account details and passwords, among other harmful activities. 
+
+Security researcher Xudong Zheng provided a proof-of-concept homograph attack in this 2017 article: [https://www.xudongz.com/blog/2017/idn-phishing/ Phishing with Unicode Domains]. By utilizing punycode he was able to register a domain name with foreign characters; in this example the domain "xn–pple-43d.com", which is visually equivalent to "аpple.com" due to the font used by Firefox and Tor Browser. The homograph attack is possible because the registered domain is using the Cyrillic "а" (U+0430) rather than the ASCII "a" (U+0061).
+
+'''Figure:''' ''Fake <code>apple.com</code> Website''
+
+[[Image:IDNhomographexample.png|border]]
+
+'''Figure:''' ''Real <code>apple.com</code> Website''
+
+[[Image:Realapplewebsite.png|border]]
+
+This example illustrates that if the punycode form does not appear by default when multiple different languages are in use (hiding the unicode form), user confusion and spoofing attacks remain a distinct possibility unless a site's URL or SSL certificate is carefully examined. It is possible to change Firefox and Tor Browser settings to enforce IDN domains in punycode form to detect malicious websites: <ref>This may break some website domains utilizing languages other than English because everything will display either as ASCII or ASCII-encoded text.</ref>
+* <code>about:config</code> &rarr; <code>search for: network.IDN_show_punycode</code> &rarr; <code>toggle to "true"</code>
+When navigating to the same fake <code>apple.com</code> website in Tor Browser, the punycode allows identification that it is an illegitimate website.
+
+'''Figure:''' ''Fake <code>apple.com</code> Website in Punycode Format''
+
+[[Image:Torbrowserwithpunycode.png|border]]
+
+As the fingerprinting risk of this configuration change is unknown, it is currently unrecommended. To mitigate against this threat, avoid clicking on links to popular websites via emails or on social networking or other sites. Instead, manually type the website address into the URL bar or navigate to sites via reputable search engines. Browser extensions do exist to detect whether visited websites are homographs of another domain from user-defined lists, but this action is unrecommended in Tor Browser due to the fingerprinting risk.
+
+If you run a personal website, it is also possible to check if phishers might have used IDNs to abuse the existing domain name via the [https://holdintegrity.com/checker IDN checker] website. <code>whonix.org</code> is used in the example below and presently there are no existing, registered impersonations utilizing letters from different alphabets/languages. <ref>Although the tool highlights a number of potential domain names that could be used for impersonation of <code>whonix.org</code>.</ref>
+
+'''Figure:''' ''IDN Check for <code>whonix.org</code>''
+
+[[Image:IDNchecker.png|border]] 
+
+For further reading on this topic, see:
+* [https://krebsonsecurity.com/2018/03/look-alike-domains-and-visual-confusion/ Look-Alike Domains and Visual Confusion]
+* [https://www.wordfence.com/blog/2017/04/chrome-firefox-unicode-phishing/ Chrome and Firefox Phishing Attack Uses Domains Identical to Known Safe Sites]
+* [https://holdintegrity.com/checker IDN Checker: Domains Integrity Service] 
+* [https://forums.whonix.org/t/very-hard-to-notice-phishing-scam-firefox-tor-browser-url-not-showing-real-domain-name-homograph-attack-punycode/8373 Forum: Very hard to notice Phishing Scam - Firefox / Tor Browser URL not showing real Domain Name - Homograph attack (Punycode)]
+* [https://gitlab.torproject.org/legacy/trac/-/issues/21961 Should torbrowser enable network.IDN_show_punycode by default?]
 
 = Countermeasures =
 
