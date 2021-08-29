@@ -24,33 +24,39 @@ title=Access Local Network, Host or Clearnet Internet from VM
 * [[Stream_Isolation/Disable_Easy|Disable Stream Isolation]]
 
 = Instructions =
-The following example uses ssh. It could be replaced with anything else.
 
-If using ssh, how to setup ssh on the host such as public key setup are out of scope for this documentation and considered prerequisite knowledge. This wiki page is focused on connectivity and not on server configuration details.
+The following example uses <code>ssh</code>, but it could be replaced with something else.
+
+If <code>ssh</code> is utilized, its setup on the host (such as public key setup) and related issues are out of scope for this documentation and are considered prerequisite knowledge. This wiki chapter is focused on connectivity and not server configuration details.
 
 * These instructions only apply to {{gateway product name}}.
-* [[Undocumented]] for {{workstation product name}}. It would probably require a complex setup with a high risk of clearnet leaks. See footnote. <ref>
-It would probably require
+* {{workstation product name}} is currently [[Undocumented]]. It would likely require a complex setup and pose a high risk of clearnet leaks; see footnote. <ref>
+It would probably require:
 
-* A) (worse) enabling IP forwarding inside {{gateway product name}} or,
-* B) ("better") to open [[{{gateway product name short}} Firewall|Open an Incoming Port on {{gateway product name}} Firewall]] and running some sort of proxy software under {{Gateway product name}} under user <code>clearnet</code> that permits forwarding to host, local area network or clearnet internet.
-</ref> Instead consider [[File_Transfer#SSH_into_{{gateway product name}}|SSH / sshfs (ssh file system) into {{gateway product name}}]], [[File_Transfer#SSH_into_{{workstation product name}}|SSH / sshfs into {{workstation product name}}]] and [[sshfs into Whonix-Workstation]].
+* <u>Less safe</u>: enabling IP forwarding inside {{gateway product name}}; or
+* <u>Safer</u>: [[{{gateway product name short}} Firewall|Opening an Incoming Port on {{gateway product name}} Firewall]] and running some kind of proxy software in {{Gateway product name}} with user <code>clearnet</code> that permits forwarding to host, local area network or clearnet Internet.
+</ref> Instead of using these instructions it is recommended to consider [[File_Transfer#SSH_into_{{gateway product name}}|SSH / SSHFS (ssh file system) into {{gateway product name}}]], [[File_Transfer#SSH_into_{{workstation product name}}|SSH / SSHFS into {{workstation product name}}]], and [[sshfs into Whonix-Workstation|SSHFS into {{workstation product name}}]].
 
 == On the Host ==
-Install the server software. Note: <code>ssh</code> is an example. Can be replaced.
+
+Install the server software. Note: <code>ssh</code> is used as an example but can be replaced with alternatives.
 
 {{Install Package
 |package=ssh
 }}
 
 == Inside the VM ==
-Install the client software. Note: <code>openssh-client</code> is an example. Can be replaced.
+
+Install the client software. Note: <code>openssh-client</code> is used as an example but can be replaced with alternatives.
+
+{{Box|text=
+'''1.''' Install <code>openssh-client</code>.
 
 {{Install Package
 |package=openssh-client
 }}
 
-Create a persistent home folder for user <code>clearnet</code>. (Optional.)
+'''2.''' ''Optional:'' Create a persistent home folder for user <code>clearnet</code>. 
 
 {{Box|text=
 {{CodeSelect|code=
@@ -62,13 +68,13 @@ sudo mkhomedir_helper clearnet
 }}
 }}
 
-Open a shell under user <code>clearnet</code>.
+'''3.''' Open a shell under user <code>clearnet</code>.
 
 {{CodeSelect|code=
 sudo -u clearnet bash
 }}
 
-Permanently disable stream isolation or temporarily circumvent stream isolation.
+'''4.''' Permanently disable stream isolation or temporarily circumvent stream isolation.
 
 Syntax:
 
@@ -76,16 +82,15 @@ Syntax:
 client-software ip-address
 }}
 
-Example:
-
-Note:
+In the following example, note:
 
 * Replace <code>ssh</code> with the desired client software.
 * Replace the IP <code>192.168.1.0</code> with the actual local LAN IP of the host.
-* Drop <code>.anondist-orig</code> if the command is not uwt wrapped by default.
+* Drop <code>.anondist-orig</code> if the command is not uwt-wrapped by default.
 
 {{CodeSelect|code=
 ssh.anondist-orig 192.168.1.0
+}}
 }}
 
 = Troubleshooting =
