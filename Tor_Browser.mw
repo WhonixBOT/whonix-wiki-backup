@@ -1411,7 +1411,7 @@ https://www.reddit.com/r/Whonix/comments/ky7jqr/troubleshooting_i_just_installed
 
 '''2.''' Owner Permissions Fix
 
-Run the following command to reset permissions of user <code>user</code>'s home folder <code>/home/user</code> back to owner <code>user</code> and group <code>user</code>.
+Run the following command to reset permissions of user <code>user</code>'s home folder <code>/home/user</code> back to owner <code>user</code> and group <code>user</code>. That command is often sufficient to fix previous inappropriate use of root rights issues.
 
 {{CodeSelect|code=
 sudo chown --recursive user:user /home/user
@@ -1421,20 +1421,50 @@ sudo chown --recursive user:user /home/user
 
 If that does not resolve permission issues, run the following slightly more experimental command to set <code>chmod</code> [https://chmodcommand.com/chmod-770/ <code>0770</code>] on all folders inside the user <code>user</code>'s home folder. <ref>
 * As per Debian default [https://wiki.debian.org/UserPrivateGroups <u>u</u>ser <u>p</u>rivate <u>g</u>roups UPGs] each created user will be given their own group to use. Therefore <code>chmod</code> [https://chmodcommand.com/chmod-700/ <code>0700</code>] is not required and <code>chmod</code> <code>0770</code> is OK for all folders inside the user home folder.
-* The following command <code>find</code>s all directories inside user home folder <code>/home/user</code> and sets the "executable" bit on them. If that seems strange or a security issue, it's not, see [https://askubuntu.com/questions/443789/what-does-chmod-x-filename-do-and-how-do-i-use-it Why must a folder be executable?]. It also grants the user and UPG the required read and write access inside the user home folder.
+* The following command <code>find</code>s all directories inside user home folder <code>/home/user</code> and sets the "executable" bit on them. If that seems strange or a security issue, it's not, see [https://askubuntu.com/questions/443789/what-does-chmod-x-filename-do-and-how-do-i-use-it Why must a folder be executable?]. It also grants user <code>user</code> and UPG <code>user</code> the required read and write access inside the user home folder.
 </ref>
 
 {{CodeSelect|code=
-find /home/user -type d -print0 {{!}} xargs -0 echo chmod 0770
+find /home/user -type d -print0 {{!}} xargs -0 chmod 0770
 }}
 
-'''4.''' Done.
+'''4.''' Files Permission Fix
+
+Similar to the previous step, if that does not resolve permission issues, run the following slightly more experimental command to grant user <code>user</code> read and write access on all files inside the user <code>user</code>'s home folder. This may have some disadvantages. The only known example is for users of <code>git</code>. See footnote for further information. <ref>
+Some applications might create write protected files inside the user's home folder.
+
+As user. Do not do this. It is just an example for explanation!
+
+{{CodeSelect|code=
+rm -r .git
+}}
+
+<pre>
+rm: remove write-protected regular file '.git/objects/1c/f2f7161f7529fd600a706278e06df20eb6dfd6'
+</pre>
+
+After running the following command, this protection would be gone. In that case, the user is free to modify the following command to have a more narrow scope, for example.
+
+{{CodeSelect|code=
+chmod --recursive ug+rw /home/user/.tb
+}}
+
+{{CodeSelect|code=
+chmod --recursive ug+rw /home/user/.cache/tb
+}}
+</ref>
+
+{{CodeSelect|code=
+chmod --recursive ug+rw /home/user
+}}
+
+'''6.''' Done.
 
 Chances are good that permission issues have been resolved. Try starting Tor Browser. In case the issue is persisting, the following options could be considered.
 
 <u>Attempt to debug</u>:
 
-* Start Tor Browser Start by {{project name}} in [[#In Verbose Mode|In Verbose Mode]]. This will show verbose output messages which might be useful for the user to identify the issue. In doubt, [[Support]] might help interpreting these messages.
+Start Tor Browser Start by {{project name}} in [[#In Verbose Mode|In Verbose Mode]]. This will show verbose output messages which might be useful for the user to identify the issue. In doubt, [[Support]] might help interpreting these messages.
 
 <u>Other options</u>:
 
