@@ -59,17 +59,18 @@ Further reading:
 
 == Malware Persistence ==
 
-Even if malware is capable of bypassing our other protections, we aim to prevent it from persisting. Verified boot will be used to verify the boot chain and base system, likely by chaining UEFI Secure Boot with dm-verity. This will be difficult to achieve due to the layout of traditional desktop Linux distributions. Once this is implemented, there will be 2 main remaining vectors for malware persistence:
+If malware is capable of bypassing other protections, {{project_name}} aims to prevent it from persisting. In future, verified boot will be used to verify the boot chain and base system, likely by chaining UEFI Secure Boot with [https://www.kernel.org/doc/html/latest/admin-guide/device-mapper/verity.html <code>dm-verity</code>]. <ref><blockquote>Device-Mapper’s “verity” target provides transparent integrity checking of block devices using a cryptographic digest provided by the kernel crypto API. This target is read-only.</blockquote></ref> This will be a difficult endeavor due to the layout of traditional desktop Linux distributions. Once this is implemented, there will be two main remaining vectors for malware persistence:
 
-# Malware residing in persistent state.
+# Malware residing in a persistent state.
 # Malware residing in the device firmware.
 
-(1) can be solved with apparmor-profile-everything and sandbox-app-launcher. We can severely reduce the level of trust granted to persistent state so that malware residing within there can't do any serious harm and is contained within its own sandbox.
+The first problem can be largely solved with <code>apparmor-profile-everything</code> and <code>sandbox-app-launcher</code>. By severely reducing the level of trust granted to the persistent state, the threat of serious harm from any resident malware is reduced and it is contained within its own sandbox.
 
-(2) cannot be solved by us. Users will have to use solutions such as [https://mjg59.dreamwidth.org/33981.html Intel Boot Guard] or [https://blog.cloudflare.com/anchoring-trust-a-hardware-secure-boot-story/ AMD Secure Boot] (different from UEFI Secure Boot) to verify the integrity of the firmware. Unfortunately, these are not very common.
+The second problem cannot be solved by the {{project_name}} project. Instead, users need to rely on solutions like [https://mjg59.dreamwidth.org/33981.html Intel Boot Guard] or [https://blog.cloudflare.com/anchoring-trust-a-hardware-secure-boot-story/ AMD Secure Boot] (different from UEFI Secure Boot) to verify the integrity of the firmware. Unfortunately these options are not very common.
 
-We currently have a best-effort, albeit quite weak approach. VirusForget tries to deactivates malware after a reboot from a non-root compromise by restoring sensitive files. This prevents malware from persisting through files such as ~/.bashrc. However, this is not a strong defence and will not stand against an active adversary.
+{{project_name}} has adopted a best-effort, but admittedly quite weak approach. VirusForget attempts to deactivate malware after a reboot from a non-root compromise, by restoring sensitive files. This prevents malware from persisting through files such as <code>~/.bashrc</code>. However, this is not a strong defense and it will not defeat the efforts of an active adversary.
 
+Further reading:
 * [[Verified Boot]]
 * [[Dev/VirusForget|VirusForget]]
 
