@@ -130,38 +130,47 @@ If [[Full Disk Encryption]] is already configured, a very simple password can be
 * Right-click on the new entry (such as <code>test</code>) &rarr; <code>Time-based one-time password</code> &rarr; <code>show TOTP</code>.
 }}
 
-= Time Fix =
-* Non-Whonix 
+= Troubleshooting: Time Fix =
 
-[[2FA]] TOTP code changes every 30 seconds. So clock needs to be reasonable correct.
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = These steps are for troubleshooting when TOTP codes do not match. [[2FA]] TOTP codes change every 30 seconds, therefore the clock needs to be reasonably accurate.
+}}
 
-Troubleshoting only. If code does not match.
+== Non-Whonix ==
 
-Set timezone to UTC for simplicity.
+{{Box|text=
+'''1.''' Set the timezone to UTC for simplicity.
 
 {{CodeSelect|code=
 sudo cp /usr/share/zoneinfo/Etc/UTC /etc/localtime
 }}
 
-Go to https://www.timeanddate.com/worldclock/timezone/utc or any other similar source to find out the time in UTC.
+'''2.''' Confirm the correct time in UTC.
 
-Fix the clock. Change the date and time accordingly!
+Navigate to [https://www.timeanddate.com/worldclock/timezone/utc <code>timeanddate.com</code>: UTC] or similar web resources to confirm the UTC time.
+
+'''3.''' Fix the clock. 
+
+In the example below, change the date and time accordingly.
 
 {{CodeSelect|code=
-sudo date -s "26 SEPT 2018 11:54:25"
+sudo date -s "12 SEPT 2021 01:15:25"
 }}
 
-Check if the clock is correct now.
+'''4.''' Confirm the clock is now correct.
 
 {{CodeSelect|code=
 date
 }}
+}}
 
-* Whonix (Offline WorkStation)
+== {{project_name}} Offline Workstation ==
 
-Since whonix use sdwdate then there will be a delay in the 30 seconds, Meaning if the TOTP code showed up at 30 and you copy/paste it to the website or service which require the TOTP it wont work until the timer will reach to 8 seconds and below, This mean we have 22 seconds delay. (The result is tested in offline whonix-ws standaloneVM within Qubes OS)
+Since {{project_name}} uses [[Sdwdate|Secure Distributed Web Date (<code>sdwdate</code>)]], there will be a delay in the TOTP 30-second period. For example, if <code>sdwdate</code> has enforced a 22 second delay, then a TOTP code copied and pasted into a website or service that requires it would not work until the timer reached eight seconds or below. (This result was tested in an offline <code>whonix-ws</code> standaloneVM in Qubes OS.)
 
-If you want to fix this delay then disable sdwdate and bootclockrandomization by running this command: 
+To avoid delays, disable <code>sdwdate</code> and <code>bootclockrandomization</code> by running this command: 
 
 {{CodeSelect|code=
 sudo service sdwdate stop && sudo service bootclockrandomization stop
