@@ -20,7 +20,7 @@ __forcetoc__
 | text    = corridor configurations are only possible in [[{{q project name short}}|{{q project name}}]]. [[{{non q project name short}}|{{non q project name}}]] is [[unsupported]] at present. <ref>[https://phabricator.whonix.org/T524 Corridor for {{project name}} KVM ticket].</ref> <ref>Without third party contributions to corridor, [[{{non_q_project_name_short}}|{{non_q_project_name}}]] is unlikely to be supported in the near future.</ref> 
 }}
 
-It is possible to configure {{gateway_product_name}} (<code>sys-whonix</code>) to use corridor as a <u>local</u> proxy to establish the following tunnel:<br />
+It is possible to configure {{gateway_product_name}} (<code>{{gateway_product_name_vm}}</code>) to use corridor as a <u>local</u> proxy to establish the following tunnel:<br />
 <code>User</code> &rarr; <code>corridor</code> &rarr; <code>Tor</code> &rarr; <code>Internet</code>
 
 This is not necessarily more anonymous, but it does provide an additional fail-safe -- a Tor traffic whitelisting firewall that helps protect against accidental clearnet leaks (hypothetical clearnet leak bugs in {{project_name}}). As [https://github.com/rustybird/corridor corridor's project description] states: "... it cannot prevent malware on a client computer from finding out your clearnet IP address." 
@@ -41,7 +41,7 @@ By default, the following instructions will result in:
 }}
 This behavior might be dangerous if users need / want to [[Hide_Tor_and_{{project_name_short}}_from_your_ISP|hide Tor and {{project name}} from the ISP]]. 
 
-If {{project name}} is already in use, then configuring a second running instance of [[Tor]] will ensure that it is independent of the one running inside {{gateway_product_name}} (<code>sys-whonix</code>). From the ISP's perspective, the user will have a different network [[Fingerprint]]. The anonymity impact should be no worse than running Tor Browser, or system-tor and {{project name}} at the same time.
+If {{project name}} is already in use, then configuring a second running instance of [[Tor]] will ensure that it is independent of the one running inside {{gateway_product_name}} (<code>{{gateway_product_name_vm}}</code>). From the ISP's perspective, the user will have a different network [[Fingerprint]]. The anonymity impact should be no worse than running Tor Browser, or system-tor and {{project name}} at the same time.
 
 == dom0 Setup ==
 Create a new standalone ProxyVM called {{Code2|sys-corridor}} based on the Debian <code>{{Stable project version based on Debian codename}}</code> template:
@@ -94,9 +94,9 @@ In order to use corridor as a [https://gitlab.torproject.org/legacy/trac/-/wikis
 /etc/corridor.d/21-bridges-user.conf
 }}
 
-'''4.''' Review {{gateway_product_name}} (<code>sys-whonix</code>) [[Bridges|Tor bridge]] settings.
+'''4.''' Review {{gateway_product_name}} (<code>{{gateway_product_name_vm}}</code>) [[Bridges|Tor bridge]] settings.
 
-Depending on how Tor bridges are configured on {{gateway_product_name}} (<code>sys-whonix</code>):
+Depending on how Tor bridges are configured on {{gateway_product_name}} (<code>{{gateway_product_name_vm}}</code>):
 
 * if [[Anon Connection Wizard]] was used, see configuration file <code>/usr/local/etc/torrc.d/40_tor_control_panel.conf</code>.
 * if [[Tor#Manual_Bridge_Configuration|manual Tor bridge configuration]] was done, see file <code>/usr/local/etc/torrc.d/50_user.conf</code>.
@@ -105,7 +105,7 @@ Depending on how Tor bridges are configured on {{gateway_product_name}} (<code>s
 https://github.com/rustybird/corridor/issues/42
 </ref>
 
-Syntax is similar as Tor configuration as reviewed in previous step. Replace the IPs and ports <code>1.2.3.4:443</code>, <code>2.3.4.5:443</code> with the actual IPs and ports of the bridges in use. All Tor bridges from Tor configuration on {{gateway_product_name}} (<code>sys-whonix</code>) need to be added below too.
+Syntax is similar as Tor configuration as reviewed in previous step. Replace the IPs and ports <code>1.2.3.4:443</code>, <code>2.3.4.5:443</code> with the actual IPs and ports of the bridges in use. All Tor bridges from Tor configuration on {{gateway_product_name}} (<code>{{gateway_product_name_vm}}</code>) need to be added below too.
 
 {{CodeSelect|code=
 BRIDGES="\
@@ -183,10 +183,10 @@ Jul 19 00:58:27 localhost kernel: [  954.706833] corridor:
 }}
 
 == Interpreting the Results ==
-The safest configuration is only setting <code>sys-whonix</code> to use <code>sys-corridor</code> for <code>Networking</code>. The reason is the [https://github.com/marmarek/qubes-core-agent-linux/blob/master/vm-systemd/qubes-update-check.service qubes-update-check.service] will try to use the Internet without Tor, and [https://github.com/QubesOS/qubes-issues/issues/1814 other programs] may also try to use clearnet. Therefore, always shut down <code>corridor-client</code>.
+The safest configuration is only setting <code>{{gateway_product_name_vm}}</code> to use <code>sys-corridor</code> for <code>Networking</code>. The reason is the [https://github.com/marmarek/qubes-core-agent-linux/blob/master/vm-systemd/qubes-update-check.service qubes-update-check.service] will try to use the Internet without Tor, and [https://github.com/QubesOS/qubes-issues/issues/1814 other programs] may also try to use clearnet. Therefore, always shut down <code>corridor-client</code>.
 
 == Configure sys-whonix ==
-To set <code>Networking</code> of <code>sys-whonix</code> to <code>sys-corridor</code>:
+To set <code>Networking</code> of <code>{{gateway_product_name_vm}}</code> to <code>sys-corridor</code>:
 
 <code>Qube Manager</code> &rarr; <code>left-click sys-whonix</code> &rarr; <code>right-click</code> &rarr; <code>Qube settings</code> &rarr; <code>Networking</code> &rarr; <code>{{Code2|sys-corridor}}</code> &rarr; <code>OK</code>
 
