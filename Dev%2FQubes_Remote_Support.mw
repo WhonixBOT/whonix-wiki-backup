@@ -31,7 +31,7 @@ user documentation: [[Remote_Administration#Qubes_-_SSH_or_VNC_into_Qubes_dom0|Q
 * Packaging of a (python) GUI [1] (the GUI itself to be written by Marek)
 
 = sys-whonix GUI =
-able to see already existing hidden services per <code>sys-whonix</code> in a widget.
+able to see already existing hidden services per <code>{{gateway_product_name_vm}}</code> in a widget.
 
 Adding remote support thought requirements:
 
@@ -65,21 +65,21 @@ questions:
 * I guess running VNC (and perhaps SSH) in dom0 is OK?
 * Things can always be more compartmentalized, secure but also getting more and more complicated, fragile.
 
-I am considering to script this entirely from dom0 using `qvm-run`. Only expectation: installed (use salt?) and non-broken <code>sys-whonix</code>
+I am considering to script this entirely from dom0 using `qvm-run`. Only expectation: installed (use salt?) and non-broken <code>{{gateway_product_name_vm}}</code>
 
 = Draft Concept =
 == remote-support-provider ==
 On remote support provider machine.
 
-* dom0 <code>qvm-start</code> <code>sys-whonix</code>
-* dom0 <code>qvm-run</code> <code>sys-whonix</code> create <code>.onion</code> service config file in <code>/usr/local/etc/torrc.d/40_remote_support.conf</code>
+* dom0 <code>qvm-start</code> <code>{{gateway_product_name_vm}}</code>
+* dom0 <code>qvm-run</code> <code>{{gateway_product_name_vm}}</code> create <code>.onion</code> service config file in <code>/usr/local/etc/torrc.d/40_remote_support.conf</code>
 ** [https://github.com/Whonix/anon-gw-anonymizer-config/blob/master/man/anon-auth-autogen.8.ronn <code>anon-auth-autogen</code>]
-* dom0 <code>qvm-run</code> <code>sys-whonix</code> restart Tor <ref name=tor-reload-bug>
+* dom0 <code>qvm-run</code> <code>{{gateway_product_name_vm}}</code> restart Tor <ref name=tor-reload-bug>
 reload should be sufficient but probably some bug in Tor required restart instead.
 </ref>
 * dom0 <code>qvm-start</code> <code>remote-support-provider-server</code> VM
 * dom0 <code>qvm-run</code> <code>remote-support-provider-server</code> VM install openssh-server
-* make openssh-server reachable through <code>.onion</code> running inside <code>sys-whonix</code> VM
+* make openssh-server reachable through <code>.onion</code> running inside <code>{{gateway_product_name_vm}}</code> VM
 * dom0 <code>wormhole send</code> <code>connection.zip</code>
 ** write wormhole code into script variable
 * <code>connection.zip</code> contains
@@ -95,13 +95,13 @@ reload should be sufficient but probably some bug in Tor required restart instea
 On remote support receiver machine.
 
 * dom0 <code>sudo dnf install x2go-server</code>
-* dom0 <code>qvm-start</code> <code>sys-whonix</code>
+* dom0 <code>qvm-start</code> <code>{{gateway_product_name_vm}}</code>
 * dom0 <code>wormhole receive</code> <code>connection.zip</code>
-** Must be done in dom0. Not <code>sys-whonix</code>. Because goal is <code>sys-whonix</code> to be untrusted.
+** Must be done in dom0. Not <code>{{gateway_product_name_vm}}</code>. Because goal is <code>{{gateway_product_name_vm}}</code> to be untrusted.
 * dom0 install <code>~/.ssh/known_hosts</code>
-* dom0 <code>qvm-run</code> <code>sys-whonix</code> install <code>.auth_private</code> file (private key)
+* dom0 <code>qvm-run</code> <code>{{gateway_product_name_vm}}</code> install <code>.auth_private</code> file (private key)
 ** <code>sudo sourcefile=~/user.auth_private anon-server-to-client-install</code> (adjust path)
-* dom0 <code>qvm-run</code> <code>sys-whonix</code> test connection to <code>.onion</code>
+* dom0 <code>qvm-run</code> <code>{{gateway_product_name_vm}}</code> test connection to <code>.onion</code>
 * dom0 test connection to <code>.onion</code>
 * dom0 reverse ssh connect to remote support provider <code>.onion</code>
 * There is now an open port on remote support receiver machine over ssh and over <code>.onion</code> available to remote support provider.
@@ -252,18 +252,18 @@ Using the term VNC loosely here as these instructions are using x2go.
 <ref>
 Useful for debugging.
 
-x) <code>sys-whonix</code> software installation
+x) <code>{{gateway_product_name_vm}}</code> software installation
 
-Inside <code>sys-whonix</code> VM. Install ssh and x2go.
+Inside <code>{{gateway_product_name_vm}}</code> VM. Install ssh and x2go.
 
 <pre>
 sudo apt --no-install-recommends install openssh-client x2goclient
 </pre>
 </ref>
 
-'''1.''' <code>sys-whonix</code> <code>qvm-connect-tcp</code> listener setup
+'''1.''' <code>{{gateway_product_name_vm}}</code> <code>qvm-connect-tcp</code> listener setup
 
-Inside <code>sys-whonix</code> VM. Start <code>socat</code> listener. <ref>
+Inside <code>{{gateway_product_name_vm}}</code> VM. Start <code>socat</code> listener. <ref>
 Previously functional socat method.
 <pre>
 sudo socat TCP-LISTEN:22,fork EXEC:"qrexec-client-vm dom0 local.ssh"
@@ -277,7 +277,7 @@ Usage: /usr/bin/qvm-connect-tcp [localport]:[vmname]:[port]
 Bind localport to another VM port using the qubes.ConnectTCP RPC service.
 </pre>
 </ref> <ref>
-Symptom inside <code>sys-whonix</code> VM if refused/missing dom0 qrexec policy in dom0.
+Symptom inside <code>{{gateway_product_name_vm}}</code> VM if refused/missing dom0 qrexec policy in dom0.
 
 <pre>
 2020/07/11 13:20:25 socat[2807] E waitpid(): child 2808 exited with status 126
@@ -300,7 +300,7 @@ Binding TCP 'dom0:22' to 'localhost:22'...
 See [[#Archive|archive]] for unauthenticated onion v3.
 </ref>
 
-Inside <code>sys-whonix</code> VM.
+Inside <code>{{gateway_product_name_vm}}</code> VM.
 
 <pre>
 sudo virtport=22 hsport=22 hsname=remote_support client=1 anon-auth-autogen
@@ -320,7 +320,7 @@ INFO: Visitors that use Whonix could store '/var/lib/tor_autogen/remote_support/
 
 '''4.''' restart Tor
 
-Inside <code>sys-whonix</code> VM.
+Inside <code>{{gateway_product_name_vm}}</code> VM.
 
 <ref name=tor-reload-bug />
 
@@ -330,7 +330,7 @@ sudo systemctl restart tor@default
 
 '''5.''' get onion v3 domain name
 
-Inside <code>sys-whonix</code> VM.
+Inside <code>{{gateway_product_name_vm}}</code> VM.
 
 <pre>
 sudo cat /var/lib/tor/remote_support/hostname
@@ -546,16 +546,16 @@ sudo chmod --recursive og-rwx ~/.ssh
 </pre>
 
 === remote-support-provider setup ===
-'''remote-support-provider <code>sys-whonix</code> setup'''
+'''remote-support-provider <code>{{gateway_product_name_vm}}</code> setup'''
 
 '''1.''' get <code>1.auth_private</code>
 
-Get <code>/var/lib/tor_autogen/remote_support/1.auth_private</code> from remote-support-receiver <code>sys-whonix</code> and copy to remote-support-provider <code>sys-whonix</code>.
+Get <code>/var/lib/tor_autogen/remote_support/1.auth_private</code> from remote-support-receiver <code>{{gateway_product_name_vm}}</code> and copy to remote-support-provider <code>{{gateway_product_name_vm}}</code>.
 
-Could use for example in remote-support-provider <code>sys-whonix</code> <code>sudo wormhole send /var/lib/tor_autogen/remote_support/1.auth_private</code> and in remote-support-provider <code>sys-whonix</code> <code>wormhole receive</code>.
+Could use for example in remote-support-provider <code>{{gateway_product_name_vm}}</code> <code>sudo wormhole send /var/lib/tor_autogen/remote_support/1.auth_private</code> and in remote-support-provider <code>{{gateway_product_name_vm}}</code> <code>wormhole receive</code>.
 
 <ref>
-During testing in remote-support-receiver <code>sys-whonix</code> VM.
+During testing in remote-support-receiver <code>{{gateway_product_name_vm}}</code> VM.
 
 <pre>
 qvm-copy /var/lib/tor_autogen/remote_support/1.auth_private
@@ -572,7 +572,7 @@ mv QubesIncoming/sys-whonix/1.auth_private ~/
 
 Move <code>1.auth_private</code> key to Tor onion v3 private key folder.
 
-Inside remote-support-provider <code>sys-whonix</code> VM.
+Inside remote-support-provider <code>{{gateway_product_name_vm}}</code> VM.
 
 <pre>
 sudo sourcefile=/home/user/1.auth_private anon-server-to-client-install
@@ -582,7 +582,7 @@ sudo sourcefile=/home/user/1.auth_private anon-server-to-client-install
 
 '''3.''' <code>remote-support-provider</code> VM creation.
 
-Create a VM named <code>remote-support-provider</code> (or any other name) based on <code>whonix-ws-15</code> TemplateVM with networking set to <code>sys-whonix</code>. Usual instructions for [[Multiple Whonix-Workstation]]. Could even skip VM creation and use an already existing VM <code>anon-whonix</code> instead.
+Create a VM named <code>remote-support-provider</code> (or any other name) based on <code>whonix-ws-15</code> TemplateVM with networking set to <code>{{gateway_product_name_vm}}</code>. Usual instructions for [[Multiple Whonix-Workstation]]. Could even skip VM creation and use an already existing VM <code>anon-whonix</code> instead.
 
 '''4.''' Install SSH client and x2go client.
 
@@ -663,7 +663,7 @@ All times are created with an external stopwatch and should have +/- 2 seconds h
 == Debugging ==
 * Perhaps Exercise setting up a simple [[Onion Services|onion service]] web server first.
 * [[Remote_Administration#SSH_into_Whonix-Gateway|SSH into Whonix-Gateway]] (conflicts with above Tor configuration)
-* Could copy <code>remote-support-provider</code> folder <code>~/.ssh</code> key to <code>sys-whonix</code> and then use <code>ssh 127.0.0.1</code> directly inside <code>sys-whonix</code> to test if the SSH connection is functional. This was successfully tested during development. Useful to exclude any potential Tor connectivity issues.
+* Could copy <code>remote-support-provider</code> folder <code>~/.ssh</code> key to <code>{{gateway_product_name_vm}}</code> and then use <code>ssh 127.0.0.1</code> directly inside <code>{{gateway_product_name_vm}}</code> to test if the SSH connection is functional. This was successfully tested during development. Useful to exclude any potential Tor connectivity issues.
 ** Same as above but can also be done using <code>x2goclient</code>.
 * dom0: <code>sudo journalctl -f -u sshd</code>
 * dom0: journalctl to watch qrexec logs
@@ -678,7 +678,7 @@ All times are created with an external stopwatch and should have +/- 2 seconds h
 * https://github.com/Whonix/qubes-whonix/blob/master/usr/bin/qubes-remote-support-provider
 
 = Debug Scripts =
-* As a connectivity test run <code>whonixcheck --leak-tests</code> in <code>sys-whonix</code> of remote-support-receiver and remote-support-provider due to Tor network issues. <ref>
+* As a connectivity test run <code>whonixcheck --leak-tests</code> in <code>{{gateway_product_name_vm}}</code> of remote-support-receiver and remote-support-provider due to Tor network issues. <ref>
 <blockquote>
 [NOTICE] Guard guard-name ($fingerprint) is failing more circuits than
 usual. Most likely this means the Tor network is overloaded. Success counts are 200/300. Use counts are
