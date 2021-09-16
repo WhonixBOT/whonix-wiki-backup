@@ -29,7 +29,7 @@ Every connection from a user is differently encrypted for every mix server withi
 
 == JonDonym ==
 
-JonDonym is an alternative anonymity network which is briefly compared with [[Tor]]. <ref>This is an informal opinion by lead Whonix developer Patrick Schleizer. Last updated in May, 2020.</ref> It is easy to tunnel JonDonym over Tor inside Whonix-Workstation (<code>anon-whonix</code>), which will be discussed further below. In theory, Tor on Whonix-Gateway <code>sys-whonix</code> could be replaced with JonDonym.
+JonDonym is an alternative anonymity network which is briefly compared with [[Tor]]. <ref>This is an informal opinion by lead Whonix developer Patrick Schleizer. Last updated in May, 2020.</ref> It is easy to tunnel JonDonym over Tor inside Whonix-Workstation (<code>anon-whonix</code>), which will be discussed further below. In theory, Tor on Whonix-Gateway <code>{{gateway_product_name_vm}}</code> could be replaced with JonDonym.
 
 The [https://anonymous-proxy-servers.net JonDonym network] is much smaller than the Tor network, but may be faster. In general, the JonDonym network receives far less attention from security researchers compared to Tor. In 2020, there are 4 premium cascades, 1 free cascade and 2 experimental services. <ref>https://anonymous-proxy-servers.net/en/status/</ref> The size of the network has decreased since [http://www.webcitation.org/6EDKqyxBU February 2012], when a random snapshot at that time revealed there were 5 two hop free mix cascades, 11 three hop premium mix cascades and 1 test/experimental, free one-hop service.
 
@@ -313,9 +313,9 @@ A JonDonym premium account is not required; this configuration is functional wit
 
 The anonymity effects are disputed when tunneling Tor over JonDonym; see [[Tunnels/Introduction#Comparison_Table|here]] for further information. The instructions below also have a number of current limitations: <ref>https://forums.whonix.org/t/connecting-to-jondonym-before-tor-user-jondonym-tor-internet</ref>
 
-* JonDonym is installed in a separate ProxyVM behind <code>sys-whonix</code>. <ref>The motivation behind this is better security. JonDonym is not installable from Debian, but instead is a package from the anonymous-proxy-servers.net website / Debian apt repository. In theory, Tor should not be compromised if JonDonym is compromised. Also, if JonDonym is compromised to begin with or more easily exploited than Tor, then it is desirable to run it in a separate ProxyVM for better isolation.</ref>
-* This configuration is very impractical. Since Qubes does not yet support static IP addresses, the Tor configuration setting <code>/etc/tor/torrc</code> 'HTTPSProxy 10.137.10.1:4001' is not stable. When the JonDonym ProxyVM has its IP changed, connectivity breaks and <code>/etc/tor/torrc</code> in <code>sys-whonix</code> needs a manual update.
-* It would be preferable to increased usability by documenting how to run JonDonym directly in <code>sys-whonix</code> -- under user tunnel with TUNNEL_FIREWALL=true etc. -- however, this would mean less isolation.
+* JonDonym is installed in a separate ProxyVM behind <code>{{gateway_product_name_vm}}</code>. <ref>The motivation behind this is better security. JonDonym is not installable from Debian, but instead is a package from the anonymous-proxy-servers.net website / Debian apt repository. In theory, Tor should not be compromised if JonDonym is compromised. Also, if JonDonym is compromised to begin with or more easily exploited than Tor, then it is desirable to run it in a separate ProxyVM for better isolation.</ref>
+* This configuration is very impractical. Since Qubes does not yet support static IP addresses, the Tor configuration setting <code>/etc/tor/torrc</code> 'HTTPSProxy 10.137.10.1:4001' is not stable. When the JonDonym ProxyVM has its IP changed, connectivity breaks and <code>/etc/tor/torrc</code> in <code>{{gateway_product_name_vm}}</code> needs a manual update.
+* It would be preferable to increased usability by documenting how to run JonDonym directly in <code>{{gateway_product_name_vm}}</code> -- under user tunnel with TUNNEL_FIREWALL=true etc. -- however, this would mean less isolation.
 * This configuration does not yet autostart JonDonym.
 
 == Installation and Configuration ==
@@ -347,7 +347,7 @@ curl {{Curl Secure}} --socks5-hostname socks5h://127.0.0.1:4001 https://check.to
 Config &rarr; user interface &rarr; extended view.
 </pre>
 
-'''5.''' Configure JonDonymn to listen on all interfaces so it will be reachable from <code>sys-whonix</code>. 
+'''5.''' Configure JonDonymn to listen on all interfaces so it will be reachable from <code>{{gateway_product_name_vm}}</code>. 
 
 Under network, <u>un</u>check:<br />
 <code>[ ] Allow access to JAP/JonDo from localhost only (recommended)</code>
@@ -358,18 +358,18 @@ Under network, <u>un</u>check:<br />
 
 IP Forwarding could/should be disabled, since it is not required. TODO: document how.
 
-'''8.''' Shut down <code>sys-whonix</code>. 
+'''8.''' Shut down <code>{{gateway_product_name_vm}}</code>. 
 
-* Next set the <code>sys-whonix</code> NetVM to <code>JonDo-Gateway</code>. 
-* Restart <code>sys-whonix</code>.
+* Next set the <code>{{gateway_product_name_vm}}</code> NetVM to <code>JonDo-Gateway</code>. 
+* Restart <code>{{gateway_product_name_vm}}</code>.
 
 '''9.''' Add the IP address of <code>JonDo-Gateway</code>.
 
-In <code>sys-whonix</code>: {{Open_/usr/local/etc/torrc.d/50_user.conf}}
+In <code>{{gateway_product_name_vm}}</code>: {{Open_/usr/local/etc/torrc.d/50_user.conf}}
 
 Add the following. 
 
-Note: <code>10.137.10.1</code> is just an example and needs to be replaced with the IP address of the <code>JonDo-Gateway</code> ProxyVM. To discover the IP address of the <code>JonDo-Gateway</code> ProxyVM, run the following command in <code>sys-whonix</code>:
+Note: <code>10.137.10.1</code> is just an example and needs to be replaced with the IP address of the <code>JonDo-Gateway</code> ProxyVM. To discover the IP address of the <code>JonDo-Gateway</code> ProxyVM, run the following command in <code>{{gateway_product_name_vm}}</code>:
 <code>qubesdb-read /qubes-gateway</code>
 
 <pre>
@@ -380,7 +380,7 @@ Save.
 
 '''10.''' {{Reload Tor}}
 
-'''11.''' In <code>sys-whonix</code>, test if Tor is able to use the https proxy that JonDonym is providing.
+'''11.''' In <code>{{gateway_product_name_vm}}</code>, test if Tor is able to use the https proxy that JonDonym is providing.
 
 {{CodeSelect|code=
 {{Curl Plain}} {{Curl Secure}} --socks5-hostname socks5h://127.0.0.1:9050 https://check.torproject.org
