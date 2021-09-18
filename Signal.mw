@@ -49,41 +49,33 @@ https://github.com/freedomofpress/ansible-role-signal-desktop
 </ref> 
 
 {{Box|text=
-'''1.''' Add the Signal GPG key to the APT sources keyring.
+'''1.''' Add the Signal GPG key to the APT keyrings.
 
-{{apt-key-onion
-|filename=/etc/apt/trusted.gpg.d/signal.gpg
-|fingerprint=DBA36B5181D0C816F630E889D980A17457F6FB06
+{{apt key add
+|url=https://updates.signal.org/desktop/apt/keys.asc
+|source_filename=oracle_vbox_2016.asc
+|target_filename=/usr/share/keyrings/signal-desktop-keyring.gpg
+|gpg_fingerprint_output=TODO
 }}
 
-'''2.''' Create a signal starter script <code>~/signal-start</code>.
-
-{{Open File|filename=
-~/signal-start
-}}
-
-'''3.''' Paste the following text. <ref>https://signal.org/download</ref>
+'''2.''' Add the Signal third-party APT repository. <ref>
+https://signal.org/download
+</ref>
 
 {{CodeSelect|code=
-#!/bin/bash
-set -x
-set -e
-echo "deb [arch=amd64] https://updates.signal.org/desktop/apt xenial main" {{!}} sudo tee /etc/apt/sources.list.d/signal-xenial.list
-sudo apt-get update
-sudo apt-get install --yes signal-desktop
+echo 'deb [arch=amd64 signed-by=/usr/share/keyrings/signal-desktop-keyring.gpg] tor+https://updates.signal.org/desktop/apt xenial main' {{!}} sudo tee /etc/apt/sources.list.d/signal-xenial.list
+}}
+
+'''3.''' Install Signal.
+
+{{Install Package|
+package=signal-desktop
+}}
+
+'''4.''' Start Signal from command line.
+
+{{CodeSelect|code=
 signal-desktop
-}}
-
-'''4.''' Make the file executable.
-
-{{CodeSelect|code=
-chmod +x ~/signal-start
-}}
-
-'''5.''' Install and start Signal from command line.
-
-{{CodeSelect|code=
-~/signal-start
 }}
 
 Done.
