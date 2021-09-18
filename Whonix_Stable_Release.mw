@@ -12,7 +12,307 @@
 }}
 [[image:Releasenots.png|thumb]]
 
-TODO
+= {{project_name}} 16 Changelog =
+
+{{project_name}} 16 was released on September 11 and 12, 2021 for KVM and VirtualBox. <ref>https://forums.whonix.org/t/whonix-16-0-2-7-kvm-debian-11-bullseye-based-major-stable-release/12264</ref> <ref>https://forums.whonix.org/t/whonix-16-has-been-released-debian-11-bullseye-based-for-virtualbox-major-release/12297</ref> {{q_project_name}} 16 is also due for imminent release -- [[Stay_Tuned|stay tuned]] for an upcoming announcement.
+
+Significantly, {{project_name}} 16 is based on the Debian <code>bullseye</code> (Debian 11) distribution which was [https://www.debian.org/News/2021/20210814 officially released] on August 14, 2021 instead of Debian <code>buster</code> (Debian 10). The buster release has nearly 60,000 packages and around 72 per cent of them were updated. <ref><blockquote>This release contains over 11,294 new packages for a total count of 59,551 packages, along with a significant reduction of over 9,519 packages which were marked as "obsolete" and removed. 42,821 packages were updated and 5,434 packages remained unchanged.</blockquote></ref> 
+
+This means users have access to many new software packages in concert with existing packages. In addition, this release will serve as development foundation for many exciting upcoming security enhancements such as [[Hardened_Malloc_Kicksecure|Hardened Malloc {{kicksecure}} (HMK)]], [[Linux_Kernel_Runtime_Guard_LKRG|Linux Kernel Runtime Guard (LKRG)]] and other items on the [[Whonix_Security_Roadmap|{{project_name}} Security Roadmap]].
+
+== Major Changes ==
+
+* Ported the Debian base from Debian 10 <code>buster</code> to Debian 11 <code>bullseye</code>. <ref>[https://forums.whonix.org/t/debian-bullseye-port/12056/5  Debian bullseye port].</ref> 
+* Updated Monero GUI wallet (XMR) to version <code>0.17.2.3</code>.
+* Updated Electrum Bitcoin (BTC) wallet to version <code>4.0.9</code> (Debian stable version).
+* Deprecated the <code>binaries-freedom</code> package; Electrum is now installed from <code>packages.debian.org</code> stable repository. <ref>[https://forums.whonix.org/t/policy-for-inclusion-of-compiled-software/6635/17 Policy for Inclusion of Compiled Software]</ref>
+* Switched the <code>tor</code> package back from <code>deb.torproject.org</code> to <code>packages.debian.org</code> stable version. <ref>[[Dev/Tor|Tor integration in {{project_name}} Development Notes]]</ref>
+* Enabled [https://fasttrack.debian.net/ Debian Fast Track repository] by default. <ref><blockquote>Debian Fast Track is a repository that allows making “backports” of packages available to users of the stable distribution, if those packages cannot be maintained in testing and backported in the usual way.<blockquote></ref>
+* Updated paths from <code>/usr/lib</code> to <code>/usr/libexec</code> where appropriate as per lintian Debian [https://wiki.debian.org/FilesystemHierarchyStandard File System Hierarchy Standard (FHS)].
+* [[VirtualBox]] version: this release utilizes VirtualBox guest additions version <code>6.1.26-dfsg-3</code> from <code>fasttrack.debian.net</code>. <ref>[https://forums.whonix.org/t/challenges-installing-virtualbox/9984 Challenges Installing VirtualBox]</ref>
+
+== Known Issues ==
+
+* The desktop background image is currently the same for both {{gateway_product_name}} and {{workstation_product_name}}. This will be corrected in a future release.
+
+== Notable Changes ==
+
+[https://gitlab.com/whonix/anon-apt-sources-list <code>anon-apt-sources-list</code>]:
+* Added and enabled <code>fasttrack.debian.net</code> by default. <ref>https://gitlab.com/whonix/anon-apt-sources-list/-/commit/14e7fc11fdcb036ce99e4651e348369152341d15</ref> <ref>https://gitlab.com/whonix/anon-apt-sources-list/-/commit/beb7359ef219a99ebe2aedbfcdeff649706adbb3</ref>
+* Enabled backports repository by default. <ref>https://gitlab.com/whonix/anon-apt-sources-list/-/commit/05f19b546e5f0ff11c57e313e1baeae2c369c7ca</ref>
+
+[https://gitlab.com/whonix/anon-gw-anonymizer-config <code>anon-gw-anonymizer-config</code>]:
+* Corrected the setting to <code>ControlPort 9052</code>.  <ref>https://gitlab.com/whonix/anon-gw-anonymizer-config/-/commit/b35428a33f790b60fda382658eb85f2062f2622e</ref>
+* <code>ControlPort 9052</code> is required for onion-grater updates. <ref>See: [https://gitlab.torproject.org/tpo/core/tor/-/issues/25173 No Control Socket when DisableNetwork and User options are set].</ref> <ref>https://gitlab.com/whonix/anon-gw-anonymizer-config/-/commit/8648d8ad040d965f8018b542b033e3c6bcf8e498</ref>
+
+[https://gitlab.com/whonix/anon-meta-packages <code>anon-meta-packages</code>]:
+* Changed the <code>binaries-freedom</code> dummy dependency to <code>electrum</code>. <ref>https://gitlab.com/whonix/anon-meta-packages/-/commit/b62db95a20df69f8e75fcc4e9dece8f5c9017525</ref>
+* <code>whonix-shared-packages-recommended-cli</code>: added <code>kicksecure-recommended-cli</code>. <ref>https://gitlab.com/whonix/anon-meta-packages/-/commit/8096d3d57d85298c56e7f05a4d06f555e257148f</ref>
+* Removed <code>flashproxy-client</code> and <code>fteproxy</code> from {{gateway_product_name}} because it is deprecated in Debian <code>bullseye</code>. <ref>https://gitlab.com/whonix/anon-meta-packages/-/commit/7488c0bdea6a1c2a415d514ba1dc4d4b60fa2709</ref>
+* Removed <code>obfsproxy</code> (deprecated obfsproxy version 3) but kept <code>obfs4proxy</code>. <ref>https://gitlab.com/whonix/anon-meta-packages/-/commit/6054e957db7b86249905e1108e30211236434b05</ref>
+
+[https://gitlab.com/whonix/anon-ws-disable-stacked-tor <code>anon-ws-disable-stacked-tor</code>]:
+* Provides: <code>obfsproxy</code>, <code>obfs4proxy</code>. <ref>https://gitlab.com/whonix/anon-ws-disable-stacked-tor/-/commit/6ee5b5b03d09dae202f2f55ff603c96dca2bf386</ref>
+
+[https://gitlab.com/whonix/apparmor-profile-dist <code>apparmor-profile-dist</code>] changed settings:
+* <code>security-misc /run/faillock/** rwc,</code> <ref>https://gitlab.com/whonix/apparmor-profile-dist/-/commit/41e3bb610efbff440299694bf00117240ed8b12e</ref>
+* <code>pam security-misc bullseye</code> <ref>https://gitlab.com/whonix/apparmor-profile-dist/-/commit/51c82b715fe47fecf9fb0c76317ba3558f5af455</ref>
+* <code>/etc/security/ r,</code> <ref>https://gitlab.com/whonix/apparmor-profile-dist/-/commit/b6f37eccd785cc3dfdc3e6295948be0233ddd418</ref>
+* <code>/etc/security/faillock.conf r,</code> <ref>https://gitlab.com/whonix/apparmor-profile-dist/-/commit/4554d97de8cbc126b11fc8504739bd138a8f1922</ref>
+
+[https://gitlab.com/whonix/apparmor-profile-everything <code>apparmor-profile-everything</code>]:
+* Remove the following file because it was renamed due to <code>usrmerge</code>: <code>rm_conffile /etc/apparmor.d/sbin.networking-aae</code>. <ref>https://gitlab.com/whonix/apparmor-profile-everything/-/commit/51d75f497ac629d7d82f8c96623edd985b52bf85</ref>
+* <code>usrmerge</code> - renamed <code>etc/apparmor.d/sbin.networking-aae</code> to <code>etc/apparmor.d/usr.sbin.networking-aae</code>. <ref>https://gitlab.com/whonix/apparmor-profile-everything/-/commit/895ddd1c06289dab673906cbdf19d61ea1bdf794</ref>
+* <code>usrmerge</code> - renamed <code>sbin/networking-aae</code> to <code>usr/sbin/networking-aae</code>. <ref>https://gitlab.com/whonix/apparmor-profile-everything/-/commit/6d70eefe95d3399faed96352a339810393e4833a</ref>
+
+[https://gitlab.com/whonix/genmkfile <code>genmkfile</code>]:
+* genmkfile deb-install: now install using <code>apt-get install</code> instead of <code>dpkg -i</code> for dependency resolution (sdwdate vs time-deamon). <ref>https://gitlab.com/whonix/genmkfile/-/commit/87258fc755b5744b4ae4233484ce320f73e388f8</ref>
+* Updated <code>make_dependencies_filter_helper</code>.  <ref>https://gitlab.com/whonix/genmkfile/-/commit/ae57c0c32ec1f7e6b57fd0ca9e766e5d7c564a2c</ref>
+* Excluded the <code>/debian</code> folder from upstream tarball to avoid lintian warning <code>no-debian-changes</code>.  <ref>https://gitlab.com/whonix/genmkfile/-/commit/45a3bec7a01b34c6fa6ae0db1a5bdf3bfdb04eca</ref>
+* Now force the inclusion of the original source if the Debian package revision number is higher than 1. Also implemented a LKRG package compatibility fix. <ref>https://gitlab.com/whonix/genmkfile/-/commit/2a0d7eb4a9e606a909258281f514aa82b99b6212</ref>
+* Added and improved support for <code>debian/changelog</code> file without epoch. <ref>https://gitlab.com/whonix/genmkfile/-/commit/76a79fb21defa258f51933db9ab1f314852ee6c8</ref> <ref>https://gitlab.com/whonix/genmkfile/-/commit/2c68f84894608617337fb2fb0c9f37cd17325514</ref>
+* Ensured LKRG v0.9.1 compatibility. <ref>https://gitlab.com/whonix/genmkfile/-/commit/43bedd4677b12f62bed54c6d3aa8781fc673a6d9</ref>
+* Cleaned up the temporary file <code>debian/$package.dkms.debhelper</code>. <ref>https://gitlab.com/whonix/genmkfile/-/commit/56611936b5cdef54edd02285eeee0f9786476879</ref>
+
+[https://gitlab.com/whonix/helper-scripts <code>helper-scripts</code>]:
+* <code>etc/apparmor.d/abstractions/tor-circuit-established-check</code>: <code>deny /etc/ssl/openssl.cnf r,</code> is not needed. <ref>It is functional without it.</ref> <ref>https://gitlab.com/whonix/helper-scripts/-/commit/4ff5276723b765ec3da4e1c465bc3d16aa5a8c20</ref>
+* Implemented <code>/usr/libexec/helper-scripts/first-boot-skel force</code> to ease [[Desktop#Default_Home_Folder_Configuration_Files_Reset|Default Home Folder Configuration Files Reset]]. <ref>https://gitlab.com/whonix/helper-scripts/-/commit/e021874a31e4a4ed9f2c46ff1925c5dfa79691de</ref>
+* Moved <code>usr/lib/helper-scripts/</code> to <code>usr/libexec/helper-scripts</code> and move <code>usr/lib/curl-scripts</code> to <code>usr/libexec/helper-scripts</code> as per lintian FHS.  <ref>https://gitlab.com/whonix/helper-scripts/-/commit/8a95a1cb7f1e01762ec607abbe5702c0ee766010</ref>
+
+[https://gitlab.com/whonix/kicksecure-base-files <code>kicksecure-base-files</code>]:
+* Set <code>/etc/kicksecure_version</code> to 16. <ref>https://gitlab.com/whonix/kicksecure-base-files/-/commit/c002d6b6029644c3bbf9c1311ab512a70d1397a7</ref>
+
+[https://gitlab.com/whonix/kicksecure-meta-packages <code>kicksecure-meta-packages</code>]: 
+* Added Chromium to <code>dummy-dependency</code> so it can be removed. <ref>https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/8f1eae9599746177b1e42458ec44ae5c6890c618</ref>
+* <code>binaries-freedom</code> was replaced with <code>electrum</code>. <ref>https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/d0151d51e90b0e59b933a25d908c1c5f5f22ac2f</ref>
+* Moved <code>obfs4proxy</code> from <code>kicksecure-dependencies-cli</code> to <code>kicksecure-recommended-cli</code>. <ref>See: [https://forums.whonix.org/t/meta-packages-development-discussion/11948 Meta Packages Development Discussion].</ref> <ref>https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/3bfcf3cf9c48fc370b36789b5ae5ad89a7b53ffc</ref>
+* <code>kicksecure-cli</code> Depends: <code>kicksecure-recommended-cli</code>. <ref>https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/3e08328b9439ab46560c366b45da765e1ac1a409</ref>
+* Introduce <code>kicksecure-recommended-cli</code> and install <code>fasttrack-archive-keyring</code> by default. <ref>See: [https://forums.whonix.org/t/install-debian-fasttrack-archive-keyring-by-default/11456 Install Debian fasttrack-archive-keyring by default?].</ref> <ref>https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/a0d9bd549e99d7c84dcda226bffb9ffcafb4d02e</ref>
+* <code>bullseye</code>: ugprade <code>libexo-1-0</code> to <code>libexo-2-0</code>. <ref>https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/1269ce8533dd521f670bded1deb33459768ce4de</ref>
+* Merged branch "HulaHoop0-master-patch-35409" into "master" and added <code>obfs4proxy</code> and <code>firefox-esr</code>. <ref>See merge request <code>whonix/kicksecure-meta-packages!1</code>.</ref> <ref>https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/5bad8176bb3634e4a64d51edb3e58c7d07f94e8a</ref>
+* Added <code>obfs4proxy</code> and <code>firefox-esr</code>.  <ref>https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/7ba985581cfd02092186bc8cbe584ac4c0f086f9</ref>
+
+[https://gitlab.com/whonix/onion-grater <code>onion-grater</code>]:
+* Upgraded to a newer <code>onion-grater</code> version by Tails. <ref>https://gitlab.com/whonix/onion-grater/-/commit/5655e2f3bf4cffc5f6c2336a542d0c9ea5ca952b</ref>
+
+[https://gitlab.com/whonix/open-link-confirmation <code>open-link-confirmation</code>]:
+* Upgraded to a new upstream version. <ref>https://gitlab.com/whonix/open-link-confirmation/-/commit/fae6451754a39a83b6f46f56bdb6e7d6086162b4</ref>
+
+[https://gitlab.com/whonix/qubes-whonix <code>qubes-whonix</code>]:
+* Migrated from <code>yum</code> to <code>dnf</code>. <ref>https://gitlab.com/whonix/qubes-whonix/-/commit/ef6b132f45a00601415f2d48a94a2357eef46ae1</ref>
+* Honor <code>skip-torified-updates-proxy-check qvm-service</code> and reintroduced the ability (from qubes-whonix < v15.4) to skip the <code>torified-updates-proxy-check</code> script by enabling a <code>qvm-service</code>. <ref>This allows a {{project_name}} template to be updated via a non-Whonix qubes.UpdatesProxy VM if necessary.</ref> <ref>https://gitlab.com/whonix/qubes-whonix/-/commit/07367f83fbbea9c9a1811c88e0fd12b0d0e615d4</ref>
+
+[https://gitlab.com/whonix/rads <code>rads</code>]:
+* Ensure a display manager is not started if it was disabled (for example using <code>sudo systemctl disable lightdm</code>). <ref>https://gitlab.com/whonix/rads/-/commit/74fbd3b6a460de94bbdfedd1d863dba9bee3d855</ref>
+
+[https://gitlab.com/whonix/repository-dist <code>repository-dist</code>]:
+* Added further legacy tests. <ref>https://gitlab.com/whonix/repository-dist/-/commit/d01e9cc3724ee6e65760dddac40651ba8a5be5f3</ref>
+* Required change: <code>/etc/apt/trusted.gpg.d/derivative.gpg</code> to <code>/etc/apt/trusted.gpg.d/derivative.asc</code>. <ref>https://gitlab.com/whonix/repository-dist/-/commit/4b7228db4a038d36315880cf6878dd713a0bcb37</ref>
+* Now use an ASCII armored gpg key; this simplifies code since APT folder <code>/etc/apt/trusted.gpg.d</code> supports ASCII armored gpg keys from Debian <code>bullseye</code>. <ref>https://gitlab.com/whonix/repository-dist/-/commit/3a1764721f24c3d2cb681a9f49da2f11e51c9f12</ref>
+* Migrated from <code>gnupg2</code> (dummy transitional package) to <code>gnupg</code>. <ref>https://gitlab.com/whonix/repository-dist/-/commit/08de96e54385678bc3db5b47c26721dfa14711bf</ref>
+
+[https://gitlab.com/whonix/sdwdate <code>sdwdate</code>] setting changes:
+* <code>deny /usr/sbin/ldconfig rix,</code> <ref>https://gitlab.com/whonix/sdwdate/-/commit/23a24206567bd27134b68e459ae9b1c4b75f68de</ref>
+* <code>Conflicts: time-daemon</code> <ref>https://gitlab.com/whonix/sdwdate/-/commit/046a1c00b9aa4b578f16e88e0cc355776dd15c08</ref>
+* <code>Replaces: time-daemon</code> <ref>https://gitlab.com/whonix/sdwdate/-/commit/11361d7fbfdf4a5e5762d407fef25e9bd1593d07</ref>
+* Reverted “bullseye”: this reverts commit 67222afa9b01c8bba1f814d5c57b1c7632355d6d. <ref>https://gitlab.com/whonix/sdwdate/-/commit/9fee551dca38a7cc5cf940224f3a08cdae6c1956</ref>
+* <code>Provides: time-daemon</code> to avoid systemd pulling <code>Depends: systemd-timesyncd</code>. <ref>https://gitlab.com/whonix/sdwdate/-/commit/0c38702517df5b3344f14635f4b9700217e697f4</ref>
+* <code>config-test</code> <ref>https://gitlab.com/whonix/sdwdate/-/commit/4eb6536d3e7cdd33fc00565f87c2fbe0e9947010</ref>
+
+[https://gitlab.com/whonix/security-misc <code>security-misc</code>]:
+* Added <code>hardened malloc</code> compatibility for <code>haveged</code> workaround <code>/lib/systemd/system/haveged.service.d/30_security-misc.conf SystemCallFilter=getrandom</code>. <ref>Otherwise <code>haveged</code> will exit with a core dump.</ref> <ref>https://gitlab.com/whonix/security-misc/-/commit/7d73b3ffa0bf13ba78debfb7f099758b0d0fbef3</ref>
+* Ported from <code>pam_tally2</code> to <code>pam_faillock</code> since <code>pam_tally2</code> was deprecated upstream. <ref>https://gitlab.com/whonix/security-misc/-/commit/582492d6d8c5f756be4d809898707cb196c5c765</ref> <ref>https://gitlab.com/whonix/security-misc/-/commit/2bf0e7471cbd3b813ce385d994e43e48636f7a0b</ref>
+* Enabled <code>apt-get --error-on=any</code> by default. This makes <code>apt</code> exit non-zero for transient failures, see: <code>/etc/apt/apt.conf.d/40error-on-any</code>. <ref>See: [https://forums.whonix.org/t/debian-bullseye-apt-get-error-on-any/12068 Debian bullseye apt-get --error-on=any].</ref> <ref>https://gitlab.com/whonix/security-misc/-/commit/0492f28aa10dc93063ff3b46107fa705c5ee0d7e</ref>
+* Replaced the no longer required <code>/usr/lib/security-misc/apt-get-wrapper</code> with <code>apt-get --error-on=any</code>. <ref>https://gitlab.com/whonix/security-misc/-/commit/240ec7672a4d513e7e6cca280aca3d67c265d1cc</ref>
+* Ported LKRG compatibility settings automation for VirtualBox hosts from <code>systemd</code> to <code>dpkg trigger</code>. <ref>https://gitlab.com/whonix/security-misc/-/commit/5a65c35479f267b026c03e195658ef9d98ee519c</ref>
+* Improved the LKRG VirtualBox host configuration, see: [https://github.com/openwall/lkrg/issues/82#issuecomment-886188999 VirtualBox host software compatibility]. <ref>https://gitlab.com/whonix/security-misc/-/commit/7e128636b3a4ea7fe5dfa12018685ab7b5dda706</ref>
+* Added LKRG compatibility settings automation for VirtualBox hosts, see: [https://github.com/openwall/lkrg/issues/82 VirtualBox host software compatibility]. <ref>https://gitlab.com/whonix/security-misc/-/commit/257cef24baa038b21ef511e9d95c4229a5e16f68</ref>
+
+[https://gitlab.com/whonix/systemcheck <code>systemcheck</code>] improved settings:
+* Implemented necessary AppArmor changes for <code>bullseye</code>. <ref>https://gitlab.com/whonix/systemcheck/-/commit/83244c59499cd9e593bc4ee1849ec887e0d781fe</ref>
+* Added <code>@{PROC}/sys/kernel/osrelease r,</code> for the <code>systemcheck</code> canary. <ref>https://gitlab.com/whonix/systemcheck/-/commit/0acf98f71b91bff962a8c6c30ade1d52015baee5</ref>
+* Replaced the no longer required <code>/usr/lib/security-misc/apt-get-wrapper</code> with <code>apt-get --error-on=any</code>. <ref>https://gitlab.com/whonix/systemcheck/-/commit/aaaa46d9c7f7bf2ea96c0c6b7534ca1333079da0</ref>
+
+[https://gitlab.com/whonix/tb-starter <code>tb-starter</code>]:
+* Improved the function of <code>tb_prefs_js_file_patches</code>. <ref>https://gitlab.com/whonix/tb-starter/-/commit/f6c7fa071c96100c96ba5622f9a8d7c8ea8a495d</ref>
+* Updated the path to the local browser homepage. <ref>Patched <code>prefs.js</code> in user home folder. This was necessary because it changed during the {{project_name}} 15 to 16 upgrade from <code>/usr/share/homepage/whonix-welcome-page/whonix.html</code> to <code>/usr/share/doc/homepage/whonix-welcome-page/whonix.html</code>.</ref> <ref>https://gitlab.com/whonix/tb-starter/-/commit/a656c7e67d3adb80e989a089821433d38007e4d4</ref>
+* Deleted <code>/usr/share/tb-profile-i2p/profile.i2p/bookmarks.html</code> because it is unused. <ref>https://gitlab.com/whonix/tb-starter/-/commit/549d20a92b90379b18221e0ae1b96f9405e81da4</ref>
+* Migrated <code>usr/share/homepage</code> to <code>usr/share/doc/homepage</code>. <ref>https://gitlab.com/whonix/tb-starter/-/commit/e9c41b7a645a526aec8764c82259d3c2234eb49f</ref>
+
+[https://gitlab.com/whonix/tb-updater <code>tb-updater</code>] updated versions:
+* <code>alpha tbb_hardcoded_version=“11.0a4”</code> <ref>https://gitlab.com/whonix/tb-updater/-/commit/a070941c05a9879f4a6e0b009bf2237f28b10268</ref>
+* <code>tbb_hardcoded_version=“10.5.5”</code> <ref>https://gitlab.com/whonix/tb-updater/-/commit/fe840f6446087b2ed5b09e144e517c2875e21aa0</ref>
+
+[https://gitlab.com/whonix/usability-misc <code>usability-misc</code>]:
+* Replaced the no longer required <code>/usr/lib/security-misc/apt-get-wrapper</code> with <code>apt-get --error-on=any</code>. <ref>https://gitlab.com/whonix/usability-misc/-/commit/7291238c1752bc88be73b1f1d031169034db340b</ref>
+
+[https://gitlab.com/whonix/uwt <code>uwt</code>]:
+* Migrated <code>usr/lib/uwt_settings_show</code> to <code>usr/bin/uwt_settings_show</code>. <ref>https://gitlab.com/whonix/uwt/-/commit/8fad01d11eddc1f44cd15cef50903bc96156dfe3</ref>
+
+[https://gitlab.com/whonix/vm-config-dist <code>vm-config-dist</code>]:
+* VirtualBox guest additions installer: switched to <code>interest-await</code> trigger. <ref><code>interest-await</code> is used instead of <code>interest-noawait</code> because when <code>virtualbox-guest-additions-iso</code> was simultaneously upgraded with <code>vm-config-dist</code>, the trigger was not executed.</ref> <ref>https://gitlab.com/whonix/vm-config-dist/-/commit/9a3d7b64a65a32839cf3edc0ef469c9a5e17f586</ref>
+* Removed a folder existence conditional to prevent a catch-22 situation. <ref>https://gitlab.com/whonix/vm-config-dist/-/commit/2ed18a9d67b519ce6b85ab1de03fd3b91af491ca</ref>
+
+[https://gitlab.com/whonix/whonix-base-files <code>whonix-base-files</code>]:
+* Updated <code>/etc/whonix_version</code> to 16. <ref>https://gitlab.com/whonix/whonix-base-files/-/commit/4ebfe6691120f45aed43b9b28c88252ab0184955</ref>
+* Renamed <code>usr/lib/whonix/whonix.sh</code> to <code>usr/libexec/whonix-base-files/whonix.sh</code>. <ref>https://gitlab.com/whonix/whonix-base-files/-/commit/69c6312a8ec8976fbfb61b5336e6c595512d9e5d</ref>
+
+[https://gitlab.com/whonix/whonix-developer-meta-files <code>whonix-developer-meta-files</code>]: 
+* Renamed <code>migrate_to_buster_proposed_updates_repository</code> to <code>migrate_to_proposed_updates_repository</code>.
+* Renamed <code>migrate_to_buster_repository</code> to <code>migrate_to_stable_repository</code>.
+* Renamed <code>migrate_to_buster_testers_repository</code> to <code>migrate_to_testers_repository</code>. <ref>https://gitlab.com/whonix/whonix-developer-meta-files/-/commit/126c8592c92fa4b78b71867b471f63508ed51325</ref>
+* Modified the warrant canary text as per [https://www.whonix.org/w/index.php?title=Dev/Warrant_Canary_Draft&oldid=65156 this change]. <ref>See: [https://forums.whonix.org/t/whonix-warrant-canary/3208/29 Whonix Warrant Canary].</ref> <ref>https://gitlab.com/whonix/whonix-developer-meta-files/-/commit/a6289a8b5e0b3db83b9c00f1df5818f6a2c7d2b6</ref>
+
+[https://gitlab.com/whonix/whonix-firewall <code>whonix-firewall</code>] setting changes:
+* TODO: <code>/{,usr/}bin/qubesdb-cmd rUx,</code> <ref>https://gitlab.com/whonix/whonix-firewall/-/commit/69e89b344c3cffaa9553b83b77858d60f040fba8</ref>
+* <code>owner /run/updatesproxycheck/** rw,</code> <ref>https://gitlab.com/whonix/whonix-firewall/-/commit/3f49f174091e5e84a801c81fc36082c7ad135e5a</ref>
+* TODO: <code>/{,usr/}bin/qubesdb-read rUx</code> <ref>https://gitlab.com/whonix/whonix-firewall/-/commit/c9356e1e34b50fbc2de0a3d73e0f0c50cd486f92</ref>
+* <code>After=systemd-modules-load.service</code> is required for LKRG, otherwise iptables modules cannot be auto loaded. <ref>https://gitlab.com/whonix/whonix-firewall/-/commit/98a0b91a53d115cd042bb3c7663a4470be02aece</ref>
+* <code>/var/log/journal/{,**} r,</code> <ref>https://gitlab.com/whonix/whonix-firewall/-/commit/fa732e9634a44fa5a5952eebef953d735be64106</ref>
+
+[https://gitlab.com/whonix/whonix-initializer <code>whonix-initializer</code>]:
+* Change the path. <ref>https://gitlab.com/whonix/whonix-initializer/-/commit/37cb445a84c2f3918bccb14ba3dc102723ad15fd</ref>
+
+[https://gitlab.com/whonix/whonix-legacy <code>whonix-legacy</code>]:
+* Updated the version. <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/3c8753f51a9ffb4a4f2c7c74ddc13b9ee597c66a</ref> <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/2a8bef6ea2c33c2a4ff14630ae99ce1ee31ad89b</ref> <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/131f50b2da9f81c76f53ab4ec97f733611d0f005</ref>
+* Multiple improvements to <code>release-upgrade</code>. <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/eb9a4bff0b846f9516d9b7719d73705641db2c27</ref> <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/ee1a9b03c02df748b0b3df9c30eaa5db5d88b188</ref> <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/2389f276d6d5e12a4f3ced5f0c99b52ba085687c</ref> <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/80c8c6f0f98531f27ad0155902a007db8738bc7b</ref> <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/9bc51f4e35fb6728977437f8d0228ef6e16d69b7</ref> <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/2aef1e530169e7790e5f5447a0bcd6e501cedd45</ref> <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/63f9469ad0db93bee2ecc8c72def7bfc30edb149</ref> <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/c59f6b48a7a7e866b8b2a430fc46fe20da3a6bc0</ref> <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/17e041cdea34f0c5421fb23b5222e34c14e636d3</ref>
+* <code>release-upgrade</code>: fixed and ensure onion sources are respected. <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/456a0e638b04cc9dab474ecb58ff77bee29c8857</ref>
+* Added a workaround for Qubes-specific perl: <code>warning: Setting locale failed</code> issue. <ref>[https://github.com/QubesOS/qubes-issues/issues/4889 locales-all package not installed by default in all Debian templates].</ref> <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/10a72921677881eb85283ff4ad46b03f5b49a8b6</ref>
+* Legacy fixes. <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/59c56c41e2a23be96d451a79fc744f2cc0f0536e</ref> <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/1319af851b969d63fa77471e3da162d9ca5c41d8</ref>
+* Implemented forward port release-upgrade improvements. <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/9628a8136c971370a1c1efaf2317b2d72770de4a</ref>
+* Renamed <code>usr/libexec/release-upgrade</code> to <code>usr/sbin/release-upgrade</code>. <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/eb3fc5d912798b98d240aa1788d966bc8d151433</ref>
+* <code>release-upgrade script</code>: replaced the <code>apt</code> functionality test package <code>python-qt4</code> with <code>nano</code> since the former installs too many packages, dependencies and the latter is installed by default. <ref>This also leads to a much faster test.</ref> <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/bbad2596cffa06c6156d2ca784c8271fe89fa4e9</ref>
+* Ported the release upgrade script to <code>bullseye</code>. <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/f3add80f849c7080fceeaf86da2104aea0b2dd4c</ref>
+
+[https://gitlab.com/whonix/whonix-welcome-page <code>whonix-welcome-page</code>]:
+* Migrated <code>usr/share/homepage</code> to <code>usr/share/doc/homepage</code>. <ref>https://gitlab.com/whonix/whonix-welcome-page/-/commit/e260ebb241936d17d5699d90e6cf568e7eeecde7</ref>
+
+[https://gitlab.com/whonix/Whonix Whonix build script]:
+* Removed <code>virtualbox-guest-dkms</code>; it is deprecated in Debian (integrated into kernel). <ref>https://gitlab.com/whonix/Whonix/-/commit/d6f4b0beeb7da7c857a0944d5341f738a1825ca0</ref>
+* Implemented fasttrack changes. <ref>https://gitlab.com/whonix/Whonix/-/commit/993dc55adef8fd6227dcf028a31f78df7af4af38</ref> <ref>https://gitlab.com/whonix/Whonix/-/commit/4117aa571c4c54268098949377fec890be300edf</ref> <ref>https://gitlab.com/whonix/Whonix/-/commit/1097167d5d947b2591319ba7c727380bfdbb9852</ref>
+* Migrated <code>.gpg</code> to <code>.asc</code>. <ref>https://gitlab.com/whonix/Whonix/-/commit/61a4fa8feb1ca8bb66f8692f98fe0ed0b0f6a347</ref>
+* Reverted “build sources, Debian fasttrack: disable temporarily”;  this reverts commit 288323a86e2dc037b03e004c62ab3f8ce2b1f616. <ref>https://gitlab.com/whonix/Whonix/-/commit/ea0ea5ed5b66bb99c4b1851954d4c116b690a3c4</ref>
+* Avoided a build dependency on <code>ftpsync</code> (for <code>rsync</code> test script). <ref>https://gitlab.com/whonix/Whonix/-/commit/db2b3b0439da69198e6fe15da14cd539f89a48bb</ref>
+* VirtualBox builds: switched back to guest additions packages - <code>virtualbox-guest-utils</code>, <code>virtualbox-guest-dkms</code> and <code>virtualbox-guest-x11</code>. (Previously <code>virtualbox-guest-additions-iso</code>.) <ref>https://gitlab.com/whonix/Whonix/-/commit/22c9e145a9fdb53358e56fd37fa34ebe3db5fb6c</ref>
+* VirtualBox builds: temporarily download the <code>virtualbox</code> package from Debian sid until it becomes available from either Debian fasttrack or <code>virtualbox.org</code>. <ref>[https://forums.whonix.org/t/challenges-installing-virtualbox/9984/6 Challenges Installing VirtualBox].</ref> <ref>https://gitlab.com/whonix/Whonix/-/commit/79f73c563c0c12afbf19b479e2c6426ac9ebc005</ref>
+* VirtualBox builds: accept both sources of VirtualBox packages - either package <code>virtualbox</code> (by Debian), or package <code>virtualbox-6.1</code> (by virtualbox.org). <ref>https://gitlab.com/whonix/Whonix/-/commit/2e9b99f5991dd5a62083a91bde597ccd4100f108</ref>
+* Build sources, Debian fasttrack: disabled temporarily until https://salsa.debian.org/fasttrack-team/support/-/issues/24 is fixed. <ref>https://gitlab.com/whonix/Whonix/-/commit/288323a86e2dc037b03e004c62ab3f8ce2b1f616</ref> <ref>Note: the https://fasttrack.debian.net/debian offline issue has now been resolved.</ref>
+* <code>help-steps/repo_download_chroot_script</code>: fixed for Debian <code>bullseye</code> - updated the order of parameters passed to APT. <ref>https://gitlab.com/whonix/Whonix/-/commit/4c4b6899446b65ff98b0c714806e22879cd22ea6</ref>
+* Disabled <code>download_virtualbox_packages_virtualbox_guest_additions_iso_from_debian_sid</code> moving to Debian fasttrack version. <ref>https://gitlab.com/whonix/Whonix/-/commit/37a58d3ccef9e055fa77375f08f609c37f34a4dc</ref>
+* Disabled <code>download_virtualbox_packages_virtualbox_org</code> moving to Debian fasttrack version. <ref>https://gitlab.com/whonix/Whonix/-/commit/d18114145217bd0fa97c5b90a162fa4115a44675</ref>
+* Default <code>whonix_build_auto_retry=“0”</code> auto retry function error handler trap lacks variables such as variable APTGETOPT. <ref>This would miss security-related APT configuration options: <code>apt-get --error-on=any / -o APT::Update::Error-Mode=any</code>.</ref> <ref>https://gitlab.com/whonix/Whonix/-/commit/a00bd523073aaceb1f5cd674b54e734fb93c7518</ref>
+* Added backports and fasttrack to build sources by default to support downloading VirtualBox from Debian fasttrack. <ref>https://gitlab.com/whonix/Whonix/-/commit/067b8c2f6dafbbcb6ea00eaf2f25c90b88508764</ref>
+* Added build dependencies for maintainers. <ref>https://gitlab.com/whonix/Whonix/-/commit/6a0f72a701799879b23de92a2855aba7f756bb22</ref>
+* Removed <code>python</code> from cowbuilder image. It is no longer necessary because the <code>apt-get-update</code> wrapper is no longer required. <ref>https://gitlab.com/whonix/Whonix/-/commit/21451c66870549e441e50f2bdd8008ba33f8d4a5</ref> <ref>https://gitlab.com/whonix/Whonix/-/commit/ff75fd30f698c61a3276a811c8fcd5a5be7a1298</ref>
+* Reverted to the Tor version from <code>packages.debian.org</code> (instead of the earlier <code>deb.torproject.org</code>), see: [[Dev/Tor|Tor integration in {{project name}} Development Notes]]. <ref>[https://forums.whonix.org/t/tor-integration-in-whonix/10593 Tor integration in Whonix].</ref> <ref>https://gitlab.com/whonix/Whonix/-/commit/e6b372d18f582b35900899d2aa076e4d1b5073a2</ref>
+* Removed <code>mmdebstrap</code> copy from the source code; it is no longer required as the Debian <code>bullseye</code> package is sufficient. <ref>https://gitlab.com/whonix/Whonix/-/commit/37d3c0062d8fbb4413d3113cc67f2ea4020e9cba</ref>
+* <code>python3.9</code> is no longer required in <code>grml_packages</code> because <code>apt --error-on=any</code> obsoleted any need for a python-based <code>apt-get</code> wrapper. <ref>https://gitlab.com/whonix/Whonix/-/commit/a8aaeddad3feb15ba894c4c0c75288b20642a3e1</ref>
+* Replaced the unnecessary <code>/usr/lib/security-misc/apt-get-wrapper</code> with <code>apt-get --error-on=any</code>. <ref>https://gitlab.com/whonix/Whonix/-/commit/2ba4bcec1cd56c58cec7cb18b82d801abc58a0ae</ref> <ref>https://gitlab.com/whonix/Whonix/-/commit/9cdc94271739b373ff19eeb7506193c6a9b47250</ref>
+
+= {{project_name}} 16 Updates = 
+
+As {{project_name}} is a rolling distribution, users will benefit from regular small security and usability improvements, features and bug fixes as they enter the {{project_name}} stable repository. Those will be announced here.
+
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = The majority of the enhancements below also also apply to {{q_project_name}}. Exceptions include: 
+* [[Keystroke_Deanonymization#Kloak|kloak]]
+* [[Linux_Kernel_Runtime_Guard_LKRG|Linux Kernel Runtime Guard (LKRG)]]
+* [https://github.com/0xsirus/tirdad tirdad] (TCP ISN CPU Information Leak Protection)
+* [https://github.com/Whonix/security-misc/blob/master/etc/default/grub.d/40_kernel_hardening.cfg Kernel Hardening through Kernel Boot Parameters]
+* [https://github.com/Whonix/security-misc Strong Linux User Account Separation] / [[Dev/Permissions#Bruteforcing_Linux_User_Account_Passwords|Protection against Bruteforcing Linux User Account Passwords]]
+* [[apparmor-profile-everything]] <ref>https://github.com/Whonix/apparmor-profile-everything</ref> (AppArmor for everything: APT, systemd, init, all systemd units, all applications)
+* [[Hardened-kernel|hardened-kernel patch]] and [https://github.com/Whonix/hardened-kernel/blob/master/usr/share/hardened-kernel/hardened-vm-kernel configuration]
+
+Many of these will be possible once the use of in-VM kernels is simplified and promoted in Qubes OS. <ref>https://github.com/QubesOS/qubes-issues/issues/5212</ref> <ref>https://forums.whonix.org/t/qubes-whonix-security-disadvantages-help-wanted/8581</ref>
+}}
+
+== Notable Changes ==
+
+[https://gitlab.com/whonix/anon-gw-base-files <code>anon-gw-base-files</code>]:
+* Fixed the <code>bullseye</code> background image. <ref>[https://forums.whonix.org/t/whonix-xfce-wallpaper-background-image/7984 Whonix XFCE Wallpaper / Background Image].</ref> <ref>https://gitlab.com/whonix/anon-gw-base-files/-/commit/ef3ac0fdda5d56ecfb9c946cb0224b7aa627a25e</ref>
+
+[https://gitlab.com/whonix/anon-meta-packages <code>anon-meta-packages</code>]:
+* Integrated <code>kicksecure-dependencies-system</code>. <ref>[https://forums.whonix.org/t/replacing-initramfs-tools-with-dracut/4487 replacing initramfs-tools with dracut].</ref> <ref>https://gitlab.com/whonix/anon-meta-packages/-/commit/bd10983f849960f6176be2886b7287a2a9a48959</ref>
+
+[https://gitlab.com/whonix/anon-ws-base-files <code>anon-ws-base-files</code>]:
+* Fixed the <code>bullseye</code> background image. [https://forums.whonix.org/t/whonix-xfce-wallpaper-background-image/7984 Whonix XFCE Wallpaper / Background Image]. <ref>https://gitlab.com/whonix/anon-ws-base-files/-/commit/4990b0578dbecddac34682104d844f4a7a8d3589</ref>
+
+[https://gitlab.com/whonix/binaries-freedom <code>binaries-freedom</code>]:
+* Added the Debian install file (generated using <code>genmkfile debinstfile</code>). <ref>https://gitlab.com/whonix/binaries-freedom/-/commit/3cca621377fe9191e45ac40eecacbc45a702658f</ref>
+* <code>binaries-freedom</code> is an empty package at present. <ref>[https://forums.whonix.org/t/policy-for-inclusion-of-compiled-software/6635 Policy for Inclusion of Compiled Software].</ref> <ref>https://gitlab.com/whonix/binaries-freedom/-/commit/86223e3cbb5c6aab67616201a2936266d677c6bf</ref>
+
+[https://gitlab.com/whonix/debug-misc <code>debug-misc</code>]:
+* <code>dracut</code>. <ref>https://gitlab.com/whonix/debug-misc/-/commit/eb232484bc4d248d866456c0eb236c17a137cc4c</ref>
+* Removed ‘rhgb’ from GRUB_CMDLINE_LINUX_DEFAULT. <ref>https://gitlab.com/whonix/debug-misc/-/commit/017c41ed068e5b675f741bc34c3d1f1733a5c8af</ref>
+* <code>add_dracutmodules+=" debug "</code> <ref>https://gitlab.com/whonix/debug-misc/-/commit/915882889918bf7969fa7b9f7bb6f7dfcb5bb554</ref>
+
+[https://gitlab.com/whonix/grub-live <code>grub-live</code>]:
+* <code>dracut</code>. <ref>https://gitlab.com/whonix/grub-live/-/commit/7a1b20db9185b4cbbe04937f7993783f2261195b</ref> <ref>https://gitlab.com/whonix/grub-live/-/commit/df99255112d9eae360cce8534b9cfa92795125c6</ref>
+* Fixed and removed <code>dracut</code> <code>kernel_cmdline="rootovl"</code> since that is already conditionally set in the <code>grub</code> boot menu (otherwise the system will always boot into live mode). <ref>https://gitlab.com/whonix/grub-live/-/commit/cb94f18bd47a56d0427e9ae822f966f32fd55f2e</ref>
+* Removed <code>dracut</code> <code>hostonly="yes"</code> since that is already the Debian default. <ref>https://gitlab.com/whonix/grub-live/-/commit/3bded2153eb311ee6f8571bf67483d3514d97ed0</ref>
+* Added <code>dracut</code> support based on [https://github.com/friedrich12/dracut-grub-live friedrich12 / dracut-grub-live]. [https://forums.whonix.org/t/replacing-initramfs-tools-with-dracut/4487/10 replacing initramfs-tools with dracut].</ref> <ref>https://gitlab.com/whonix/grub-live/-/commit/1989d6e12ac4e5eec03ed3b492c4c84fd6695fd9</ref>
+
+[https://gitlab.com/whonix/helper-scripts <code>helper-scripts</code>]:
+* Improved diagnostic messages. <ref>https://gitlab.com/whonix/helper-scripts/-/commit/8a4939227c4ff0016451a3be8a8de8f7c7360b56</ref>
+
+[https://gitlab.com/whonix/kicksecure-meta-packages <code>kicksecure-meta-packages</code>]:
+* Installed <code>flatpak</code> by default and added it to <code>kicksecure-recommended-cli</code>. <ref>[https://forums.whonix.org/t/flatpak-as-a-software-source-flathub-as-a-source-of-software/8500 FlatPak as a Software Source / flathub as a source of software].</ref> <ref>See: [[Install_Software#flatpak|flatpak]].</ref> <ref>https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/be19b89acba35c5b6e9350b3f4aa5d8c13288ba3</ref>
+* Installed <code>extrepo</code> by default and add it to <code>kicksecure-recommended-cli</code>. <ref>[https://forums.whonix.org/t/extrepo-safely-adding-repos/8539 extrepo - safely adding repos].</ref> <ref>https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/7f4f2930d720836cd4051a4ba6e38959037f2d95</ref>
+* Switched from <code>lightdm</code> to <code>gdm3</code> because <code>lightdm</code> autologin is non-functional. <ref>https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/e11275ee58b15bbb9ec5d745046b4b369b681c99</ref>
+* <code>kicksecure-dependencies-system</code> Depends: <code>linux-initramfs-tool</code>, <code>dracut</code> and <code>initramfs-tools</code>. <ref>https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/b1616daee3c2c228de8db866ea168be088e4ea5c</ref> <ref>https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/7c1ed0864ec1916497df39f1660d5fb97ba01e80</ref>
+* Introduced and integrated <code>kicksecure-dependencies-system</code>. <ref>[https://forums.whonix.org/t/replacing-initramfs-tools-with-dracut/4487 replacing initramfs-tools with dracut].</ref> <ref>https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/a586c06595c836122c6f357d07f28541b16f988d</ref> <ref>https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/6b42c87bef0ee62fd57f4435cb69997243b3f6d8</ref>
+* Removed <code>initramfs-tools</code> from <code>non-qubes-vm-enhancements-cli</code> for <code>dracut</code> support. <ref>https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/3b67c5c18981c7a3072ece594f94f98e9537cb1f</ref>
+* Introduced <code>kicksecure-qubes-cli</code> and <code>kicksecure-qubes-gui</code>. <ref>https://gitlab.com/whonix/kicksecure-meta-packages/-/commit/eac116b98463f9b50812fe4c43b5420181b62b3e</ref>
+
+[https://gitlab.com/whonix/monero-gui <code>monero-gui</code>]:
+* Updated to <code>monero-gui-linux-x64-v0.17.2.3.tar.bz2</code> <ref>https://web.archive.org/web/20210902155943/https://github.com/monero-project/monero-gui/releases/tag/v0.17.2.3</ref> <ref>https://web.archive.org/web/20210902155938/https://downloads.getmonero.org/gui/monero-gui-linux-x64-v0.17.2.3.tar.bz2</ref> <ref>https://web.archive.org/web/20210902160006/https://www.getmonero.org/downloads/hashes.txt</ref> <ref>https://gitlab.com/whonix/monero-gui/-/commit/a34bac079c2a31b533117070cf38c7a4957f36c3</ref>
+
+[https://gitlab.com/whonix/qubes-whonix <code>qubes-whonix</code>]:
+* Dropped <code>initramfs-tools</code> from <code>qubes-whonix-shared-packages-recommended</code>; this is left to Qubes for <code>dracut</code> support. <ref>[https://forums.whonix.org/t/replacing-initramfs-tools-with-dracut/4487/13 replacing initramfs-tools with dracut].</ref> <ref>https://gitlab.com/whonix/qubes-whonix/-/commit/683c5ee6247dd562fa52789c5475621f43a95377</ref>
+
+[https://gitlab.com/whonix/sdwdate <code>sdwdate</code>]:
+* Fixed a dependency issue. <ref>https://gitlab.com/whonix/sdwdate/-/commit/95f62a51727ab153c83a1a5650786b2ffd778038</ref>
+
+[https://gitlab.com/whonix/security-misc <code>security-misc</code>] improvements:
+* Do not set kernel parameter <code>quiet loglevel=0</code> for recovery boot option for easier debugging. <ref>https://gitlab.com/whonix/security-misc/-/commit/ac0c492663b9d90f99e5969193b35b53d4175d1d</ref>
+* Moved grub quiet to a separate configuration file <code>/etc/default/grub.d/41_quiet.cfg</code>. <ref>https://gitlab.com/whonix/security-misc/-/commit/49902b8c56512c3ee8b3d16b0ca513e44349c66d</ref>
+* <code>dracut reproducible=yes</code>. <ref>https://gitlab.com/whonix/security-misc/-/commit/a4e18a2ae8c19a664bb1be5bc4ec43f10a876969</ref>
+* <code>Depends: libpam-modules-bin</code>. <ref>https://gitlab.com/whonix/security-misc/-/commit/e2810f348b413bb307449a911c12a46924686a9f</ref>
+* Fixed faillock implementation - <code>dovecot / ssh</code> are exempted. <ref>https://gitlab.com/whonix/security-misc/-/commit/be8c10496f26d33378deb2427e56892771456ee5</ref>
+* Fixed and added <code>sshd</code> to <code>pam_service_exclusion_list</code> to avoid faillock. <ref>https://gitlab.com/whonix/security-misc/-/commit/8b104f544a9e4e8da1691659fefa4999a4f6f085</ref>
+
+[https://gitlab.com/whonix/systemcheck <code>systemcheck</code>]:
+* Now run <code>check_sudo</code> earlier. <ref>https://gitlab.com/whonix/systemcheck/-/commit/09129d482c339a21c1b5c55447d50906a0b64fd9</ref>
+
+[https://gitlab.com/whonix/usability-misc <code>usability-misc</code>]:
+* Removed <code>/etc/lightdm/lightdm.conf.d/autologin.conf</code> (comments only) since it might interfere with autologin. <ref>https://gitlab.com/whonix/usability-misc/-/commit/b6461000a276594155ab88d994b4b4268451030e</ref>
+
+[https://gitlab.com/whonix/vm-config-dist <code>vm-config-dist</code>]:
+* <code>config-package-dev</code> displaces <code>/etc/gdm3/daemon.conf</code>. <ref>https://gitlab.com/whonix/vm-config-dist/-/commit/c071e8b630fe63963fbf5554986c0fecdcb6bd74</ref>
+* Add and enable <code>gdm</code> autologin. <ref>https://gitlab.com/whonix/vm-config-dist/-/commit/1417726fc0a08bae8fe94c3dca3555aeef82677b</ref> <ref>https://gitlab.com/whonix/vm-config-dist/-/commit/fc802381584056fbaef1e7388c720c2c3c3dcb19</ref> <ref>https://gitlab.com/whonix/vm-config-dist/-/commit/bf00f606b3188c5a023f446cb31f910349708b4e</ref>
+* Added the original <code>/etc/gdm3/daemon.conf</code>. <ref>https://gitlab.com/whonix/vm-config-dist/-/commit/ee1f0c3a4b8f7c18c4228385506e18e9a0cfe0ee</ref>
+* Fixed autologin. <ref>https://gitlab.com/whonix/vm-config-dist/-/commit/b0c1af96519f82a9dcd2baf4f414c5efbc5d87f2</ref> <ref>https://gitlab.com/whonix/vm-config-dist/-/commit/a41b9d9bd270dec8a3cb76ddade164d0de914696</ref>
+* Disable <code>dracut</code> module resume in VMs since it might break the boot process if built inside <code>chroot</code>. <ref>https://gitlab.com/whonix/vm-config-dist/-/commit/ee07d87be47c3c48f4369b5816876d5d826999a4</ref>
+* <code>vbox-guest-installer</code>: recommend, migrate from VirtualBox guest addition ISO to VirtualBox guest addition packages. <ref>[[VirtualBox/Guest_Additions#Migration_to_Guest_Additions_Packages|Migration to Guest Additions Packages]].</ref> <ref>https://gitlab.com/whonix/vm-config-dist/-/commit/b23e33b69dde7a62d8b63884900095aeacc19024</ref>
+
+[https://gitlab.com/whonix/whonix-legacy <code>whonix-legacy</code>]:
+* Updated version. <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/b9d166ff16d3f8d61a0554784df9976cd88c6e72</ref>
+* Improved <code>release-upgrade</code>. <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/8a17fef51a03c62205172494704dad11c361c31d</ref> <ref>https://gitlab.com/whonix/whonix-legacy/-/commit/8d8fb6be0628a19e32c76fcd3edd732d7ba3bd5f</ref>
+
+[https://gitlab.com/whonix/whonix-xfce-desktop-config <code>whonix-xfce-desktop-config</code>]:
+* Fixed the <code>bullseye</code> background image (actually still broken). <ref>[https://forums.whonix.org/t/whonix-xfce-wallpaper-background-image/7984 Whonix XFCE Wallpaper / Background Image].</ref> <ref>https://gitlab.com/whonix/whonix-xfce-desktop-config/-/commit/9d386ab84f420cf28a2661787500366af1088da1</ref>
+
+== Documentation ==
+
+New wiki chapters:
+* [[Mental_Model|Computer Security Mental Model]]
+* [[Keepassxc|KeePassXC Password Manager]]
+
+Wiki improvements/enhancements:
+* [[Social_Engineering|Social Engineering and (Spear) Phishing]]
+* [[Two-factor_authentication_2FA|Two-factor Authentication (2FA)]]
 
 = Footnotes =
 {{reflist|close=1}}
