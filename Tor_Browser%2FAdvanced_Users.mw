@@ -527,45 +527,49 @@ tor-launcher is not yet available for use in {{gateway_product_name}}. <ref>http
 [[Tor_Browser/Internal_Updater#Tor_Browser_Downloader_by_{{project_name}}|Tor Browser Updater ({{project_name}})]] ([https://github.com/{{project_name_short}}/tb-updater tb-updater]) is installed by default and specifically designed to be functional when installed alongside torbrowser-launcher. A possible long-term development goal in {{project_name}} is to deprecate tb-updater and instead install torbrowser-launcher by default. See this [https://forums.whonix.org/t/using-torbrowser-launcher-instead-of-tb-updater-in-whonix forum development discussion] if that is of interest.
 
 = Platform-specific Issues: {{q_project_name}} =
-{{Anchor|Running Tor Browser in Qubes TemplateVM}}
-== Running Tor Browser in Qubes TemplateVM or DisposableVM Template ==
+{{Anchor|Running Tor Browser in Qubes Template}}
+== Running Tor Browser in Qubes Template or Disposable Template ==
+
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text    = Do not start Tor Browser in the <code>whonix-ws</code> TemplateVM or <code>whonix-ws-dvm</code> DisposableVM-TemplateVM! It is unexpected behavior and dangerous.
+| text    = Do not start Tor Browser in the <code>whonix-ws</code> Template or <code>whonix-ws-dvm</code> Disposable Template! It is unexpected behavior and dangerous.
 }}
 
 <div class="toccolours mw-collapsible mw-collapsed">
 To understand why, please press on Expand on the right.
 <div class="mw-collapsible-content">
 * Tor Browser should be used in its stock configuration with as few modifications as possible. This is in accordance with upstream recommendations by The Tor Project.
-* Internet connections are established if Tor Browser is started in a DisposableVM Template -- this risks a compromise of the template and all DisposableVMs based upon it.
-* Various files are created when Tor Browser starts -- these might make an individual  [[DoNot#Confuse_Anonymity_with_Pseudonymity|pseudonymous rather than anonymous]], even if software has been designed against this. It is undesirable to have the same pseudonym linked to all TemplateBasedVMs based on a singular TemplateVM.
-* It is far safer to start Tor Browser for the first time in a TemplateBasedVM, rather than the TemplateVM. It is unrealistic to expect Tor Browser will perform perfectly, without any critical bugs being revealed later on. Current and past Tor Browser issues support this assertion; for example, see [https://trac.torproject.org/projects/tor/query?status=accepted&status=assigned&status=needs_information&status=needs_review&status=new&status=reopened&order=priority&col=id&col=summary&col=keywords&col=status&col=owner&col=type&col=priority&keywords=tbb-linkability here] and [https://trac.torproject.org/projects/tor/query?status=accepted&status=assigned&status=needs_review&status=needs_revision&status=new&status=reopened&order=priority&col=id&col=summary&col=keywords&col=status&col=owner&col=type&col=priority&keywords=tbb-fingerprinting here].
+* Internet connections are established if Tor Browser is started in a Disposable Template -- this risks a compromise of the template and all Disposables based upon it.
+* Various files are created when Tor Browser starts -- these might make an individual  [[DoNot#Confuse_Anonymity_with_Pseudonymity|pseudonymous rather than anonymous]], even if software has been designed against this. It is undesirable to have the same pseudonym linked to all App Qubes based on a singular Template.
+* It is far safer to start Tor Browser for the first time in a App Qube, rather than the Template. It is unrealistic to expect Tor Browser will perform perfectly, without any critical bugs being revealed later on. Current and past Tor Browser issues support this assertion; for example, see [https://trac.torproject.org/projects/tor/query?status=accepted&status=assigned&status=needs_information&status=needs_review&status=new&status=reopened&order=priority&col=id&col=summary&col=keywords&col=status&col=owner&col=type&col=priority&keywords=tbb-linkability here] and [https://trac.torproject.org/projects/tor/query?status=accepted&status=assigned&status=needs_review&status=needs_revision&status=new&status=reopened&order=priority&col=id&col=summary&col=keywords&col=status&col=owner&col=type&col=priority&keywords=tbb-fingerprinting here].
 * See also [[Tor Browser#Unsafe Tor Browser Habits|Unsafe Tor Browser Habits]].
 </div>
 </div>
 
-== tb-updater in Qubes TemplateVM ==
+== tb-updater in Qubes Template ==
+
 Tor Browser is installed by default in {{workstation_product_name}}.
 
 === Default Behavior ===
 
 {{workstation_product_name}} builds by default automatically run [[Tor_Browser#Tor_Browser_Downloader_by_Whonix_.E2.84.A2|Tor Browser Downloader by {{project_name}}]] ({{Code2|tb-updater}} package) ({{Code2|update-torbrowser}}) following its initial installation within chroot. If the attempt to run the {{Code2|tb-updater}} package is unsuccessful, then it will fail closed by default and nothing will be installed. As a consequence, this could lead to an error while building {{project_name}} images from source code or when [[Dev/Installation_from_Repository|installing {{project_name}} from the repository]]. Although this is undesirable behavior, developers have still decided to install Tor Browser by default in {{workstation_product_name}}. This means the only way to ensure Tor Browser is really installed by default is to also fail closed when necessary.
 
-Qubes-{{workstation_product_name}} TemplateVMs by default automatically run {{Code2|update-torbrowser}} during upgrades of [[Tor_Browser#Tor_Browser_Downloader_by_Whonix_.E2.84.A2|Tor Browser Downloader by {{project_name}}]] ({{Code2|tb-updater}} package). If the {{Code2|update-torbrowser}} process fails, it will fail open by default. In this case, a terminal message will inform that no new Tor Browser could be downloaded, but apt-get will terminate normally. This is necessary to implement the {{q_project_name}} feature ensuring an [https://phabricator.whonix.org/T417 up-to-date version of Tor Browser] is available in freshly created AppVMs. <ref>Which is in turn inherited from updated TemplateVMs.</ref>
+Qubes-{{workstation_product_name}} Templates by default automatically run {{Code2|update-torbrowser}} during upgrades of [[Tor_Browser#Tor_Browser_Downloader_by_Whonix_.E2.84.A2|Tor Browser Downloader by {{project_name}}]] ({{Code2|tb-updater}} package). If the {{Code2|update-torbrowser}} process fails, it will fail open by default. In this case, a terminal message will inform that no new Tor Browser could be downloaded, but apt-get will terminate normally. This is necessary to implement the {{q_project_name}} feature ensuring an [https://phabricator.whonix.org/T417 up-to-date version of Tor Browser] is available in freshly created App Qubes. <ref>Which is in turn inherited from updated Templates.</ref>
 
 === Update Failures ===
 
 If an update failure occurs, this only poses a small inconvenience. The problem is easily solved by one of the following methods: 
 
-# Running [[Tor_Browser/Internal_Updater#In_Qubes-Whonix_.E2.84.A2|Tor Browser Downloader by {{project_name}}]] in {{workstation_product_name}} TemplateVM (<code>whonix-ws</code>) or in a TemplateBased AppVM like <code>anon-whonix</code>.
-# Using the [[Tor_Browser/Internal_Updater#Tor_Browser_Internal_Updater|Internal Updater]] in a TemplateBased AppVM like <code>anon-whonix</code>.
-# [[Tor_Browser/Internal_Updater#Tor_Browser_Manual_Update|Manually downloading]] Tor Browser in a TemplateBased AppVM like <code>anon-whonix</code>.
+# Running [[Tor_Browser/Internal_Updater#In_Qubes-Whonix_.E2.84.A2|Tor Browser Downloader by {{project_name}}]] in {{workstation_product_name}} Template (<code>whonix-ws</code>) or in an App Qube like <code>anon-whonix</code>.
+# Using the [[Tor_Browser/Internal_Updater#Tor_Browser_Internal_Updater|Internal Updater]] in an App Qube like <code>anon-whonix</code>.
+# [[Tor_Browser/Internal_Updater#Tor_Browser_Manual_Update|Manually downloading]] Tor Browser in an App Qube like <code>anon-whonix</code>.
 
 === Optional Package Configuration ===
+
 Actions of the tb-updater package can be optionally configured.
 
 ==== Disable Automatic Update Downloads ====
+
 {{Box|text=
 '''1.''' {{Open with root rights|filename=
 /etc/torbrowser.d/50_user.conf
@@ -573,7 +577,7 @@ Actions of the tb-updater package can be optionally configured.
 
 '''2.''' Disable automatic downloads.
 
-When the tb-updater package is upgraded in the Qubes-{{workstation_product_name}} TemplateVM, by default a hard-coded <ref>In the tb-updater package.</ref> version Tor Browser tarball and signature is automatically downloaded. In order to disable this, add.
+When the tb-updater package is upgraded in the Qubes-{{workstation_product_name}} Template, by default a hard-coded <ref>In the tb-updater package.</ref> version Tor Browser tarball and signature is automatically downloaded. In order to disable this, add.
 
 {{CodeSelect|code=
 tb_install_follow=false
@@ -584,7 +588,7 @@ tb_install_follow=false
 
 === Technical Details ===
 
-By default, during the Debian maintainer postinst script run in Qubes-{{workstation_product_name}} TemplateVMs, the folders <code>/var/cache/tb-binary/.cache/tb/</code> and <code>/var/cache/tb-binary/.tb/tor-browser</code> will be deleted if they exist. tb-updater will then download files to <code>/var/cache/tb-binary/.cache/tb/</code>
+By default, during the Debian maintainer postinst script run in Qubes-{{workstation_product_name}} Templates, the folders <code>/var/cache/tb-binary/.cache/tb/</code> and <code>/var/cache/tb-binary/.tb/tor-browser</code> will be deleted if they exist. tb-updater will then download files to <code>/var/cache/tb-binary/.cache/tb/</code>
 
 {{CodeSelect|code=
 find /var/cache/tb-binary/.cache/tb/
@@ -623,7 +627,7 @@ find /var/cache/tb-binary/.tb
 /var/cache/tb-binary/.tb/tor-browser/...
 </pre>
 
-In essence, when a Qubes-{{workstation_product_name}} AppVM is booted for the first time, the systemd unit file <i>/lib/systemd/system/tb-updater-first-boot.service</i> <ref>https://github.com/{{project_name_short}}/tb-updater/blob/master/lib/systemd/system/tb-updater-first-boot.service</ref> runs <i>/usr/lib/tb-updater/first-boot-home-population</i>. <ref>https://github.com/{{project_name_short}}/tb-updater/blob/master/usr/lib/tb-updater/first-boot-home-population</ref> That script copies <i>/var/cache/tb-binary</i> to <i>/home/user</i>
+In essence, when a Qubes-{{workstation_product_name}} App Qube is booted for the first time, the systemd unit file <i>/lib/systemd/system/tb-updater-first-boot.service</i> <ref>https://github.com/{{project_name_short}}/tb-updater/blob/master/lib/systemd/system/tb-updater-first-boot.service</ref> runs <i>/usr/lib/tb-updater/first-boot-home-population</i>. <ref>https://github.com/{{project_name_short}}/tb-updater/blob/master/usr/lib/tb-updater/first-boot-home-population</ref> That script copies <i>/var/cache/tb-binary</i> to <i>/home/user</i>
 
 The result is.
 
@@ -655,7 +659,9 @@ drwxr-xr-x 2 user user 4096 Jun  8 01:17 temp
 </pre>
 
 === File Locations ===
+
 ==== Browser ====
+
 Template:
 
 <pre>
@@ -669,7 +675,8 @@ Home folder:
 </pre>
 
 ==== user.js ====
-Path to <code>user.js</code> in this documentation is just a hint. {{project name}} does not influence that path. It might change in later versions of Tor Browser. Any contents inside the <code>/Browser/</code> folder are unmodified. Same as Tor Browser by The Tor Project. {{project name}} does not do any modifications.
+
+Path to <code>user.js</code> in this documentation is just a hint. {{project name}} does not influence that path, although it might change in later versions of Tor Browser. Any contents inside the <code>/Browser/</code> folder are unmodified; this is the same as Tor Browser by The Tor Project. {{project name}} does not perform any modifications.
 
 <pre>
 /var/cache/tb-binary/.tb/tor-browser/Browser/TorBrowser/Data/Browser/profile.default/user.js
@@ -694,41 +701,44 @@ tb_install_in_chroot=false
 }}
 
 == tb-updater in Qubes DisposableVM Template ==
+
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
-| text    = Tor Browser Downloader by {{project_name}} should <u>not</u> be launched in DisposableVM Templates (<code>{{whonix-ws-dvm}}</code>)!
+| text    = Tor Browser Downloader by {{project_name}} should <u>not</u> be launched in Disposable Templates (<code>{{whonix-ws-dvm}}</code>)!
 }}
 
 The only safe place to run Tor Browser Downloader by {{project_name}} is in either:
 
-* The TemplateVM (<code>{{whonix-ws}}</code>); or
-* The AppVM which is based on this template (<code>anon-whonix</code>). 
+* The Template (<code>{{whonix-ws}}</code>); or
+* The App Qube which is based on this template (<code>anon-whonix</code>). 
 
-The reason is because Tor Browser is stored in folder <code>/var/cache/tb-binary</code> which is non-persistent in Qubes' DisposableVM Template (<code>{{whonix-ws-dvm}}</code>), but persistent in Qubes' TemplateVM (<code>{{whonix-ws}}</code>).
+The reason is because Tor Browser is stored in folder <code>/var/cache/tb-binary</code> which is non-persistent in Qubes' Disposable Template (<code>{{whonix-ws-dvm}}</code>), but persistent in Qubes' Template (<code>{{whonix-ws}}</code>).
 
 {{Qubes persistence}}
 
 To learn more about persistence, see [https://www.qubes-os.org/doc/templates/#important-notes-r40 here] or [[Dev/Qubes#Qubes_Persistence|here]].
 
-Updating Tor Browser in Qubes' TemplateVM <code>{{whonix-ws}}</code> is sufficient to make a copy of the latest Tor Browser available to all <u>newly</u> created AppVMs based upon it.
+Updating Tor Browser in Qubes' Template <code>{{whonix-ws}}</code> is sufficient to make a copy of the latest Tor Browser available to all <u>newly</u> created App Qubes based upon it.
 
-{{Anchor|Start Tor Browser in Qubes DisposableVM Template}}
+{{Anchor|Start Tor Browser in Qubes Disposable Template}}
 
 {{Anchor|DVM_Template_Customization}}
-== DisposableVM Template Customization ==
+== Disposable Template Customization ==
+
 [[#Running_Tor_Browser_in_Qubes_TemplateVM_or_DisposableVM_Template|Tor Browser customization is discouraged!]]
 
-To start Tor Browser from the command line or in debugging mode in a Qubes DisposableVM Template, choose any of the following options below.
+To start Tor Browser from the command line or in debugging mode in a Qubes Disposable Template, choose any of the following options below.
 
 Forum discussion: [https://forums.whonix.org/t/how-do-i-customise-tor-browser-in-a-whonix-templatebased-dvm-in-whonix-14/5580 How to customize Tor Browser in a {{project_name}} TemplateBased DVM?]
 
-=== Option 1: DisposableVM Template Method ===
-Using this method, customization would only apply to the DisposableVM Template and any DispVMs based on that DisposableVM Template.
+=== Option 1: Disposable Template Method ===
+
+Using this method, customization would only apply to the Disposable Template and any Disposables based on that Disposable Template.
 
 {{Box|text=
-'''1.''' Start {{workstation_product_name}} TemplateVM (<code>{{whonix-ws}}</code>).
+'''1.''' Start {{workstation_product_name}} Template (<code>{{whonix-ws}}</code>).
 
-'''2.''' Disable Tor Browser Downloader DispVM Service. <ref>
+'''2.''' Disable Tor Browser Downloader Disposable Service. <ref>
 * This is to prevent mounting <code>/var/cache/tb-binary/.tb</code> to <code>/home/user/.tb</code>.
 * <code>/lib/systemd/system/tb-updater-dispvm.service</code>
 * <code>/usr/lib/tb-updater/dispvm</code>
@@ -750,13 +760,13 @@ This is probably because Qubes mounts /usr/local too late to be regarded by syst
 sudo systemctl mask tb-updater-dispvm.service
 }}
 
-'''3.''' Shutdown TemplateVM.
+'''3.''' Shutdown Template.
 
 {{CodeSelect|code=
 sudo poweroff
 }}
 
-'''4.''' Open a terminal emulator in {{workstation_product_name}} DisposableVM Template <code>{{whonix-ws}}-dvm</code>.
+'''4.''' Open a terminal emulator in {{workstation_product_name}} Disposable Template <code>{{whonix-ws}}-dvm</code>.
 
 Run in dom0 terminal emulator.
 
@@ -766,7 +776,7 @@ qvm-run -a {{whonix-ws}}-dvm xfce4-terminal
 
 '''5.''' Open Tor Browser Starter / Tor Browser Downloader (by {{project name}} developers) configuration file.
 
-In {{workstation_product_name}} DisposableVM Template <code>{{whonix-ws}}-dvm</code>:
+In {{workstation_product_name}} Disposable Template <code>{{whonix-ws}}-dvm</code>:
 
 Create folder <code>/usr/local/etc/torbrowser.d</code>.
 
@@ -791,10 +801,10 @@ tb_qubes_dvm_template() {
 
 '''7.''' Save.
 
-'''8.''' Tor Browser in DisposableVM Template.
+'''8.''' Tor Browser in Disposable Template.
 
-Running Tor Browser Starter / Tor Browser Downloader (by {{project name}} developers) in DisposableVM Template is now possible. <ref>
-When running <code>torbrowser</code> (Tor Browser Starter by {{project name}} developers) in DisposableVM Template it will first copy <code>/var/cache/tb-binary/.tb/tor-browser</code> to user home folder <code>/home/user/.tb/tor-browser</code>. (Folder <code>/var/cache/tb-binary/.tb/tor-browser</code> was previously created by Tor Browser Downloader (by {{project name}} developers).) Second, it will start the Tor Browser binary from folder <code>/home/user/.tb/tor-browser</code>.
+Running Tor Browser Starter / Tor Browser Downloader (by {{project name}} developers) in Disposable Template is now possible. <ref>
+When running <code>torbrowser</code> (Tor Browser Starter by {{project name}} developers) in Disposable Template it will first copy <code>/var/cache/tb-binary/.tb/tor-browser</code> to user home folder <code>/home/user/.tb/tor-browser</code>. (Folder <code>/var/cache/tb-binary/.tb/tor-browser</code> was previously created by Tor Browser Downloader (by {{project name}} developers).) Second, it will start the Tor Browser binary from folder <code>/home/user/.tb/tor-browser</code>.
 </ref>
 
 Start Tor Browser.
@@ -811,26 +821,27 @@ update-torbrowser
 
 '''9.''' Customize Tor Browser.
 
-Happy customization.
+Perform customization changes.
 
-'''10.''' Shut down DisposableVM Template.
+'''10.''' Shut down Disposable Template.
 
 {{CodeSelect|code=
 sudo poweroff
 }}
 
-'''11.''' Start Tor Browser in Disposable VM.
+'''11.''' Start Tor Browser in Disposable.
 
 '''12.''' Done.
 
-Customized Tor Browser should now be started in the Disposable VM.
+Customized Tor Browser should now be started in the Disposable.
 }}
 
-=== Option 2: TemplateVM Method ===
-Using this method, customization this way would apply to all AppVMs and DispVM based on this TemplateVM.
+=== Option 2: Template Method ===
+
+Using this method, customization this way would apply to all App Qubes and Disposables based on this Template.
 
 {{Box|text=
-In {{workstation_product_name}} TemplateVM <code>{{whonix-ws}}</code>.
+In {{workstation_product_name}} Template <code>{{whonix-ws}}</code>.
 
 '''1.''' Open a terminal.
 
@@ -866,13 +877,13 @@ Note: Tor Browser can also be started manually without the <code>--debug</code> 
 sudo chown -R root:root /var/cache/tb-binary
 }}
 
-'''8.''' Disable Automatic Update Downloads
+'''8.''' Disable automatic update downloads.
 
-Optional: Consider to [[#Disable Automatic Update Downloads]] since these would overwrite any user modifications. <ref name=no-user-freedom-restrictions>
+Optional: Consider [[#Disable Automatic Update Downloads|Disable Automatic Update Downloads]] since these would overwrite any user modifications. <ref name=no-user-freedom-restrictions>
 [[#Tor_Browser_Update:_Technical_Details|Due to technical limitations.]] Because whole folder <code>/var/cache/tb-binary/.tb/tor-browser</code> is replaced. [[Why_Whonix_is_Freedom_Software#No_Intentional_User_Freedom_Restrictions|This is not an intentional user freedom restriction or security feature.]]
 </ref>
 
-'''9.''' Apply Tor Browser Updates
+'''9.''' Apply Tor Browser updates.
 
 From time to time when updated for Tor Browser are available, re-apply this procedure and use [[Tor_Browser#Tor_Browser_Internal_Updater|Tor Browser Internal Updater]] to update Tor Browser. Alternatively use any other update method as documented on the [[Tor Browser]] wiki page.
 
@@ -880,28 +891,29 @@ Note: If using Tor Browser Downloader by {{project name}}, user modifications in
 }}
 
 === Option 3: Manual Method ===
-It's possible to ignore most of what {{project name}} implemented related to Tor Browser and going back to square one, doing it all manually.
+
+It is possible to ignore most of what {{project name}} has implemented relating to Tor Browser and go back to square one, performing it all manually.
 
 {{Box|text=
-# Start a terminal emulator in Qubes DisposableVM Template.
+# Start a terminal emulator in Qubes Disposable Template.
 # Ignore command <code>torbrowser</code> / <code>/usr/bin/torbrowser</code> on the command line. (Ignore Tor Browser Starter by {{Project name}} developers.)
 # Ignore command <code>update-torbrowser</code> / <code>/usr/bin/update-torbrowser</code> on the command line. (Ignore Tor Browser Downloader by {{Project name}} developers.)
 # Ignore Tor Browser (AnonDist) (by {{Project name}} developers) Qubes start menu entry.
 # Manually install Tor Browser to folder <code>/home/user</code> as per instructions from The Tor Project. Nothing {{project name}} specific. [[Free Support Principle]] applies. However, instructions for [[Tor_Browser/Manual_Download|Tor Browser: Manual Download]] might be handy.
 # Manually (by ignoring as instructed above) start Tor Browser such as from folder <code>/home/user/tor-browser</code>.
-# Do whatever modifications you like to do.
+# Make any desired modifications.
 # Close Tor Browser.
-# Shutdown Qubes DisposableVM Template.
-# Start a terminal emulator in DispVM.
+# Shutdown Qubes Disposable Template.
+# Start a terminal emulator in Disposable.
 # Navigate to the folder where you manually installed Tor Browser.
 # Start Tor Browser.
 
-Feel free to customize this further such as by adding a new Qubes start menu entry. This is outside the scope of this documentation and could be done as per usual Qubes start menu modification procedures.
+Feel free to customize this further such as adding a new Qubes start menu entry. This is outside the scope of this documentation and can be done as per the usual Qubes start menu modification procedures.
 
 [[DoNot#Allow_Tor_over_Tor_Scenarios|Tor over Tor]] is a non-issue in this case due to minimal [[Tor_Browser#Whonix_.E2.84.A2_Tor_Browser_Differences|{{project name}} Tor Browser Differences]].
 }}
 
-Advantage of this method is that whatever {{project name}} implemented will probably not cause any issues. Disadvantage is slightly reduced usability (such as superfluous Qubes start menu entry to be ignored).
+The advantage of this method is that whatever {{project name}} implemented will probably not cause any issues. The disadvantage is slightly reduced usability, such as the superfluous Qubes start menu entry which can be ignored.
 
 === Split Tor Browser for Qubes ===
 
