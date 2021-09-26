@@ -183,54 +183,76 @@ Alternatively, if want to run from command line, but still use the graphical use
 </blockquote>
 
 = Warrant Canary Check =
+
 == Introduction ==
-Prerequisite knowledge: [[Trust#canary|{{project name}} warrant canary]]
 
-Rationale for Automated Warrant Canary Check:
+{{mbox
+| type    = notice
+| image   = [[File:Ambox_notice.png|40px|alt=Info]]
+| text    = Prerequisite knowledge: [[Trust#canary|{{project name}} warrant canary]].
+}}
 
-* {{project name}} warrant canary is of little use if it gets forgotten over time and not regularly verified
-* Likelihood of {{project name}} warrant canary being regularly verified by the community is probably low.
-* Even if a community member verified {{project name}} warrant canary and noticed that verification failed, there would be no effective way to notify all users of {{project name}}.
+There are several reasons an Automated Warrant Canary Check is justified:
 
-Automated Warrant Canary Check:
+* {{project name}} warrant canary has limited utility if it is forgotten over time and not regularly verified.
+* It is unlikely the {{project name}} warrant canary is routinely verified by the community.
+* If a community member discovered the {{project name}} warrant canary verification failed, there is no effective way to notify all {{project name}} users.
 
-* Similar to an update check but to establish if {{project name}} warrant canary is still valid.
+== Features ==
 
-Security:
+'''Table:''' ''Automated Warrant Canary Check Features''
 
-* Downloads over Tor from <code>.onion</code> link [http://download.{{project_onion}}/whonixdevelopermetafiles/canary/canary.txt.embed.sig <code>canary.txt.embed.sig</code>]. <ref>
-clearnet link for convenience, preview, not used by systemcheck: https://download.{{project_clearnet}}/whonixdevelopermetafiles/canary/canary.txt.embed.sig
+{| class="wikitable"
+|-
+! scope="col"| '''Feature'''
+! scope="col"| '''Description'''
+|-
+
+! scope="row"| Function
+| Functions similar to an update check, but it establishes if {{project name}} warrant canary is still valid.
+|-
+
+! scope="row"| Security
+| 
+* Downloads over Tor from <code>.onion</code> link [http://download.{{project_onion}}/whonixdevelopermetafiles/canary/canary.txt.embed.sig <code>canary.txt.embed.sig</code>]. <ref>For convenience, the clearnet link that is unused by systemcheck can be previewed here: https://download.{{project_clearnet}}/whonixdevelopermetafiles/canary/canary.txt.embed.sig
 </ref>
-* The downloader [https://gitlab.com/whonix/systemcheck/-/blob/master/usr/lib/systemcheck/canary-download.py <code>canary-download.py</code>] is written in memory-safe language python (python3-requests) and running under a dedicated limited linux user account <code>canary</code>.
-* <code>canary.txt.embed.sig</code> is verified using <code>signify-openbsd</code> <ref>
+* The downloader [https://gitlab.com/whonix/systemcheck/-/blob/master/usr/lib/systemcheck/canary-download.py <code>canary-download.py</code>] is written in the memory-safe python language (<code>python3-requests</code>) and is running under a dedicated and limited Linux user account <code>canary</code>.
+* <code>canary.txt.embed.sig</code> is verified using <code>signify-openbsd</code>. <ref>
 {{CodeSelect|code=
 sudo -u canary signify-openbsd -V -e -p /usr/share/repository-dist/derivative-distribution-signify-key.pub -x /var/lib/canary/canary.txt.embed.sig -m /var/lib/canary/canary-unembed.txt
 }}
 </ref>
-* [https://gitlab.com/whonix/systemcheck/-/blob/master/etc/apparmor.d/usr.lib.systemcheck.canary AppArmor profile]
-* [https://gitlab.com/whonix/systemcheck/-/blob/master/lib/systemd/system/canary.service systemd hardening (seccomp)]
-* Similar to [[sdwdate]] fetching time from onions time sources.
+* Has an [https://gitlab.com/whonix/systemcheck/-/blob/master/etc/apparmor.d/usr.lib.systemcheck.canary AppArmor profile].
+* Has [https://gitlab.com/whonix/systemcheck/-/blob/master/lib/systemd/system/canary.service systemd hardening (seccomp)].
+* Similar to [[sdwdate]] it fetches time from onion time sources.
+|-
 
-More implementation details:
+! scope="row"| Implementation details
+| 
+* Minimal [https://gitlab.com/whonix/systemcheck/-/blob/master/usr/lib/systemcheck/canary-daemon <code>canary-daemon</code>] (with <code>systemd-notify</code>).
+* The [https://gitlab.com/whonix/systemcheck/-/blob/master/usr/lib/systemcheck/canary <code>canary</code>] wrapper includes logic on when to run <code>canary-download.py</code>.
+** This only runs on {{Gateway product name}} to reduce server load.
+* Comprises a systemcheck module [https://gitlab.com/whonix/systemcheck/-/blob/master/usr/lib/systemcheck/check_warrant_canary.bsh <code>check_warrant_canary.bsh</code>].
+|-
 
-* minimal [https://gitlab.com/whonix/systemcheck/-/blob/master/usr/lib/systemcheck/canary-daemon <code>canary-daemon</code>] (with systemd-notify)
-* [https://gitlab.com/whonix/systemcheck/-/blob/master/usr/lib/systemcheck/canary <code>canary</code>] (wrapper including logic when to run <code>canary-download.py</code>)
-** Runs on {{Gateway product name}} only. This is to reduce server load.
-* systemcheck module [https://gitlab.com/whonix/systemcheck/-/blob/master/usr/lib/systemcheck/check_warrant_canary.bsh <code>check_warrant_canary.bsh</code>]
+! scope="row"| Verbose parameter
+| During the initial deployment phase of this new feature, systemcheck will only show canary status information when using the <code>--verbose</code> parameter. The reason is there might be non-security related potential bugs to address:
 
-For now, during initial deployment phase of this new feature, systemcheck will only shown information about canary status when using systemcheck with parameter <code>--verbose</code>. That is because there might be non-security related potential bugs to be ironed out:
-
-* File location might change on server.
-* File on server might become unreadable due to linux file access permissions.
-* Onion connectivity issues.
-* Serving stale copy due to server caching issues.
+* The server file location might change.
+* The server file might become unreadable due to Linux file access permissions.
+* Onion connectivity issues could emerge.
+* Server caching issues could serve a stale warrant copy.
 * General warrant canary improvements.
+|-
 
-In case of issues, manually verify {{project name}} warrant canary.
+! scope="row"| Troubleshooting
+| In case of issues, manually verify {{project name}} warrant canary. Also see: [https://forums.whonix.org/t/whonix-warrant-canary/3208/24 Whonix Warrant Canary Forum Discussion]
+|-
 
-[https://forums.whonix.org/t/whonix-warrant-canary/3208/24 Whonix Warrant Canary Forum Discussion]
+|}
 
 == Disable Warrant Canary Check ==
+
 {{mbox
 | type    = notice
 | image   = [[File:Ambox_notice.png|40px|alt=Info]]
