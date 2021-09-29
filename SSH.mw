@@ -205,6 +205,7 @@ Prerequisite knowledge:
 
 * How to open a terminal (emulator) such as xfce4-terminal.
 * How to open two terminal emulators or multiple terminal emulator tabs at the same time.
+* Using command line text editors such as <code>nano</code>.
 
 {{Box|text=
 '''1.''' Open at least two SSH connections in two different terminal (tabs). 
@@ -219,7 +220,13 @@ Fine hosting providers will also show the server fingerprint in the server web i
 ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub
 }}
 
-'''3.''' Restart the sshd server.
+Example output:
+
+<pre>
+256 SHA256:1Ri62BbzONwKbRau92UcyA1K4vu+mctfeddDTUu04ao root@nc-ph-1401-50 (ED25519)
+</pre>
+
+'''3.''' Restart the <code>sshd/code> daemon.
 
 {{CodeSelect|code=
 sudo systemctl restart sshd
@@ -231,7 +238,9 @@ Existing SSH connections should not be interrupted by Debian default.
 
 If yes, proceed.
 
-'''5.''' ''Note:'' When using the configuration file below, the following warning might appear. IP address and SHA256 hash will be different.
+'''5.''' Notes.
+
+''Note:'' When using the configuration file below, the following warning might appear. IP address and SHA256 hash will be different.
 
 <pre>
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -273,7 +282,13 @@ echo "" {{!}} sudo tee /etc/ssh/sshd_config
 
 '''9.''' Open file <code>/etc/ssh/sshd_config</code> with root rights.
 
-Paste the following contents.
+'''10.''' Paste the following contents.
+
+Notes:
+
+* The following config file no longer allows root login. Either allow it as per next bullet point or make sure that user <code>user</code> can login using ssh (or a different user name).
+* Replace <code>AllowUsers user</code> with the actual user name or user names that should still be allowed to login using ssh. For example <code>AllowUsers user root</code> (in case root login should still be permitted).
+* Make sure that any of the <code>AllowUsers</code> is still permitted to gain root using <code>sudo/code> (or otherwise).
 
 <pre>
 ## this is a white space separated list of allowed user login names. Only user names on this list will be allowed to login
@@ -407,7 +422,7 @@ DebianBanner no
 
 Save the file.
 
-'''10.''' Restart the ssh server. All existing SSH connections will remain open.
+'''11.''' Restart the <code>sshd/code> daemon. All existing SSH connections will remain open.
 
 {{CodeSelect|code=
 sudo systemctl restart sshd
@@ -415,7 +430,7 @@ sudo systemctl restart sshd
 
 Keep the ssh connection open.
 
-'''11.''' Open another terminal (tab) and try to SSH to the server.
+'''12.''' Open another terminal (tab) and try to SSH to the server.
 
 * If it works, the process is complete.
 * If it does not work, use your still open terminal to check for configuration errors before trying again.
