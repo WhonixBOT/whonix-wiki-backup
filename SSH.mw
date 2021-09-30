@@ -93,26 +93,33 @@ ssh-keygen -o -a 75 -t ed25519
 
 '''2.''' Store the SSH keypair.
 
-Upon generation of your keypair, OpenSSH will ask if the keys should be stored at: <code>/home/user/.ssh</code>; reply <code>yes</code>. Permissions will be automatically set in Debian, but there have been reports of wrong permissions on certain other distributions. For reference, the correct permissions are as follows:
+Upon generation of your keypair, OpenSSH will ask if the keys should be stored at: <code>/home/user/.ssh</code>; reply <code>yes</code>. Permissions will be automatically set in Debian. <ref>
+There have been reports of wrong permissions on certain other distributions. For reference, the correct permissions are as follows:
 
 * for the public key, <code>0644</code> is needed; and
 * for the private key <code>0600</code> (root) is vital.
 
 Having too lax permissions will prevent logins and cause unwanted errors.
+</ref>
+}}
 
-'''3.''' Copy the key to the server you want to sign into.
+The keypair generation procedure is now complete. You have successfully generated a keypair.
+
+== Key Installation ==
+Copy the key to the server you want to sign into.
 
 Notes:
 
 * This only needs to be done once per server. The <code>ssh-copy-id</code> command works for this task, run.
 * Replace <code>127.0.0.1</code> with the actual IP address of the server.
 * The example user name below is <code>root</code> which is the default first time login user name by many server providers.
+* If this is a first time login and/or password based login, enter the SSH login password. Password should be provided by server provider. No password might be provided if the server provider already pre-installed a ssh key.
 
 {{CodeSelect|code=
 ssh-copy-id -i ~/.ssh/id_ed25519.pub root@127.0.0.1
 }}
 
-The ssh-copy-id utility will check for the correct permissions before it allows the key to be transferred.
+The <code>ssh-copy-id</code> utility will check for the correct permissions before it allows the key to be transferred.
 
 The the following example the ssh server fingerprint is <code>zBAIUzWnW+Y9cS+5cND/XWw0XFIhtSnxCEIbNUcCd8c</code>.
 
@@ -125,9 +132,12 @@ Are you sure you want to continue connecting (yes/no/[fingerprint])?
 
 The ssh server fingerprint should be provided by the server provider.
 
-'''4.''' Login to the server.
+Key installation is now complete.
 
-Once copied to the server, you can now login anytime with:
+= Login to the server =
+Once the ssh public key was copied to the server, the user can login any time.
+
+Login into the server.
 
 Note: Replace <code>127.0.0.1</code> with the actual IP address of the server.
 
@@ -135,10 +145,7 @@ Note: Replace <code>127.0.0.1</code> with the actual IP address of the server.
 ssh root@127.0.0.1
 }}
 
-If had chosen a passphrase for your key, you will be asked to enter it now.
-
-The keypair generation procedure is now complete. You have successfully generated a keypair and sent your public key to your chosen server.
-}}
+A password prompt for the key would be shown if a passphrase has been previously set.
 
 == Client and Server Configuration File Settings ==
 
