@@ -42,6 +42,21 @@ If you want to connect to a {{gateway_product_name}} over insecure, untrusted, o
 
 A compromised {{workstation_product_name}} can impersonate the {{gateway_product_name}}, or any other {{workstation_product_name}}, within the same (virtual) LAN, perform active MITM attacks, or passively eavesdrop.
 
+== Libvirt Isolated Ports ==
+
+Isolated ports are a Libvirt feature supported since 6.1.0.<ref>https://libvirt.org/formatdomain.html#isolating-guests-s-network-traffic-from-each-other</ref>
+
+The <code>port</code> element property <code>isolated</code>, when set to <code>yes</code> (default setting is <code>no</code>) is used to isolate this interface's network traffic from that of other guest interfaces connected to the same network that also have <code><port isolated='yes'/></code>. This setting is only supported for emulated interface devices that use a standard tap device to connect to the network via a Linux host bridge. This property can be inherited from a libvirt network, so if all guests that will be connected to the network should be isolated, it is better to put the setting in the network configuration. (NB: this only prevents guests that have isolated='yes' from communicating with each other; if there is a guest on the same bridge that doesn't have <code>isolated='yes'</code>, even the isolated guests will be able to communicate with it.)
+
+<pre style="white-space: pre-wrap;">
+<devices>
+  <interface type='network'>
+    <source network='default'/>
+    <port isolated='yes'/>
+  </interface>
+</devices>
+</pre>
+
 == OpenVPN vs SSH ==
 
 Encryption can be added using OpenVPN or SSH. SSH, but not OpenVPN, has the advantage of being able to still easily tunnel a VPN through Tor, later. If you don't plan to do so, OpenVPN is probably easier. SSH has the disadvantage of increased setup complexity in this use case - you are probably better off using OpenVPN.
