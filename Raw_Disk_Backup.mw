@@ -52,6 +52,12 @@ package=meld lxsudo
 }}
 
 = Instructions =
+In Linux, unfortunately device names and device paths are non-deterministic, unpredictable, might change with kernel versions and operating system upgrades.
+
+A raw backup with the <code>dd</code> can lead to data loss if used incorrectly as <code>dd</code> is a very powerful tool.
+
+For example, <code>sd'''a'''</code> is a device name and <code>/dev/sd'''a'''</code> is a device path. Other device path examples: <code>dev/sd'''b'''</code>, <code>dev/sd'''c'''</code>
+
 '''1.''' Boot from external disk.
 
 '''2.''' Do not attach any other disks at this time.
@@ -64,7 +70,9 @@ If any other disks are already attached, remove them for now for simplicity.
 sudo fdisk -l > old
 }}
 
-Check with gparted.
+'''4.''' Check with gparted.
+
+See what disks are currently attached with an alternative tool such as gparted as well.
 
 {{CodeSelect|code=
 lxsudo gparted
@@ -88,12 +96,6 @@ diff old new
 
 {{CodeSelect|code=
 meld old new
-}}
-
-Another way to find out which disk was being booted from.
-
-{{CodeSelect|code=
-sudo blkid
 }}
 
 Or viewing contents of file <code>/etc/fstab</code>.
@@ -120,6 +122,27 @@ UUID=86983f37-38db-401f-889a-bc93d83a3be4 /boot           ext2    defaults      
 #/dev/mapper/debian--vg-swap_1 none            swap    sw              0       0
 </pre>
 
+Watch out for the <code>UUID=</code> field. In above example it is <code>86983f37-38db-401f-889a-bc93d83a3be4</code>.
+
+Another way to find out which disk was being booted from.
+
+{{CodeSelect|code=
+sudo blkid
+}}
+
+For example. Note: replace <code>UUID</code> with the actual <code>UUID</code> from <code>/etc/fstab</code>.
+
+{{CodeSelect|code=
+sudo blkid {{!}} grep 86983f37-38db-401f-889a-bc93d83a3be4
+}}
+
+Sample printout.
+
+<pre>
+/dev/sdb1: UUID="86983f37-38db-401f-889a-bc93d83a3be4" TYPE="ext4" PARTUUID="decf0fe9-01"
+</pre>
+
+In above example, the device path of the boot disk is <code>/dev/sd'''b'''</code>. <u>Not</u> <code>/dev/sd'''b'''<u>1</u></code>. The <code>1</code> means partition number <code>1</code>. When making raw disk backups of the full disk, partition numbers must be omitted. Otherwise it would just be a partition backup. In this case, 
 
 Make some notes such as.
 
@@ -129,10 +152,15 @@ Debian external boot disk 931.42 GiB
 Backup external disk 931.41 GiB
 </pre>
 
-Actual backup command.
+For the author of this wiki page, <code>/dev/sd'''a'''</code> was the (Qubes) internal disk, <code>/dev/sd'''b'''</code> the (Debian) USB boot disk and <code>/dev/sd'''c'''</code> the USB backup drive. This might be different for readers!
+
+Syntax:
+
+* Replace <code>if=/dev/xxx</code> with the actual device path of the drive which should be backed up.
+* Replace <code>if=/dev/yyy</code> with the actual device path of the drive where the backup should be stored.
 
 {{CodeSelect|code=
-time dd bs=64K conv=noerror,sync status=progress if=/dev/XXX of=/dev/YYY
+time dd bs=64K conv=noerror,sync status=progress if=/dev/xxx of=/dev/yyy
 }}
 
 <ref>
