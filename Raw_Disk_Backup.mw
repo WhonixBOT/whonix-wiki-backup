@@ -52,42 +52,43 @@ package=meld lxsudo
 }}
 
 = Instructions =
+'''1.''' Boot from external disk.
 
-Start with one external disk attached only (boot disk).
+'''2.''' Do not attach any other disks at this time.
+
+If any other disks are already attached, remove them for now for simplicity.
+
+'''3.''' Write output of fdisk to file "old".
 
 {{CodeSelect|code=
 sudo fdisk -l > old
 }}
 
-Attach backup external disk.
-
-{{CodeSelect|code=
-sudo fdisk -l > new
-}}
-
-{{CodeSelect|code=
-diff old new
-}}
-
-{{CodeSelect|code=
-meld old new
-}}
-
-Check with gparted
+Check with gparted.
 
 {{CodeSelect|code=
 lxsudo gparted
 }}
 
-Check disk size of boot drive.
+'''4.''' Attach another disk, the external disk which should be used for the backup.
+
+'''5.''' Write output of disk to file "new".
 
 {{CodeSelect|code=
-df -h
+sudo fdisk -l > new
 }}
 
-Qubes internal disk 476.91 GIB
-Debian external boot disk 931.42 GiB
-Backup external disk 931.41 GiB
+'''6.''' Compare file "old" with file "new" using "diff".
+
+{{CodeSelect|code=
+diff old new
+}}
+
+'''7.''' Compare file "old" with file "new" using "diff".
+
+{{CodeSelect|code=
+meld old new
+}}
 
 Another way to find out which disk was being booted from.
 
@@ -100,6 +101,35 @@ Or viewing contents of file <code>/etc/fstab</code>.
 {{CodeSelect|code=
 cat /etc/fstab
 }}
+
+Example printout.
+
+<pre>
+# /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a
+# device; this may be used with UUID= as a more robust way to name devices
+# that works even if disks are added and removed. See fstab(5).
+#
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+/dev/mapper/debian--vg-root /               ext4    errors=remount-ro 0       1
+
+# /boot was on /dev/sdb1 during installation
+UUID=86983f37-38db-401f-889a-bc93d83a3be4 /boot           ext2    defaults        0       2
+
+#/dev/mapper/debian--vg-swap_1 none            swap    sw              0       0
+</pre>
+
+
+Make some notes such as.
+
+<pre>
+Qubes internal disk 476.91 GiB
+Debian external boot disk 931.42 GiB
+Backup external disk 931.41 GiB
+</pre>
+
+Actual backup command.
 
 {{CodeSelect|code=
 time dd bs=64K conv=noerror,sync status=progress if=/dev/XXX of=/dev/YYY
