@@ -98,7 +98,7 @@ diff old new
 meld old new
 }}
 
-Or viewing contents of file <code>/etc/fstab</code>.
+'''8.''' View contents of file <code>/etc/fstab</code>.
 
 {{CodeSelect|code=
 cat /etc/fstab
@@ -124,11 +124,17 @@ UUID=86983f37-38db-401f-889a-bc93d83a3be4 /boot           ext2    defaults      
 
 Watch out for the <code>UUID=</code> field. In above example it is <code>86983f37-38db-401f-889a-bc93d83a3be4</code>.
 
-Another way to find out which disk was being booted from.
+'''8.''' View output of the <code>blkid</code>.
+
+For informational purposes only.
 
 {{CodeSelect|code=
 sudo blkid
 }}
+
+'''9.''' Confirm the device path of the boot device.
+
+Compare output of file <code>/etc/fstab</code> with <code>blkid</code> command.
 
 For example. Note: replace <code>UUID</code> with the actual <code>UUID</code> from <code>/etc/fstab</code>.
 
@@ -144,7 +150,7 @@ Sample printout.
 
 In above example, the device path of the boot disk is <code>/dev/sd'''b'''</code>. <u>Not</u> <code>/dev/sd'''b'''<u>1</u></code>. The <code>1</code> means partition number <code>1</code>. When making raw disk backups of the full disk, partition numbers must be omitted. Otherwise it would just be a partition backup. In this case, 
 
-Make some notes such as.
+'''10.''' Make some notes such as.
 
 <pre>
 Qubes internal disk 476.91 GiB
@@ -152,20 +158,52 @@ Debian external boot disk 931.42 GiB
 Backup external disk 931.41 GiB
 </pre>
 
+'''11.''' Note the device paths.
+
+According to above instructions.
+
 For the author of this wiki page, <code>/dev/sd'''a'''</code> was the (Qubes) internal disk, <code>/dev/sd'''b'''</code> the (Debian) USB boot disk and <code>/dev/sd'''c'''</code> the USB backup drive. This might be different for readers!
+
+'''12.''' Backup.
 
 Syntax:
 
 * Replace <code>if=/dev/xxx</code> with the actual device path of the drive which should be backed up.
 * Replace <code>if=/dev/yyy</code> with the actual device path of the drive where the backup should be stored.
 
-{{CodeSelect|code=
-time dd bs=64K conv=noerror,sync status=progress if=/dev/xxx of=/dev/yyy
-}}
+<blockquote>time dd bs=64K conv=noerror,sync status=progress if=/dev/xxx of=/dev/yyy</blockquote>
+
+Example:
+
+Note: DATA LOSS POSSIBLE if used incorrectly! Do not use this without prior verification of the device paths!
+
+<blockquote>time dd bs=64K conv=noerror,sync status=progress if=/dev/sd<u>a</u> of=/dev/sd<u>c</u></blockquote>
 
 <ref>
 It is not possible to compare. <code>diff /dev/sda /dev/sdc</code> not possible because of different partition table and disk id.
 </ref>
+
+The backup might take a long time.
+
+'''13.''' Check exit code.
+
+{{CodeSelect|code=
+echo $?
+}}
+
+Expected output if success.
+
+<pre>
+0
+</pre>
+
+'''14.''' Done.
+
+Backup is complete.
+
+'''15.''' Restoration test.
+
+Without restoration test, it's unclear if the backup could be restored in case needed.
 
 = Footnotes =
 <references />
