@@ -40,7 +40,19 @@ https://blog.cr.yp.to/20140205-entropy.html
 As long as one entropy source of many is high quality, this foils attempts by adversaries to predict output and rescues the RNG.<ref>Peter Gutmann of secure erasure fame https://www.metzdowd.com/pipermail/cryptography/2019-September/035329.html</ref>
 
 = RDRAND =
+Debian trusts RDRAND by default since Debian buster. Quote https://www.debian.org/releases/buster/amd64/release-notes/ch-information.en.html#entropy-starvation
+
+<blockquote>Due to systemd needing entropy during boot and the kernel treating such calls as blocking when available entropy is low, the system may hang for minutes to hours until the randomness subsystem is sufficiently initialized (random: crng init done). For amd64 systems supporting the RDRAND instruction this issue is avoided by the Debian kernel using this instruction by default (CONFIG_RANDOM_TRUST_CPU).
+
+Non-amd64 systems and some types of virtual machines need to provide a different source of entropy to continue fast booting. haveged has been chosen for this within the Debian Installer project and may be a valid option if hardware entropy is not available on the system. On virtual machines consider forwarding entropy from the host to the VMs via virtio_rng.
+
+If you read this after upgrading a remote system to buster, ping the system on the network continuously as this adds entropy to the randomness pool and the system will eventually be reachable by ssh again.
+
+See [https://wiki.debian.org/BoottimeEntropyStarvation the wiki] and [https://daniel-lange.com/archives/152-hello-buster.html DLange's overview of the issue] for other options.</blockquote>
+
 [https://github.com/Whonix/security-misc security-misc] (installed by default in {{project name}}) distrusts the CPU for initial entropy at boot as it is not possible to audit, may contain a bug, weaknesses or a backdoor.
+
+RDRAND should not be trusted.
 
 * sets <code>random.trust_cpu=off</code> kernel boot parameter
 * [https://web.archive.org/web/20180320163305/https://plus.google.com/+TheodoreTso/posts/SDcoemc9V3J Linux kernel developer Theodore Ts'o warning against RDRAND]
