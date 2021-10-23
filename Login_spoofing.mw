@@ -8,28 +8,29 @@ title=Login Spoofing
 }}
 [[image:Loginspoofing132.png|thumb]]
 
-[[Malware and Firmware Trojans|Malware]] might be masquerading as a login prompt and stealing login passwords.
+= Introduction =
 
-This supposes an advanced threat model:
+It is possible for [[Malware and Firmware Trojans|Malware]] to masquerade as a login prompt in order to steal login passwords. This attack supposes an advanced [[Mental_Model#Threat_Modeling|threat model]]:
 
-* A system where a limited user (user "<code>user</code>") is utilizing a graphical X Window System session that is different from the user with root/sudo permissions (user "<code>admin</code>").
-* The limited user is expected to at some point being compromised by [[Malware and Firmware Trojans|malware]].
-* Otherwise, if there was only one user account which also has sudo/su access, malware could [[Dev/Strong_Linux_User_Account_Isolation#sudo_password_sniffing|sniff the administrative password]] anyhow and would not need to resort the and advanced attack of login spoofing.
+# A system is configured with a limited user (user "<code>user</code>") which utilizes a graphical X Window System session that is different from the user with root/sudo permissions (user "<code>admin</code>").
+# The limited user is compromised at some point by [[Malware and Firmware Trojans|malware]].
 
-The limited user account being compromised is under many threat models already considered catastrophic, since running malware:
+<u>Note</u>: If there is only one user account which also has sudo/su access, malware can [[Dev/Strong_Linux_User_Account_Isolation#sudo_password_sniffing|sniff the administrative password]] and it is unnecessary to utilize an advanced login spoofing attack.
+
+= Security Benefit of Compartmentalization =
+
+Under many threat models the compromise of the limited user account is considered catastrophic, since running malware:
 
 * has full access to all user-accessible files
 * can view all keyboard inputs and take over login sessions
 * may present false information on the screen
-* can perform other malicious actions - see: [[Malware and Firmware Trojans#The_Importance_of_a_Malware_Free_System|The Importance of a Malware Free System]]
+* can perform other malicious actions, see: [[Malware and Firmware Trojans#The_Importance_of_a_Malware_Free_System|The Importance of a Malware Free System]]
 
-However, when using multiple (virtual) machines for compartmentalization the harmful impact of malware might not be catastrophic. In that case other goals include prevention of root compromise to help to protect the virtualizer and avoid host compromise, and similarly to avoid hardware compromise. This is elaborated in in [[Root#Rationale|chapter rationale on the Safely Use Root Commands wiki page]].
+However, if multiple (virtual) machines are used for compartmentalization the harmful impact of malware might not be catastrophic. For instance, other goals of this configuration include prevention of root compromise to help protect the virtualizer and avoid host compromise, and similarly to avoid a hardware compromise. This is further elaborated in the rationale section of the [[Root#Rationale|Safely Use Root Commands]] wiki chapter.
 
-A broken X Window System can block switching to a virtual console. It logically follows that malware which compromised the X Window System could similarly do that. In this case the <code>SysRq</code> + <code>r</code> combination can take away control from the X Window System. <ref>
-Since the Linux kernel takes away the control of the X Window System from the console. Linux kernel has higher privileges than the X Window System.
-</ref> This is a safer procedure, otherwise a compromised X Window System could just be simulating a virtual console login prompt in order to sniff a login password to an account with root access. ([https://en.wikipedia.org/wiki/Login_spoofing login spoofing in Wikipedia]).
+A broken X Window System can block switching to a virtual console. It logically follows that malware which has compromised the X Window System can also perform this action. In this case the <code>SysRq</code> + <code>r</code> combination can take away control from the X Window System. <ref>This is because the Linux kernel removes control of the X Window System from the console. The Linux kernel has higher privileges than the X Window System.</ref> This is a safer procedure, otherwise a compromised X Window System could just be simulating a virtual console login prompt in order to sniff an account login password with root access. ([https://en.wikipedia.org/wiki/Login_spoofing login spoofing in Wikipedia]).
 
-<code>SysRq</code> + <code>k</code> (Secure Access Key) can be used to defeat login spoofing. It will terminate all programs on that [[Desktop#Virtual_Consoles|virtual console]].
+<code>SysRq</code> + <code>k</code> (Secure Access Key) can be used to defeat login spoofing because it will terminate all programs on that [[Desktop#Virtual_Consoles|virtual console]].
 
 [https://www.kernel.org/doc/html/v4.14/admin-guide/sysrq.html#okay-so-what-can-i-use-them-for Quote Linux Kernel Documentation]:
 
@@ -39,15 +40,19 @@ Since the Linux kernel takes away the control of the X Window System from the co
 
 <blockquote>An operating system's Secure Attention Key is a security tool which is provided as protection against trojan password capturing programs. It is an undefeatable way of killing all programs which could be masquerading as login applications. Users need to be taught to enter this key sequence before they log in to the system.</blockquote>
 
-Taking steps to defeat login spoofing probably only makes sense when also following steps to [[Root#Prevent_Malware_from_Sniffing_the_Root_Password|Prevent Malware from Sniffing the Root Password]].
+Taking steps to defeat login spoofing probably only makes sense when also performing actions to [[Root#Prevent_Malware_from_Sniffing_the_Root_Password|Prevent Malware from Sniffing the Root Password]].
 
 = See Also =
+
 * [[SysRq|System Recovery using SysRq Key]]
 * [[root|Safely Use Root Commands]]
 * [[Root#Prevent_Malware_from_Sniffing_the_Root_Password|Prevent Malware from Sniffing the Root Password]]
 * [[Dev/Strong_Linux_User_Account_Isolation|Strong Linux User Account Isolation]]
 
 = Footnotes =
+
 {{reflist|close=1}}
+
 [[Category:Documentation]]
+
 {{Footer}}
