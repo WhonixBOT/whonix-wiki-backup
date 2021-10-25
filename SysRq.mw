@@ -120,15 +120,24 @@ See: [https://github.com/QubesOS/qubes-issues/issues/5492 add Qubes host key to 
 
 == Security Discussion ==
 
+A number of security concerns and unanswered questions concerning SysRq require further investigation.
+
+-----
+
+'''Possible privilege escalation'''
+
 [https://forums.whonix.org/t/sysrq-magic-sysrq-key/8079/20 SysRq Security concern raised by madaidan]:
 
 <blockquote>Being able to run a bunch of commands that would normally require root (such as killing every process, remounting all filesystems read-only etc.) as an unprivileged user doesn’t look very good. Sounds like a possible privilege escalation hole and/or a feature that can easily be abused.</blockquote>
 
-On the other hand, <code>SysRq</code> + <code>k</code> also dubbed Secure Access Key. Therefore SysRq is not completely disabled without further consideration.
+On the other hand, <code>SysRq</code> + <code>k</code> is also dubbed Secure Access Key. Therefore, SysRq is not completely disabled without further consideration. This raises the following questions:
 
-Can a user only kill its own processes with it or any process?
+* Can a user only kill its own processes with SysRq or any process?
+* What if an unprivileged user kills a very important process that is usually only accessible by root?
 
-What if an unprivileged user kills a very important process that is usually only accessible by root?
+-----
+
+'''Screensavers'''
 
 [https://www.jwz.org/xscreensaver/faq.html Quote screensaver FAQ]:
 
@@ -140,19 +149,27 @@ What if an unprivileged user kills a very important process that is usually only
 
 Related: [https://forums.whonix.org/t/screen-locker-in-security-can-we-disable-these-at-least-4-backdoors/8128 Screen Locker (In)Security - Can we disable these at least 4 backdoors?]
 
-Quote https://www.kernel.org/doc/html/v4.14/admin-guide/sysrq.html
+-----
+
+'''Keyboard events'''
+
+Quote [https://www.kernel.org/doc/html/v4.14/admin-guide/sysrq.html Linux Magic System Request Key Hacks]:
 
 <blockquote>Note that the value of <code>/proc/sys/kernel/sysrq</code> influences only the invocation via a keyboard.</blockquote>
 
-Quote https://www.kernel.org/doc/html/v4.14/admin-guide/sysrq.html
-
 <blockquote>Invocation of any operation via <code>/proc/sysrq-trigger</code> is always allowed (by a user with admin privileges).</blockquote>
 
-Could any compromised non-root user generate the keyboard event for SysRq and thereby use SysRq? [https://forums.whonix.org/t/sysrq-magic-sysrq-key/8079/22 Quote]:
+This raises the question: 
+
+* Could any compromised non-root user generate the keyboard event and thereby use SysRq? [https://forums.whonix.org/t/sysrq-magic-sysrq-key/8079/22 Quote]:
 
 <blockquote>Things such as xdotool won’t work as the SysRq key isn’t handled by Xorg and things like /dev/uinput or /proc/sysrq-trigger requires root access already.</blockquote>
 
-SysRq can be triggered remotely <ref>https://github.com/xairy/unlockdown</ref>.
+-----
+
+'''Remote SysRq use'''
+
+SysRq can be triggered remotely, see: [https://github.com/xairy/unlockdown unlockdown].
 
 == Virtual Console Handling ==
 Would be who handles “alt + ctrl + F1”?
