@@ -120,16 +120,61 @@ Start Bitcon-Qt from the command line with the <code>-reindex</code> parameter.
 }}
 
 == electrumx User Systemd Unit Configuration ==
+
+'''x.''' {{Open File|
+filename=~/electrumx.conf
+}}
+
+'''x.''' Paste the following contents.
+
+{{CodeSelect|code=
+COIN=Bitcoin
+DB_DIRECTORY=~/.electrumx
+DAEMON_URL=username:password@127.0.0.1
+SERVICES=rpC://localhost
+PEER_DISCOVERY=self
+}}
+
+'''x.''' Save.
+
+
 '''x.'''
 
 {{CodeSelect|code=
 mkdir -p ~/.config/systemd/user
 }}
 
+'''x.''' {{Open File|
+filename=~/.config/systemd/user/electrumx.service
+}}
+
+<ref>
+Based on <code>~/electrumx/contrib/systemd/electrumx.service</code>
+</ref>
+
+'''x.''' Paste the following contents.
+
+{{CodeSelect|code=
+[Unit]
+Description=Electrumx
+After=network.target
+
+[Service]
+EnvironmentFile=~/electrumx.conf
+ExecStart=~/electrumx/electrumx_server
+LimitNOFILE=8192
+TimeoutStopSec=30min
+
+[Install]
+WantedBy=multi-user.target
+}}
+
+'''x.''' Save.
+
 '''x.'''
 
 {{CodeSelect|code=
-cp ~/electrumx/contrib/systemd/electrumx.service ~/.config/systemd/user/
+systemctl --user daemon-reload
 }}
 
 '''x.'''
