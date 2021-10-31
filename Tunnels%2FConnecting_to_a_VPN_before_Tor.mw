@@ -7,32 +7,35 @@ title=Connecting to a VPN before Tor
 |image=https://www.{{project_clearnet}}/w/images/b/bb/City-427640640.jpg
 }}
 [[image:City-427640640.jpg|thumb]]
-{{Tunnels_Introduction}}
+
 <br />
 '''<code>User</code> &rarr; <code>VPN</code> &rarr; <code>Tor</code> &rarr; <code>Internet</code>'''
 
 __TOC__
 
------
+= Introduction =
+
+{{Tunnels_Introduction}}
 
 = Connecting to a VPN before Tor (User &rarr; VPN &rarr; Tor &rarr; Internet) =
+
 == Introduction ==
+
 * [[{{q project name short}}|{{q project name}}]] users have the option to use a [[#Separate VPN-Gateway]] but could also install the VPN software [[#Inside {{gateway_product_name}}]].
 * [[{{non q project name short}}|{{non q project name}}]] users could install the VPN software [[#On the Host]] or [[#Inside {{gateway_product_name}}]].
-
-<br>
 
 What's the difference of installing a VPN on the host versus installing on {{gateway_product_name}}?
 
 {{VPN_on_the_host_vs_on_{{gateway_product_name_short}}}}
 
 == VPN Client Choice == 
+
 * Use OpenVPN.
 * Using bitmask with Qubes is not yet documented.<ref>https://github.com/leapcode/bitmask_client/issues/1009</ref>
 * Other VPN clients are unsupported. We are not aware of any sane VPN client choices besides OpenVPN.
 
------
 ==  Separate VPN-Gateway ==
+
 [[{{q project name short}}|{{q project name}}]] only! [[{{non q project name short}}|{{non q project name}}]] is [[unsupported]]!
 
 A separate VPN-Gateway between {{gateway_product_name}} and sys-firewall, i.e. {{workstation_product_name}} &rarr; {{gateway_product_name}} &rarr; sys-vpn &rarr; sys-firewall &rarr; sys-net.
@@ -82,9 +85,8 @@ For troubleshooting, see footnote. <ref>
 * Add a non-{{project_name}} VM behind your VPN-Gateway. For example, add a debian based AppVM behind your VPN-Gateway. Figure out if the VPN-Gateway works at all before involving {{project_name}}.
 </ref>
 
------
-
 == On the Host ==
+
 [[{{non q project name short}}|{{non q project name}}]] only! (Because in Qubes, the host is non-networked by default. [[{{q project name short}}|{{q project name}}]] users have the option to use a [[#Separate VPN-Gateway]] but could also install the VPN software [[#Inside {{gateway_product_name}}]].)
 
 '''User &rarr; VPN &rarr; Tor &rarr; Internet '''
@@ -96,9 +98,11 @@ Using software inside the host operating system may be more convenient if your m
 * Your VPN software may not be designed or configured to "fail closed". That is, if your VPN session suddenly disconnects, your Tor connection will be automatically sent through your ISP without going through your VPN service. 
 
 ==== How to add the VPN in Host OS ====
+
 Use the host operating system's built-in tools connect to your VPN or use the software provided by your VPN service.
 
 {{Anchor|Fail Closed Mechanism}}
+
 ==== Use a Fail Closed Mechanism ====
 
 {{Fail_Closed_Mechanism}}
@@ -107,16 +111,16 @@ If you want to enforce, that the VPN always gets used, try [https://github.com/a
 
 (Or if that works for you, install the VPN on the gateway instead, because it comes with an integrated TUNNEL_FIREWALL feature, i.e. stay away from the standalone VPN-Firewall when you set up a VPN on the gateway.)
 
------
-
 {{Anchor|VPN Software on {{gateway_product_name}}}}
 
 == Inside {{gateway_product_name}} ==
+
 {{gateway_product_name}} can be configured to connect to a VPN server before Tor, as well as "fail closed", blocking all Tor traffic if the VPN disconnects. 
 
 '''User &rarr; VPN &rarr; Tor &rarr; Internet'''
 
 ===== VPN Client Choice =====
+
 Use OpenVPN.
 
 Using bitmask inside {{gateway_product_name}} for this use case is [[unsupported]]. And discouraged. Because bitmask modifies the firewall. Perhaps that can be configured or is safe. Reaching that and documenting bitmask is TODO, [https://phabricator.whonix.org/T516 help welcome]!
@@ -124,15 +128,19 @@ Using bitmask inside {{gateway_product_name}} for this use case is [[unsupported
 Other VPN clients are [[unsupported]]. We are not aware of any sane VPN client choices besides OpenVPN.
 
 ===== {{project_name}} TUNNEL_FIREWALL vs standalone VPN-Firewall =====
+
 {{Whonix_TUNNEL_FIREWALL_vs_standalone_VPN-Firewall}}
 
 ===== Setup Time =====
+
 If you are interested in [[Hide Tor from your Internet Service Provider|hide Tor and {{project name}} from the ISP]] (read that page first)... After installing {{gateway_product_name}}, do the following steps before activating Tor in {{Code|{{project_name}} Setup Wizard}}.
 
 ===== Preparation =====
+
 {{VPN/Setup/Preparation}}
 
 ===== Firewall Settings =====
+
 {{Firewall Settings}}
 
 Add the following settings. You can skip comments (starting with {{Code|#}}). Don't use {{Code|;}} for comments. <ref>That config file is a bash fragment.</ref> Likely you do not need to either uncomment (removing the {{Code|#}} in front) or modify {{Code|VPN_INTERFACE}} / {{Code|LOCAL_NET}}.
@@ -161,33 +169,41 @@ VPN_FIREWALL=1
 Save.
 
 ===== Reload Firewall =====
+
 {{Reload Firewall}}
 
-===== sudoers configuration =====
+===== sudoers Configuration =====
+
 Inside {{gateway_product_name}}.
 
 {{VPN/Setup/sudoers_configuration}}
 
 ===== VPN Setup =====
+
 ====== Introduction ======
+
 {{VPN/Setup/Introduction}}
 
 ====== Get VPN Certificate ======
+
 TODO: Documentation bug fix required. Won't work without Tor being enabled. You need to get the certificate elsewhere and then [[File Transfer]] it into {{gateway_product_name}}.
 
 {{VPN/Setup/Get VPN Certificate}}
 
 ====== VPN Credentials ======
+
 Inside {{gateway_product_name}}.
 
 {{VPN/Setup/VPN Credentials}}
 
 ====== VPN IP Address ======
+
 This cannot be done inside {{gateway_product_name}} since it by default does not system default DNS for its own traffic.
 
 {{VPN/Setup/VPN IP Address}}
 
 ====== VPN Configuration File ======
+
 Inside {{gateway_product_name}}.
 
 {{Open with root rights|filename=
@@ -247,35 +263,41 @@ The [https://github.com/{{project_name_short}}/usability-misc/blob/master/lib/sy
 Save.
 
 ====== DNS Configuration ======
+
 DNS configuration, resolvconf, update-resolv-conf or similar is not required for {{gateway_product_name}}. <ref>
 Because {{gateway_product_name}} by default has no and needs no system DNS for its own traffic. See [[{{gateway product name short}} System DNS]] if you would like to read an explanation why that is so.
 </ref>
 
 ====== Configuration Folder Permissions ======
+
 Inside {{gateway_product_name}}.
 
-({{Q project name}}: In TemplateVM) 
+({{Q project name}}: In Template) 
 
 {{VPN/Setup/Configuration Folder Permissions}}
 
 ===== systemd setup =====
+
 Inside {{gateway_product_name}}.
 
-({{Q project name}}: In TemplateVM. <ref>
+({{Q project name}}: In Template. <ref>
 OpenVPN will not actually start there thanks to <code>/lib/systemd/system/openvpn@openvpn.service.d/50_unpriv.conf</code>.
 </ref>) 
 
 {{Template:VPN/Setup/Systemd}}
 
 ===== Enable Tor =====
-({{Q project name}}: If using a TemplateVM, shut down the TemplateVM and restart {{Gateway product name}} (<code>{{gateway_product_name_vm}}</code>). ) 
+
+({{Q project name}}: If using a Template, shut down the Template and restart {{Gateway product name}} (<code>{{gateway_product_name_vm}}</code>). ) 
 
 Enable Tor using [[Anon Connection Wizard]].
 
 = Troubleshooting =
+
 {{VPN-Firewall/Troubleshooting}}
 
 === How to Submit a Support Request ===
+
 {{VPN/Setup/Support Requests}}
 
 == Additional Tweaks / Recommendations / Troubleshooting ==
@@ -339,7 +361,7 @@ It should list the drop-in file {{Code2|/etc/systemd/system/tor.service.d/50_use
 </ref>
 
 '''Limitations'''
-* Only tested with OpenVPN. Most other VPN's have deficiencies anyway.
+* Only tested with OpenVPN. Most other VPNs have deficiencies anyway.
 * DNS (IP address) of VPN server has to be manually resolved. There is technically no way to automatically resolve DNS without making the setup much more complex. The VPN server's IP address should not be resolved over Tor, because that's what you wanted to hide in the first place. Since outside observers will know, that you are connecting to the VPN IP anyway, it is probably safe to resolve the DNS over clearnet or by asking the VPN provider if they don't already document their IPs on their website anyway.
 * No support for IPv6 yet.
 
@@ -371,8 +393,6 @@ exit
 }}
 </div>
 </div>
-
------
 
 = Footnotes =
 {{reflist|close=1}}
