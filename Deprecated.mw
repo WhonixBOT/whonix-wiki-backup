@@ -8,6 +8,7 @@ __NOINDEX__
 Outdated, Deprecated, Archived {{project name}} Documentation.
 }}
 
+= History =
 Cleared this wiki page. Still available in wiki history:
 
 https://www.whonix.org/w/index.php?title=Deprecated&oldid=69089
@@ -15,3 +16,38 @@ https://www.whonix.org/w/index.php?title=Deprecated&oldid=69089
 Reason:
 
 https://forums.whonix.org/t/long-wiki-edits-thread/3477/2158
+
+== <code>monero-wallet-ws</code> VM Setup ==
+'''Data vchan connection failed''' anon-ws-disable-stacked-tor socat-unix-sockets runs under user debian-tor but would need to run as root for this.
+
+'''Note:''' The following instructions should be applied in {{workstation_product_name}} ([[{{q project name short}}|{{q project name}}]]: App Qube <code>monero-wallet-ws</code>).
+
+'''1.''' Create folder <code>/usr/local/lib/systemd/system/</code>.
+
+{{CodeSelect|code=
+sudo mkdir -p /usr/local/etc/anon-ws-disable-stacked-tor.d/
+}}
+
+'''2.''' Create file <code>/usr/local/etc/anon-ws-disable-stacked-tor.d/50_user.conf</code>.
+
+{{Open File|
+filename=/usr/local/etc/anon-ws-disable-stacked-tor.d/50_user.conf
+}}
+
+'''3.''' Paste the following contents.
+
+{{CodeSelect|code=
+socat TCP-LISTEN:18081,fork,bind=127.0.0.1 EXEC:"qrexec-client-vm monerod-ws user.monerod" &
+}}
+
+'''4.''' Save.
+
+'''5.''' Restart <code>[[Dev/anon-ws-disable-stacked-tor|anon-ws-disable-stacked-tor]]</code> systemd system instance.
+
+{{CodeSelect|code=
+sudo systemctl restart anon-ws-disable-stacked-tor
+}}
+
+'''6.''' Done.
+
+Automatically starting the <code>socat</code> process has been completed.
