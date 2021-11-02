@@ -1,0 +1,71 @@
+{{stub}}
+
+
+
+'''Note:''' The following instructions should be applied in {{workstation_product_name}} ([[{{q project name short}}|{{q project name}}]]: App Qube <code>monero<u>d</u>-ws</code>).
+
+'''1.''' Create folder <code>~/.config/systemd/user</code>.
+
+{{CodeSelect|code=
+mkdir -p ~/.config/systemd/user
+}}
+
+'''2.''' Create file <code>~/.config/systemd/user/monero<u>d</u>.service</code>.
+
+{{Open File|
+filename=~/.config/systemd/user/monerod.service
+}}
+
+
+'''3.''' Paste the following contents. <ref>
+Do not use <code>--detach</code> - outdated style for daemons. Better error handling without.
+</ref>
+
+{{CodeSelect|code=
+[Unit]
+Description=Monero Full Node
+After=network.target
+
+[Service]
+User=user
+Group=user
+
+Type=simple
+PIDFile=/home/user/.bitmonero/monerod.pid
+
+ExecStart=DNS_PUBLIC=tcp TORSOCKS_ALLOW_INBOUND=1 torsocks monerod --data-dir=/home/user/.bitmonero \
+    --no-igd --hide-my-port --pidfile=/home/user/.bitmonero/monerod.pid \
+    --log-file=/home/user/.bitmonero/bitmonero.log --p2p-bind-ip=127.0.0.1
+    
+     monerod --p2p-bind-ip 127.0.0.1 --no-igd 
+
+Restart=always
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target
+}}
+
+'''4.''' Save.
+
+'''5.''' Reload systemd user instance.
+
+{{CodeSelect|code=
+systemctl --user daemon-reload
+}}
+
+'''6.''' Optional: Enable autostart for the <code>monero<u>d</u></code> systemd user instance.
+
+{{CodeSelect|code=
+systemctl --user enable monerod
+}}
+
+'''7.''' Start <code>monero<u>d</u></code> systemd user instance.
+
+{{CodeSelect|code=
+systemctl --user restart monerod
+}}
+
+'''8.''' Done.
+
+Creation and configuration of <code>monero<u>d</u></code> systemd user unit has been completed.
