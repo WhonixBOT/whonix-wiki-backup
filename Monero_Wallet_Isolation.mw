@@ -121,53 +121,29 @@ Creation and configuration of <code>monero<u>d</u></code> systemd user unit has 
 '''1.''' Create folder <code>/usr/local/lib/systemd/system/</code>.
 
 {{CodeSelect|code=
-sudo mkdir -p /usr/local/lib/systemd/system/
+sudo mkdir -p /usr/local/etc/anon-ws-disable-stacked-tor.d/
 }}
 
-'''2.''' Create file <code>/usr/local/lib/systemd/system/socat.service</code>.
+'''2.''' Create file <code>/usr/local/etc/anon-ws-disable-stacked-tor.d/50_user.conf</code>.
 
 {{Open File|
-filename=/usr/local/lib/systemd/system/socat.service
+filename=/usr/local/etc/anon-ws-disable-stacked-tor.d/50_user.conf
 }}
 
 '''3.''' Paste the following contents.
 
 {{CodeSelect|code=
-[Unit]
-Description=socat to Monero
-After=network.target
-
-[Service]
-Type=simple
-Restart=always
-PrivateTmp=true
-
-ExecStart=sudo socat TCP-LISTEN:18081,fork,bind=127.0.0.1 EXEC:"qrexec-client-vm monerod-ws user.monerod"
-
-[Install]
-WantedBy=default.target
+socat TCP-LISTEN:18081,fork,bind=127.0.0.1 EXEC:"qrexec-client-vm monerod-ws user.monerod" &
 }}
 
 '''4.''' Save.
 
-'''5.''' Reload systemd system instance.
+'''5.''' Restart [[<code>anon-ws-disable-stacked-tor</code>]] systemd system instance.
 
 {{CodeSelect|code=
-sudo systemctl daemon-reload
+sudo systemctl restart anon-ws-disable-stacked-tor
 }}
 
-'''6.''' Optional: Enable autostart for the <code>socat</code> systemd system instance.
+'''6.''' Done.
 
-{{CodeSelect|code=
-sudo systemctl enable socat
-}}
-
-'''7.''' Start <code>socat</code> systemd system instance.
-
-{{CodeSelect|code=
-sudo systemctl restart socat
-}}
-
-'''8.''' Done.
-
-Creation and configuration of <code>socat</code> systemd system unit has been completed.
+Automatically starting the <code>socat</code> process has been completed.
