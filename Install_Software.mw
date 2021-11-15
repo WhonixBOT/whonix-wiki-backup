@@ -51,7 +51,7 @@ There are numerous examples of this procedure in the [[Software]] chapter and th
 |-
 ! scope="row"| Avoid Manual Software Installation
 | 
-* Generally avoid the manual installation of packages, even trusted ones. In practice that means software should only be installed with <code>apt-get</code>, unless special circumstances exist. <ref>
+* Generally avoid the manual installation of packages, even trusted ones. In practice that means software should only be installed with <code>apt</code>, unless special circumstances exist. <ref>
 Such as desirable software versions that are not yet bundled in the official repositories.
 </ref>
 * Other risks: foreign packages are often unsigned, and users may forget to regularly update the software.
@@ -68,7 +68,7 @@ The pip developers refused to implement any kind of proper GPG signature verific
 |-
 ! scope="row"| Prefer APT
 | 
-* The safest option is to stick with Debian's official package manager <code>APT</code>. This is referenced throughout the wiki whenever the user runs <code>apt-get</code>.
+* The safest option is to stick with Debian's official package manager <code>APT</code>. This is referenced throughout the wiki whenever the user runs <code>apt</code>.
 * <code>APT</code> is a secure package manager which passes the TUF threat model, since it features metadata verification and expiration detection. <ref name=tufaaw>https://github.com/theupdateframework/tuf/blob/develop/SECURITY.md http://www.webcitation.org/6F7Io2ncN
 </ref> <ref>
 https://www2.cs.arizona.edu/stork/packagemanagersecurity/attacks-on-package-managers.html
@@ -97,11 +97,11 @@ Debian's installation default is <code>--install-recommends</code>. Debian packa
 * <code>Recommends:</code> "recommended" packages
 * <code>Suggests:</code> "suggested" packages
 
-When installing a package using <code>apt-get</code>, dependencies (<code>Depends:</code>) are always installed. The Debian default is for recommended packages (<code>Recommends:</code>) to also be installed alongside the primary package (unless installed previously). To avoid that outcome, it is possible to use the <code>apt-get</code> command line parameter <code>--no-install-recommends</code>; this is in most cases optional. 
+When installing a package using <code>apt</code>, dependencies (<code>Depends:</code>) are always installed. The Debian default is for recommended packages (<code>Recommends:</code>) to also be installed alongside the primary package (unless installed previously). To avoid that outcome, it is possible to use the <code>apt</code> command line parameter <code>--no-install-recommends</code>; this is in most cases optional. 
 
 Debian's default for suggested packages (<code>Suggests:</code>) is <code>--no-install-suggests</code> i.e. not to install suggested packages. Users can optionally use <code>--install-suggests</code>, but there are no known cases where this would be useful at the time of writing. A host of other [https://manpages.debian.org/{{Stable project version based on Debian codename}}/apt/apt-get.8.en.html#OPTIONS command line options] are also available.
 
-If a package is installed using <code>apt --no-install-recommends install package-name</code>, then re-running <code>apt-get</code> without any parameters or even with <code>--install-recommends</code> will not result in installation of the recommended packages. To accomplish a "late" installation of recommended packages, the simplest method is first uninstalling the package. Alternatively, the list of <code>Recommends:</code> can be viewed using <code>apt-cache package-name</code> or by checking the package on https://packages.debian.org.
+If a package is installed using <code>apt --no-install-recommends install package-name</code>, then re-running <code>apt</code> without any parameters or even with <code>--install-recommends</code> will not result in installation of the recommended packages. To accomplish a "late" installation of recommended packages, the simplest method is first uninstalling the package. Alternatively, the list of <code>Recommends:</code> can be viewed using <code>apt-cache package-name</code> or by checking the package on https://packages.debian.org.
 
 A brief Q&A regarding the potential impacts of the "recommended" field is outlined below.
 
@@ -131,7 +131,7 @@ Most people nowadays are behind a NAT router which blocks unsolicited incoming c
 |-
 
 | Should <code>--no-install-recommends</code> be used?
-| The answer depends on the specific package. Advanced users who know exactly which packages are needed can use <code>--no-install-recommends</code> and afterwards manually add any wanted/additional packages <ref>Perhaps including some recommended packages.</ref> to the <code>apt-get</code> installation command. Otherwise, there might be corner cases of missing optional dependencies or limited functionality.
+| The answer depends on the specific package. Advanced users who know exactly which packages are needed can use <code>--no-install-recommends</code> and afterwards manually add any wanted/additional packages <ref>Perhaps including some recommended packages.</ref> to the <code>apt</code> installation command. Otherwise, there might be corner cases of missing optional dependencies or limited functionality.
 
 |-
 
@@ -159,7 +159,7 @@ Users are responsible for trying to prevent any other [https://gitlab.torproject
 
 == apt-get Meta-data ==
 
-When updating with <code>apt-get</code>, information will leak about which software packages and versions have been installed, unless [[Onionizing_Repositories|Tor onion repositories]] have been configured. <ref>See [https://gitlab.torproject.org/legacy/trac/-/wikis/doc/TorifyHOWTO#Softwareupdaters software updaters] for more information on this topic.</ref> This meta-data cannot be directly linked to any other activity like web browsing, because the {{project name}} <i>apt-get</i> uwt wrapper forces it to pass through its own circuit. Despite this isolation, it is still possible for updates to be [[Stream Isolation|correlated]] with the same pseudonym. <ref>Consider the following example. A user announces online that software X is being utilized, and another specific application set x, y, and z is installed. If this information becomes available to an adversary and the circuit-isolated <i>apt-get</i> passes through any Tor exit relays, mirrors or ISPs under their control, then they may guess it is associated with the same pseudonym. In that case, the adversary has a list of the user's installed packages, and can attempt a stale mirror attack (if the user has a [[Ubuntu Tips#About_Ubuntu|custom Ubuntu build]]), or try other attacks against <i>apt-get</i>.</ref> <ref>As per the previous footnote, this threat equally applies to users who run an onion service with a specific set of server software, for example apache, mediawiki, phpbb, and others.</ref>
+When updating with <code>apt</code>, information will leak about which software packages and versions have been installed, unless [[Onionizing_Repositories|Tor onion repositories]] have been configured. <ref>See [https://gitlab.torproject.org/legacy/trac/-/wikis/doc/TorifyHOWTO#Softwareupdaters software updaters] for more information on this topic.</ref> This meta-data cannot be directly linked to any other activity like web browsing, because the {{project name}} <i>apt-get</i> uwt wrapper forces it to pass through its own circuit. Despite this isolation, it is still possible for updates to be [[Stream Isolation|correlated]] with the same pseudonym. <ref>Consider the following example. A user announces online that software X is being utilized, and another specific application set x, y, and z is installed. If this information becomes available to an adversary and the circuit-isolated <i>apt-get</i> passes through any Tor exit relays, mirrors or ISPs under their control, then they may guess it is associated with the same pseudonym. In that case, the adversary has a list of the user's installed packages, and can attempt a stale mirror attack (if the user has a [[Ubuntu Tips#About_Ubuntu|custom Ubuntu build]]), or try other attacks against <i>apt-get</i>.</ref> <ref>As per the previous footnote, this threat equally applies to users who run an onion service with a specific set of server software, for example apache, mediawiki, phpbb, and others.</ref>
 
 == Recommendations ==
 
@@ -176,7 +176,7 @@ For greater security when updating:
 # Stop all activities and shutdown any open applications like Tor Browser.
 # Change the Tor circuit -- this step may not apply if the user is running an onion service. <ref>One option is using [[Tor Controller|Arm]]: <code>Navigate to {{gateway_product_name}} ([[{{q project name short}}|{{q project name}}]]: sys-whonix)</code> &rarr; <code>Select
 Arm - Tor Controller</code> &rarr; <code>Press "n" for a New Identity</code>. <br /> Alternatively: <code>Press "m" for the menu</code> &rarr; <code>Scroll down to "New Identity"</code> &rarr; <code>Press "Enter"</code>.</ref>
-# Update using <code>apt-get</code> after a random delay. By default, a new Tor circuit is generated after 10 seconds.
+# Update using <code>apt</code> after a random delay. By default, a new Tor circuit is generated after 10 seconds.
 # Change the Tor circuit again.
 # Continue user activities after another random period has elapsed.
 
