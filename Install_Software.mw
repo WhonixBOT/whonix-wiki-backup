@@ -518,23 +518,39 @@ General forum discussion about snap: [https://forums.whonix.org/t/snap-store-sna
 * Efforts to persistently install snap apps in [[{{q project name short}}|{{q project name}}]] via [https://www.qubes-os.org/doc/bind-dirs/ bind-dirs] or with snap proxy settings have been unsuccessful. This means it must be [[#Install_Software_in_an_App_Qube|installed in an App Qube]] on every occasion it is required. Efforts to improve this situation are most welcome, see: [https://forums.whonix.org/t/wickr-me-vs-qubes-whonix-persistence/9593 Wickr Me vs Qubes-Whonix Persistence] and [https://forums.whonix.org/t/snap-totally-unusable-on-whonix-ws/10146 snap totally unusable on Qubes whonix-ws].
 * Qubes Templates are non-networked by default, <ref>APT works because of Qubes' qrexec-based updates proxy.</ref> which means snap does not run inside <code>{{whonix-ws}}</code> Template. It is likely snap is similarly affected in other Qubes' Templates like the Debian Template. As per [[Free Support Principle]] it is recommended to test snap functionality in a non-Whonix based Template before attempting the same procedure inside {{project name}}.
 
-== flatpak ==
-TODO: introduction
+== Flatpak ==
 
-https://flatpak.org
+[https://flatpak.org Flatpak] is: <ref>https://en.wikipedia.org/wiki/Flatpak</ref>
+<blockquote>...a utility for software deployment and package management for Linux. It is advertised as offering a sandbox environment in which users can run application software in isolation from the rest of the system. ... 
 
-=== flatpak Package Manager Security ===
+Applications using Flatpak need permissions to have access to resources such as Bluetooth, sound (with PulseAudio), network, and files. These permissions are defined by the maintainer of the Flatpak and can be added or removed by users on their system.
 
-This entry compares flatpak security features (such as signed metadata) against Debian's APT package manager. <ref>Note that source code is not considered in this comparison.</ref> With one caveat, flatpak package manager security is comparable to Debian's APT package manager: [https://github.com/flatpak/flatpak/issues/4031#issuecomment-748891490 Flatpak currently does not defend against <code>indefinite freeze attacks</code>].
+Another key feature of Flatpak is that it allows application developers to directly provide updates to users without going through distributions, and without having to package and test the application separately for each distribution.</blockquote>
+
+There are several advantages of utilizing Flatpak: <ref>https://en.wikipedia.org/wiki/Flatpak#Features</ref> <ref>https://en.wikipedia.org/wiki/Flatpak#Support</ref> <ref>https://docs.flatpak.org/en/latest/introduction.html</ref>
+* Packages are easily added via Flathub, which is a repository located at <code>flathub.org</code>; for a {{project_name}} example, see [[Dev/OnionShare|here]].
+* Numerous Linux distributions are either supported out-of-the-box or after the <code>flatpak</code> package is installed; Debian is a supported platform (which {{project_name}} is based upon).
+* Desktop applications are sandboxed and have limited access to the host environment. <ref>Although Firejail cannot be run in conjunction with Flatpak.</ref>
+* Flatpak bundles are a single-file format which contains the application or runtime. <ref>Runtimes are basic dependencies that are used by packages.</ref>
+* Any Flatpak breakage will not lead to destabilization of the host OS.
+* Elevated privileges (root) are not required to install Flatpak packages.
+* Only changed files are downloaded for updates.
+* Libraries and files used by multiple applications are de-duplicated to save space.
+
+For further information, refer to the [https://flatpak.org/faq/ Flatpak FAQ] and [https://docs.flatpak.org/en/latest/index.html Flatpak documentation].
+
+=== Flatpak Package Manager Security ===
+
+This entry compares Flatpak security features (such as signed metadata) against Debian's APT package manager. <ref>Note that source code is not considered in this comparison.</ref> With one caveat, Flatpak package manager security is comparable to Debian's APT package manager: [https://github.com/flatpak/flatpak/issues/4031#issuecomment-748891490 Flatpak currently does not defend against <code>indefinite freeze attacks</code>].
 
 A definition of <code>indefinite freeze attacks</code> is provided by {{TUF4}}:
 
 <blockquote>An attacker continues to present files to a software update system files that the client has already seen. As a result, the client is kept unaware of new files.</blockquote>
 
-For many adversaries this attack is difficult because it requires breaking [[SSL|TLS]]. While flatpak package version information is not protected by a [https://github.com/flatpak/flatpak/issues/4031#issuecomment-753581447 <code>valid-until</code> field], it is fetched over TLS. Adversaries capable of breaking TLS face an obstacle when dealing with torified connections (like those in {{Whonix}}) -- an indefinite freeze attack cannot target a specific user, but will affect all Tor users. This increases the chances of being caught unless they also have the ability to break Tor. Even then the attack chain would be very complex: 
+For many adversaries this attack is difficult because it requires breaking [[SSL|TLS]]. While Flatpak package version information is not protected by a [https://github.com/flatpak/flatpak/issues/4031#issuecomment-753581447 <code>valid-until</code> field], it is fetched over TLS. Adversaries capable of breaking TLS face an obstacle when dealing with torified connections (like those in {{Whonix}}) -- an indefinite freeze attack cannot target a specific user, but will affect all Tor users. This increases the chances of being caught unless they also have the ability to break Tor. Even then the attack chain would be very complex: 
 * <code>Break Tor</code> &rarr; <code>Target specific user(s)</code> &rarr; <code>Break TLS</code> &rarr; <code>Mount an indefinite freeze attack</code> &rarr; <code>Exploit a vulnerability caused by an outdated software version</code>.
 
-To safeguard against this possibility, it is recommended to perform manual checks of version numbers for flatpak-installed applications -- they should match those available from the flathub repository. Every flathub application has a corresponding website page with an <code>Additional information</code> section that lists <code>Updated</code> and <code>Version</code> information. For example, at the time of writing for [[Chromium]]:
+To safeguard against this possibility, it is recommended to perform manual checks of version numbers for Flatpak-installed applications -- they should match those available from the flathub repository. Every flathub application has a corresponding website page with an <code>Additional information</code> section that lists <code>Updated</code> and <code>Version</code> information. For example, at the time of writing for [[Chromium]]:
 * This is the associated [https://flathub.org/apps/details/org.chromium.Chromium org.chromium.Chromium flathub website page]. 
 * The additional information section lists:
 ** <code>Updated</code>: <code>October 5, 2021</code>
@@ -543,16 +559,16 @@ To safeguard against this possibility, it is recommended to perform manual check
 Researching version information on the flathub website with a browser is equally vulnerable to indefinite freeze attacks because it also relies upon TLS. It is therefore recommended to use {{Whonix}} or Tor Browser for this purpose. <ref>In theory some adversaries are capable of mounting an indefinite freeze attack against all visitors arriving from the Tor network. This is considered unlikely because the threat of eventual detection is too high. Such an attack would be widely publicized and might lead to major improvements in how Internet encrypted/authenticated connections are established.
 </ref>
 
-Sometimes APT software versions are quite old, which can lead to less functionality or even exposure to known vulnerabilities that are being exploited in the wild (see footnote). <ref>[[Dev/Chromium#Remotely_Exploitable_Chromium_Security_Vulnerability_CVE-2021-21193_exploited_in_the_wild|Chromium exploitation example]].</ref> Conversely, flatpak usually offers more recent software versions and/or deploys security fixes in a more timely manner.
+Sometimes APT software versions are quite old, which can lead to less functionality or even exposure to known vulnerabilities that are being exploited in the wild (see footnote). <ref>[[Dev/Chromium#Remotely_Exploitable_Chromium_Security_Vulnerability_CVE-2021-21193_exploited_in_the_wild|Chromium exploitation example]].</ref> Conversely, Flatpak usually offers more recent software versions and/or deploys security fixes in a more timely manner.
 
-In summary, flatpak advantages are considered to outweigh the potential risks of an indefinite freeze attack because the attack chain is complex. Also, flatpak is sometimes the only trustworthy, easy-to-use software source that provides newer versions than available in Debian [[#Install_from_Debian_stable|stable]] (with [[Operating_System_Software_and_Updates#Frozen_Packages|Frozen Packages]]) (or [[#Install Newer Software Versions|newer]]).
+In summary, Flatpak advantages are considered to outweigh the potential risks of an indefinite freeze attack because the attack chain is complex. Also, Flatpak is sometimes the only trustworthy, easy-to-use software source that provides newer versions than available in Debian [[#Install_from_Debian_stable|stable]] (with [[Operating_System_Software_and_Updates#Frozen_Packages|Frozen Packages]]) (or [[#Install Newer Software Versions|newer]]).
 
 Forum discussion: 
 * [https://forums.whonix.org/t/flatpak-as-a-software-source-flathub-as-a-source-of-software/8500 flathub as a source of software].
 
 === Qubes OS Specific ===
 
-At the time of writing, applications installed using flatpak do not present in the Qubes start menu. <ref>
+At the time of writing, applications installed using Flatpak do not present in the Qubes start menu. <ref>
 [https://github.com/QubesOS/qubes-issues/issues/6325 flatpak installed applications do not show up in Qubes start menu]
 </ref> <br />Workaround: <code>navigate to Qube settings</code> &rarr; <code>applications tab</code> &rarr; <code>press "Refresh Applications"</code>.
 
