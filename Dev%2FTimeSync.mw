@@ -41,7 +41,7 @@ The Post Install Advice is part of this design, therefore read [[Post Install Ad
 == Local Clock Leaks ==
 * TCP Sequence Numbers &rarr; [https://gitlab.com/whonix/tirdad <code>tirdad</code>] <ref>
 * [https://mailman.boum.org/pipermail/tails-dev/2014-September/007062.html Tails-dev - TCP Sequence Numbers leak System Clock]
-* [https://trac.torproject.org/projects/tor/ticket/16659 Linux TCP Initial Sequence Numbers may aid correlation]
+* [https://gitlab.torproject.org/legacy/trac/-/issues/16659 Linux TCP Initial Sequence Numbers may aid correlation]
 </ref>
 * ICMP timestamps &rarr; blocked by {{project name}} firewall for {{project name}} VMs. Host: [[Computer_Security_Education#Disable_ICMP_Timestamps|Recommendation]] to disable on the host.
 * TCP timestamps &rarr; blocked in {{project name}} VMs by [https://github.com/{{project_name_short}}/tcp-timestamps-disable tcp-timestamps-disable].; [[Computer_Security_Education#Disable_TCP_Timestamps|Recommendation]] to disable on the host.
@@ -50,25 +50,25 @@ The Post Install Advice is part of this design, therefore read [[Post Install Ad
 By distribution defaults.
 </ref> times.
 * Javascript. <ref>
-Was [https://trac.torproject.org/projects/tor/ticket/3059 fixed] in Tor Browser, but remains open for other applications such as browsers like Mozilla Firefox.</ref> <ref>
+Was [https://gitlab.torproject.org/legacy/trac/-/issues/3059 fixed] in Tor Browser, but remains open for other applications such as browsers like Mozilla Firefox.</ref> <ref>
 See http://ip-check.info for demonstration.
 </ref>
 * E-mail clients such as Mozilla Thunderbird and others.<ref>
 As of June 2016, Iceweasel has been replaced by Firefox-ESR in Debian, see https://wiki.debian.org/Iceweasel
 </ref> <ref>
-[https://trac.torproject.org/projects/tor/ticket/6314 prevent leak via Date header field (local timestamp disclosure)]
+[https://gitlab.torproject.org/legacy/trac/-/issues/6314 prevent leak via Date header field (local timestamp disclosure)]
 </ref> <ref>
-[https://trac.torproject.org/projects/tor/ticket/6315 prevent leak via Message-ID header field (local timestamp disclosure) ]
+[https://gitlab.torproject.org/legacy/trac/-/issues/6315 prevent leak via Message-ID header field (local timestamp disclosure) ]
 </ref> <ref>
 [https://blog.torproject.org/blog/torbirdy-013-our-fourth-beta-release Quote, on October 24th, 2014 sukhbir said]:<br />
-"The timestamp disclosures are via the date and the message-ID headers (relevant tickets: [https://trac.torproject.org/projects/tor/ticket/6314 #6314], [https://trac.torproject.org/projects/tor/ticket/6315 #6315]). We have submitted patches to Mozilla ([https://bugzilla.mozilla.org/show_bug.cgi?id=902573 902573], [https://bugzilla.mozilla.org/show_bug.cgi?id=902580 902580]) that have not yet been merged. The patches probably need more work and we are looking for volunteers to work on them and help us to get them merged. We will be doing a blog post about this soon and put out a call for help."
+"The timestamp disclosures are via the date and the message-ID headers (relevant tickets: [https://gitlab.torproject.org/legacy/trac/-/issues/6314 #6314], [https://gitlab.torproject.org/legacy/trac/-/issues/6315 #6315]). We have submitted patches to Mozilla ([https://bugzilla.mozilla.org/show_bug.cgi?id=902573 902573], [https://bugzilla.mozilla.org/show_bug.cgi?id=902580 902580]) that have not yet been merged. The patches probably need more work and we are looking for volunteers to work on them and help us to get them merged. We will be doing a blog post about this soon and put out a call for help."
 </ref>
 * https / ssl, older <ref name=example-wheezy /> versions of openssl, TLS HELLO gmt_unix_time <ref>
-https://trac.torproject.org/projects/tor/ticket/8751
+https://gitlab.torproject.org/legacy/trac/-/issues/8751
 </ref> What about other implementations of SSL / TLS, other than openssl?
 * older <ref name=example-wheezy>For example the one shipped by Debian wheezy.
 </ref> versions of Tor (NETINFO) <ref name=tlsleaktwo>
-See [https://trac.torproject.org/projects/tor/ticket/4852 torproject.org #4852: Clients send NETINFO with time]. The ticket says fixed. However, [https://packages.debian.org/de/wheezy/tor Debian wheezy (which {{project name}} 10 was based on) was using Tor 0.2.3] but Nick's [https://trac.torproject.org/projects/tor/ticket/4852#comment:20 patch appeared first in 0.2.4]. It was solved in {{project name}} 11, because it was based on Debian jessie, that contained [https://packages.debian.org/de/jessie/tor a more recent version of Tor].
+See [https://gitlab.torproject.org/legacy/trac/-/issues/4852 torproject.org #4852: Clients send NETINFO with time]. The ticket says fixed. However, [https://packages.debian.org/de/wheezy/tor Debian wheezy (which {{project name}} 10 was based on) was using Tor 0.2.3] but Nick's [https://gitlab.torproject.org/legacy/trac/-/issues/4852#comment:20 patch appeared first in 0.2.4]. It was solved in {{project name}} 11, because it was based on Debian jessie, that contained [https://packages.debian.org/de/jessie/tor a more recent version of Tor].
 </ref>
 * web servers (time stamps from http headers (RFC 2616)) <ref>
 For demonstration, you could use.
@@ -136,7 +136,7 @@ A correct system clock is crucial for many reasons (see footnotes for more):
 * '''Attack 1:''' Replay attacks <ref>Replay old Tor consensus, see [https://tails.boum.org/contribute/design/Time_syncing/ Tails: Time syncing] for detailed explanation.</ref>
 * '''Attack 2:''' Feeding old/outdated/known vulnerable updates and (https) certificates <ref>Cryptographic verification depends on system clock, i.e. a clock two years in past will accept certificates/updates, which have been expired/revoked for two years.</ref>
 * '''Attack 3:''' Deanonymizing <ref>[[#Local Clock Leaks]] are an issue. Imagine the user connects to an adversary controlled web-server with Mozilla Firefox and connects to another web-server controlled by the same adversary with Thunderbird. The adversary can link the anonymous and non-anonymous session, thus deanonymizing.</ref>
-* '''Attack 4:''' Linking all sessions to the same pseudonym <ref>If the clock is too much off, it is also easy for an adversary's web-server to detect "Oh, that's the Tor Browser user who's clock is X in past/future.", thus allowing the adversary to link all sessions to the same pseudonym. See Tor Browser upstream bug #3059: [https://trac.torproject.org/projects/tor/ticket/3059 Find some way to deal with time-based fingerprints].</ref>
+* '''Attack 4:''' Linking all sessions to the same pseudonym <ref>If the clock is too much off, it is also easy for an adversary's web-server to detect "Oh, that's the Tor Browser user who's clock is X in past/future.", thus allowing the adversary to link all sessions to the same pseudonym. See Tor Browser upstream bug #3059: [https://gitlab.torproject.org/legacy/trac/-/issues/3059 Find some way to deal with time-based fingerprints].</ref>
 * '''Attack 5:''' Locating onion services. <ref>
 For onion services a correct clock is crucial, see:
 * [http://www.cl.cam.ac.uk/~sjm217/papers/ccs06hotornot.pdf Hot or Not: Revealing Hidden Services by their Clock Skew]
@@ -240,7 +240,7 @@ When the user powers on {{gateway_product_name}} and the host time is too much o
 
 An adversary tampering with the user's clock, while the user doesn't recognize that, can't do any more damage to {{project name}} than he could do to Tor Browser. Worst case is a denial of service for Tor. On the other hand, an adversary capable of actively tampering with the traffic between the user and its entry guard or bridge poses much bigger risks to Tor in general. <ref>General Tor problems, Tor is known to be broken against many active attacks. This can not be solved by {{project_name}}. When an adversary is capable of running active attacks, tampering with the time leading into a denial of service is the least of the worries. The adversary could also disrupt the service easier. And as for active attacking in general, there are other attacks which are easier to deploy and which pose a greater danger. Not a {{project name}} specific problem.</ref> 
 
-The reason for running TimeSync on {{gateway_product_name}}, is that onion services can only be accessed if the clock is no more than 30 minutes slow or fast.<ref>https://trac.torproject.org/projects/tor/ticket/3582#comment:3</ref> Running TimeSync ensures, that {{gateway_product_name}} clock is reasonably accurate.
+The reason for running TimeSync on {{gateway_product_name}}, is that onion services can only be accessed if the clock is no more than 30 minutes slow or fast.<ref>https://gitlab.torproject.org/legacy/trac/-/issues/3582#comment:3</ref> Running TimeSync ensures, that {{gateway_product_name}} clock is reasonably accurate.
 
 {{Anchor|sclockadj2}}
 
@@ -408,7 +408,7 @@ Generally, computer running Tor ({{Gateway product name}}):
 <blockquote>A reasonably live consensus is one that expired less than 24 hours ago.</blockquote>
 
 How accurate has the clock to be so onion services can be accessed? <ref>
-https://trac.torproject.org/projects/tor/ticket/3460
+https://gitlab.torproject.org/legacy/trac/-/issues/3460
 </ref>
 
 Due to issue [https://forums.whonix.org/t/most-onions-down-due-to-a-denial-of-service-attack-on-the-tor-network/10979 Most Onions Down due to a Denial of Service Attack on the Tor Network] this question received attention.
@@ -449,7 +449,7 @@ Originally posted in [https://phabricator.whonix.org/T151 sdwdate Tor Consensus 
 *** As per [[Comparison with Others#Fingerprint]], quoted from the [https://tails.boum.org/contribute/design/Time_syncing/#index5h1 Tails Design about Time syncing]: "Our initial time guess based on the Tor consensus is probably easier to fingerprint, though: a fresh Tor is started, and restarted again right after the consensus has been downloaded."
 ** Might not matter. See also [[Fingerprint#ISP_or_Local_Network_Administrators|Network Fingerprint]].
 *** Related: [[Comparison with Others#Network Time related]]
-* <s>Hidden services can only be accessed if the clock is no more than 30 minutes slow or fast. <ref>https://trac.torproject.org/projects/tor/ticket/3582#comment:3</ref></s>
+* <s>Hidden services can only be accessed if the clock is no more than 30 minutes slow or fast. <ref>https://gitlab.torproject.org/legacy/trac/-/issues/3582#comment:3</ref></s>
 * [https://labs.riseup.net/code/issues/5774 Tails ticket: Robust time syncing] Quote: <blockquote>Currently we use tordate to set the initial clock. It is very messy and error prone, so we desperately need a robust replacement.</blockquote>
 * Vulnerable to ISP level man-in-the-middle attacks:
 ** [https://tails.boum.org/contribute/design/Time_syncing/ Tails Design: Time Syncing] Quote: <blockquote>First, replaying a consensus older than one week or so results in preventing access to the Tor network, and that's all, because onion keys will be wrong.</blockquote>
@@ -857,14 +857,14 @@ qvm-run --pass-io sys-whonix "date -u" ; date -u
 * [https://phabricator.whonix.org/T387 {{q_project_name}} {{gateway_product_name}} as ClockVM]
 
 === others ===
-* [https://trac.torproject.org/projects/tor/ticket/6894 torproject.org #6894 answer network time requests]
+* [https://gitlab.torproject.org/legacy/trac/-/issues/6894 torproject.org #6894 answer network time requests]
 * [https://tails.boum.org/todo/robust_time_syncing/ Tails Todo: robust time syncing]
 * https://tails.boum.org/blueprint/robust_time_syncing/
 * [https://tails.boum.org/todo/safer_tordate_parameters/ Tails Todo: safer tordate parameters (always use tordate)]
 * [https://tails.boum.org/todo/bridge_mode_vs_tordate_timeouts/ Tails Todo: bridge mode vs tordate timeouts]
 * [https://tails.boum.org/todo/when_htp_fails_the_user_should_be_prompted/ Tails Todo: when htp fails the user should be prompted]
 * [https://github.com/QubesOS/qubes-issues/issues/2342 Qubes: secure time synchronization]
-* [https://trac.torproject.org/projects/tor/ticket/16659 Linux TCP Initial Sequence Numbers may aid correlation]
+* [https://gitlab.torproject.org/legacy/trac/-/issues/16659 Linux TCP Initial Sequence Numbers may aid correlation]
 * [https://gitlab.torproject.org/legacy/trac/-/issues/8170 get independent from host clock time / insecure NTP]
 
 == Clock Correlation Attack ==
@@ -955,7 +955,7 @@ time stamp counter tsc side channel
 Leads to:<br />
 http://blog.cr0.org/2009/05/time-stamp-counter-disabling-oddities.html
 
-TSC leaks may be similar to TCP sequence numbers. <ref>https://trac.torproject.org/projects/tor/ticket/16659#comment:10</ref>
+TSC leaks may be similar to TCP sequence numbers. <ref>https://gitlab.torproject.org/legacy/trac/-/issues/16659#comment:10</ref>
 
 == clocksource xen ==
 https://github.com/QubesOS/qubes-issues/issues/1764#issuecomment-195619793
