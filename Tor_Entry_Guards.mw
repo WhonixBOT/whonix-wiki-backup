@@ -79,7 +79,7 @@ The relative uncommonness of Tor usage simply exacerbates the potential for de-a
 
 There are several ways to [[Tor_Entry_Guards#Mitigate_the_Threat_of_Guard_Fingerprinting|mitigate the risk of guard fingerprinting]] across different physical locations. In most cases, the original entry guards can also be re-established after returning home: <ref>As concluded in ticket [https://phabricator.whonix.org/T469 research non-persistent Tor directory guards], these are covered by the following instructions.</ref>
 
-# [[Tor_Entry_Guards#Clone_{{gateway_product_name}}_.28sys-whonix.29_with_New_Entry_Guards|Clone {{gateway_product_name}} (sys-whonix) with New Entry Guards]].
+# [[Tor_Entry_Guards#Clone_{{gateway_product_name}}_.28{{gateway_product_name_vm}}.29_with_New_Entry_Guards|Clone {{gateway_product_name}} ({{gateway_product_name_vm}}) with New Entry Guards]].
 # [[Tor_Entry_Guards#Regenerate_the_Tor_State_After_Saving_the_Tor_State_Folder|Regenerate the Tor State File after Saving the Current Tor State]].
 # Configure Tor to use [[Tor_Entry_Guards#Alternating_Bridges|Alternating Bridges]].
 
@@ -209,7 +209,7 @@ If users feel compelled in their circumstances to proceed despite the anonymity 
 * One of the fallback primary entry guards.
 * A configured [[Bridges|bridge]].
 * Chaining other [[Tunnels/Introduction|tunnels]] with Tor.
-* Creating a fresh {{gateway_product_name}} (<code>{{gateway_product_name_vm}}</code>) and [[#Copy_Tor_Configuration_files_and_Settings_to_Another_sys-whonix_Instance|copying across the Tor state file]].
+* Creating a fresh {{gateway_product_name}} (<code>{{gateway_product_name_vm}}</code>) and [[#Copy_Tor_Configuration_files_and_Settings_to_Another_{{gateway_product_name_vm}}_Instance|copying across the Tor state file]].
 
 The safest decision is to persist with poor performance and wait for normal guard rotation.
 
@@ -219,7 +219,7 @@ The safest decision is to persist with poor performance and wait for normal guar
 
 If guard fingerprinting across different locations is a legitimate concern, there are several ways to mitigate the threat. Viable options include: bridges, temporarily rotating guards or cloning {{gateway_product_name}} (<code>{{gateway_product_name_vm}}</code>) with new guards.
 
-== Clone {{gateway_product_name}} (sys-whonix) with New Entry Guards ==
+== Clone {{gateway_product_name}} ({{gateway_product_name_vm}}) with New Entry Guards ==
 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
@@ -228,9 +228,9 @@ If guard fingerprinting across different locations is a legitimate concern, ther
 
 It is possible to clone the current {{gateway_product_name}} (<code>{{gateway_product_name_vm}}</code>) and regenerate the Tor state file. Once the VM is cloned, it is important that the original is not unintentionally used for any anonymous activities. To negate this threat, disable networking in the original {{gateway_product_name}} until returning home. 
 
-Create a {{gateway_product_name}} (<code>{{gateway_product_name_vm}}</code>) clone and name it {{gateway_product_name}}-temp (<code>sys-whonix-temp</code>): 
+Create a {{gateway_product_name}} (<code>{{gateway_product_name_vm}}</code>) clone and name it {{gateway_product_name}}-temp (<code>{{gateway_product_name_vm}}-temp</code>): 
 
-# <u>VirtualBox:</u> follow [https://dirkstrauss.com/clone-virtualbox-vm/ these instructions] to create a VM snapshot. <br /> <u>{{q_project_name}}:</u> In Qube Manager, <code>Right-click on sys-whonix</code> &rarr; <code>Clone qube</code>
+# <u>VirtualBox:</u> follow [https://dirkstrauss.com/clone-virtualbox-vm/ these instructions] to create a VM snapshot. <br /> <u>{{q_project_name}}:</u> In Qube Manager, <code>Right-click on {{gateway_product_name_vm}}</code> &rarr; <code>Clone qube</code>
 # [[#Fresh_Tor_Entry_Guards_by_Regenerating_the_Tor_State_File|Regenerate the Tor State File]].
 
 == Regenerate the Tor State After Saving the Tor State Folder ==
@@ -306,7 +306,7 @@ Complete the following steps in {{gateway_product_name}} (<code>{{gateway_produc
 '''4.''' Before leaving this location, disable Tor. If traveling to a different area, add a different bridge address. To revert to the usual Tor guards used at home, remove the torrc bridge settings before enabling the network or rollback to a VM snapshot created at home.
 }}
 
-== Copy Tor Configuration files and Settings to Another sys-whonix Instance ==
+== Copy Tor Configuration files and Settings to Another {{gateway_product_name_vm}} Instance ==
 
 {{mbox
 | type    = notice
@@ -320,17 +320,17 @@ Complete the following steps in {{gateway_product_name}} (<code>{{gateway_produc
 
 In some circumstances [[{{q project name short}}|{{q project name}}]] users might want to copy the Tor state and custom configuration options from an existing <code>{{gateway_product_name_vm}}</code> ProxyVM to another <code>{{gateway_product_name_vm}}</code> instance. For example, this is useful for testing later {{project_name}} releases without aiding deanonymization attempts by advanced adversaries <ref>As the same Tor entry guard is used.</ref> or when creating an identical backup that does not share any other persistent data, except for Tor state and custom torrc options.
 
-=== Copy Tor State Files to Another sys-whonix Instance ===
+=== Copy Tor State Files to Another {{gateway_product_name_vm}} Instance ===
 
-The following instructions copy the Tor state from <code>sys-whonix-old</code> to <code>sys-whonix-new</code>.
+The following instructions copy the Tor state from <code>{{gateway_product_name_vm}}-old</code> to <code>{{gateway_product_name_vm}}-new</code>.
 {{Box|text=
-'''1.''' In <code>sys-whonix-new</code>, stop Tor.
+'''1.''' In <code>{{gateway_product_name_vm}}-new</code>, stop Tor.
 
 {{CodeSelect|code=
 sudo systemctl stop tor@default
 }}
 
-'''2.''' In <code>sys-whonix-new</code>, remove the Tor state file.
+'''2.''' In <code>{{gateway_product_name_vm}}-new</code>, remove the Tor state file.
 
 {{mbox
 | image   = [[File:Ambox_warning_pn.svg.png|40px]]
@@ -345,16 +345,16 @@ sudo su
 sudo rm /var/lib/tor/*
 }}
 
-'''3.''' In <code>sys-whonix-old</code>, stop Tor.
+'''3.''' In <code>{{gateway_product_name_vm}}-old</code>, stop Tor.
 
 {{CodeSelect|code=
 sudo systemctl stop tor@default
 }}
 
-'''4.''' In <code>sys-whonix-old</code>, copy the Tor state file across to <code>sys-whonix-new</code>.
+'''4.''' In <code>{{gateway_product_name_vm}}-old</code>, copy the Tor state file across to <code>{{gateway_product_name_vm}}-new</code>.
 
 {{CodeSelect|code=
-sudo qvm-copy /var/lib/tor sys-whonix-new
+sudo qvm-copy /var/lib/tor {{gateway_product_name_vm}}-new
 }}
 
 If the following error appears, it can be safely ignored (hit "OK" when prompted).
@@ -363,10 +363,10 @@ If the following error appears, it can be safely ignored (hit "OK" when prompted
 qfile-agent: Fatal error: stat “VM” (error type: No such file or directory)
 </pre>
 
-'''5.''' In <code>sys-whonix-new</code>, list the QubesIncoming directory to ensure the Tor state file was copied over successfully.
+'''5.''' In <code>{{gateway_product_name_vm}}-new</code>, list the QubesIncoming directory to ensure the Tor state file was copied over successfully.
 
 {{CodeSelect|code=
-ls ~/QubesIncoming/sys-whonix-old/tor
+ls ~/QubesIncoming/{{gateway_product_name_vm}}-old/tor
 }}
 
 The output should include the files below.
@@ -374,69 +374,69 @@ The output should include the files below.
    <code>cached-certs cached-microdescs lock</code>
    <code>cached-microdesc-consensus cached-microdescs.new state</code>
 
-'''6.''' In <code>sys-whonix-new</code>, move the newly copied Tor state file to ''/var/lib/tor''
+'''6.''' In <code>{{gateway_product_name_vm}}-new</code>, move the newly copied Tor state file to ''/var/lib/tor''
 
 {{CodeSelect|code=
-sudo mv ~/QubesIncoming/sys-whonix-old/tor/* /var/lib/tor
+sudo mv ~/QubesIncoming/{{gateway_product_name_vm}}-old/tor/* /var/lib/tor
 }}
 
-'''7.''' In <code>sys-whonix-new</code>, change ownership of all files in the Tor state folder to <code>debian-tor</code>
+'''7.''' In <code>{{gateway_product_name_vm}}-new</code>, change ownership of all files in the Tor state folder to <code>debian-tor</code>
 
 {{CodeSelect|code=
 sudo chown -R debian-tor:debian-tor /var/lib/tor
 }}
 
-'''8.''' In <code>sys-whonix-new</code>, start Tor.
+'''8.''' In <code>{{gateway_product_name_vm}}-new</code>, start Tor.
 
 {{CodeSelect|code=
 sudo systemctl start tor@default
 }}
 
-'''9.''' In <code>sys-whonix-new</code>, run [[systemcheck]] to verify Tor is functioning properly. <ref>If Tor fails to start, verify the Tor folder has the proper file permissions with the following command: <code>sudo ls -l /var/lib/tor</code></ref>
+'''9.''' In <code>{{gateway_product_name_vm}}-new</code>, run [[systemcheck]] to verify Tor is functioning properly. <ref>If Tor fails to start, verify the Tor folder has the proper file permissions with the following command: <code>sudo ls -l /var/lib/tor</code></ref>
 
 {{CodeSelect|code=
 whonixcheck
 }}
 }}
-=== Copy Tor Configuration Options (torrc) to Another sys-whonix ===
+=== Copy Tor Configuration Options (torrc) to Another {{gateway_product_name_vm}} ===
 
-These instructions copy custom Tor configuration options (torrc) from <code>sys-whonix-old</code> to <code>sys-whonix-new</code>.
+These instructions copy custom Tor configuration options (torrc) from <code>{{gateway_product_name_vm}}-old</code> to <code>{{gateway_product_name_vm}}-new</code>.
 {{Box|text=
-'''1.'''  In <code>sys-whonix-old</code>, copy the <i>torrc</i> options across to <code>sys-whonix-new</code>. <ref>Note: From {{project_name}} 14 onward, all unique Tor configurations (torrc) options must be stored in <code>/usr/local/etc/torrc.d/50_user.conf</code> and nowhere else.</ref>
+'''1.'''  In <code>{{gateway_product_name_vm}}-old</code>, copy the <i>torrc</i> options across to <code>{{gateway_product_name_vm}}-new</code>. <ref>Note: From {{project_name}} 14 onward, all unique Tor configurations (torrc) options must be stored in <code>/usr/local/etc/torrc.d/50_user.conf</code> and nowhere else.</ref>
 
 {{CodeSelect|code=
-qvm-copy /usr/local/etc/torrc.d/50_user.conf sys-whonix-new
+qvm-copy /usr/local/etc/torrc.d/50_user.conf {{gateway_product_name_vm}}-new
 }}
 
 If the following error appears, it can be safely ignored (hit "OK" when prompted).
 
   qfile-agent: Fatal error: stat “VM” (error type: No such file or directory)
 
-'''2.''' In <code>sys-whonix-new</code>, list the <i>QubesIncoming</i> directory to ensure the <i>torrc</i> options were copied over successfully.
+'''2.''' In <code>{{gateway_product_name_vm}}-new</code>, list the <i>QubesIncoming</i> directory to ensure the <i>torrc</i> options were copied over successfully.
 
 {{CodeSelect|code=
-cat ~/QubesIncoming/sys-whonix-old/50_user.conf
+cat ~/QubesIncoming/{{gateway_product_name_vm}}-old/50_user.conf
 }}
 
-'''3.''' In <code>sys-whonix-new</code>, move the <i>50_user.conf</i> options from the <i>QubesIncoming</i> directory to the <i>50_user.conf</i> file.
+'''3.''' In <code>{{gateway_product_name_vm}}-new</code>, move the <i>50_user.conf</i> options from the <i>QubesIncoming</i> directory to the <i>50_user.conf</i> file.
 
 {{CodeSelect|code=
-sudo mv ~/QubesIncoming/sys-whonix-old/50_user.conf /usr/local/etc/torrc.d/50_user.conf
+sudo mv ~/QubesIncoming/{{gateway_product_name_vm}}-old/50_user.conf /usr/local/etc/torrc.d/50_user.conf
 }}
 
-'''4.''' In <code>sys-whonix-new</code>, change ownership of the Tor configuration file.
+'''4.''' In <code>{{gateway_product_name_vm}}-new</code>, change ownership of the Tor configuration file.
 
 {{CodeSelect|code=
 sudo chown -R root:root /etc/tor
 }}
 
-'''5.''' In <code>sys-whonix-new</code>, restart Tor so the newly copied Tor config options take effect.
+'''5.''' In <code>{{gateway_product_name_vm}}-new</code>, restart Tor so the newly copied Tor config options take effect.
 
 {{CodeSelect|code=
 sudo systemctl restart tor@default
 }}
 
-'''6.''' In <code>sys-whonix-new</code>, run [[systemcheck]] to verify Tor is functioning properly. <ref>If Tor is not running after restart, it is possible to verify the newly migrated torrc options are valid with the following command: <code>anon-verify</code>. The output should be similar to the following.
+'''6.''' In <code>{{gateway_product_name_vm}}-new</code>, run [[systemcheck]] to verify Tor is functioning properly. <ref>If Tor is not running after restart, it is possible to verify the newly migrated torrc options are valid with the following command: <code>anon-verify</code>. The output should be similar to the following.
 <br><i>
 /===================================================================\
 |                      Report Summary                               |
